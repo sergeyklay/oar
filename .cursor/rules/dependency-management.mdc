@@ -1,0 +1,60 @@
+---
+description: Node.js Dependency Management
+globs: package.json, package-lock.json
+alwaysApply: false
+---
+
+# Dependency Management
+
+**For dependency files:** Strict rules for managing project dependencies with npm.
+
+## Core Principles
+
+- **ONLY use `npm`** - `yarn`, `pnpm`, `bun` or any other package manager are forbidden to prevent lockfile conflicts.
+- **Lock file committed** - `package-lock.json` must be in version control and never ignored.
+- **CI Integrity** - Use `npm ci` for clean, reproducible installs in pipelines or fresh setups.
+- **Segregation** - Strictly separate `dependencies` (prod) from `devDependencies` (build/test/lint).
+
+## Essential Commands
+
+~~~bash
+# ✅ DO: Correct npm usage
+npm install package-name           # Add new dependency (updates lockfile)
+npm install -D package-name        # Add development dependency
+npm ci                             # Clean install from lockfile (Strict)
+npm run script-name                # Run scripts defined in package.json
+npx tool-name                      # Run binaries without global install
+npm audit fix                      # Fix security vulnerabilities
+
+# ❌ DON'T: Forbidden actions
+yarn add package-name              # Never mix package managers
+npm install -g package-name        # Avoid global installs (use npx or devDeps)
+rm -rf node_modules                # Use 'npm ci' instead of manual cleaning
+# Manually editing package-lock.json
+~~~
+
+## Quick Reference
+
+~~~bash
+# Add production dependency
+npm install axios
+
+# Add development/testing dependency
+npm install -D jest typescript
+
+# specific version
+npm install react@18.2.0
+
+# Install dependencies for an existing project (Best Practice)
+npm ci
+
+# Update minor/patch versions based on package.json constraints
+npm update
+~~~
+
+## Critical Rules
+
+- **NEVER use Yarn/PNPM** - npm only in this project.
+- **Commit package-lock.json** - Always version control the lock file; do not add to .gitignore.
+- **Prefer `npm ci`** - When setting up the repo or in CI/CD, use `ci` to ensure you get exactly what is in the lockfile.
+- **Audit Regularly** - Run `npm audit` when adding major dependencies.
