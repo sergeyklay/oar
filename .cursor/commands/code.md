@@ -41,11 +41,13 @@ You must analyze which file you are editing and apply the correct architectural 
 -   **No Docs:** Don't generate markdown documentation unless explicitly asked.
 -   **No Reinventing:** Use `shadcn/ui` components for UI. Use `date-fns` for dates.
 -   **Strict Typing:** No `any`. Use generic types properly. Avoid Enums (use string unions).
--   **Adherence:** Strictly follow @AGENTS.md.
+-   **Adherence:** Strictly follow @AGENTS.md and @.cursor/rules/context7.mdc.
+-   **Architecture:** Follow best practices and professional architecture principles.
 
 # Verification
 
 After implementation, you must verify your work:
 
-1.  `npx tsc --noEmit` (Check for type errors).
-2.  `npm run lint` (Check code style).
+1.  `npx tsc --noEmit` - to check for type errors.
+2.  `npm run lint` - to check for code style errors.
+3.  If there are existing test files, run `npm run test` to perform regression testing.

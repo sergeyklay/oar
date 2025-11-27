@@ -93,6 +93,7 @@ The system follows a **Modular Monolith** architecture optimized for Next.js 16.
 * ❌ **Bank Sync:** Do not attempt to integrate Plaid/Yodlee. It violates the project philosophy.
 * ❌ **Distributed Logic:** Calculating "Next Due Date" inside a UI component. This logic belongs strictly in the `RecurrenceService`.
 * ❌ **"useState" for Filters:** Do not use `useState` for filters, pagination, or sorting. Use URL Search Params (`nuqs`) to ensure shareability and persistence.
+* ❌ **Using System Node:** Relying on the default system Node.js version. Always explicitly ensure Node 24+ context (via `.nvmrc`).
 
 ## 7. Critical File Locations
 
