@@ -51,3 +51,5 @@ After implementation, you must verify your work:
 1.  `npx tsc --noEmit` - to check for type errors.
 2.  `npm run lint` - to check for code style errors.
 3.  If there are existing test files, run `npm run test` to perform regression testing.
+
+**IMPORTANT:** You must always verify your work even there are no existing test files. Never respond with "Done" status without verifying your work.

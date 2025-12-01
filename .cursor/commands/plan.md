@@ -40,6 +40,7 @@ Produce a Markdown checklist in `.cursor/plans/Plan-{TASK_NAME}.md`. Group steps
 - Linting check.
 
 # Constraints
+
 - Each step must be atomic (e.g., "Create file X", "Add function Y").
 - **Strict Layering:** Follow @AGENTS.md boundaries.
 - **Philosophy Check:** No external SaaS calls. No floating point math for money.

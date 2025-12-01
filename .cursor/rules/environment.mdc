@@ -27,6 +27,15 @@ Whenever you (the AI) run a terminal command involving `node`, `npm`, `npx`, or 
 - **Segregation** - Strictly separate `dependencies` (prod) from `devDependencies` (build/test/lint).
 - **Respect `.nvmrc` at the project root** - This file defines the recommended Node.js version for the project.
 
+### Dependency Resolution Strategy (Error Handling)
+
+If you encounter `npm error code ERESOLVE` (Peer Dependency Conflict):
+
+1.  **Analyze:** Is the conflict caused by a bleeding-edge framework (e.g., Next.js Canary)?
+2.  **Action:** You are **AUTHORIZED** to retry the command with `--legacy-peer-deps`.
+    * *Example:* `npm install --legacy-peer-deps`
+3.  **Stable First:** Unless the user explicitly asks for "Canary" or "Beta" features, always prefer `@latest` stable versions for `create-next-app` and libraries to minimize conflicts.
+
 ## Essential Commands
 
 ~~~bash
@@ -73,3 +82,4 @@ npm update
 - **Commit package-lock.json** - Always version control the lock file; do not add to .gitignore.
 - **Prefer `npm ci`** - When setting up the repo or in CI/CD, use `ci` to ensure you get exactly what is in the lockfile.
 - **Audit Regularly** - Run `npm audit` when adding major dependencies.
+- **Prefer Stable** - Default to stable versions. If forced to use Canary, handle peer deps gracefully.
