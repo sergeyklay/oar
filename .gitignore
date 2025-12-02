@@ -1,2 +1,7 @@
 .next
 node_modules
+
+# SQLite database files
+data/*.db
+data/*.db-wal
+data/*.db-shm
