@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: weekly
       day: wednesday
-      time: 14:00
+      time: "14:00"
     open-pull-requests-limit: 10
     groups:
       backend-minor-patch:
