@@ -1,6 +1,6 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { MainContent } from '@/components/layout/MainContent';
-import { AddBillDialog, BillList } from '@/components/features/bills';
+import { AddBillButton, BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getCurrencySymbol } from '@/lib/money';
 
@@ -17,7 +17,7 @@ async function DashboardHeader() {
         </p>
       </div>
       <div className="flex gap-2">
-        <AddBillDialog currencySymbol={currencySymbol} />
+        <AddBillButton currencySymbol={currencySymbol} />
       </div>
     </div>
   );

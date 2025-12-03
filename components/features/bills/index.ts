@@ -1,5 +1,6 @@
-export { AddBillDialog } from './AddBillDialog';
+export { AddBillButton } from './AddBillButton';
 export { BillActionsMenu } from './BillActionsMenu';
+export { BillFormDialog } from './BillFormDialog';
 export { BillList } from './BillList';
 export { BillRow } from './BillRow';
 export { BillStatusBadge } from './BillStatusBadge';
