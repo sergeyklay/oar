@@ -48,8 +48,13 @@ You must analyze which file you are editing and apply the correct architectural 
 
 After implementation, you must verify your work:
 
-1.  `npx tsc --noEmit` - to check for type errors.
-2.  `npm run lint` - to check for code style errors.
-3.  If there are existing test files, run `npm run test` to perform regression testing.
+1.  **Type Check:** `npx tsc --noEmit` (Mandatory).
+2.  **Lint:** `npm run lint`.
+3.  **Database Logic Check (CRITICAL):**
+    -   If you wrote a complex Database Mutation (especially Transactions), create a temporary script `scripts/verify-transaction.ts` that imports the function and runs it with mock data.
+    -   Run it with `npx tsx scripts/verify-transaction.ts` to ensure runtime success.
+    -   Delete the script after verification.
+    -   *Why?* SQLite transactions often fail at runtime despite passing TS checks.
+4.  If there are existing test files, run `npm run test` to perform regression testing.
 
 **IMPORTANT:** You must always verify your work even there are no existing test files. Never respond with "Done" status without verifying your work.

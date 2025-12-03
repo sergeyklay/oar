@@ -23,6 +23,32 @@ export const bills = sqliteTable('bills', {
     .$defaultFn(() => new Date()),
 });
 
+/**
+ * Transactions table for recording payment history.
+ *
+ * WHY: Immutable audit trail of all payments. Enables:
+ * - Historical reporting ("spent on X this year")
+ * - Future forecasting accuracy validation
+ * - Debugging recurrence issues
+ */
+export const transactions = sqliteTable('transactions', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  /** Foreign key to bills table */
+  billId: text('bill_id')
+    .notNull()
+    .references(() => bills.id, { onDelete: 'cascade' }),
+  /** Amount paid in minor units (may differ from bill.amount for partial payments) */
+  amount: integer('amount').notNull(),
+  /** Date the payment was made (user-provided, defaults to today) */
+  paidAt: integer('paid_at', { mode: 'timestamp_ms' }).notNull(),
+  /** Optional user notes */
+  notes: text('notes'),
+  /** Record creation timestamp */
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
 /** Key-value settings table for user preferences. */
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
@@ -34,6 +60,8 @@ export const settings = sqliteTable('settings', {
 
 export type Bill = typeof bills.$inferSelect;
 export type NewBill = typeof bills.$inferInsert;
+export type Transaction = typeof transactions.$inferSelect;
+export type NewTransaction = typeof transactions.$inferInsert;
 export type Setting = typeof settings.$inferSelect;
 
 export type BillFrequency = 'once' | 'monthly' | 'yearly';

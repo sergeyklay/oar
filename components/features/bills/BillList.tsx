@@ -1,7 +1,6 @@
 import { getBills } from '@/actions/bills';
-import { formatMoney } from '@/lib/money';
 import { SettingsService } from '@/lib/services/SettingsService';
-import { BillStatusBadge } from './BillStatusBadge';
+import { BillRow } from './BillRow';
 
 export async function BillList() {
   const [bills, settings] = await Promise.all([
@@ -29,25 +28,17 @@ export async function BillList() {
           <th>Due Date</th>
           <th>Frequency</th>
           <th>Status</th>
+          <th className="w-[100px]">Actions</th>
         </tr>
       </thead>
       <tbody>
         {bills.map((bill) => (
-          <tr key={bill.id}>
-            <td className="font-medium">{bill.title}</td>
-            <td className="font-mono">
-              {formatMoney(bill.amount, settings.currency, settings.locale)}
-            </td>
-            <td className="text-muted-foreground">
-              {bill.dueDate.toLocaleDateString(settings.locale)}
-            </td>
-            <td className="capitalize text-muted-foreground">
-              {bill.frequency}
-            </td>
-            <td>
-              <BillStatusBadge status={bill.status} />
-            </td>
-          </tr>
+          <BillRow
+            key={bill.id}
+            bill={bill}
+            currency={settings.currency}
+            locale={settings.locale}
+          />
         ))}
       </tbody>
     </table>
