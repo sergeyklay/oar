@@ -6,3 +6,5 @@ export { BillRow } from './BillRow';
 export { BillStatusBadge } from './BillStatusBadge';
 export { LogPaymentDialog } from './LogPaymentDialog';
 export { PaymentHistoryDialog } from './PaymentHistoryDialog';
+export { TagCombobox } from './TagCombobox';
+export { TagFilter } from './TagFilter';

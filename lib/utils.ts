@@ -12,3 +12,21 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Generates a URL-safe slug from a string.
+ *
+ * Converts "Business Expenses!" → "business-expenses"
+ *
+ * @example
+ * generateSlug("Business Expenses") // → "business-expenses"
+ * generateSlug("My Credit Card!") // → "my-credit-card"
+ */
+export function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')    // Remove special chars
+    .replace(/[\s_-]+/g, '-')     // Replace spaces/underscores with hyphens
+    .replace(/^-+|-+$/g, '');     // Trim leading/trailing hyphens
+}

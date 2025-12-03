@@ -1,4 +1,5 @@
 import { getBillsFiltered } from '@/actions/bills';
+import { getTags } from '@/actions/tags';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { BillRow } from './BillRow';
 
@@ -7,27 +8,32 @@ interface BillListProps {
   date?: string;
   /** Filter by month (YYYY-MM) */
   month?: string;
+  /** Filter by tag slug */
+  tag?: string;
 }
 
-export async function BillList({ date, month }: BillListProps) {
-  const [bills, settings] = await Promise.all([
-    getBillsFiltered({ date, month }),
+export async function BillList({ date, month, tag }: BillListProps) {
+  const [bills, settings, availableTags] = await Promise.all([
+    getBillsFiltered({ date, month, tag }),
     SettingsService.getAll(),
+    getTags(),
   ]);
 
   if (bills.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <p className="text-lg text-muted-foreground">
-          {date
-            ? 'No bills due on this date.'
-            : month
-              ? 'No bills due this month.'
-              : 'No bills yet.'}
+          {tag
+            ? 'No bills with this tag.'
+            : date
+              ? 'No bills due on this date.'
+              : month
+                ? 'No bills due this month.'
+                : 'No bills yet.'}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {date || month
-            ? 'Try selecting a different date or clearing the filter.'
+          {tag || date || month
+            ? 'Try selecting a different filter or clearing the filter.'
             : 'Click "Add Bill" to create your first bill.'}
         </p>
       </div>
@@ -53,6 +59,7 @@ export async function BillList({ date, month }: BillListProps) {
             bill={bill}
             currency={settings.currency}
             locale={settings.locale}
+            availableTags={availableTags}
           />
         ))}
       </tbody>

@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { db, bills } from '@/db';
+import { db, bills, tags, billsToTags } from '@/db';
+import type { Tag, BillWithTags } from '@/db/schema';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
-import { and, eq, gte, lte } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray } from 'drizzle-orm';
 import { startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 
 /** Validation schema for bill creation. */
@@ -26,6 +27,8 @@ const createBillSchema = z.object({
     message: 'Please select a frequency',
   }),
   isAutoPay: z.boolean().default(false),
+  // NEW: Optional array of tag IDs
+  tagIds: z.array(z.string()).optional().default([]),
 });
 
 export type CreateBillInput = z.infer<typeof createBillSchema>;
@@ -46,7 +49,7 @@ interface ActionResult<T = void> {
 }
 
 /**
- * Creates a new bill.
+ * Creates a new bill with optional tag associations.
  *
  * @param input - Bill data from form submission
  * @returns Action result with created bill ID or validation errors
@@ -64,7 +67,7 @@ export async function createBill(
     };
   }
 
-  const { title, amount, dueDate, frequency, isAutoPay } = parsed.data;
+  const { title, amount, dueDate, frequency, isAutoPay, tagIds } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -72,6 +75,7 @@ export async function createBill(
     const now = new Date();
     const status = dueDate < now ? 'overdue' : 'pending';
 
+    // Insert bill
     const [newBill] = await db
       .insert(bills)
       .values({
@@ -83,6 +87,16 @@ export async function createBill(
         status,
       })
       .returning({ id: bills.id });
+
+    // Insert tag associations if any tags selected
+    if (tagIds.length > 0) {
+      await db.insert(billsToTags).values(
+        tagIds.map((tagId) => ({
+          billId: newBill.id,
+          tagId,
+        }))
+      );
+    }
 
     revalidatePath('/');
 
@@ -121,17 +135,24 @@ interface GetBillsOptions {
   date?: string;
   /** Filter by month (YYYY-MM) - used when date is not provided */
   month?: string;
+  /** Filter by tag slug */
+  tag?: string;
   /** Include archived bills */
   includeArchived?: boolean;
 }
 
 /**
- * Fetches bills with optional date/month filtering.
+ * Fetches bills with their associated tags.
+ *
+ * Performance note: Uses a two-query approach for clarity.
+ * For very large datasets (500+ bills), consider raw SQL with GROUP_CONCAT.
  *
  * Priority: date > month > all bills
  */
-export async function getBillsFiltered(options: GetBillsOptions = {}) {
-  const { date, month, includeArchived = false } = options;
+export async function getBillsFiltered(
+  options: GetBillsOptions = {}
+): Promise<BillWithTags[]> {
+  const { date, month, tag, includeArchived = false } = options;
 
   const conditions = [];
 
@@ -156,19 +177,84 @@ export async function getBillsFiltered(options: GetBillsOptions = {}) {
     conditions.push(lte(bills.dueDate, endOfMonth(monthDate)));
   }
 
-  if (conditions.length === 0) {
-    return db.select().from(bills).orderBy(bills.dueDate);
+  // Tag filter - requires subquery
+  if (tag) {
+    // Get tag ID from slug
+    const [tagRecord] = await db
+      .select({ id: tags.id })
+      .from(tags)
+      .where(eq(tags.slug, tag));
+
+    if (!tagRecord) {
+      // Tag doesn't exist, return empty
+      return [];
+    }
+
+    // Get bill IDs that have this tag
+    const billsWithTag = await db
+      .select({ billId: billsToTags.billId })
+      .from(billsToTags)
+      .where(eq(billsToTags.tagId, tagRecord.id));
+
+    const billIds = billsWithTag.map((b) => b.billId);
+
+    if (billIds.length === 0) {
+      return [];
+    }
+
+    conditions.push(inArray(bills.id, billIds));
   }
 
-  return db
-    .select()
-    .from(bills)
-    .where(and(...conditions))
-    .orderBy(bills.dueDate);
+  // Fetch bills
+  const billsResult =
+    conditions.length === 0
+      ? await db.select().from(bills).orderBy(bills.dueDate)
+      : await db
+          .select()
+          .from(bills)
+          .where(and(...conditions))
+          .orderBy(bills.dueDate);
+
+  if (billsResult.length === 0) {
+    return [];
+  }
+
+  // Fetch all tags for these bills in a single query
+  const billIds = billsResult.map((b) => b.id);
+  const tagAssociations = await db
+    .select({
+      billId: billsToTags.billId,
+      tagId: billsToTags.tagId,
+      tagName: tags.name,
+      tagSlug: tags.slug,
+      tagCreatedAt: tags.createdAt,
+    })
+    .from(billsToTags)
+    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
+    .where(inArray(billsToTags.billId, billIds));
+
+  // Group tags by bill ID
+  const tagsByBillId = new Map<string, Tag[]>();
+  for (const assoc of tagAssociations) {
+    const billTags = tagsByBillId.get(assoc.billId) ?? [];
+    billTags.push({
+      id: assoc.tagId,
+      name: assoc.tagName,
+      slug: assoc.tagSlug,
+      createdAt: assoc.tagCreatedAt,
+    });
+    tagsByBillId.set(assoc.billId, billTags);
+  }
+
+  // Merge bills with their tags
+  return billsResult.map((bill) => ({
+    ...bill,
+    tags: tagsByBillId.get(bill.id) ?? [],
+  }));
 }
 
 /**
- * Updates an existing bill.
+ * Updates an existing bill with tag associations.
  *
  * @param input - Bill data with ID for update
  * @returns Action result with updated bill ID or validation errors
@@ -186,7 +272,7 @@ export async function updateBill(
     };
   }
 
-  const { id, title, amount, dueDate, frequency, isAutoPay } = parsed.data;
+  const { id, title, amount, dueDate, frequency, isAutoPay, tagIds } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -194,6 +280,7 @@ export async function updateBill(
     const now = new Date();
     const status = dueDate < now ? 'overdue' : 'pending';
 
+    // Update bill
     await db
       .update(bills)
       .set({
@@ -206,6 +293,20 @@ export async function updateBill(
         updatedAt: now,
       })
       .where(eq(bills.id, id));
+
+    // Replace tag associations
+    // Step 1: Delete existing associations
+    await db.delete(billsToTags).where(eq(billsToTags.billId, id));
+
+    // Step 2: Insert new associations
+    if (tagIds && tagIds.length > 0) {
+      await db.insert(billsToTags).values(
+        tagIds.map((tagId) => ({
+          billId: id,
+          tagId,
+        }))
+      );
+    }
 
     revalidatePath('/');
 
@@ -297,4 +398,24 @@ export async function deleteBill(id: string): Promise<ActionResult> {
       error: 'Failed to delete bill.',
     };
   }
+}
+
+/**
+ * Fetch tags for a specific bill (used in edit form)
+ *
+ * @param billId - Bill ID to fetch tags for
+ */
+export async function getBillTags(billId: string): Promise<Tag[]> {
+  const result = await db
+    .select({
+      id: tags.id,
+      name: tags.name,
+      slug: tags.slug,
+      createdAt: tags.createdAt,
+    })
+    .from(billsToTags)
+    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
+    .where(eq(billsToTags.billId, billId));
+
+  return result;
 }
