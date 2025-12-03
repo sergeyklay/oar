@@ -1,0 +1,226 @@
+import { createBill, updateBill } from './bills';
+import { db, bills, billsToTags, resetDbMocks } from '@/db';
+
+jest.mock('@/db');
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+}));
+
+describe('createBill', () => {
+  beforeEach(() => {
+    resetDbMocks();
+  });
+
+  it('converts float amount string to integer minor units', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const input = {
+      title: 'Test Bill',
+      amount: '10.50',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: [],
+    };
+
+    await createBill(input);
+
+    expect(db.insert).toHaveBeenCalledWith(bills);
+    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const valuesCall = insertCall.values.mock.calls[0][0];
+
+    expect(valuesCall.amount).toBe(1050);
+  });
+
+  it('processes tagIds and inserts associations', async () => {
+    (db.insert as jest.Mock)
+      .mockReturnValueOnce({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        values: jest.fn().mockResolvedValue(undefined),
+      });
+
+    const input = {
+      title: 'Tagged Bill',
+      amount: '25.00',
+      dueDate: new Date('2025-12-20'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: ['tag-1', 'tag-2'],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(true);
+    expect(db.insert).toHaveBeenCalledTimes(2);
+    expect(db.insert).toHaveBeenNthCalledWith(1, bills);
+    expect(db.insert).toHaveBeenNthCalledWith(2, billsToTags);
+
+    const tagInsertCall = (db.insert as jest.Mock).mock.results[1].value;
+    const tagValues = tagInsertCall.values.mock.calls[0][0];
+
+    expect(tagValues).toEqual([
+      { billId: 'bill-1', tagId: 'tag-1' },
+      { billId: 'bill-1', tagId: 'tag-2' },
+    ]);
+  });
+
+  it('returns validation error for invalid amount', async () => {
+    const input = {
+      title: 'Bad Bill',
+      amount: 'not-a-number',
+      dueDate: new Date(),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: [],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors?.amount).toBeDefined();
+    expect(db.insert).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error for empty title', async () => {
+    const input = {
+      title: '',
+      amount: '10.00',
+      dueDate: new Date(),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: [],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors?.title).toBeDefined();
+  });
+
+  it('handles database errors gracefully', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockRejectedValue(new Error('DB error')),
+      }),
+    });
+
+    const input = {
+      title: 'Error Bill',
+      amount: '10.00',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: [],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to create bill. Please try again.');
+    expect(consoleSpy).toHaveBeenCalled();
+
+    consoleSpy.mockRestore();
+  });
+});
+
+describe('updateBill', () => {
+  beforeEach(() => {
+    resetDbMocks();
+  });
+
+  it('converts float amount string to integer minor units', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input = {
+      id: 'bill-1',
+      title: 'Updated Bill',
+      amount: '99.99',
+      dueDate: new Date('2025-12-25'),
+      frequency: 'yearly' as const,
+      isAutoPay: true,
+      tagIds: [],
+    };
+
+    await updateBill(input);
+
+    expect(db.update).toHaveBeenCalledWith(bills);
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.amount).toBe(9999);
+  });
+
+  it('replaces tag associations on update', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input = {
+      id: 'bill-1',
+      title: 'Tagged Bill',
+      amount: '50.00',
+      dueDate: new Date('2025-12-20'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: ['tag-3', 'tag-4'],
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+    expect(db.delete).toHaveBeenCalledWith(billsToTags);
+    expect(db.insert).toHaveBeenCalledWith(billsToTags);
+
+    const tagInsertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const tagValues = tagInsertCall.values.mock.calls[0][0];
+
+    expect(tagValues).toEqual([
+      { billId: 'bill-1', tagId: 'tag-3' },
+      { billId: 'bill-1', tagId: 'tag-4' },
+    ]);
+  });
+
+  it('returns validation error for missing id', async () => {
+    const input = {
+      id: '',
+      title: 'No ID Bill',
+      amount: '10.00',
+      dueDate: new Date(),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      tagIds: [],
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors?.id).toBeDefined();
+    expect(db.update).not.toHaveBeenCalled();
+  });
+});
