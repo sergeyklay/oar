@@ -1,15 +1,12 @@
-interface CalendarPanelProps {
-  children?: React.ReactNode;
-}
+import { CalendarWidget } from '@/components/features/calendar';
 
-export function CalendarPanel({ children }: CalendarPanelProps) {
+export function CalendarPanel() {
   return (
     <aside className="calendar-panel bg-card p-4">
       <h2 className="text-sm font-semibold text-muted-foreground mb-4">
         Calendar
       </h2>
-      {children}
-      {/* MiniCalendar component will be passed as children */}
+      <CalendarWidget />
     </aside>
   );
 }

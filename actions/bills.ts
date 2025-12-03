@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db, bills } from '@/db';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
-import { eq } from 'drizzle-orm';
+import { and, eq, gte, lte } from 'drizzle-orm';
+import { startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -113,6 +114,57 @@ export async function getBills(includeArchived = false) {
   }
 
   return db.select().from(bills).orderBy(bills.dueDate);
+}
+
+interface GetBillsOptions {
+  /** Filter by specific date (YYYY-MM-DD) */
+  date?: string;
+  /** Filter by month (YYYY-MM) - used when date is not provided */
+  month?: string;
+  /** Include archived bills */
+  includeArchived?: boolean;
+}
+
+/**
+ * Fetches bills with optional date/month filtering.
+ *
+ * Priority: date > month > all bills
+ */
+export async function getBillsFiltered(options: GetBillsOptions = {}) {
+  const { date, month, includeArchived = false } = options;
+
+  const conditions = [];
+
+  // Always exclude archived unless requested
+  if (!includeArchived) {
+    conditions.push(eq(bills.isArchived, false));
+  }
+
+  // Date filter (specific day)
+  if (date) {
+    const dayDate = new Date(date);
+    const dayStart = startOfDay(dayDate);
+    const dayEnd = endOfDay(dayDate);
+    conditions.push(gte(bills.dueDate, dayStart));
+    conditions.push(lte(bills.dueDate, dayEnd));
+  }
+  // Month filter (entire month)
+  else if (month) {
+    const [year, monthNum] = month.split('-').map(Number);
+    const monthDate = new Date(year, monthNum - 1, 1);
+    conditions.push(gte(bills.dueDate, startOfMonth(monthDate)));
+    conditions.push(lte(bills.dueDate, endOfMonth(monthDate)));
+  }
+
+  if (conditions.length === 0) {
+    return db.select().from(bills).orderBy(bills.dueDate);
+  }
+
+  return db
+    .select()
+    .from(bills)
+    .where(and(...conditions))
+    .orderBy(bills.dueDate);
 }
 
 /**
