@@ -3,6 +3,11 @@ import { MainContent } from '@/components/layout/MainContent';
 import { AddBillButton, BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getCurrencySymbol } from '@/lib/money';
+import { searchParamsCache } from '@/lib/search-params';
+
+interface DashboardPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
 
 async function DashboardHeader() {
   const settings = await SettingsService.getAll();
@@ -23,11 +28,16 @@ async function DashboardHeader() {
   );
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
+  // CRITICAL: In Next.js 15+, searchParams is a Promise that must be awaited
+  const { month, date } = await searchParamsCache.parse(searchParams);
+
   return (
     <AppShell>
       <MainContent header={<DashboardHeader />}>
-        <BillList />
+        <BillList month={month} date={date ?? undefined} />
       </MainContent>
     </AppShell>
   );
