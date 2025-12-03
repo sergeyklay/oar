@@ -7,17 +7,21 @@ alwaysApply: true
 # Environment & Runtime Constraints
 
 **CRITICAL:** This project requires **Node.js 24+**.
+
 The system environment might default to an older version. You MUST ensure the correct version is active before running commands.
 
 ## Terminal Command Execution Rules
 
-Whenever you (the AI) run a terminal command involving `node`, `npm`, `npx`, or database migrations:
+**Context:** You are running in an interactive VS Code terminal. The environment is likely already loaded. If not, you must load it using `nvm use` once. You should never need to run `nvm use` more than once.
 
-1.  **Check Version First:** Do not assume the environment is correct.
-2.  **Force NVM:** Prepend `nvm use` or explicit sourcing if the shell might be non-interactive.
-    * *Preferred pattern:* `source ~/.nvm/nvm.sh && nvm use && npm run dev` (or appropriate command).
-    * *Alternative:* Explicitly verify via `node -v` before complex operations.
-3.  **Strict Engine:** If you see an error related to "engine compatibility" or "syntax error" (unexpected token '?'), it means you are on an old Node version. **IMMEDIATELY** switch to Node 24 and retry.
+**Rule:** DO NOT blindly chain `source ~/.nvm/nvm.sh` or `export` commands. It creates messy, fragile commands.
+
+**Execution Flow:**
+1.  **Assume Success:** Try running the command simply first (e.g., `npm install rrule`).
+2.  **Verify only on Error:** If and ONLY IF you get a "command not found" or "incompatible engine" error, THEN try to fix the environment using `nvm use 24`.
+3.  **Clean Commands:** Your output should look like user input.
+    * ✅ `npm run db:push`
+    * ❌ `cd /home/... && source ... && nvm use && npm run db:push`
 
 ## Package Manager
 
@@ -41,6 +45,15 @@ If you encounter `npm error code ERESOLVE` (Peer Dependency Conflict):
 ~~~bash
 # ✅ DO: Correct nvm usage
 nvm use 24
+
+# ✅ DO: Simple commands
+npm run dev
+npx npm run db:generate            # Generate migration files
+npx npm run db:push                # Push schema changes to SQLite
+npx npm run db:studio              # Open Drizzle Studio GUI (AI Agent does not need to do this, its interactive and can be done by the user)
+
+# ✅ DO: Check version if unsure
+node -v && npm run dev
 
 # ✅ DO: Correct npm usage
 npm install package-name           # Add new dependency (updates lockfile)
