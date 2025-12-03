@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Banknote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { BillActionsMenu } from './BillActionsMenu';
+import { BillFormDialog } from './BillFormDialog';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
 import type { Bill } from '@/db/schema';
@@ -20,8 +21,10 @@ interface BillRowProps {
 export function BillRow({ bill, currency, locale }: BillRowProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const isPaid = bill.status === 'paid';
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <tr>
@@ -51,8 +54,16 @@ export function BillRow({ bill, currency, locale }: BillRowProps) {
           <BillActionsMenu
             bill={bill}
             onViewHistory={() => setHistoryDialogOpen(true)}
+            onEdit={() => setEditDialogOpen(true)}
           />
         </div>
+
+        <BillFormDialog
+          bill={bill}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          currencySymbol={currencySymbol}
+        />
 
         <LogPaymentDialog
           bill={bill}

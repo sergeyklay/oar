@@ -1,0 +1,1 @@
+ALTER TABLE `bills` ADD `is_archived` integer DEFAULT false NOT NULL;

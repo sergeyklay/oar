@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2, Plus } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -36,8 +35,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { createBill, type CreateBillInput } from '@/actions/bills';
-import { isValidMoneyInput, parseMoneyInput } from '@/lib/money';
+import {
+  createBill,
+  updateBill,
+  type CreateBillInput,
+  type UpdateBillInput,
+} from '@/actions/bills';
+import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
+import type { Bill } from '@/db/schema';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -54,13 +59,25 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface AddBillDialogProps {
+interface BillFormDialogProps {
+  /** When provided, dialog operates in Edit mode */
+  bill?: Bill;
+  /** Controlled open state */
+  open: boolean;
+  /** Controlled state callback */
+  onOpenChange: (open: boolean) => void;
+  /** Currency symbol for display */
   currencySymbol?: string;
 }
 
-export function AddBillDialog({ currencySymbol = 'zł' }: AddBillDialogProps) {
-  const [open, setOpen] = useState(false);
+export function BillFormDialog({
+  bill,
+  open,
+  onOpenChange,
+  currencySymbol = 'zł',
+}: BillFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = !!bill;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -72,20 +89,45 @@ export function AddBillDialog({ currencySymbol = 'zł' }: AddBillDialogProps) {
     },
   });
 
+  // Reset form when bill prop changes (for edit mode) or dialog opens
+  useEffect(() => {
+    if (open) {
+      if (bill) {
+        form.reset({
+          title: bill.title,
+          amount: toMajorUnits(bill.amount).toString(),
+          dueDate: bill.dueDate,
+          frequency: bill.frequency,
+          isAutoPay: bill.isAutoPay,
+        });
+      } else {
+        form.reset({
+          title: '',
+          amount: '',
+          frequency: 'monthly',
+          isAutoPay: false,
+          dueDate: undefined,
+        });
+      }
+    }
+  }, [bill, open, form]);
+
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
 
     try {
-      const input: CreateBillInput = {
+      const baseInput = {
         ...values,
         amount: parseMoneyInput(values.amount),
       };
 
-      const result = await createBill(input);
+      const result = isEditMode
+        ? await updateBill({ ...baseInput, id: bill.id } as UpdateBillInput)
+        : await createBill(baseInput as CreateBillInput);
 
       if (result.success) {
         form.reset();
-        setOpen(false);
+        onOpenChange(false);
       } else if (result.fieldErrors) {
         Object.entries(result.fieldErrors).forEach(([field, errors]) => {
           if (errors?.[0]) {
@@ -94,26 +136,21 @@ export function AddBillDialog({ currencySymbol = 'zł' }: AddBillDialogProps) {
         });
       }
     } catch (error) {
-      console.error('Failed to create bill:', error);
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} bill:`, error);
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Bill
-        </Button>
-      </DialogTrigger>
-
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Bill</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Bill' : 'Add New Bill'}</DialogTitle>
           <DialogDescription>
-            Enter the details of your recurring or one-time bill.
+            {isEditMode
+              ? 'Update the details of your bill.'
+              : 'Enter the details of your recurring or one-time bill.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -197,7 +234,7 @@ export function AddBillDialog({ currencySymbol = 'zł' }: AddBillDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Frequency</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select frequency" />
@@ -236,8 +273,10 @@ export function AddBillDialog({ currencySymbol = 'zł' }: AddBillDialogProps) {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {isEditMode ? 'Updating...' : 'Saving...'}
                 </>
+              ) : isEditMode ? (
+                'Save Changes'
               ) : (
                 'Save Bill'
               )}

@@ -15,6 +15,7 @@ export const bills = sqliteTable('bills', {
   status: text('status', {
     enum: ['pending', 'paid', 'overdue'],
   }).notNull().default('pending'),
+  isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),

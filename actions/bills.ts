@@ -29,6 +29,13 @@ const createBillSchema = z.object({
 
 export type CreateBillInput = z.infer<typeof createBillSchema>;
 
+/** Validation schema for bill update (extends create with required id). */
+const updateBillSchema = createBillSchema.extend({
+  id: z.string().min(1, 'Bill ID is required'),
+});
+
+export type UpdateBillInput = z.infer<typeof updateBillSchema>;
+
 /** Standardized action result type. */
 interface ActionResult<T = void> {
   success: boolean;
@@ -93,9 +100,102 @@ export async function createBill(
 
 /**
  * Fetches all bills ordered by due date.
+ *
+ * @param includeArchived - Whether to include archived bills (default: false)
  */
-export async function getBills() {
+export async function getBills(includeArchived = false) {
+  if (!includeArchived) {
+    return db
+      .select()
+      .from(bills)
+      .where(eq(bills.isArchived, false))
+      .orderBy(bills.dueDate);
+  }
+
   return db.select().from(bills).orderBy(bills.dueDate);
+}
+
+/**
+ * Updates an existing bill.
+ *
+ * @param input - Bill data with ID for update
+ * @returns Action result with updated bill ID or validation errors
+ */
+export async function updateBill(
+  input: UpdateBillInput
+): Promise<ActionResult<{ id: string }>> {
+  const parsed = updateBillSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { id, title, amount, dueDate, frequency, isAutoPay } = parsed.data;
+
+  try {
+    const cleanedAmount = parseMoneyInput(amount);
+    const amountInMinorUnits = toMinorUnits(cleanedAmount);
+    const now = new Date();
+    const status = dueDate < now ? 'overdue' : 'pending';
+
+    await db
+      .update(bills)
+      .set({
+        title,
+        amount: amountInMinorUnits,
+        dueDate,
+        frequency,
+        isAutoPay,
+        status,
+        updatedAt: now,
+      })
+      .where(eq(bills.id, id));
+
+    revalidatePath('/');
+
+    return {
+      success: true,
+      data: { id },
+    };
+  } catch (error) {
+    console.error('Failed to update bill:', error);
+    return {
+      success: false,
+      error: 'Failed to update bill. Please try again.',
+    };
+  }
+}
+
+/**
+ * Archives or unarchives a bill.
+ *
+ * @param id - Bill ID
+ * @param isArchived - Archive state (default: true)
+ */
+export async function archiveBill(
+  id: string,
+  isArchived: boolean = true
+): Promise<ActionResult> {
+  try {
+    await db
+      .update(bills)
+      .set({ isArchived, updatedAt: new Date() })
+      .where(eq(bills.id, id));
+
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to archive bill:', error);
+    return {
+      success: false,
+      error: 'Failed to archive bill.',
+    };
+  }
 }
 
 /**
