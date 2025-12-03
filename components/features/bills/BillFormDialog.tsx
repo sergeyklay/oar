@@ -38,11 +38,13 @@ import { cn } from '@/lib/utils';
 import {
   createBill,
   updateBill,
+  getBillTags,
   type CreateBillInput,
   type UpdateBillInput,
 } from '@/actions/bills';
 import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
-import type { Bill } from '@/db/schema';
+import type { Bill, Tag } from '@/db/schema';
+import { TagCombobox } from './TagCombobox';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -55,9 +57,10 @@ const formSchema = z.object({
   dueDate: z.date({ message: 'Due date is required' }),
   frequency: z.enum(['once', 'monthly', 'yearly']),
   isAutoPay: z.boolean(),
+  tagIds: z.array(z.string()),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.output<typeof formSchema>;
 
 interface BillFormDialogProps {
   /** When provided, dialog operates in Edit mode */
@@ -68,6 +71,8 @@ interface BillFormDialogProps {
   onOpenChange: (open: boolean) => void;
   /** Currency symbol for display */
   currencySymbol?: string;
+  /** All available tags for the combobox */
+  availableTags?: Tag[];
 }
 
 export function BillFormDialog({
@@ -75,6 +80,7 @@ export function BillFormDialog({
   open,
   onOpenChange,
   currencySymbol = 'zł',
+  availableTags = [],
 }: BillFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!bill;
@@ -86,6 +92,7 @@ export function BillFormDialog({
       amount: '',
       frequency: 'monthly',
       isAutoPay: false,
+      tagIds: [],
     },
   });
 
@@ -93,12 +100,19 @@ export function BillFormDialog({
   useEffect(() => {
     if (open) {
       if (bill) {
+        // Reset form with bill data
         form.reset({
           title: bill.title,
           amount: toMajorUnits(bill.amount).toString(),
           dueDate: bill.dueDate,
           frequency: bill.frequency,
           isAutoPay: bill.isAutoPay,
+          tagIds: [],
+        });
+
+        // Fetch existing tags for this bill
+        getBillTags(bill.id).then((existingTags) => {
+          form.setValue('tagIds', existingTags.map((t) => t.id));
         });
       } else {
         form.reset({
@@ -106,6 +120,7 @@ export function BillFormDialog({
           amount: '',
           frequency: 'monthly',
           isAutoPay: false,
+          tagIds: [],
           dueDate: undefined,
         });
       }
@@ -265,6 +280,25 @@ export function BillFormDialog({
                   <div className="space-y-1 leading-none">
                     <FormLabel>Auto-Pay Enabled</FormLabel>
                   </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tagIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl>
+                    <TagCombobox
+                      availableTags={availableTags}
+                      selectedIds={field.value ?? []}
+                      onChange={field.onChange}
+                      placeholder="Add tags..."
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

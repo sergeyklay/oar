@@ -4,21 +4,24 @@ import { useState } from 'react';
 import { Banknote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { BillActionsMenu } from './BillActionsMenu';
 import { BillFormDialog } from './BillFormDialog';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
-import type { Bill } from '@/db/schema';
+import type { BillWithTags, Tag } from '@/db/schema';
 
 interface BillRowProps {
-  bill: Bill;
+  bill: BillWithTags;
   currency: string;
   locale: string;
+  /** All available tags for the edit dialog */
+  availableTags?: Tag[];
 }
 
-export function BillRow({ bill, currency, locale }: BillRowProps) {
+export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -28,7 +31,24 @@ export function BillRow({ bill, currency, locale }: BillRowProps) {
 
   return (
     <tr>
-      <td className="font-medium">{bill.title}</td>
+      <td className="font-medium">
+        <div className="flex flex-col gap-1">
+          <span>{bill.title}</span>
+          {bill.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {bill.tags.map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="outline"
+                  className="text-xs font-normal"
+                >
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </td>
       <td className="font-mono">{formatMoney(bill.amount, currency, locale)}</td>
       <td className="text-muted-foreground">
         {bill.dueDate.toLocaleDateString(locale)}
@@ -63,6 +83,7 @@ export function BillRow({ bill, currency, locale }: BillRowProps) {
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           currencySymbol={currencySymbol}
+          availableTags={availableTags}
         />
 
         <LogPaymentDialog

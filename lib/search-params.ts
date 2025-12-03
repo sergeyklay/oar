@@ -9,14 +9,16 @@ function getCurrentMonth(): string {
 }
 
 /**
- * Calendar URL search params schema.
+ * Calendar and filter URL search params schema.
  *
  * - month: Current visible month (YYYY-MM)
  * - date: Selected specific date (YYYY-MM-DD)
+ * - tag: Filter by tag slug (e.g., "business")
  */
 export const calendarSearchParams = {
   month: parseAsString.withDefault(getCurrentMonth()),
   date: parseAsString,
+  tag: parseAsString,  // NEW: Tag filter
 };
 
 /**

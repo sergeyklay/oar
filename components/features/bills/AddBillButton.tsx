@@ -4,12 +4,15 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BillFormDialog } from './BillFormDialog';
+import type { Tag } from '@/db/schema';
 
 interface AddBillButtonProps {
   currencySymbol?: string;
+  /** All available tags for the form */
+  availableTags?: Tag[];
 }
 
-export function AddBillButton({ currencySymbol }: AddBillButtonProps) {
+export function AddBillButton({ currencySymbol, availableTags = [] }: AddBillButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,6 +25,7 @@ export function AddBillButton({ currencySymbol }: AddBillButtonProps) {
         open={open}
         onOpenChange={setOpen}
         currencySymbol={currencySymbol}
+        availableTags={availableTags}
       />
     </>
   );
