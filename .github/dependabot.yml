@@ -1,0 +1,24 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: wednesday
+      time: 14:00
+    open-pull-requests-limit: 10
+    groups:
+      backend-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    labels:
+      - dependencies
+      - npm
+    commit-message:
+      prefix: "chore(deps): "
+      prefix-development: "chore(deps-dev): "
+      include: scope
