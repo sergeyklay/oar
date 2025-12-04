@@ -8,6 +8,11 @@ import { buttonVariants } from '@/components/ui/button';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+const navButtonClass = cn(
+  buttonVariants({ variant: 'outline' }),
+  'h-7 w-7 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
+);
+
 function Calendar({
   className,
   classNames,
@@ -24,14 +29,8 @@ function Calendar({
         month_caption: 'flex justify-center pt-1 items-center h-7',
         caption_label: 'text-sm font-medium',
         nav: 'absolute top-0 flex w-full items-center justify-between z-10',
-        button_previous: cn(
-          buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
-        ),
-        button_next: cn(
-          buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
-        ),
+        button_previous: navButtonClass,
+        button_next: navButtonClass,
         month_grid: 'w-full border-collapse',
         weekdays: 'flex',
         weekday:
