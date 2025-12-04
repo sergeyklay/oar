@@ -63,7 +63,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Run unit tests
         run: npm run test:coverage
