@@ -1,0 +1,26 @@
+---
+description: Best practices for writing Jest unit tests in Next.js/Drizzle environment.
+globs: **/*.test.ts, **/*.test.tsx, jest.config.ts
+alwaysApply: false
+---
+
+# Testing Standards
+
+## 1. Mocking Drizzle ORM
+When testing Server Actions, NEVER import the real `db` instance.
+- Use `jest.mock('@/db')` to mock the Drizzle client.
+- Mock return values of queries using `mockReturnValue` or `mockResolvedValue`.
+- Example for insert: `(db.insert as jest.Mock).mockReturnValue({ values: jest.fn().mockReturnValue({ returning: jest.fn().mockResolvedValue([mockData]) }) })`.
+
+## 2. React Testing Library
+- **Queries:** Prioritize `getByRole`, `getByLabelText`, `getByText` (Accessibility-first). Avoid `getByTestId` unless necessary.
+- **User Events:** Use `user-event` for interactions (typing, clicking), as it simulates real browser behavior better than `fireEvent`.
+
+## 3. Structure
+- **Describe:** Top level describes the Component/Function. Nested describes for scenarios.
+- **It:** Should read like a sentence: `it('calculates the next due date correctly for monthly bills')`.
+
+## 4. Forbidden
+- ❌ **Snapshot Testing** for complex UI (too brittle). Use specific assertions instead.
+- ❌ **Real DB Calls** in unit tests.
+- ❌ **Any type:** Use proper TypeScript types for mocks.
