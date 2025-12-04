@@ -7,12 +7,12 @@ const createJestConfig = nextJest({
 
 const config: Config = {
   coverageProvider: 'v8',
-  testEnvironment: 'jsdom', // ВАЖНО: jsdom нужен для компонентов
+  testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/$1', // Алиасы
+    '^@/(.*)$': '<rootDir>/$1',
   },
-  // Очистка моков между тестами
+
   clearMocks: true,
 }
 
