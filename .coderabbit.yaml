@@ -1,0 +1,186 @@
+language: en-US
+tone_instructions: >-
+  Emulate Linus Torvalds: direct, brutally honest, sarcastic when needed, but always in service of code quality.
+  Don't sugarcoat bad code. Praise good decisions, but call out nonsense plainly.
+
+reviews:
+  profile: chill
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  high_level_summary_in_walkthrough: false
+  auto_title_placeholder: "@coderabbitai title"
+  auto_title_instructions: >-
+    Compose concise, self-explanatory titles (max 72 characters including any prefix),
+    reflecting only the main purpose of the Pull Request;
+  review_status: true
+  commit_status: true
+  fail_commit_status: false
+  collapse_walkthrough: false
+  changed_files_summary: true
+  sequence_diagrams: false
+  assess_linked_issues: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+  poem: false
+  labeling_instructions: []
+  path_filters: []
+  path_instructions:
+    - path: "**/package.json"
+      instructions: >-
+        1. Verify that ONLY npm is used - alternative package managers (yarn, pnpm, bun) are forbidden.
+        2. Ensure package-lock.json is committed and present.
+        3. Check that no global installations are used (no -g flag).
+        4. Verify no @latest syntax is used in version specifications.
+        5. Review dependency versions for security vulnerabilities.
+    - path: "**/*.ts"
+      instructions: >-
+        1. Enforce TypeScript strict mode compliance.
+        2. Follow Airbnb style guide for TypeScript (enforced by ESLint).
+        3. Enforce 100-character line-length limit.
+        4. Require JSDoc style docstrings for functions, classes, and complex interfaces.
+        5. Use imperative voice in descriptions, focus on side effects, parameters, return types, and potential errors.
+        6. Flag obvious comments explaining basic syntax.
+    - path: "**/*.tsx"
+      instructions: >-
+        1. Use functional components with hooks only.
+        2. Keep components small and focused.
+        3. Ensure proper prop typing.
+        4. Verify file naming follows PascalCase.tsx convention.
+        5. Follow TypeScript strict mode and Airbnb style guide.
+  abort_on_close: true
+  disable_cache: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: true
+    base_branches: []
+  finishing_touches:
+    docstrings:
+      enabled: true
+    unit_tests:
+      enabled: true
+  tools:
+    ast-grep:
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: true
+      packages: []
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_rules: []
+      disabled_rules: []
+      enabled_categories: []
+      disabled_categories: []
+      enabled_only: false
+      level: default
+    biome:
+      enabled: false
+    hadolint:
+      enabled: true
+    swiftlint:
+      enabled: false
+    phpstan:
+      enabled: false
+      level: default
+    golangci-lint:
+      enabled: false
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: true
+    detekt:
+      enabled: false
+    eslint:
+      enabled: true
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    actionlint:
+      enabled: true
+    pmd:
+      enabled: false
+    cppcheck:
+      enabled: false
+    semgrep:
+      enabled: true
+    circleci:
+      enabled: false
+    clippy:
+      enabled: false
+    sqlfluff:
+      enabled: true
+    prismaLint:
+      enabled: true
+    pylint:
+      enabled: false
+    oxc:
+      enabled: false
+    shopifyThemeCheck:
+      enabled: false
+    luacheck:
+      enabled: false
+    brakeman:
+      enabled: false
+    dotenvLint:
+      enabled: true
+
+chat:
+  auto_reply: true
+  integrations:
+    jira:
+      usage: disabled
+    linear:
+      usage: disabled
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    usage: disabled
+    project_keys: []
+  linear:
+    usage: disabled
+    team_keys: []
+  pull_requests:
+    scope: auto
+
+code_generation:
+  docstrings:
+    language: en-US
+    path_instructions:
+      - path: "**/*.ts"
+        instructions: >-
+          Adhere **strictly** to the **Airbnb style guide** for TypeScript
+          formatting, enforced by ESLint. Use 100-character line-length limit
+          unless specifically required by the style guide. Do not use
+          obvious comments (e.g., explaining basic syntax). The target audience
+          is a senior Node.js/TypeScript developer. Document functions,
+          classes, and complex interfaces using **JSDoc style** docstrings.
+          Use imperative voice in descriptions and keep them concise, professional,
+          and focused on **side effects, parameters, return types, and potential errors**.
