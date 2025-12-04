@@ -2,6 +2,9 @@
 
 A sovereign, local-first bill management system built with Next.js 16, SQLite, and Drizzle ORM.
 
+[![CI](https://github.com/sergeyklay/oar/actions/workflows/ci.yml/badge.svg)](https://github.com/sergeyklay/oar/actions/workflows/ci.yml)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/sergeyklay/oar?labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 ## Getting Started
 
 ### Prerequisites
