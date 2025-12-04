@@ -44,7 +44,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Get npm cache directory
@@ -57,12 +57,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('.nvmrc') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install Dependencies
-        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci --include=dev
 
       - name: Run unit tests
