@@ -1,5 +1,6 @@
-import { logPayment } from './transactions';
+import { logPayment, deleteTransaction } from './transactions';
 import { db, bills, transactions, resetDbMocks } from '@/db';
+import { revalidatePath } from 'next/cache';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
@@ -258,5 +259,74 @@ describe('logPayment', () => {
 
     expect(result.success).toBe(false);
     expect(result.fieldErrors?.amount).toBeDefined();
+  });
+});
+
+describe('deleteTransaction', () => {
+  beforeEach(() => {
+    resetDbMocks();
+    jest.clearAllMocks();
+  });
+
+  it('deletes transaction when it exists', async () => {
+    const runMock = jest.fn();
+    const whereMock = jest.fn().mockReturnValue({ run: runMock });
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
+      }),
+    });
+
+    (db.delete as jest.Mock).mockReturnValue({
+      where: whereMock,
+    });
+
+    const result = await deleteTransaction({ id: 'tx-1' });
+
+    expect(result.success).toBe(true);
+    expect(db.delete).toHaveBeenCalledWith(transactions);
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+  });
+
+  it('returns error when transaction not found', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([]),
+      }),
+    });
+
+    const result = await deleteTransaction({ id: 'nonexistent' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Transaction not found');
+    expect(db.delete).not.toHaveBeenCalled();
+  });
+
+  it('returns error when id is empty', async () => {
+    const result = await deleteTransaction({ id: '' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid transaction ID');
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('does not modify associated bill (detached deletion)', async () => {
+    const runMock = jest.fn();
+    const whereMock = jest.fn().mockReturnValue({ run: runMock });
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
+      }),
+    });
+
+    (db.delete as jest.Mock).mockReturnValue({
+      where: whereMock,
+    });
+
+    await deleteTransaction({ id: 'tx-1' });
+
+    expect(db.update).not.toHaveBeenCalled();
   });
 });

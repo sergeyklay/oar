@@ -9,36 +9,63 @@ export const transactions = { id: 'transactions.id', billId: 'transactions.billI
 export const tags = { id: 'tags.id', slug: 'tags.slug' };
 export const billsToTags = { billId: 'billsToTags.billId', tagId: 'billsToTags.tagId' };
 
-// Chainable query builder mock factory
-const createQueryBuilder = () => {
-  const builder: Record<string, jest.Mock> = {};
+// Type for the chainable query builder
+interface QueryBuilder {
+  values: jest.Mock;
+  returning: jest.Mock;
+  get: jest.Mock;
+  all: jest.Mock;
+  set: jest.Mock;
+  where: jest.Mock;
+  run: jest.Mock;
+  from: jest.Mock;
+  orderBy: jest.Mock;
+  innerJoin: jest.Mock;
+}
 
-  builder.values = jest.fn().mockReturnValue(builder);
-  builder.returning = jest.fn().mockReturnValue(builder);
-  builder.get = jest.fn().mockReturnValue({ id: 'mock-id' });
-  builder.all = jest.fn().mockReturnValue([]);
-  builder.set = jest.fn().mockReturnValue(builder);
-  builder.where = jest.fn().mockReturnValue(builder);
-  builder.run = jest.fn();
-  builder.from = jest.fn().mockReturnValue(builder);
-  builder.orderBy = jest.fn().mockReturnValue(builder);
-  builder.innerJoin = jest.fn().mockReturnValue(builder);
+// Chainable query builder mock factory
+const createQueryBuilder = (): QueryBuilder => {
+  const builder: QueryBuilder = {
+    values: jest.fn(),
+    returning: jest.fn(),
+    get: jest.fn().mockReturnValue({ id: 'mock-id' }),
+    all: jest.fn().mockReturnValue([]),
+    set: jest.fn(),
+    where: jest.fn(),
+    run: jest.fn(),
+    from: jest.fn(),
+    orderBy: jest.fn(),
+    innerJoin: jest.fn(),
+  };
+
+  // Set up chainable returns
+  builder.values.mockReturnValue(builder);
+  builder.returning.mockReturnValue(builder);
+  builder.set.mockReturnValue(builder);
+  builder.where.mockReturnValue(builder);
+  builder.from.mockReturnValue(builder);
+  builder.orderBy.mockReturnValue(builder);
+  builder.innerJoin.mockReturnValue(builder);
 
   return builder;
 };
 
-// Transaction mock - executes callback synchronously
-const transactionMock = jest.fn((callback: (tx: typeof db) => unknown) => {
-  return callback(db);
-});
+// Type for the mock db
+interface MockDb {
+  insert: jest.Mock;
+  update: jest.Mock;
+  delete: jest.Mock;
+  select: jest.Mock;
+  transaction: jest.Mock;
+}
 
-// Main db mock
-export const db = {
+// Main db mock (defined before transaction to avoid circular reference)
+export const db: MockDb = {
   insert: jest.fn(() => createQueryBuilder()),
   update: jest.fn(() => createQueryBuilder()),
   delete: jest.fn(() => createQueryBuilder()),
   select: jest.fn(() => createQueryBuilder()),
-  transaction: transactionMock,
+  transaction: jest.fn((callback: (tx: MockDb) => unknown) => callback(db)),
 };
 
 // Reset helper for tests
