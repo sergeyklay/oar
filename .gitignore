@@ -15,6 +15,9 @@
 # Next.js output
 /.next
 
+# Speedy Web Compiler output.
+/.swc
+
 # Node modules
 /node_modules
 
