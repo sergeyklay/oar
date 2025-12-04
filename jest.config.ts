@@ -14,6 +14,10 @@ const config: Config = {
   },
 
   clearMocks: true,
+  reporters: [
+    "default",
+    [ "jest-junit", { classNameTemplate: "{filepath}" } ]
+  ],
 }
 
 export default createJestConfig(config)

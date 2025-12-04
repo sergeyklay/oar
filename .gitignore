@@ -25,3 +25,4 @@
 
 # Code coverage stuff.
 /coverage
+/junit.xml
