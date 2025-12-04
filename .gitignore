@@ -15,6 +15,9 @@
 # Next.js output
 /.next
 
+# TypeScript build info.
+/tsconfig.tsbuildinfo
+
 # Speedy Web Compiler output.
 /.swc
 

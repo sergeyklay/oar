@@ -160,3 +160,68 @@ export async function getBillById(billId: string) {
 
   return bill ?? null;
 }
+
+/** Validation schema for deleting a transaction. */
+const deleteTransactionSchema = z.object({
+  id: z.string().min(1, 'Transaction ID is required'),
+});
+
+export type DeleteTransactionInput = z.infer<typeof deleteTransactionSchema>;
+
+/**
+ * Deletes a payment transaction record.
+ *
+ * IMPORTANT: This is a "detached" deletion - it does NOT modify
+ * the associated bill's dueDate or status. The bill's state must
+ * be corrected manually by the user if needed.
+ *
+ * Side effects:
+ * 1. Removes transaction from database
+ * 2. Revalidates dashboard to update any aggregations
+ */
+export async function deleteTransaction(
+  input: DeleteTransactionInput
+): Promise<ActionResult> {
+  // 1. Validate input
+  const parsed = deleteTransactionSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Invalid transaction ID',
+    };
+  }
+
+  const { id } = parsed.data;
+
+  try {
+    // 2. Verify transaction exists
+    const [existing] = await db
+      .select({ id: transactions.id })
+      .from(transactions)
+      .where(eq(transactions.id, id));
+
+    if (!existing) {
+      return {
+        success: false,
+        error: 'Transaction not found',
+      };
+    }
+
+    // 3. Delete the transaction
+    db.delete(transactions).where(eq(transactions.id, id)).run();
+
+    // 4. Revalidate UI
+    revalidatePath('/');
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error('Failed to delete transaction:', error);
+    return {
+      success: false,
+      error: 'Failed to delete payment record. Please try again.',
+    };
+  }
+}
