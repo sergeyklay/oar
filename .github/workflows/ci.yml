@@ -66,7 +66,15 @@ jobs:
         run: npm ci
 
       - name: Run unit tests
-        run: npm test
+        run: npm run test:coverage
+
+      - uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          flags: unittests
+          name: codecov-umbrella
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
 
       - name: Success Reporting
         if: success()
