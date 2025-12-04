@@ -30,6 +30,12 @@ reviews:
   labeling_instructions: []
   path_filters: []
   path_instructions:
+    - path: "**/*.md"
+      instructions: >-
+        1. Consider the file './AGENTS.md' the overview/introduction of the project.
+        2. When reviewing the file markdown files, they should be linted with help
+           from the tools `markdownlint` and `languagetool`, pointing out any issues.
+        3. You may assume the markdown files will contain GitHub flavor Markdown.
     - path: "**/package.json"
       instructions: >-
         1. Verify that ONLY npm is used - alternative package managers (yarn, pnpm, bun) are forbidden.
