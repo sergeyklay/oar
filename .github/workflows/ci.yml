@@ -1,0 +1,73 @@
+name: CI
+
+on:
+    push:
+      branches:
+        # This is to make sure that there is no broken CI on
+        # the main branch, and also for Sonarqube integration
+        - main
+    # We need it for better Sonarqube integration
+    pull_request:
+      types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    # The maximum number of minutes to let a workflow run
+    # before GitHub automatically cancels it. Default: 360
+    timeout-minutes: 30
+
+    strategy:
+      # When set to true, GitHub cancels
+      # all in-progress jobs if any matrix job fails.
+      fail-fast: false
+
+    concurrency:
+      # Cancel any currently running job or workflow in the same concurrency group.
+      # The group is a unique identifier for the workflow run.
+      #
+      # Explanation:
+      # - github.workflow: The name of the workflow (e.g. Workflow 1).
+      # - github.event.pull_request.number: The number of the pull request (when the trigger event is a PR).
+      # - github.ref: The branch name (when the trigger is not a PR but a push).
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Setup npm cache
+        id: npm-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Success Reporting
+        if: success()
+        run: git log --format=fuller -5
