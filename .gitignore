@@ -1,10 +1,27 @@
-.next
-node_modules
+# Please do not use this ignore file to define platform specific files.
+#
+# For these purposes create a global .gitignore file, which is a list of rules
+# for ignoring files in every Git repository on your workstation.
+#
+# https://help.github.com/articles/ignoring-files/#create-a-global-gitignore
+
+# Do not ignore .cursor commands and rules.
+!/.cursor/rules/*.mdc
+!/.cursor/commands/*.md
+
+# Application and docker compose environment variables.
+/.env
+
+# Next.js output
+/.next
+
+# Node modules
+/node_modules
 
 # SQLite database files
-data/*.db
-data/*.db-wal
-data/*.db-shm
+/data/*.db
+/data/*.db-wal
+/data/*.db-shm
 
-# Coverage
-coverage/
+# Code coverage stuff.
+/coverage
