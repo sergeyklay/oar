@@ -2,6 +2,20 @@
   "name": "oar",
   "version": "0.1.0",
   "private": true,
+  "description": "A sovereign, local-first bill management system built with Next.js 16, SQLite, and Drizzle ORM.",
+  "author": "Serghei Iakovlev",
+  "license": "MIT",
+  "homepage": "https://github.com/sergeyklay/oar",
+  "bugs": {
+    "url": "https://github.com/sergeyklay/oar/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sergeyklay/oar.git"
+  },
+  "keywords": [
+    "bill-management"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
