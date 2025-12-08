@@ -9,6 +9,44 @@ reviews:
   high_level_summary: true
   high_level_summary_placeholder: "@coderabbitai summary"
   high_level_summary_in_walkthrough: false
+  high_level_summary_instructions: >-
+    Act as a Senior Technical Lead adhering to GitHub's best practices for code review.
+    Generate a concise, structured summary that helps reviewers navigate the changes efficiently.
+
+    Constraints:
+    1. NO EMOJIS. Use professional Markdown formatting only.
+    2. NO FLUFF. Avoid generic intros like "This PR updates...".
+    3. DYNAMIC SECTIONS. Only show sections if relevant data exists.
+    4. NO TOP-LEVEL HEADERS. Start directly with the first section key.
+
+    Output Format:
+
+    ### 🎯 Scope & Context
+    **Type:** [Feat | Fix | Refactor | Chore | Perf]
+    **Intent:** [One sentence explaining the business or technical goal - the "Why"]
+    **Related Issues:** [Extract issue numbers (e.g., #123, PROJ-456) from commits. If none, omit this line]
+
+    ### 🏗️ Change Breakdown
+    (Group changes logically. Omit empty subsections.)
+
+    **Core Logic / Backend:**
+    - [Focus on architectural decisions, API changes, and data models]
+
+    **Frontend / UI:**
+    - [Focus on components and UX. If CSS/UI is changed, append: "(Requires visual verification)"]
+
+    **Configuration / Infra:**
+    - [Dependencies, scripts, env vars]
+
+    ### 🧭 Reviewer Guide
+    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
+    **Complexity:** [Low | Medium | High]
+    **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
+
+    ### ⚠️ Risk Assessment
+    - **Breaking Changes:** [Yes/No + details]
+    - **Migrations/State:** [Database migrations or manual steps required?]
+
   auto_title_placeholder: "@coderabbitai title"
   auto_title_instructions: >-
     Compose concise, self-explanatory titles (max 72 characters including any prefix),
