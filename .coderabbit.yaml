@@ -34,6 +34,7 @@ reviews:
     ### 🧭 Reviewer Guide
     **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
     **Complexity:** [Low | Medium | High]
+    **Estimated Review Time:** [Estimated time in minutes to review the changes]. For example: "~15 minutes".
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
@@ -48,6 +49,13 @@ reviews:
   commit_status: true
   fail_commit_status: false
   collapse_walkthrough: false
+  high_level_summary_in_walkthrough: false
+  changed_files_summary: false
+  related_issues: false
+  related_prs: false
+  estimate_code_review_effort: false
+  suggested_reviewers: false
+  suggested_labels: false
   changed_files_summary: true
   sequence_diagrams: false
   assess_linked_issues: true
