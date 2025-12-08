@@ -8,7 +8,6 @@ reviews:
   request_changes_workflow: true
   high_level_summary: true
   high_level_summary_placeholder: "@coderabbitai summary"
-  high_level_summary_in_walkthrough: false
   high_level_summary_instructions: >-
     Act as a Senior Technical Lead adhering to GitHub's best practices for code review.
     Generate a concise, structured summary that helps reviewers navigate the changes efficiently.
