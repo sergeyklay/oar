@@ -55,7 +55,6 @@ reviews:
   estimate_code_review_effort: false
   suggested_reviewers: false
   suggested_labels: false
-  changed_files_summary: true
   sequence_diagrams: false
   assess_linked_issues: true
   related_issues: true
