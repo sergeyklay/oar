@@ -14,7 +14,7 @@ reviews:
     Generate a concise, structured summary that helps reviewers navigate the changes efficiently.
 
     Constraints:
-    1. NO EMOJIS. Use professional Markdown formatting only.
+    1. NO EMOJIS. Use professional Markdown formatting only. Emojis are allowed only for the section headers as shown in the output format.
     2. NO FLUFF. Avoid generic intros like "This PR updates...".
     3. DYNAMIC SECTIONS. Only show sections if relevant data exists.
     4. NO TOP-LEVEL HEADERS. Start directly with the first section key.
