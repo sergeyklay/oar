@@ -18,6 +18,7 @@ reviews:
     2. NO FLUFF. Avoid generic intros like "This PR updates...".
     3. DYNAMIC SECTIONS. Only show sections if relevant data exists.
     4. NO TOP-LEVEL HEADERS. Start directly with the first section key.
+    5. CRITICAL: Make sure the summary and EVERY ELEMENT of the summary is up to date and accurate for every commit in the PR as well as the overall PR.
 
     Output Format:
 
