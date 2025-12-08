@@ -50,14 +50,10 @@ reviews:
   collapse_walkthrough: false
   high_level_summary_in_walkthrough: false
   changed_files_summary: false
-  related_issues: false
-  related_prs: false
   estimate_code_review_effort: false
-  suggested_reviewers: false
-  suggested_labels: false
   sequence_diagrams: false
   assess_linked_issues: true
-  related_issues: true
+  related_issues: false
   related_prs: true
   suggested_labels: false
   auto_apply_labels: false
