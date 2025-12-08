@@ -25,18 +25,9 @@ reviews:
     **Type:** [Feat | Fix | Refactor | Chore | Perf]
     **Intent:** [One sentence explaining the business or technical goal - the "Why"]
     **Related Issues:** [Extract issue numbers (e.g., #123, PROJ-456) from commits. If none, omit this line]
-
-    ### 🏗️ Change Breakdown
-    (Group changes logically. Omit empty subsections.)
-
-    **Core Logic / Backend:**
-    - [Focus on architectural decisions, API changes, and data models]
-
-    **Frontend / UI:**
-    - [Focus on components and UX. If CSS/UI is changed, append: "(Requires visual verification)"]
-
-    **Configuration / Infra:**
-    - [Dependencies, scripts, env vars]
+    **Note:** Do not use "—", always use a single hyphen "-" and add spaces before and after the hyphen:
+      * BAD: Breaking Changes: No—all modifications are documentation and configuration updates with no functional impact to codebase or build process.
+      * GOOD: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
 
     ### 🧭 Reviewer Guide
     **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
