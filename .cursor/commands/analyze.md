@@ -31,7 +31,14 @@ Before designing, you must analyze:
 4.  **Layering Check:**
     - UI -> Server Action -> Service -> DB.
 
-# Output
+# Output Style Rules (CRITICAL)
+
+1.  ❌ **NO COMPONENT IMPLEMENTATION:** Do NOT write full JSX/React code.
+2.  ✅ **INTERFACES ONLY:** Define component `Props` interfaces and State requirements.
+3.  ✅ **DATA SCHEMAS:** Write full Drizzle schema definitions (this is the ONLY allowed implementation code because it IS the design).
+4.  ✅ **PSEUDO-CODE:** For logic, use pseudo-code or step-by-step descriptions.
+
+# Output Format
 
 Produce a Markdown document in `.cursor/specs/Spec-{TASK_NAME}.md`.
 

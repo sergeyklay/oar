@@ -45,6 +45,51 @@ You must analyze which file you are editing and apply the correct architectural 
 - **Adherence:** Strictly follow @AGENTS.md and use @.cursor/rules/context7.mdc.
 - **Architecture:** Follow best practices and professional architecture principles.
 
+# Bug Fix Protocol (The "Regression Lock")
+
+IF the task involves fixing a documented BUG:
+
+1.  **Fix the Code:** Implement the fix in source files.
+2.  **Verify:** Ensure it passes existing lint/type checks and regression tests (see Verification section below).
+3.  **Testability Analysis:**
+    -   Ask yourself: *Can this specific fix be reliably verified with our CURRENT stack?*
+    -   ✅ **YES (Testable):** Logic changes, State updates, Conditional rendering, Event handling, DOM presence.
+    -   ❌ **NO (Not Testable via current stack):** Pure CSS changes (padding, colors, positioning), Animations, intricate Browser APIs not supported by jsdom.
+4.  **Final Step (CRITICAL):**
+    a. **Scenario A: Fix is Testable**:
+       Propose the exact command for the QA Agent:
+       > Bug {short name of the bug} was fixed.
+       >
+       > **Next Step:** Lock this fix with a regression test.
+       > ```
+       > /test @[affected filename], @[affected filename], ...
+       >
+       > Bug {short name of the bug} was fixed.
+       > The bug was: [specific bug description].
+       >
+       > **Changes Made:**
+       > 1. [specific change description]
+       > 2. [specific change description]
+       > 3. [specific change description]
+       > ...
+       >
+       > Create a regression test ensuring that [specific logic condition] works as expected.
+       > Strictly follow testing rules: @.cursor/rules/testing.mdc
+       > ```
+    b. **Scenario B: Fix is NOT Testable (e.g., CSS)**
+       Explicitly state why and request manual verification:
+       > Bug {short name of the bug} was fixed.
+       > The bug was: [specific bug description].
+       >
+       > **Changes Made:**
+       > 1. [specific change description]
+       > 2. [specific change description]
+       > 3. [specific change description]
+       > ...
+       >
+       > **Note:** This is a visual/CSS fix and cannot be reliably verified using our current testing stack.
+       > **Next Step:** Please manually verify that [specific visual element] is now correct in the browser.
+
 # Verification
 
 You are PROHIBITED from responding "Done" until you have verified runtime execution for Database Logic.
