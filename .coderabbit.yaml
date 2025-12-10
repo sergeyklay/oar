@@ -27,7 +27,7 @@ reviews:
 
     ### 🎯 Scope & Context
     **Type:** [Feat | Fix | Refactor | Chore | Perf]
-    **Intent:** [One sentence explaining the business or technical goal - the "Why"]
+    **Intent:** [1-2 sentences explaining the business or technical goal - the "Why"]
     **Related Issues:** [Extract issue numbers (e.g., #123, PROJ-456) from commits. If none, omit this line]
 
     ### 🧭 Reviewer Guide
