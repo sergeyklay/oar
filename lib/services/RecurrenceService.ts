@@ -62,4 +62,26 @@ export const RecurrenceService = {
 
     return dueDateNormalized < today ? 'overdue' : 'pending';
   },
+
+  /**
+   * Daily batch job: Check all pending bills and update overdue status.
+   *
+   * Called by SchedulerService at midnight daily.
+   *
+   * Business Logic (TODO - implement in Phase 2):
+   * 1. Query all bills WHERE status = 'pending' AND isArchived = false
+   * 2. For each bill, call deriveStatus(dueDate)
+   * 3. If status changed to 'overdue', update database
+   * 4. Return count of bills updated
+   *
+   * @returns Promise with counts of bills checked and updated
+   */
+  async checkDailyBills(): Promise<{ checked: number; updated: number }> {
+    // TODO: Implement actual bill checking logic in Phase 2
+    // This stub allows the infrastructure to be tested without database access
+    console.log('[RecurrenceService] checkDailyBills called (stub)');
+
+    // Stub return - no bills checked or updated
+    return { checked: 0, updated: 0 };
+  },
 };
