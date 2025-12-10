@@ -9,13 +9,13 @@
  */
 
 export async function register() {
-  // CRITICAL: node-cron uses Node.js timers, which are NOT available in Edge runtime.
-  // The register() function runs in BOTH Node.js and Edge runtimes.
+  // node-cron (and drivative libraries) uses Node.js timers, which are not available in Edge
+  // runtime. The register() function runs in both Node.js and Edge runtimes.
   // We must guard against Edge runtime to prevent crashes.
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     console.log('[Instrumentation] Initializing scheduler (nodejs runtime)');
 
-    // Dynamic import is REQUIRED here:
+    // Dynamic import is required here:
     // 1. Prevents Edge runtime from bundling Node.js-only code
     // 2. Keeps the cron library out of Edge bundles entirely
     const { SchedulerService } = await import('@/lib/services/SchedulerService');

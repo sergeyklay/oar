@@ -34,7 +34,6 @@ interface JobDefinition {
 
 /**
  * Define all scheduled jobs here.
- * MVP: Single "daily bill check" stub job.
  */
 const JOB_DEFINITIONS: JobDefinition[] = [
   {
@@ -46,6 +45,26 @@ const JOB_DEFINITIONS: JobDefinition[] = [
       console.log('[Scheduler] Running daily bill check... (stub)');
       // Future: const result = await RecurrenceService.checkDailyBills();
       // Future: console.log(`[Scheduler] Daily bill check complete: ${result.checked} checked, ${result.updated} updated`);
+    },
+    runOnInit: false,
+  },
+  {
+    name: 'auto-pay-processor',
+    // Run at 00:05 daily (after daily-bill-check at 00:00)
+    // This ensures overdue statuses are updated before auto-pay processing
+    cronTime: '5 0 * * *',
+    handler: async () => {
+      // Dynamic import to allow tree-shaking and avoid circular dependencies
+      const { AutoPayService } = await import('./AutoPayService');
+      const result = await AutoPayService.processAutoPay();
+
+      console.log(
+        `[Scheduler] Auto-pay complete: ${result.processed} processed, ${result.failed} failed`
+      );
+
+      if (result.failed > 0) {
+        console.warn(`[Scheduler] Failed bill IDs: ${result.failedIds.join(', ')}`);
+      }
     },
     runOnInit: false,
   },
