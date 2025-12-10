@@ -296,7 +296,7 @@ Files marked `SACRED` must NOT be modified without explicit user instruction. Wh
 
 ## 8. Refactoring Protocol
 
-**Strategy: STRICT (Option A)**
+### Strategy: STRICT
 
 When encountering legacy or inconsistent code:
 
@@ -305,7 +305,8 @@ When encountering legacy or inconsistent code:
 3. **Adjacent Code:** Do NOT refactor code you weren't asked to touch.
 4. **Legacy Containment:** If old patterns exist, document them as tech debt but do not spread them.
 
-**The Boy Scout Rule (Modified):**
+### The Boy Scout Rule
+
 > Leave code *you touched* cleaner than you found it. Leave code *you didn't touch* alone.
 
 ---
