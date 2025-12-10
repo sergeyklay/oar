@@ -17,7 +17,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
 // Read database path from environment or use default
-const DB_PATH = process.env.DATABASE_URL ?? './data/oar.db';
+// Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
+const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
+const DB_PATH = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
 
 console.log(`[migrate] Database path: ${DB_PATH}`);
 
