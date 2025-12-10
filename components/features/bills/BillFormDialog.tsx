@@ -57,6 +57,7 @@ const formSchema = z.object({
   dueDate: z.date({ message: 'Due date is required' }),
   frequency: z.enum(['once', 'monthly', 'yearly']),
   isAutoPay: z.boolean(),
+  isVariable: z.boolean(),
   tagIds: z.array(z.string()),
 });
 
@@ -92,6 +93,7 @@ export function BillFormDialog({
       amount: '',
       frequency: 'monthly',
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     },
   });
@@ -107,6 +109,7 @@ export function BillFormDialog({
           dueDate: bill.dueDate,
           frequency: bill.frequency,
           isAutoPay: bill.isAutoPay,
+          isVariable: bill.isVariable,
           tagIds: [],
         });
 
@@ -120,6 +123,7 @@ export function BillFormDialog({
           amount: '',
           frequency: 'monthly',
           isAutoPay: false,
+          isVariable: false,
           tagIds: [],
           dueDate: undefined,
         });
@@ -190,7 +194,7 @@ export function BillFormDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ({currencySymbol})</FormLabel>
+                  <FormLabel>Amount Due ({currencySymbol})</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
@@ -200,6 +204,24 @@ export function BillFormDialog({
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isVariable"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Variable amount</FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

@@ -49,7 +49,12 @@ export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowP
           )}
         </div>
       </td>
-      <td className="font-mono">{formatMoney(bill.amount, currency, locale)}</td>
+      <td className="font-mono">
+        {formatMoney(bill.amount, currency, locale)}
+        {bill.isVariable && (
+          <span className="text-muted-foreground ml-1">(estimate)</span>
+        )}
+      </td>
       <td className="text-muted-foreground">
         {bill.dueDate.toLocaleDateString(locale)}
       </td>
