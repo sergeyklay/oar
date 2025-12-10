@@ -18,6 +18,7 @@ It is the "Constitution" for all AI agents working on this project.
 - SQLite + Drizzle ORM (local-first persistence)
 - Tailwind CSS 4 + Shadcn/UI primitives
 - Zod (validation), nuqs (URL state), react-hook-form (forms)
+- Docker for containerization
 
 **Philosophy — "The Active Payer":**
 > Unlike passive expense trackers that merely *record* what happened, Oar is a **commitment calendar** that enforces *awareness* of upcoming financial obligations. The user is not a passive observer—they are an **Active Payer** who must consciously acknowledge every bill. This is a feature, not friction.
