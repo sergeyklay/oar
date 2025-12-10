@@ -41,7 +41,7 @@ It is the "Constitution" for all AI agents working on this project.
 
 ## 3. Architectural Boundaries
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION LAYER                       │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
@@ -119,7 +119,7 @@ It is the "Constitution" for all AI agents working on this project.
 
 ### Standard Mutation Flow (User Creates a Bill)
 
-```
+```plaintext
 User Input (Form)
       │
       ▼
@@ -145,7 +145,7 @@ User Input (Form)
 
 ### Standard Read Flow (Server Component)
 
-```
+```plaintext
 Route Request (/bills)
       │
       ▼
@@ -162,7 +162,7 @@ Route Request (/bills)
 
 ### URL State Pattern (Filtering)
 
-```
+```plaintext
 User clicks filter
       │
       ▼
@@ -239,7 +239,7 @@ These patterns are explicitly banned. If you see them in existing code, do NOT r
 
 ## 7. Critical File Locations
 
-```
+```plaintext
 oar/
 ├── AGENTS.md                    ← YOU ARE HERE (Constitution)
 ├── .cursor/
