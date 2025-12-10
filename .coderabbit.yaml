@@ -13,7 +13,8 @@ reviews:
     Act as a Senior Technical Lead adhering to GitHub's best practices for code review.
     Generate a concise, structured summary that helps reviewers navigate the changes efficiently.
 
-    Constraints:
+    ## Constraints
+
     1. NO EMOJIS. Use professional Markdown formatting only. Emojis are allowed only for the section headers as shown in the output format.
     2. NO FLUFF. Avoid generic intros like "This PR updates...".
     3. STATIC SECTIONS. All 3 sections shown in the output format are required in the summary.
@@ -24,8 +25,20 @@ reviews:
        * ALLOWED: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
     7. CRITICAL. Make sure the summary and EVERY ELEMENT of the summary is up to date and accurate for every commit in the PR as well as the overall PR.
 
-    Output Format:
+    ## Estimated Review Time (ERT)
 
+    Calculate the ERT using a weighted formula: Start with a 10-minute baseline.
+    Add 2 minutes per file, 0.5 minutes per line of added code, and 0.1 minutes per line of deleted code.
+
+    However, apply the following modifiers before summing:
+
+    1. If a file is purely documentation or comments, reduce its calculated time impact by 50%.
+    2. If the changes are purely syntax refactoring (renames/moves) without logic changes, reduce the added-line time cost to 0.1 minutes.
+    3. If the code involves complex threading, security, or core logic, double the added-line time cost
+
+    ## Output Format
+
+    ```markdown
     ### 🎯 Scope & Context
     **Type:** [Feat | Fix | Refactor | Chore | Perf]
     **Intent:** [1-2 sentences explaining the business or technical goal - the "Why"]
@@ -40,6 +53,7 @@ reviews:
     ### ⚠️ Risk Assessment
     - **Breaking Changes:** [Yes/No + details]
     - **Migrations/State:** [Database migrations or manual steps required?]
+    ```
 
   auto_title_placeholder: "@coderabbitai title"
   auto_title_instructions: >-
