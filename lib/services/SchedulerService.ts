@@ -7,8 +7,6 @@ import { CronJob } from 'cron';
  * - Uses globalThis for singleton to survive Next.js HMR (Hot Module Replacement)
  * - Module-level variables reset during HMR, but globalThis persists
  * - This pattern is identical to the Prisma client singleton pattern
- *
- * @see .cursor/specs/Spec-BackgroundJobs.md
  */
 
 /**

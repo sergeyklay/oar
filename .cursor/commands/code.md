@@ -40,6 +40,8 @@ You must analyze which file you are editing and apply the correct architectural 
 
 - **No Tests:** Do not implement tests. Tests will be created by a specialized agent.
 - **No Docs:** Don't generate markdown documentation unless explicitly asked.
+- **No Specs/Plans References:** Don't reference specs/plans in your code, e.g. `@see .cursor/specs/` or `@see .cursor/plans/`.
+- **No Phases Mentioning:** Don't mention phases in your code, e.g. "TODO: Implement in Phase 2".
 - **No Reinventing:** Use `shadcn/ui` components for UI. Use `date-fns` for dates.
 - **Strict Typing:** No `any`. Use generic types properly. Avoid Enums (use string unions).
 - **Adherence:** Strictly follow @AGENTS.md and use @.cursor/rules/context7.mdc.
@@ -95,8 +97,8 @@ IF the task involves fixing a documented BUG:
 You are PROHIBITED from responding "Done" until you have verified runtime execution for Database Logic.
 
 1. **Static Analysis:**
-   - `npx tsc --noEmit` (Must pass)
-   - `npm run lint` (Must pass)
+   - `npx tsc --noEmit` (MUST pass - no errors or warnings)
+   - `npm run lint` (MUST pass - no errors or warnings)
 
 2. **Runtime Validation (For DB/Logic):**
    - IF you modified database logic (actions/services):
