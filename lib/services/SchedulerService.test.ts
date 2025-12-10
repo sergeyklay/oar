@@ -33,7 +33,8 @@ describe('SchedulerService', () => {
       SchedulerService.init();
 
       expect(SchedulerService.isRunning()).toBe(true);
-      expect(SchedulerService.getJobCount()).toBe(1);
+      // 2 jobs: daily-bill-check and auto-pay-processor
+      expect(SchedulerService.getJobCount()).toBe(2);
     });
 
     it('is idempotent - calling init twice does not create duplicate jobs', () => {
@@ -91,7 +92,8 @@ describe('SchedulerService', () => {
     it('returns correct count when scheduler is running', () => {
       SchedulerService.init();
 
-      expect(SchedulerService.getJobCount()).toBe(1);
+      // 2 jobs: daily-bill-check and auto-pay-processor
+      expect(SchedulerService.getJobCount()).toBe(2);
     });
 
     it('returns 0 after shutdown', () => {
@@ -106,13 +108,14 @@ describe('SchedulerService', () => {
     it('survives re-import (simulated HMR)', () => {
       SchedulerService.init();
       expect(globalThis.__oar_scheduler).toBeDefined();
-      expect(globalThis.__oar_scheduler?.length).toBe(1);
+      // 2 jobs: daily-bill-check and auto-pay-processor
+      expect(globalThis.__oar_scheduler?.length).toBe(2);
 
       // Simulate another call (like HMR would do)
       SchedulerService.init();
 
       // Should still have same jobs, not duplicated
-      expect(globalThis.__oar_scheduler?.length).toBe(1);
+      expect(globalThis.__oar_scheduler?.length).toBe(2);
     });
 
     it('can reinitialize after shutdown', () => {
