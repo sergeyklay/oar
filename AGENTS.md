@@ -18,6 +18,7 @@ It is the "Constitution" for all AI agents working on this project.
 - SQLite + Drizzle ORM (local-first persistence)
 - Tailwind CSS 4 + Shadcn/UI primitives
 - Zod (validation), nuqs (URL state), react-hook-form (forms)
+- Node.js Cron for background jobs (cron, node-cron fork)
 - Docker for containerization
 
 **Philosophy — "The Active Payer":**
