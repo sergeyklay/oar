@@ -52,9 +52,9 @@ reviews:
   high_level_summary_in_walkthrough: false
   estimate_code_review_effort: false
   sequence_diagrams: false
-  assess_linked_issues: true
+  assess_linked_issues: false
   related_issues: false
-  related_prs: true
+  related_prs: false
   suggested_labels: false
   auto_apply_labels: false
   suggested_reviewers: false
