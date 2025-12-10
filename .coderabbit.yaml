@@ -25,17 +25,6 @@ reviews:
        * ALLOWED: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
     7. CRITICAL. Make sure the summary and EVERY ELEMENT of the summary is up to date and accurate for every commit in the PR as well as the overall PR.
 
-    ## Estimated Review Time (ERT)
-
-    Calculate the ERT using a weighted formula: Start with a 10-minute baseline.
-    Add 2 minutes per file, 0.5 minutes per line of added code, and 0.1 minutes per line of deleted code.
-
-    However, apply the following modifiers before summing:
-
-    1. If a file is purely documentation or comments, reduce its calculated time impact by 50%.
-    2. If the changes are purely syntax refactoring (renames/moves) without logic changes, reduce the added-line time cost to 0.1 minutes.
-    3. If the code involves complex threading, security, or core logic, double the added-line time cost
-
     ## Output Format
 
     ```markdown
@@ -47,13 +36,24 @@ reviews:
     ### 🧭 Reviewer Guide
     **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
     **Complexity:** [Low | Medium | High]
-    **Estimated Review Time:** [Estimated time in minutes to review the changes]. For example: "~15 minutes".
+    **Estimated Review Time:** [Estimated time in minutes to review the changes, see ERT section below]. For example: "~15 minutes".
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
     - **Breaking Changes:** [Yes/No + details]
     - **Migrations/State:** [Database migrations or manual steps required?]
     ```
+    ## Estimated Review Time (ERT)
+
+    Calculate the ERT using a weighted formula: Start with a 10-minute baseline.
+    Add 2 minutes per file, 0.5 minutes per line of added code, and 0.1 minutes per line of deleted code.
+
+    However, apply the following modifiers before summing:
+
+    1. If a file is purely documentation or comments, reduce its calculated time impact by 50%.
+    2. If the changes are purely syntax refactoring (renames/moves) without logic changes, reduce the added-line time cost to 0.1 minutes.
+    3. If the code involves complex threading, security, or core logic, double the added-line time cost
+
 
   auto_title_placeholder: "@coderabbitai title"
   auto_title_instructions: >-
