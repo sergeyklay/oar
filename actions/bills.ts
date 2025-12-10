@@ -27,7 +27,7 @@ const createBillSchema = z.object({
     message: 'Please select a frequency',
   }),
   isAutoPay: z.boolean().default(false),
-  // NEW: Optional array of tag IDs
+  isVariable: z.boolean().default(false),
   tagIds: z.array(z.string()).optional().default([]),
 });
 
@@ -67,7 +67,7 @@ export async function createBill(
     };
   }
 
-  const { title, amount, dueDate, frequency, isAutoPay, tagIds } = parsed.data;
+  const { title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -84,6 +84,7 @@ export async function createBill(
         dueDate,
         frequency,
         isAutoPay,
+        isVariable,
         status,
       })
       .returning({ id: bills.id });
@@ -272,7 +273,7 @@ export async function updateBill(
     };
   }
 
-  const { id, title, amount, dueDate, frequency, isAutoPay, tagIds } = parsed.data;
+  const { id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -289,6 +290,7 @@ export async function updateBill(
         dueDate,
         frequency,
         isAutoPay,
+        isVariable,
         status,
         updatedAt: now,
       })

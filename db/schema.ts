@@ -13,6 +13,8 @@ export const bills = sqliteTable('bills', {
     enum: ['once', 'monthly', 'yearly'],
   }).notNull().default('monthly'),
   isAutoPay: integer('is_auto_pay', { mode: 'boolean' }).notNull().default(false),
+  /** Distinguishes fixed amounts (Rent) from variable estimates (Electric) */
+  isVariable: integer('is_variable', { mode: 'boolean' }).notNull().default(false),
   status: text('status', {
     enum: ['pending', 'paid', 'overdue'],
   }).notNull().default('pending'),

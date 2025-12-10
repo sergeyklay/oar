@@ -24,6 +24,7 @@ describe('createBill', () => {
       dueDate: new Date('2025-12-15'),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -53,6 +54,7 @@ describe('createBill', () => {
       dueDate: new Date('2025-12-20'),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: ['tag-1', 'tag-2'],
     };
 
@@ -79,6 +81,7 @@ describe('createBill', () => {
       dueDate: new Date(),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -97,6 +100,7 @@ describe('createBill', () => {
       dueDate: new Date(),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -121,6 +125,7 @@ describe('createBill', () => {
       dueDate: new Date('2025-12-15'),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -131,6 +136,61 @@ describe('createBill', () => {
     expect(consoleSpy).toHaveBeenCalled();
 
     consoleSpy.mockRestore();
+  });
+
+  it('persists isVariable flag when set to true', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const input = {
+      title: 'Variable Electric Bill',
+      amount: '75.00',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      isVariable: true,
+      tagIds: [],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(true);
+    expect(db.insert).toHaveBeenCalledWith(bills);
+
+    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const valuesCall = insertCall.values.mock.calls[0][0];
+
+    expect(valuesCall.isVariable).toBe(true);
+  });
+
+  it('persists isVariable as false when explicitly set', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const input = {
+      title: 'Fixed Rent',
+      amount: '1500.00',
+      dueDate: new Date('2025-12-01'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      isVariable: false,
+      tagIds: [],
+    };
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(true);
+
+    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const valuesCall = insertCall.values.mock.calls[0][0];
+
+    expect(valuesCall.isVariable).toBe(false);
   });
 });
 
@@ -156,6 +216,7 @@ describe('updateBill', () => {
       dueDate: new Date('2025-12-25'),
       frequency: 'yearly' as const,
       isAutoPay: true,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -188,6 +249,7 @@ describe('updateBill', () => {
       dueDate: new Date('2025-12-20'),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: ['tag-3', 'tag-4'],
     };
 
@@ -214,6 +276,7 @@ describe('updateBill', () => {
       dueDate: new Date(),
       frequency: 'monthly' as const,
       isAutoPay: false,
+      isVariable: false,
       tagIds: [],
     };
 
@@ -222,5 +285,68 @@ describe('updateBill', () => {
     expect(result.success).toBe(false);
     expect(result.fieldErrors?.id).toBeDefined();
     expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('updates isVariable from false to true', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input = {
+      id: 'bill-1',
+      title: 'Now Variable Bill',
+      amount: '100.00',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      isVariable: true,
+      tagIds: [],
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+    expect(db.update).toHaveBeenCalledWith(bills);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.isVariable).toBe(true);
+  });
+
+  it('updates isVariable from true to false', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input = {
+      id: 'bill-1',
+      title: 'Now Fixed Bill',
+      amount: '150.00',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      isVariable: false,
+      tagIds: [],
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.isVariable).toBe(false);
   });
 });
