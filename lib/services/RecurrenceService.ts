@@ -68,7 +68,7 @@ export const RecurrenceService = {
    *
    * Called by SchedulerService at midnight daily.
    *
-   * Business Logic (TODO - implement in Phase 2):
+   * Business Logic:
    * 1. Query all bills WHERE status = 'pending' AND isArchived = false
    * 2. For each bill, call deriveStatus(dueDate)
    * 3. If status changed to 'overdue', update database
@@ -77,7 +77,7 @@ export const RecurrenceService = {
    * @returns Promise with counts of bills checked and updated
    */
   async checkDailyBills(): Promise<{ checked: number; updated: number }> {
-    // TODO: Implement actual bill checking logic in Phase 2
+    // TODO: Implement actual bill checking logic in next phase
     // This stub allows the infrastructure to be tested without database access
     console.log('[RecurrenceService] checkDailyBills called (stub)');
 
