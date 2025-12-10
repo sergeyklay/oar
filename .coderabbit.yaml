@@ -48,8 +48,8 @@ reviews:
   commit_status: true
   fail_commit_status: false
   collapse_walkthrough: false
-  high_level_summary_in_walkthrough: false
   changed_files_summary: false
+  high_level_summary_in_walkthrough: false
   estimate_code_review_effort: false
   sequence_diagrams: false
   assess_linked_issues: true
