@@ -311,6 +311,6 @@ When encountering legacy or inconsistent code:
 
 ---
 
-*Last Updated: 2025-12-10*
+Last Updated: 2025-12-10
 
-*Maintained by: AI Agents under human supervision*
+Maintained by: AI Agents under human supervision
