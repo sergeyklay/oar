@@ -41,10 +41,13 @@ const JOB_DEFINITIONS: JobDefinition[] = [
     // Run at midnight every day (00:00)
     cronTime: '0 0 * * *',
     handler: async () => {
-      // TODO: Replace stub with actual RecurrenceService.checkDailyBills() call
-      console.log('[Scheduler] Running daily bill check... (stub)');
-      // Future: const result = await RecurrenceService.checkDailyBills();
-      // Future: console.log(`[Scheduler] Daily bill check complete: ${result.checked} checked, ${result.updated} updated`);
+      // Dynamic import to allow tree-shaking and avoid circular dependencies
+      const { RecurrenceService } = await import('./RecurrenceService');
+      const result = await RecurrenceService.checkDailyBills();
+
+      console.log(
+        `[Scheduler] Daily bill check complete: ${result.checked} checked, ${result.updated} updated`
+      );
     },
     runOnInit: false,
   },

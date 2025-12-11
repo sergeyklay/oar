@@ -1,4 +1,21 @@
+// Mock the database module before importing RecurrenceService
+jest.mock('@/db', () => ({
+  db: {
+    select: jest.fn(),
+    update: jest.fn(),
+  },
+}));
+
+jest.mock('@/db/schema', () => ({
+  bills: {
+    id: 'id',
+    status: 'status',
+    isArchived: 'isArchived',
+  },
+}));
+
 import { RecurrenceService } from './RecurrenceService';
+import { db } from '@/db';
 
 describe('RecurrenceService', () => {
   beforeAll(() => {
@@ -7,6 +24,10 @@ describe('RecurrenceService', () => {
 
   afterAll(() => {
     jest.restoreAllMocks();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('calculateNextDueDate', () => {
@@ -109,13 +130,197 @@ describe('RecurrenceService', () => {
   });
 
   describe('checkDailyBills', () => {
-    it('returns stub response with zero counts', async () => {
+    const mockSelect = db.select as jest.Mock;
+    const mockUpdate = db.update as jest.Mock;
+
+    it('returns zero counts when no pending bills exist', async () => {
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
       const result = await RecurrenceService.checkDailyBills();
 
       expect(result).toEqual({ checked: 0, updated: 0 });
+      expect(mockSelect).toHaveBeenCalled();
+    });
+
+    it('updates overdue bills and returns correct counts', async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const mockOverdueBill = {
+        id: 'bill-1',
+        title: 'Test Bill',
+        dueDate: yesterday,
+        status: 'pending',
+      };
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockOverdueBill]),
+        }),
+      });
+
+      const mockSetFn = jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      });
+      mockUpdate.mockReturnValue({ set: mockSetFn });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 1, updated: 1 });
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockSetFn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'overdue',
+          updatedAt: expect.any(Date),
+        })
+      );
+    });
+
+    it('does not update bills due in the future', async () => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const mockFutureBill = {
+        id: 'bill-2',
+        title: 'Future Bill',
+        dueDate: tomorrow,
+        status: 'pending',
+      };
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockFutureBill]),
+        }),
+      });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 1, updated: 0 });
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it('does not update bills due today', async () => {
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
+
+      const mockTodayBill = {
+        id: 'bill-today',
+        title: 'Due Today Bill',
+        dueDate: today,
+        status: 'pending',
+      };
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTodayBill]),
+        }),
+      });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 1, updated: 0 });
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it('correctly counts mixed bills (some overdue, some not)', async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const mockBills = [
+        { id: 'bill-1', title: 'Overdue Bill', dueDate: yesterday, status: 'pending' },
+        { id: 'bill-2', title: 'Future Bill', dueDate: tomorrow, status: 'pending' },
+      ];
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockBills),
+        }),
+      });
+
+      mockUpdate.mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(undefined),
+        }),
+      });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 2, updated: 1 });
+    });
+
+    it('updates multiple overdue bills correctly', async () => {
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const mockBills = [
+        { id: 'bill-1', title: 'Old Overdue', dueDate: twoDaysAgo, status: 'pending' },
+        { id: 'bill-2', title: 'Recent Overdue', dueDate: yesterday, status: 'pending' },
+      ];
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockBills),
+        }),
+      });
+
+      mockUpdate.mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(undefined),
+        }),
+      });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 2, updated: 2 });
+      expect(mockUpdate).toHaveBeenCalledTimes(2);
+    });
+
+    it('logs message for each overdue bill', async () => {
+      const consoleSpy = jest.spyOn(console, 'log');
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const mockOverdueBill = {
+        id: 'bill-1',
+        title: 'Rent Payment',
+        dueDate: yesterday,
+        status: 'pending',
+      };
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockOverdueBill]),
+        }),
+      });
+
+      mockUpdate.mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(undefined),
+        }),
+      });
+
+      await RecurrenceService.checkDailyBills();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[RecurrenceService] Bill "Rent Payment" marked overdue')
+      );
     });
 
     it('returns a promise', () => {
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
       const result = RecurrenceService.checkDailyBills();
 
       expect(result).toBeInstanceOf(Promise);

@@ -1,5 +1,7 @@
 import { RRule, Frequency } from 'rrule';
-import type { BillFrequency } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+import { db } from '@/db';
+import { bills, type BillFrequency } from '@/db/schema';
 
 /**
  * Maps simple frequency enum to rrule Frequency.
@@ -68,20 +70,48 @@ export const RecurrenceService = {
    *
    * Called by SchedulerService at midnight daily.
    *
-   * Business Logic:
-   * 1. Query all bills WHERE status = 'pending' AND isArchived = false
-   * 2. For each bill, call deriveStatus(dueDate)
-   * 3. If status changed to 'overdue', update database
-   * 4. Return count of bills updated
-   *
    * @returns Promise with counts of bills checked and updated
    */
   async checkDailyBills(): Promise<{ checked: number; updated: number }> {
-    // TODO: Implement actual bill checking logic in next phase
-    // This stub allows the infrastructure to be tested without database access
-    console.log('[RecurrenceService] checkDailyBills called (stub)');
+    // 1. Query candidates: pending, non-archived bills
+    const candidates = await db
+      .select()
+      .from(bills)
+      .where(
+        and(
+          eq(bills.status, 'pending'),
+          eq(bills.isArchived, false)
+        )
+      );
 
-    // Stub return - no bills checked or updated
-    return { checked: 0, updated: 0 };
+    // 2. Track update count
+    let updated = 0;
+
+    // 3. Check each bill and update if overdue
+    for (const bill of candidates) {
+      const newStatus = this.deriveStatus(bill.dueDate);
+
+      if (newStatus === 'overdue') {
+        await db
+          .update(bills)
+          .set({
+            status: 'overdue',
+            updatedAt: new Date(),
+          })
+          .where(eq(bills.id, bill.id));
+
+        updated++;
+
+        console.log(
+          `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
+        );
+      }
+    }
+
+    // 4. Return metrics
+    return {
+      checked: candidates.length,
+      updated,
+    };
   },
 };
