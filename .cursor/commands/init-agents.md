@@ -40,7 +40,7 @@ Once the user answers, generate the `AGENTS.md` file inside a code block. Use th
 *Study the depth and specificity of this example before generating. Notice the use of Metaphor and Architectural Specificity.*
 
 > ## 1. System Identity (Example)
-> * **Metaphor:** "The Iron Vault". Unlike typical social apps, this system treats user data as toxic waste—we do not want to hold it longer than necessary. Privacy is not a feature; it is the primary constraint.
+> * **Metaphor:** "The Iron Vault". Unlike typical social apps, this system treats user data as toxic waste - we do not want to hold it longer than necessary. Privacy is not a feature; it is the primary constraint.
 >
 > ## 3. Architectural Boundaries (Example)
 > * **Core Domain:** Contains `PricingService` and `InventoryService`.
