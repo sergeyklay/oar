@@ -40,7 +40,7 @@ You must analyze which file you are editing and apply the correct architectural 
 
 - **No Tests:** Do not implement tests. Tests will be created by a specialized agent.
 - **No Docs:** Don't generate markdown documentation unless explicitly asked.
-- **No Specs/Plans References:** Don't reference specs/plans in your code, e.g. `@see .cursor/specs/` or `@see .cursor/plans/`.
+- **No Specs/Plans References:** Don't reference specs/plans in your code, e.g. `@see .specs/` or `@see .plans/`.
 - **No Phases Mentioning:** Don't mention phases in your code, e.g. "TODO: Implement in Phase 2".
 - **No Reinventing:** Use `shadcn/ui` components for UI. Use `date-fns` for dates.
 - **Strict Typing:** No `any`. Use generic types properly. Avoid Enums (use string unions).
