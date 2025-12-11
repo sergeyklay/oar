@@ -273,6 +273,8 @@ oar/
 │   ├── schema.ts                ← Drizzle schema (source of truth)
 │   └── index.ts                 ← Database connection
 │
+├── docs/                        ← All project documentation
+│
 ├── components/
 │   ├── ui/                      ← Shadcn primitives (DO NOT EDIT)
 │   ├── layout/                  ← SACRED (AppShell, Sidebar)
