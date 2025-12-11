@@ -24,7 +24,7 @@ The plan must ensure the code is implemented atomically, linearly, and adheres t
 
 # Output Format
 
-Produce a Markdown checklist in `.cursor/plans/Plan-{TASK_NAME}.md`. Group steps into Logical Phases:
+Produce a Markdown checklist in `.plans/Plan-{TASK_NAME}.md`. Group steps into Logical Phases:
 
 **Phase 1: Data Layer (The Foundation)**
 - Define/Update Drizzle Schema in `db/schema.ts`.
