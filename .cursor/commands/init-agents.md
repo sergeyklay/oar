@@ -100,6 +100,8 @@ Maintained by: AI Agents under human supervision
 
 ## Instructions for the Agent
 
+The following instructions apply to **you**, the expert Principal Software Architect and Technical Archaeologist executing this command:
+
 1.  **Visual Topology:** You SHOULD use ASCII diagrams (boxes and arrows) for Section 3 (Boundaries) and Section 4 (Data Flow) if applicable. Visualizing the "hop" between layers is critical. Wrap the diagrams in a code block using ```plaintext.
 2.  **Access Control:** You MUST generate the "Layer Rules" table (Who can access What).
 3.  **Sacred Files:** In the file tree, mark critical configuration files as `← SACRED (DO NOT MODIFY)` if they should be immutable for general agents. Wrap the file tree in a code block using ```plaintext.
