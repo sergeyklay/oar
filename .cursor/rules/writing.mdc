@@ -103,7 +103,8 @@ globs: **/*.md
 - Don't create perfectly symmetrical paragraphs or lists that start with "Firstly... Secondly..."
 - Avoid title-case headings; prefer sentence casing.
 - Remove Unicode artifacts when copy-pasting: smart quotes (“), em-dashes, non-breaking spaces.
-- Use '' instead of ``.
+- Replace smart/curly single quotes (’’) with straight single
+quotes ('') and double quotes (“”) with straight double quotes ("").
 - Delete empty citation placeholders like "[1]" with no actual source.
 
 ## Punctuation and formatting
