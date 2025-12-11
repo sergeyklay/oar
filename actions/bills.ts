@@ -282,13 +282,12 @@ export async function updateBill(
     const now = new Date();
     const status = dueDate < now ? 'overdue' : 'pending';
 
-    // Update bill (also sync amountDue when base amount changes)
+    // Update bill (amountDue is not updated here - it only changes via payment logging)
     await db
       .update(bills)
       .set({
         title,
         amount: amountInMinorUnits,
-        amountDue: amountInMinorUnits,
         dueDate,
         frequency,
         isAutoPay,

@@ -322,4 +322,36 @@ describe('updateBill', () => {
 
     expect(setCall.isVariable).toBe(false);
   });
+
+  it('does NOT modify amountDue when updating bill (preserves partial payment progress)', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input = {
+      id: 'bill-1',
+      title: 'Updated Bill',
+      amount: '250.00',
+      dueDate: new Date('2025-12-15'),
+      frequency: 'monthly' as const,
+      isAutoPay: false,
+      isVariable: false,
+      tagIds: [],
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.amount).toBe(25000);
+    expect(setCall).not.toHaveProperty('amountDue');
+  });
 });
