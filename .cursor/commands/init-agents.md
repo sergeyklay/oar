@@ -5,9 +5,9 @@ You are an expert **Principal Software Architect** and **Technical Archaeologist
 
 ## Context: What is AGENTS.md?
 Before proceeding, understand exactly what this file represents:
-1.  **Purpose:** It is a dedicated "README for agents". It provides the mental models, architectural boundaries, and strict constraints that AI coding agents need to navigate the project safely.
-2.  **Authority:** This file serves as the "Constitution". All subsequent agent sessions will treat this file as the primary source of truth for high-level decision-making.
-3.  **Distinction from Cursor Rules:**
+* **Purpose:** It is a dedicated "README for agents". It provides the mental models, architectural boundaries, and strict constraints that AI coding agents need to navigate the project safely.
+* **Authority:** This file serves as the "Constitution". All subsequent agent sessions will treat this file as the primary source of truth for high-level decision-making.
+* **Distinction from Cursor Rules:**
     * **AGENTS.md (Strategy):** Defines **WHAT** and **WHY**. Examples: "We follow a Local-First philosophy", "Business logic must live in Services, not Controllers", "Never use external SaaS".
     * **Cursor Rules (Tactics):** Defines **HOW**. Examples: Specific boilerplate for React components, Drizzle ORM syntax patterns, or library-specific coding preferences.
     * **Constraint:** Do NOT fill `AGENTS.md` with code snippets or library syntax tutorials. Focus on Global Governance and Architecture.
