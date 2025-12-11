@@ -39,14 +39,14 @@ Once the user answers, generate the `AGENTS.md` file inside a code block. Use th
 #### Exemplar: Quality Standard
 *Study the depth and specificity of this example before generating. Notice the use of Metaphor and Architectural Specificity.*
 
-> **System Identity (Example)**
+> ## 1. System Identity (Example)
 > * **Metaphor:** "The Iron Vault". Unlike typical social apps, this system treats user data as toxic waste—we do not want to hold it longer than necessary. Privacy is not a feature; it is the primary constraint.
 >
-> **Architectural Boundaries (Example)**
+> ## 3. Architectural Boundaries (Example)
 > * **Core Domain:** Contains `PricingService` and `InventoryService`.
->     * *Constraint:* Must be **Transport Agnostic**. Services return typed DTOs/Objects, NEVER HTTP Responses or ORM Models.
+>     ** *Constraint:* Must be **Transport Agnostic**. Services return typed DTOs/Objects, NEVER HTTP Responses or ORM Models.
 > * **Action Layer:** Contains Server Actions.
->     * *Constraint:* Thin Orchestration only. Validates input (Zod) -> Calls Domain Service -> Revalidates Path. No math allowed here.
+>     ** *Constraint:* Thin Orchestration only. Validates input (Zod) -> Calls Domain Service -> Revalidates Path. No math allowed here.
 
 ---
 
