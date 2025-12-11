@@ -4,8 +4,6 @@ alwaysApply: false
 globs: **/*.md
 ---
 
-## Sentence structure
-
 ## Voice and tone
 
 - Write like humans speak. Avoid corporate jargon and marketing fluff.
