@@ -6,8 +6,20 @@ import { relations } from 'drizzle-orm';
 export const bills = sqliteTable('bills', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   title: text('title').notNull(),
-  /** Amount in minor units (e.g., 4999 = 49.99 PLN) */
+  /** Amount in minor units (e.g., 4999 = 49.99 PLN). This is the base recurring amount. */
   amount: integer('amount').notNull(),
+  /**
+   * Current cycle's remaining amount due in minor units.
+   *
+   * Tracks partial payments within a billing cycle:
+   * - Initialized to `amount` when bill is created
+   * - Reduced when partial payment logged (updateDueDate=false)
+   * - Reset to `amount` when billing cycle advances (updateDueDate=true)
+   * - For one-time bills, reduces to 0 when fully paid
+   *
+   * Note: Default 0 is for migration only; service layer always sets this explicitly.
+   */
+  amountDue: integer('amount_due').notNull().default(0),
   dueDate: integer('due_date', { mode: 'timestamp_ms' }).notNull(),
   frequency: text('frequency', {
     enum: ['once', 'monthly', 'yearly'],
