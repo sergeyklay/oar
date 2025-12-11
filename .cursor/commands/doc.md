@@ -36,7 +36,7 @@ You are the **Principal Technical Writer & Product Owner**. Your goal is to crea
     - ✅ **LOGIC OVER SYNTAX:** Describe the *rules* (e.g., "If date is weekend, move to Friday"), not the implementation details.
     - ✅ **EDGE CASES:** You MUST include a section on edge cases (Leap years, Timezones, Partial payments).
 
-5.  **Do Not Overlap with Existing Documentation:**
+4.  **Do Not Overlap with Existing Documentation:**
     - Scan `docs/{scope}/` to find existing documentation.
     - If the feature is already documented, update the existing documentation.
     - If the feature is not documented, create a new documentation file.
