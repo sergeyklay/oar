@@ -19,6 +19,11 @@ build
 .cursor
 *.swp
 *.swo
+*.code-workspace
+
+# Ignore generated specification and plan files.
+.specs
+.plans
 
 # Environment files (secrets)
 .env
@@ -40,6 +45,7 @@ __mocks__
 *.spec.tsx
 jest.config.*
 jest.setup.*
+junit.xml
 
 # Documentation
 docs/
