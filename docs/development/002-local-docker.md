@@ -90,11 +90,7 @@ docker volume rm oar_data
 
 ## 5. Verification
 
-Open your browser and navigate to:
-
-```
-http://localhost:8080
-```
+Open your browser and navigate to: `http://localhost:8080`.
 
 You should see the Oar dashboard. Create a test bill to confirm database writes work correctly.
 
