@@ -9,7 +9,7 @@
  */
 
 export async function register() {
-  // node-cron (and drivative libraries) uses Node.js timers, which are not available in Edge
+  // node-cron (and derivative libraries) uses Node.js timers, which are not available in Edge
   // runtime. The register() function runs in both Node.js and Edge runtimes.
   // We must guard against Edge runtime to prevent crashes.
   if (process.env.NEXT_RUNTIME === 'nodejs') {
