@@ -46,14 +46,13 @@ If you encounter `npm error code ERESOLVE` (Peer Dependency Conflict):
 # ✅ DO: Correct nvm usage
 nvm use 24
 
-# ✅ DO: Simple commands
-npm run dev
-npx npm run db:generate            # Generate migration files
-npx npm run db:push                # Push schema changes to SQLite
-npx npm run db:studio              # Open Drizzle Studio GUI (AI Agent does not need to do this, its interactive and can be done by the user)
-
 # ✅ DO: Check version if unsure
-node -v && npm run dev
+node -v
+
+# ✅ DO: Simple commands
+npm run dev                        # Run development server
+npx drizzle-kit generate           # Generate migration files
+npx drizzle-kit push --force       # Push schema changes to SQLite
 
 # ✅ DO: Correct npm usage
 npm install package-name           # Add new dependency (updates lockfile)

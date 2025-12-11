@@ -78,5 +78,7 @@ Steps to verify:
 
 1. run `npm run test` to perform testing.
 2. If the tests fail, FIX the code and RETRY loops until success.
-3. If the tests pass, respond "Done".
-4. Never respond "Done" until you have verified that the tests are complete and cover all the functionality of the source file.
+3. run`npx tsc --noEmit`to check for type errors.
+4. run `npm run lint` to check for linting errors.
+5. If the tests AND linting AND type errors pass, respond "Done".
+6. NEVER respond "Done" until you have verified that the tests are complete and cover all the functionality of the source file and that there are no linting/type errors or warnings.
