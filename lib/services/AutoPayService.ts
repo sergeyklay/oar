@@ -1,6 +1,6 @@
 import { db, bills, transactions } from '@/db';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
-import { eq, and, lte } from 'drizzle-orm';
+import { eq, and, lte, ne } from 'drizzle-orm';
 import { endOfDay } from 'date-fns';
 
 /**
@@ -33,7 +33,7 @@ export const AutoPayService = {
    *
    * Eligibility Criteria:
    * - isAutoPay = true
-   * - status = 'pending' (not already paid/overdue from manual action)
+   * - status != 'paid' (pending or overdue - handles backlog after checkDailyBills)
    * - dueDate <= end of today (due date has arrived or passed)
    * - isArchived = false
    *
@@ -48,14 +48,17 @@ export const AutoPayService = {
   async processAutoPay(): Promise<AutoPayResult> {
     const today = endOfDay(new Date());
 
-    // Query all pending auto-pay bills that are due today or earlier
+    // Query all unpaid auto-pay bills that are due today or earlier
+    // Uses ne(status, 'paid') instead of eq(status, 'pending') to handle backlog:
+    // checkDailyBills() runs at 00:00 and may mark old bills as 'overdue'
+    // before auto-pay runs at 00:05. We still want to process those.
     const eligibleBills = await db
       .select()
       .from(bills)
       .where(
         and(
           eq(bills.isAutoPay, true),
-          eq(bills.status, 'pending'),
+          ne(bills.status, 'paid'),
           lte(bills.dueDate, today),
           eq(bills.isArchived, false)
         )
