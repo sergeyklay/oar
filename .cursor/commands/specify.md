@@ -40,7 +40,7 @@ Before designing, you must analyze:
 
 # Output Format
 
-Produce a Markdown document in `.cursor/specs/Spec-{TASK_NAME}.md`.
+Produce a Markdown document in `.specs/Spec-{TASK_NAME}.md`.
 
 ## 1. Business Goal & Value
 
