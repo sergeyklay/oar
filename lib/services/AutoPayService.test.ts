@@ -34,6 +34,7 @@ describe('AutoPayService', () => {
     id: 'bill-1',
     title: 'Test Bill',
     amount: 9999, // $99.99 in minor units
+    amountDue: 9999,
     dueDate: new Date(),
     frequency: 'monthly',
     isAutoPay: true,

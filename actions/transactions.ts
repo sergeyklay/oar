@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
-import { RecurrenceService } from '@/lib/services/RecurrenceService';
+import { PaymentService } from '@/lib/services/PaymentService';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
 
 /** Validation schema for logging a payment. */
@@ -23,6 +23,13 @@ const logPaymentSchema = z.object({
     message: 'Please select a valid date',
   }),
   notes: z.string().max(500, 'Notes must be 500 characters or less').optional(),
+  /**
+   * Whether to advance the due date to the next billing cycle.
+   *
+   * true (default): Advance dueDate, reset amountDue to base amount
+   * false: Keep dueDate unchanged, reduce amountDue by payment amount
+   */
+  updateDueDate: z.boolean().default(true),
 });
 
 export type LogPaymentInput = z.infer<typeof logPaymentSchema>;
@@ -40,9 +47,9 @@ interface ActionResult<T = void> {
  *
  * Side effects:
  * 1. Creates a transaction record
- * 2. Advances bill.dueDate to next occurrence (if recurring)
- * 3. Updates bill.status based on new dueDate
- * 4. For one-time bills: marks as 'paid' and leaves dueDate unchanged
+ * 2. If updateDueDate=true: advances bill.dueDate, resets amountDue
+ * 3. If updateDueDate=false: reduces amountDue by payment amount
+ * 4. Updates bill.status based on due date
  *
  * Uses Drizzle transaction for atomicity.
  */
@@ -60,10 +67,10 @@ export async function logPayment(
     };
   }
 
-  const { billId, amount, paidAt, notes } = parsed.data;
+  const { billId, amount, paidAt, notes, updateDueDate } = parsed.data;
 
   try {
-    // 2. Fetch the bill to get current dueDate and frequency
+    // 2. Fetch the bill to get current state
     const [bill] = await db.select().from(bills).where(eq(bills.id, billId));
 
     if (!bill) {
@@ -75,17 +82,18 @@ export async function logPayment(
 
     const amountInMinorUnits = toMinorUnits(parseMoneyInput(amount));
 
-    // 3. Calculate next due date before transaction
-    const nextDueDate = RecurrenceService.calculateNextDueDate(
-      bill.dueDate,
-      bill.frequency
+    // 3. Delegate to PaymentService for business logic
+    const paymentResult = PaymentService.processPayment(
+      bill,
+      amountInMinorUnits,
+      updateDueDate
     );
 
     // 4. Use Drizzle transaction for atomicity
     // NOTE: better-sqlite3 requires SYNCHRONOUS transactions (no async/await)
     // NOTE: .returning() returns a query builder; must call .get() or .all() to execute
     const result = db.transaction((tx) => {
-      // Create transaction record - use .get() for single row
+      // Create transaction record
       const newTransaction = tx
         .insert(transactions)
         .values({
@@ -97,29 +105,16 @@ export async function logPayment(
         .returning()
         .get();
 
-      // Update bill based on recurrence type
-      if (nextDueDate) {
-        // Recurring bill: advance to next occurrence
-        const newStatus = RecurrenceService.deriveStatus(nextDueDate);
-
-        tx.update(bills)
-          .set({
-            dueDate: nextDueDate,
-            status: newStatus,
-            updatedAt: new Date(),
-          })
-          .where(eq(bills.id, billId))
-          .run();
-      } else {
-        // One-time bill: mark as paid, keep original dueDate for reference
-        tx.update(bills)
-          .set({
-            status: 'paid',
-            updatedAt: new Date(),
-          })
-          .where(eq(bills.id, billId))
-          .run();
-      }
+      // Update bill with computed state from PaymentService
+      tx.update(bills)
+        .set({
+          dueDate: paymentResult.nextDueDate ?? bill.dueDate,
+          amountDue: paymentResult.newAmountDue,
+          status: paymentResult.newStatus,
+          updatedAt: new Date(),
+        })
+        .where(eq(bills.id, billId))
+        .run();
 
       return newTransaction;
     });

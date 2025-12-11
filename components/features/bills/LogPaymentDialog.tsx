@@ -21,6 +21,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,6 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toMajorUnits } from '@/lib/money';
@@ -42,6 +44,7 @@ const formSchema = z.object({
   amount: z.string().min(1, 'Amount is required'),
   paidAt: z.date({ message: 'Please select a date' }),
   notes: z.string().max(500).optional(),
+  updateDueDate: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -64,9 +67,10 @@ export function LogPaymentDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: toMajorUnits(bill.amount, currency).toString(),
+      amount: toMajorUnits(bill.amountDue, currency).toString(),
       paidAt: new Date(),
       notes: '',
+      updateDueDate: true,
     },
   });
 
@@ -74,9 +78,10 @@ export function LogPaymentDialog({
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       form.reset({
-        amount: toMajorUnits(bill.amount, currency).toString(),
+        amount: toMajorUnits(bill.amountDue, currency).toString(),
         paidAt: new Date(),
         notes: '',
+        updateDueDate: true,
       });
     }
     onOpenChange(newOpen);
@@ -90,6 +95,7 @@ export function LogPaymentDialog({
       amount: values.amount,
       paidAt: values.paidAt,
       notes: values.notes,
+      updateDueDate: values.updateDueDate,
     });
 
     setIsSubmitting(false);
@@ -198,12 +204,35 @@ export function LogPaymentDialog({
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="e.g., Paid early due to vacation"
+                      placeholder="e.g., Confirmation #12345"
                       className="resize-none"
                       rows={2}
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Update Due Date Toggle */}
+            <FormField
+              control={form.control}
+              name="updateDueDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Update Due Date</FormLabel>
+                    <FormDescription>
+                      Turn off to log a partial payment without advancing the
+                      billing cycle.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

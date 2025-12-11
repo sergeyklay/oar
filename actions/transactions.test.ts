@@ -6,14 +6,13 @@ jest.mock('@/db');
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
-jest.mock('@/lib/services/RecurrenceService', () => ({
-  RecurrenceService: {
-    calculateNextDueDate: jest.fn(),
-    deriveStatus: jest.fn().mockReturnValue('pending'),
+jest.mock('@/lib/services/PaymentService', () => ({
+  PaymentService: {
+    processPayment: jest.fn(),
   },
 }));
 
-import { RecurrenceService } from '@/lib/services/RecurrenceService';
+import { PaymentService } from '@/lib/services/PaymentService';
 
 describe('logPayment', () => {
   beforeEach(() => {
@@ -21,56 +20,31 @@ describe('logPayment', () => {
     jest.clearAllMocks();
   });
 
-  it('calls db.transaction for atomicity', async () => {
-    // Mock bill fetch
+  const mockBill = {
+    id: 'bill-1',
+    amount: 20000,
+    amountDue: 20000,
+    dueDate: new Date('2025-12-15'),
+    frequency: 'monthly' as const,
+  };
+
+  const setupMocks = (bill = mockBill, paymentResult: {
+    nextDueDate: Date | null;
+    newAmountDue: number;
+    newStatus: 'pending' | 'paid' | 'overdue';
+  } = {
+    nextDueDate: new Date('2026-01-15'),
+    newAmountDue: 20000,
+    newStatus: 'pending',
+  }) => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{
-          id: 'bill-1',
-          dueDate: new Date('2025-12-15'),
-          frequency: 'monthly',
-        }]),
+        where: jest.fn().mockResolvedValue([bill]),
       }),
     });
 
-    // Mock next due date calculation
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(
-      new Date('2026-01-15')
-    );
+    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
 
-    // Setup transaction mock to execute callback
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const txMock = {
-        insert: jest.fn().mockReturnValue({
-          values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockReturnValue({
-              get: jest.fn().mockReturnValue({ id: 'tx-1' }),
-            }),
-          }),
-        }),
-        update: jest.fn().mockReturnValue({
-          set: jest.fn().mockReturnValue({
-            where: jest.fn().mockReturnValue({
-              run: jest.fn(),
-            }),
-          }),
-        }),
-      };
-      return callback(txMock);
-    });
-
-    const input = {
-      billId: 'bill-1',
-      amount: '100.00',
-      paidAt: new Date('2025-12-15'),
-    };
-
-    await logPayment(input);
-
-    expect(db.transaction).toHaveBeenCalled();
-  });
-
-  it('inserts transaction AND updates bill within transaction', async () => {
     const insertMock = jest.fn().mockReturnValue({
       values: jest.fn().mockReturnValue({
         returning: jest.fn().mockReturnValue({
@@ -87,36 +61,35 @@ describe('logPayment', () => {
       }),
     });
 
-    // Mock bill fetch
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{
-          id: 'bill-1',
-          dueDate: new Date('2025-12-15'),
-          frequency: 'monthly',
-        }]),
-      }),
-    });
-
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(
-      new Date('2026-01-15')
-    );
-
     (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const txMock = {
-        insert: insertMock,
-        update: updateMock,
-      };
-      return callback(txMock);
+      return callback({ insert: insertMock, update: updateMock });
     });
 
-    const input = {
+    return { insertMock, updateMock };
+  };
+
+  it('calls db.transaction for atomicity', async () => {
+    setupMocks();
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '100.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(db.transaction).toHaveBeenCalled();
+  });
+
+  it('inserts transaction AND updates bill within transaction', async () => {
+    const { insertMock, updateMock } = setupMocks();
+
+    const result = await logPayment({
       billId: 'bill-1',
       amount: '50.00',
       paidAt: new Date('2025-12-15'),
-    };
-
-    const result = await logPayment(input);
+      updateDueDate: true,
+    });
 
     expect(result.success).toBe(true);
     expect(insertMock).toHaveBeenCalledWith(transactions);
@@ -126,40 +99,34 @@ describe('logPayment', () => {
   it('converts amount to minor units in transaction insert', async () => {
     let capturedAmount: number | undefined;
 
-    const insertMock = jest.fn().mockReturnValue({
-      values: jest.fn((data) => {
-        capturedAmount = data.amount;
-        return {
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
-          }),
-        };
-      }),
-    });
-
-    const updateMock = jest.fn().mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          run: jest.fn(),
-        }),
-      }),
-    });
-
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{
-          id: 'bill-1',
-          dueDate: new Date('2025-12-15'),
-          frequency: 'monthly',
-        }]),
+        where: jest.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(
-      new Date('2026-01-15')
-    );
+    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+      nextDueDate: new Date('2026-01-15'),
+      newAmountDue: 20000,
+      newStatus: 'pending',
+    });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const insertMock = jest.fn().mockReturnValue({
+        values: jest.fn((data) => {
+          capturedAmount = data.amount;
+          return {
+            returning: jest.fn().mockReturnValue({
+              get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+            }),
+          };
+        }),
+      });
+      const updateMock = jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+        }),
+      });
       return callback({ insert: insertMock, update: updateMock });
     });
 
@@ -167,47 +134,187 @@ describe('logPayment', () => {
       billId: 'bill-1',
       amount: '75.50',
       paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
     });
 
     expect(capturedAmount).toBe(7550);
   });
 
-  it('marks one-time bill as paid without advancing date', async () => {
-    let capturedStatus: string | undefined;
+  it('calls PaymentService.processPayment with correct arguments', async () => {
+    setupMocks();
 
-    const insertMock = jest.fn().mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockReturnValue({
-          get: jest.fn().mockReturnValue({ id: 'tx-1' }),
-        }),
-      }),
+    await logPayment({
+      billId: 'bill-1',
+      amount: '100.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
     });
 
-    const updateMock = jest.fn().mockReturnValue({
-      set: jest.fn((data) => {
-        capturedStatus = data.status;
-        return {
-          where: jest.fn().mockReturnValue({
-            run: jest.fn(),
-          }),
-        };
-      }),
+    expect(PaymentService.processPayment).toHaveBeenCalledWith(
+      mockBill,
+      10000,
+      true
+    );
+  });
+
+  it('passes updateDueDate to PaymentService', async () => {
+    setupMocks();
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '100.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
     });
+
+    expect(PaymentService.processPayment).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      true
+    );
+  });
+
+  it('passes updateDueDate=false to PaymentService for partial payments', async () => {
+    setupMocks(mockBill, {
+      nextDueDate: null,
+      newAmountDue: 15000,
+      newStatus: 'pending',
+    });
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '50.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: false,
+    });
+
+    expect(PaymentService.processPayment).toHaveBeenCalledWith(
+      mockBill,
+      5000,
+      false
+    );
+  });
+
+  it('updates bill with amountDue from PaymentService result', async () => {
+    let capturedAmountDue: number | undefined;
 
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{
-          id: 'bill-1',
-          dueDate: new Date('2025-12-15'),
-          frequency: 'once',
-        }]),
+        where: jest.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    // One-time bills return null for next date
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+      nextDueDate: null,
+      newAmountDue: 5000,
+      newStatus: 'pending',
+    });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const insertMock = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      });
+      const updateMock = jest.fn().mockReturnValue({
+        set: jest.fn((data) => {
+          capturedAmountDue = data.amountDue;
+          return {
+            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+          };
+        }),
+      });
+      return callback({ insert: insertMock, update: updateMock });
+    });
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '150.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: false,
+    });
+
+    expect(capturedAmountDue).toBe(5000);
+  });
+
+  it('keeps original dueDate when PaymentService returns null nextDueDate', async () => {
+    let capturedDueDate: Date | undefined;
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([mockBill]),
+      }),
+    });
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+      nextDueDate: null,
+      newAmountDue: 5000,
+      newStatus: 'pending',
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const insertMock = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      });
+      const updateMock = jest.fn().mockReturnValue({
+        set: jest.fn((data) => {
+          capturedDueDate = data.dueDate;
+          return {
+            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+          };
+        }),
+      });
+      return callback({ insert: insertMock, update: updateMock });
+    });
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '150.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: false,
+    });
+
+    expect(capturedDueDate).toEqual(mockBill.dueDate);
+  });
+
+  it('updates dueDate when PaymentService returns new nextDueDate', async () => {
+    let capturedDueDate: Date | undefined;
+    const newDueDate = new Date('2026-01-15');
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([mockBill]),
+      }),
+    });
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+      nextDueDate: newDueDate,
+      newAmountDue: 20000,
+      newStatus: 'pending',
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const insertMock = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      });
+      const updateMock = jest.fn().mockReturnValue({
+        set: jest.fn((data) => {
+          capturedDueDate = data.dueDate;
+          return {
+            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+          };
+        }),
+      });
       return callback({ insert: insertMock, update: updateMock });
     });
 
@@ -215,9 +322,59 @@ describe('logPayment', () => {
       billId: 'bill-1',
       amount: '200.00',
       paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(capturedDueDate).toEqual(newDueDate);
+  });
+
+  it('marks one-time bill as paid with zero amountDue', async () => {
+    let capturedStatus: string | undefined;
+    let capturedAmountDue: number | undefined;
+
+    const oneTimeBill = { ...mockBill, frequency: 'once' as const };
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([oneTimeBill]),
+      }),
+    });
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+      nextDueDate: null,
+      newAmountDue: 0,
+      newStatus: 'paid',
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const insertMock = jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      });
+      const updateMock = jest.fn().mockReturnValue({
+        set: jest.fn((data) => {
+          capturedStatus = data.status;
+          capturedAmountDue = data.amountDue;
+          return {
+            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+          };
+        }),
+      });
+      return callback({ insert: insertMock, update: updateMock });
+    });
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '200.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
     });
 
     expect(capturedStatus).toBe('paid');
+    expect(capturedAmountDue).toBe(0);
   });
 
   it('returns error when bill not found', async () => {
@@ -231,6 +388,7 @@ describe('logPayment', () => {
       billId: 'nonexistent',
       amount: '10.00',
       paidAt: new Date(),
+      updateDueDate: true,
     });
 
     expect(result.success).toBe(false);
@@ -243,6 +401,7 @@ describe('logPayment', () => {
       billId: 'bill-1',
       amount: '0',
       paidAt: new Date(),
+      updateDueDate: true,
     });
 
     expect(result.success).toBe(false);
@@ -255,10 +414,24 @@ describe('logPayment', () => {
       billId: 'bill-1',
       amount: 'invalid',
       paidAt: new Date(),
+      updateDueDate: true,
     });
 
     expect(result.success).toBe(false);
     expect(result.fieldErrors?.amount).toBeDefined();
+  });
+
+  it('revalidates path after successful payment', async () => {
+    setupMocks();
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: '100.00',
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(revalidatePath).toHaveBeenCalledWith('/');
   });
 });
 

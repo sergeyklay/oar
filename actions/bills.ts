@@ -75,12 +75,13 @@ export async function createBill(
     const now = new Date();
     const status = dueDate < now ? 'overdue' : 'pending';
 
-    // Insert bill
+    // Insert bill (amountDue initialized to match amount for new bills)
     const [newBill] = await db
       .insert(bills)
       .values({
         title,
         amount: amountInMinorUnits,
+        amountDue: amountInMinorUnits,
         dueDate,
         frequency,
         isAutoPay,
@@ -281,12 +282,13 @@ export async function updateBill(
     const now = new Date();
     const status = dueDate < now ? 'overdue' : 'pending';
 
-    // Update bill
+    // Update bill (also sync amountDue when base amount changes)
     await db
       .update(bills)
       .set({
         title,
         amount: amountInMinorUnits,
+        amountDue: amountInMinorUnits,
         dueDate,
         frequency,
         isAutoPay,
