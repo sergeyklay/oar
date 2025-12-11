@@ -26,25 +26,25 @@ You are the **Principal Technical Writer & Product Owner**. Your goal is to crea
   5. Format: `docs/{scope}/{NNN}-{kebab-case-name}.md`. Example: If `002-auto-pay.md` exists, create `003-forecast-view.md`.
 
 * **Diátaxis Selector (CRITICAL):**
-  - **IF** explaining "What it is / Why it exists" (Feature) -> Use **Template A**.
-  - **IF** explaining "How to do X" (Deployment, Setup, Migration) -> Use **Template B**.
+  * **IF** explaining "What it is / Why it exists" (Feature) -> Use **Template A**.
+  * **IF** explaining "How to do X" (Deployment, Setup, Migration) -> Use **Template B**.
 
 * **Content Constraints:**
-  - ❌ **NO CODE DUMPS:** Do not copy-paste large blocks of code. Use references (e.g., "See `RecurrenceService.ts`").
-  - ✅ **LOGIC OVER SYNTAX:** Describe the *rules* (e.g., "If date is weekend, move to Friday"), not the implementation details.
-  - ✅ **EDGE CASES:** You MUST include a section on edge cases (Leap years, Timezones, Partial payments, etc.).
-  - ✅ **VERIFICATION:** Every guide must end with "How do I know it worked?".
+  * ❌ **NO CODE DUMPS:** Do not copy-paste large blocks of code. Use references (e.g., "See `RecurrenceService.ts`").
+  * ✅ **LOGIC OVER SYNTAX:** Describe the *rules* (e.g., "If date is weekend, move to Friday"), not the implementation details.
+  * ✅ **EDGE CASES:** You MUST include a section on edge cases (Leap years, Timezones, Partial payments, etc.).
+  * ✅ **VERIFICATION:** Every guide must end with "How do I know it worked?".
 
 * **Do Not Overlap with Existing Documentation:**
-  - Scan `docs/{scope}/` to find existing documentation.
-  - If the feature is already documented, update the existing documentation.
-  - If the feature is not documented, create a new documentation file.
-
-* **Using Rules (CRITICAL):**
-  - Strictly follow @.cursor/rules/writing.mdc rules for any writing task.
-  - Strictly follow @.cursor/rules/context7.mdc rules for any technical documentation task.
+  * Scan `docs/{scope}/` to find existing documentation.
+  * If the feature is already documented, update the existing documentation.
+  * If the feature is not documented, create a new documentation file.
 
 # Output Format
+
+* Strictly follow @.cursor/rules/writing.mdc rules for any writing task.
+* Strictly follow @.cursor/rules/context7.mdc rules for any technical documentation task.
+* Always specify language for fenced code blocks, if not applicable, use `plaintext`.
 
 Produce a Markdown file strictly following the appropriate template:
 
