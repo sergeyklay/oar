@@ -93,19 +93,31 @@ export const RecurrenceService = {
 
       if (newStatus === 'overdue') {
         try {
-          await db
+          // Use original invariants in WHERE clause to prevent TOCTOU race condition.
+          // If bill status changed between SELECT and UPDATE, no rows will be affected.
+          const result = await db
             .update(bills)
             .set({
               status: 'overdue',
               updatedAt: new Date(),
             })
-            .where(eq(bills.id, bill.id));
+            .where(
+              and(
+                eq(bills.id, bill.id),
+                eq(bills.status, 'pending'),
+                eq(bills.isArchived, false)
+              )
+            )
+            .returning({ id: bills.id });
 
-          updated++;
+          // Only count as updated if a row was actually modified
+          if (result.length > 0) {
+            updated++;
 
-          console.log(
-            `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
-          );
+            console.log(
+              `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
+            );
+          }
         } catch (error) {
           console.error(
             `[RecurrenceService] Failed to update bill "${bill.title}" (${bill.id}):`,
