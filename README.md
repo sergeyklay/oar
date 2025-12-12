@@ -1,53 +1,39 @@
 # Oar
 
-A sovereign, local-first bill management system built with Next.js 16, SQLite, and Drizzle ORM.
+A self-hosted, local-first bill manager for the Active Payer.
 
 [![CI](https://github.com/sergeyklay/oar/actions/workflows/ci.yml/badge.svg)](https://github.com/sergeyklay/oar/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sergeyklay/oar/graph/badge.svg?token=x0CUqL35Ab)](https://codecov.io/gh/sergeyklay/oar)
 
-## Getting Started
+## Philosophy
 
-### Prerequisites
+Oar rejects mindless automation. Most expense trackers record what already happened; Oar makes you confront what's coming. Every payment requires your conscious acknowledgment. This friction prevents zombie subscriptions and builds financial awareness.
 
-- Node.js 24+
-- npm
+Sovereignty by default. Your data lives on your machine. No cloud sync, no telemetry, no external APIs. You own your financial truth.
 
-### Installation
+## Features
 
-```bash
-# Clone and enter the project
-cd oar
+- **Manual payment logging** - Each payment is a deliberate act, not a background process
+- **Forecasting and liquidity planning** - See your cash flow before it happens
+- **Sinking funds** - Know exactly how much to save for upcoming obligations
+- **Local-first architecture** - Works offline, stores everything in SQLite
 
-# Use correct Node version
-nvm use
+## Tech stack
 
-# Install dependencies
-npm ci
+Next.js (App Router), SQLite (WAL mode), Drizzle ORM, shadcn/ui, Tailwind CSS, Docker
 
-# Initialize the database
-npm run db:push
-```
+## Documentation
 
-### Development
+| Section | Description |
+|---------|-------------|
+| 📐 [Architecture](docs/architecture/) | System design and database schema |
+| 🚀 [Development](docs/development/) | Local setup, Docker deployment |
+| 💡 [Features](docs/features/) | Deep dives into recurrence, forecasting, tags |
 
-```bash
-npm run dev
-```
+## Quick start
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+See the [Local Docker Guide](docs/development/002-local-docker.md) for full setup instructions.
 
-### Database Commands
+## License
 
-```bash
-npm run db:push      # Push schema changes to SQLite
-npm run db:generate  # Generate migration files
-npm run db:studio    # Open Drizzle Studio GUI
-```
-
-## Tech Stack
-
-- **Framework:** Next.js 16 (App Router)
-- **Database:** SQLite with WAL mode
-- **ORM:** Drizzle
-- **Validation:** Zod
-- **Styling:** Tailwind CSS
+This project is licensed under the MIT License.
