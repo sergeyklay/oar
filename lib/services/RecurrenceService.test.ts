@@ -284,7 +284,6 @@ describe('RecurrenceService', () => {
     });
 
     it('logs message for each overdue bill', async () => {
-      const consoleSpy = jest.spyOn(console, 'log');
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
 
@@ -309,7 +308,7 @@ describe('RecurrenceService', () => {
 
       await RecurrenceService.checkDailyBills();
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining('[RecurrenceService] Bill "Rent Payment" marked overdue')
       );
     });
