@@ -96,29 +96,36 @@ jobs:
               echo "✅ PR #$PR_NUMBER is ready to merge (state: $MERGE_STATE)"
               # Don't approve here - that's the event-driven workflow's job
               continue
-            elif [ "$MERGE_STATE" = "BEHIND" ] || [ "$MERGE_STATE" = "DIRTY" ] || [ "$MERGEABLE" = "CONFLICTING" ]; then
-              echo "🔄 PR #$PR_NUMBER needs rebase (reason: $MERGE_STATE)"
-
-              # Check if we already requested a rebase recently (avoid spam)
-              RECENT_REBASE_COMMENT=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json comments \
-                --jq '.comments | map(select(.body | contains("@dependabot rebase"))) | last | .createdAt // empty')
-
-              if [ -n "$RECENT_REBASE_COMMENT" ]; then
-                # Check if comment was within last 2 hours
-                COMMENT_AGE_SECONDS=$(( $(date +%s) - $(date -d "$RECENT_REBASE_COMMENT" +%s) ))
-                if [ "$COMMENT_AGE_SECONDS" -lt 7200 ]; then
-                  echo "⏭️  Skipping - rebase already requested $(( COMMENT_AGE_SECONDS / 60 )) minutes ago"
-                  continue
-                fi
-              fi
-
-              # Request rebase using CICDBOT_TOKEN (has push access)
-              echo "Requesting rebase..."
-              GH_TOKEN="$CICDBOT_TOKEN" gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
-              echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $MERGE_STATE)"
+            elif [ "$MERGEABLE" = "CONFLICTING" ]; then
+              # CONFLICTING is the most specific indicator - use it as reason
+              REBASE_REASON="CONFLICTING"
+            elif [ "$MERGE_STATE" = "BEHIND" ] || [ "$MERGE_STATE" = "DIRTY" ]; then
+              REBASE_REASON="$MERGE_STATE"
             else
               echo "⏸️  PR #$PR_NUMBER - Cannot proceed (state: $MERGE_STATE)"
+              continue
             fi
+
+            # At this point, we need a rebase
+            echo "🔄 PR #$PR_NUMBER needs rebase (reason: $REBASE_REASON)"
+
+            # Check if we already requested a rebase recently (avoid spam)
+            RECENT_REBASE_COMMENT=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json comments \
+              --jq '.comments | map(select(.body | contains("@dependabot rebase"))) | last | .createdAt // empty')
+
+            if [ -n "$RECENT_REBASE_COMMENT" ]; then
+              # Check if comment was within last 2 hours
+              COMMENT_AGE_SECONDS=$(( $(date +%s) - $(date -d "$RECENT_REBASE_COMMENT" +%s) ))
+              if [ "$COMMENT_AGE_SECONDS" -lt 7200 ]; then
+                echo "⏭️  Skipping - rebase already requested $(( COMMENT_AGE_SECONDS / 60 )) minutes ago"
+                continue
+              fi
+            fi
+
+            # Request rebase using CICDBOT_TOKEN (has push access)
+            echo "Requesting rebase..."
+            GH_TOKEN="$CICDBOT_TOKEN" gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
+            echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $REBASE_REASON)"
           done
 
           echo ""
