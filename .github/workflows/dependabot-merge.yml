@@ -55,14 +55,15 @@ jobs:
           echo "Skipping approval and auto-merge."
           exit 1
 
-      - name: Check for merge conflicts
-        id: conflict-check
+      - name: Check merge state
+        id: merge-check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           # Get detailed PR info including mergeable state
+          # mergeStateStatus values: BEHIND, BLOCKED, CLEAN, DIRTY, DRAFT, HAS_HOOKS, UNKNOWN, UNSTABLE
           PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json mergeable,mergeStateStatus)
           MERGEABLE=$(echo "$PR_DATA" | jq -r '.mergeable')
           MERGE_STATE=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
@@ -70,26 +71,30 @@ jobs:
           echo "Mergeable: $MERGEABLE"
           echo "Merge State: $MERGE_STATE"
 
-          if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$MERGE_STATE" = "DIRTY" ]; then
-            echo "has_conflict=true" >> "$GITHUB_OUTPUT"
+          # DIRTY = merge conflict, BEHIND = out-of-date with base branch
+          # Both cases require a rebase before we can merge
+          if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$MERGE_STATE" = "DIRTY" ] || [ "$MERGE_STATE" = "BEHIND" ]; then
+            echo "needs_rebase=true" >> "$GITHUB_OUTPUT"
+            echo "reason=$MERGE_STATE" >> "$GITHUB_OUTPUT"
           else
-            echo "has_conflict=false" >> "$GITHUB_OUTPUT"
+            echo "needs_rebase=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Request rebase if conflicts exist
-        if: steps.conflict-check.outputs.has_conflict == 'true'
+      - name: Request rebase
+        if: steps.merge-check.outputs.needs_rebase == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          REASON: ${{ steps.merge-check.outputs.reason }}
         run: |
-          echo "Merge conflict detected. Requesting Dependabot to rebase..."
+          echo "Branch needs rebase (reason: $REASON). Requesting Dependabot to rebase..."
           gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
-          echo "::warning::Merge conflict detected. Requested @dependabot rebase."
+          echo "::warning::Requested @dependabot rebase (reason: $REASON)"
           exit 0
 
       - name: Approve Pull Request
-        if: steps.conflict-check.outputs.has_conflict != 'true'
+        if: steps.merge-check.outputs.needs_rebase != 'true'
         env:
           GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
@@ -99,7 +104,7 @@ jobs:
           gh pr review "$PR_NUMBER" --repo "$GH_REPO" --approve --body "🤖 Auto-approved by @cicdbot after CI passed"
 
       - name: Enable auto-merge
-        if: steps.conflict-check.outputs.has_conflict != 'true'
+        if: steps.merge-check.outputs.needs_rebase != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
