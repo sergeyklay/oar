@@ -50,7 +50,12 @@ No `docker-compose.yml` with five services. No Helm charts. No environment varia
 
 Oar operates without any external service dependencies:
 
-- **No authentication SaaS:** The database IS the user's identity. If you can access the file, you own the data.
+- **No authentication SaaS:** File access equals full data ownership. Anyone who can read the SQLite file owns all financial data inside it. This requires operational security measures:
+  - **Volume protection:** Mount the data volume with restricted access. On Linux, set the directory to `700` permissions (`chmod 700 /path/to/oar-data`).
+  - **Filesystem permissions:** The database file should be readable only by the container's user. Default: `600` on the `.sqlite` file.
+  - **At-rest encryption:** Enable filesystem-level encryption (LUKS on Linux, FileVault on macOS, BitLocker on Windows) for the volume containing Oar's data directory.
+  - **Backup handling:** Store backups in an encrypted location. Verify backup integrity monthly by restoring to a test environment. Retain at least 7 daily and 4 weekly backups.
+  - **Access controls:** Limit SSH/shell access to the host machine. Treat Oar's data directory with the same security posture as a password vault.
 - **No cloud databases:** SQLite lives on disk. The user controls the backup strategy.
 - **No external APIs for core features:** No Plaid for bank connections, no payment processors for bill tracking. The user enters their own data.
 - **Offline capability:** All core features work without an internet connection. The app doesn't phone home.
