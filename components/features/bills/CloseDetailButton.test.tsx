@@ -26,7 +26,7 @@ describe('CloseDetailButton', () => {
     const user = userEvent.setup();
     render(<CloseDetailButton />);
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: /close bill detail/i }));
 
     expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
   });
@@ -35,8 +35,9 @@ describe('CloseDetailButton', () => {
     const user = userEvent.setup();
     render(<CloseDetailButton />);
 
-    await user.click(screen.getByRole('button'));
-    await user.click(screen.getByRole('button'));
+    const closeButton = screen.getByRole('button', { name: /close bill detail/i });
+    await user.click(closeButton);
+    await user.click(closeButton);
 
     expect(mockSetSelectedBill).toHaveBeenCalledTimes(2);
   });
