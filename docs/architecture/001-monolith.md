@@ -44,7 +44,7 @@ docker run -v oar-data:/data -p 3000:3000 oar:latest
 
 That's it. The user has a running financial app. The `-v oar-data:/data` flag mounts a volume for the SQLite database, ensuring data persists across container restarts.
 
-No `docker-compose.yml` with five services. No Helm charts. No environment variables for service discovery. One container, one port, one volume.
+You don't need a complex `docker-compose.yml` with five services, Helm charts, or service-discovery env vars. It's one container, one port, and one volume.
 
 ### Local-first sovereignty
 
