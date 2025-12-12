@@ -26,12 +26,12 @@ Next.js serves as the complete application framework:
 
 This means a Server Action that logs a payment and a background job that checks for due bills share the same memory space. No serialization overhead. No network hops. No message queue to maintain.
 
-### Zero-latency data access
+### Low-latency local data access
 
 SQLite with WAL (Write-Ahead Logging) mode provides:
 
-- **Fast reads:** The `better-sqlite3` driver accesses data through direct memory mapping, eliminating network round-trip latency entirely. Local file access is inherently faster than queries over a network connection.
-- **Atomic writes:** WAL mode allows concurrent reads during writes. For a single-user app, this eliminates all contention concerns.
+- **Fast reads:** Local SQLite avoids network round-trips. `better-sqlite3` can use memory-mapped I/O, which helps keep reads snappy on typical self-hosted hardware.
+- **Atomic writes:** WAL allows readers during writes, but SQLite still has one writer at a time. For a single-user app, that’s usually fine.
 - **Zero configuration:** No connection pooling, no replica management, no credentials to rotate.
 
 ### Single-command deployment
