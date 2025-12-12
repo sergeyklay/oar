@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatMoney } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { CloseDetailButton } from './CloseDetailButton';
-import type { BillWithTags } from '@/lib/types';
+import type { BillWithTags, BillFrequency } from '@/lib/types';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;
@@ -13,15 +13,20 @@ interface BillDetailPanelProps {
   locale: string;
 }
 
-const frequencyLabels: Record<string, string> = {
+const frequencyLabels = {
   once: 'One-time',
   monthly: 'Monthly',
   yearly: 'Yearly',
-};
+} satisfies Record<BillFrequency, string>;
 
 /**
- * Server component displaying bill details in the right panel.
- * Tags are shown at the bottom per the guide requirement.
+ * Display bill details in the right panel.
+ *
+ * @param props - Panel props.
+ * @param props.bill - Bill to display (with tags).
+ * @param props.currency - ISO 4217 currency code.
+ * @param props.locale - BCP 47 locale tag.
+ * @returns Bill details panel UI.
  */
 export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps) {
   return (
