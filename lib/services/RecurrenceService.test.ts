@@ -1,16 +1,11 @@
-// Mock the database module before importing RecurrenceService
+jest.mock('@paralleldrive/cuid2', () => ({
+  createId: jest.fn(() => 'mock-cuid'),
+}));
+
 jest.mock('@/db', () => ({
   db: {
     select: jest.fn(),
     update: jest.fn(),
-  },
-}));
-
-jest.mock('@/db/schema', () => ({
-  bills: {
-    id: 'id',
-    status: 'status',
-    isArchived: 'isArchived',
   },
 }));
 
