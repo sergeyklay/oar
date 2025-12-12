@@ -6,15 +6,15 @@
 
 ## Context
 
-Oar is a personal finance app designed for self-hosters who want complete control over their financial data. The target user runs the app on their own hardware; a home server, a Raspberry Pi, or a cheap VPS. They don't want to learn Kubernetes. They don't want to manage multiple containers. They want to run one command and have a working app.
+Oar is a personal finance app designed for self-hosters who want complete control over their financial data. The target user runs the app on their own hardware: a home server, a Raspberry Pi, or a cheap VPS. Learning Kubernetes isn't on their agenda, nor is managing multiple containers. A single command should produce a working app.
 
-The industry default for "serious" applications is microservices: separate containers for the API, the frontend, the database, the job queue, the cache. This architecture makes sense for teams of hundreds shipping to millions of users. It doesn't make sense for a single-user app running on a $5/month server.
+The industry default for "serious" applications is microservices: separate containers for the API, the frontend, the database, the job queue, the cache. This architecture makes sense for teams of hundreds shipping to millions of users. A single-user app running on a $5/month server gains nothing from it.
 
-Microservices introduce network latency between every service call. They require orchestration tools to manage. They demand monitoring infrastructure to debug. They multiply the attack surface. For Oar's use case, all of this complexity provides zero benefit and significant harm.
+Microservices introduce network latency between every service call. Orchestration tools become mandatory. Monitoring infrastructure piles on to support debugging. The attack surface multiplies. For Oar's use case, all of this complexity provides zero benefit and significant harm.
 
 ## Decision
 
-Oar uses a hyper-optimized modular monolith architecture. One Node.js process handles everything: UI rendering, API requests, and background jobs. One SQLite database file stores all data. One Docker container runs the entire application.
+Oar uses a hyper-optimized modular monolith architecture. A single Node.js process handles everything: UI rendering, API requests, and background jobs. All data lives in one SQLite database file. The entire application runs inside a single Docker container.
 
 ### Unified runtime
 
