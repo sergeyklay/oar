@@ -43,7 +43,7 @@ import {
   type UpdateBillInput,
 } from '@/actions/bills';
 import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
-import type { Bill, Tag } from '@/db/schema';
+import type { Bill, Tag } from '@/lib/types';
 import { TagCombobox } from './TagCombobox';
 
 const formSchema = z.object({

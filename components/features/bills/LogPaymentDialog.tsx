@@ -38,7 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toMajorUnits } from '@/lib/money';
 import { logPayment } from '@/actions/transactions';
-import type { Bill } from '@/db/schema';
+import type { Bill } from '@/lib/types';
 
 const formSchema = z.object({
   amount: z.string().min(1, 'Amount is required'),

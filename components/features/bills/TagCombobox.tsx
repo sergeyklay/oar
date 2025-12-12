@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { createTag } from '@/actions/tags';
-import type { Tag } from '@/db/schema';
+import type { Tag } from '@/lib/types';
 
 interface TagComboboxProps {
   /** All available tags */

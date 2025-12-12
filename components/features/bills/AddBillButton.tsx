@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BillFormDialog } from './BillFormDialog';
-import type { Tag } from '@/db/schema';
+import type { Tag } from '@/lib/types';
 
 interface AddBillButtonProps {
   currencySymbol?: string;

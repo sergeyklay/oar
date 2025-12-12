@@ -10,7 +10,7 @@ import { BillActionsMenu } from './BillActionsMenu';
 import { BillFormDialog } from './BillFormDialog';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
-import type { BillWithTags, Tag } from '@/db/schema';
+import type { BillWithTags, Tag } from '@/lib/types';
 
 interface BillRowProps {
   bill: BillWithTags;

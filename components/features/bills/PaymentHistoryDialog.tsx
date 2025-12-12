@@ -25,7 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/lib/money';
 import { getTransactionsByBillId, deleteTransaction } from '@/actions/transactions';
-import type { Transaction } from '@/db/schema';
+import type { Transaction } from '@/lib/types';
 
 interface PaymentHistoryDialogProps {
   billId: string;
