@@ -34,7 +34,8 @@ export const BillService = {
       })
       .from(billsToTags)
       .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-      .where(eq(billsToTags.billId, billId));
+      .where(eq(billsToTags.billId, billId))
+      .orderBy(tags.name);
 
     return {
       ...bill,
@@ -58,7 +59,8 @@ export const BillService = {
       })
       .from(billsToTags)
       .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-      .where(eq(billsToTags.billId, billId));
+      .where(eq(billsToTags.billId, billId))
+      .orderBy(tags.name);
   },
 
   /**
@@ -82,7 +84,8 @@ export const BillService = {
       })
       .from(billsToTags)
       .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-      .where(inArray(billsToTags.billId, billIds));
+      .where(inArray(billsToTags.billId, billIds))
+      .orderBy(tags.name);
 
     const tagsByBillId = new Map<string, Tag[]>();
     for (const assoc of tagAssociations) {
