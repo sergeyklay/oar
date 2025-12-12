@@ -384,22 +384,6 @@ describe('getBillTags', () => {
     expect(result.data).toEqual(mockTags);
   });
 
-  it('calls revalidatePath on success', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      }),
-    });
-
-    await getBillTags('bill-1');
-
-    expect(revalidatePath).toHaveBeenCalledWith('/');
-  });
-
   it('returns success with empty array when no tags assigned', async () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({

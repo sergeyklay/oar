@@ -434,8 +434,6 @@ export async function getBillTags(
     const { BillService } = await import('@/lib/services/BillService');
     const billTags = await BillService.getTags(parsed.data);
 
-    revalidatePath('/');
-
     return {
       success: true,
       data: billTags,
