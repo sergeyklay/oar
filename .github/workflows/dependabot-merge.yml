@@ -83,7 +83,9 @@ jobs:
       - name: Request rebase
         if: steps.merge-check.outputs.needs_rebase == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Must use CICDBOT_TOKEN (PAT from user with push access)
+          # GITHUB_TOKEN creates comments as github-actions[bot] which Dependabot rejects
+          GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           REASON: ${{ steps.merge-check.outputs.reason }}
