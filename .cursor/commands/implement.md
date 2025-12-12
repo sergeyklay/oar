@@ -97,8 +97,8 @@ IF the task involves fixing a documented BUG:
 You are PROHIBITED from responding "Done" until you have verified runtime execution for Database Logic.
 
 1. **Static Analysis:**
-   - `npx tsc --noEmit` (MUST pass - no errors or warnings)
-   - `npm run lint` (MUST pass - no errors or warnings)
+   - `npx tsc --noEmit 2>&1` (MUST pass - no errors or warnings)
+   - `npm run lint 2>&1` (MUST pass - no errors or warnings)
 
 2. **Runtime Validation (For DB/Logic):**
    - IF you modified database logic (actions/services):

@@ -11,6 +11,7 @@ When testing Server Actions, NEVER import the real `db` instance.
 - Use `jest.mock('@/db')` to mock the Drizzle client.
 - Mock return values of queries using `mockReturnValue` or `mockResolvedValue`.
 - Example for insert: `(db.insert as jest.Mock).mockReturnValue({ values: jest.fn().mockReturnValue({ returning: jest.fn().mockResolvedValue([mockData]) }) })`.
+- **Don't mock `@/db/schema`:** just mock `@/db`. Schema is side-effect-free and gives real Column objects needed by `drizzle-orm`.
 
 ## 2. React Testing Library
 - **Queries:** Prioritize `getByRole`, `getByLabelText`, `getByText` (Accessibility-first). Avoid `getByTestId` unless necessary.
