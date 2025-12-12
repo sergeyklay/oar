@@ -403,57 +403,40 @@ export async function deleteBill(id: string): Promise<ActionResult> {
   }
 }
 
+/** Validation schema for bill ID parameter */
+const billIdSchema = z.string().min(1, 'Bill ID is required');
+
 /**
  * Fetch tags for a specific bill (used in edit form)
  *
  * @param billId - Bill ID to fetch tags for
  */
 export async function getBillTags(billId: string): Promise<Tag[]> {
-  const result = await db
-    .select({
-      id: tags.id,
-      name: tags.name,
-      slug: tags.slug,
-      createdAt: tags.createdAt,
-    })
-    .from(billsToTags)
-    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-    .where(eq(billsToTags.billId, billId));
+  const parsed = billIdSchema.safeParse(billId);
 
-  return result;
+  if (!parsed.success) {
+    return [];
+  }
+
+  const { BillService } = await import('@/lib/services/BillService');
+  return BillService.getTags(parsed.data);
 }
 
 /**
  * Fetch a single bill with its associated tags.
  *
+ * Validates input and delegates to BillService.
+ *
  * @param billId - Bill ID to fetch
- * @returns Bill with tags or null if not found/archived
+ * @returns Bill with tags or null if not found/archived/invalid
  */
 export async function getBillWithTags(billId: string): Promise<BillWithTags | null> {
-  // Fetch the bill
-  const [bill] = await db
-    .select()
-    .from(bills)
-    .where(and(eq(bills.id, billId), eq(bills.isArchived, false)));
+  const parsed = billIdSchema.safeParse(billId);
 
-  if (!bill) {
+  if (!parsed.success) {
     return null;
   }
 
-  // Fetch associated tags
-  const billTags = await db
-    .select({
-      id: tags.id,
-      name: tags.name,
-      slug: tags.slug,
-      createdAt: tags.createdAt,
-    })
-    .from(billsToTags)
-    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-    .where(eq(billsToTags.billId, billId));
-
-  return {
-    ...bill,
-    tags: billTags,
-  };
+  const { BillService } = await import('@/lib/services/BillService');
+  return BillService.getWithTags(parsed.data);
 }
