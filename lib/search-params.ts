@@ -14,11 +14,13 @@ function getCurrentMonth(): string {
  * - month: Current visible month (YYYY-MM)
  * - date: Selected specific date (YYYY-MM-DD)
  * - tag: Filter by tag slug (e.g., "business")
+ * - selectedBill: Currently selected bill ID for detail view
  */
 export const calendarSearchParams = {
   month: parseAsString.withDefault(getCurrentMonth()),
   date: parseAsString,
-  tag: parseAsString,  // NEW: Tag filter
+  tag: parseAsString,
+  selectedBill: parseAsString,
 };
 
 /**

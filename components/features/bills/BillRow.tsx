@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Banknote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { BillActionsMenu } from './BillActionsMenu';
@@ -21,6 +20,11 @@ interface BillRowProps {
   availableTags?: Tag[];
 }
 
+/**
+ * Bill row content (td elements only).
+ * The <tr> wrapper is provided by BillRowClickable.
+ * Tags are NOT displayed here per guide requirement.
+ */
 export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
@@ -30,25 +34,8 @@ export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowP
   const currencySymbol = getCurrencySymbol(currency);
 
   return (
-    <tr>
-      <td className="font-medium">
-        <div className="flex flex-col gap-1">
-          <span>{bill.title}</span>
-          {bill.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {bill.tags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="outline"
-                  className="text-xs font-normal"
-                >
-                  {tag.name}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-      </td>
+    <>
+      <td className="font-medium">{bill.title}</td>
       <td className="font-mono">
         {formatMoney(bill.amount, currency, locale)}
         {bill.isVariable && (
@@ -63,7 +50,10 @@ export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowP
         <BillStatusBadge status={bill.status} />
       </td>
       <td>
-        <div className="flex items-center gap-1">
+        <div
+          className="flex items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button
             variant="ghost"
             size="icon"
@@ -107,6 +97,6 @@ export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowP
           locale={locale}
         />
       </td>
-    </tr>
+    </>
   );
 }

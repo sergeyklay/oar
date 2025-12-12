@@ -137,6 +137,25 @@
   background: hsl(var(--accent));
 }
 
+/* === Bill Row Selection === */
+.bill-row-clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.bill-row-clickable[data-selected="true"] {
+  background: hsl(var(--primary) / 0.15);
+}
+
+.bill-row-clickable[data-selected="true"]:hover {
+  background: hsl(var(--primary) / 0.2);
+}
+
+.bill-row-clickable:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+
 /* === Scrollbar Styling === */
 .bill-list-container::-webkit-scrollbar {
   width: 8px;

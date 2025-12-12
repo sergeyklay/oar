@@ -422,3 +422,38 @@ export async function getBillTags(billId: string): Promise<Tag[]> {
 
   return result;
 }
+
+/**
+ * Fetch a single bill with its associated tags.
+ *
+ * @param billId - Bill ID to fetch
+ * @returns Bill with tags or null if not found/archived
+ */
+export async function getBillWithTags(billId: string): Promise<BillWithTags | null> {
+  // Fetch the bill
+  const [bill] = await db
+    .select()
+    .from(bills)
+    .where(and(eq(bills.id, billId), eq(bills.isArchived, false)));
+
+  if (!bill) {
+    return null;
+  }
+
+  // Fetch associated tags
+  const billTags = await db
+    .select({
+      id: tags.id,
+      name: tags.name,
+      slug: tags.slug,
+      createdAt: tags.createdAt,
+    })
+    .from(billsToTags)
+    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
+    .where(eq(billsToTags.billId, billId));
+
+  return {
+    ...bill,
+    tags: billTags,
+  };
+}

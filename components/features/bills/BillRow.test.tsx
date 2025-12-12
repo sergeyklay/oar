@@ -45,7 +45,9 @@ const renderBillRow = (bill: BillWithTags) => {
   return render(
     <table>
       <tbody>
-        <BillRow bill={bill} currency="USD" locale="en-US" />
+        <tr>
+          <BillRow bill={bill} currency="USD" locale="en-US" />
+        </tr>
       </tbody>
     </table>
   );
@@ -103,7 +105,7 @@ describe('BillRow', () => {
       expect(screen.getByText('yearly')).toBeInTheDocument();
     });
 
-    it('displays tags when present', () => {
+    it('does not display tags in row (tags shown in detail panel only)', () => {
       const bill = createMockBill({
         tags: [
           { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
@@ -112,7 +114,8 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      expect(screen.getByText('Utilities')).toBeInTheDocument();
+      // Tags should NOT appear in the row - they're displayed in the detail panel
+      expect(screen.queryByText('Utilities')).not.toBeInTheDocument();
     });
   });
 });

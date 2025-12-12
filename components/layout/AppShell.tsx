@@ -3,16 +3,18 @@ import { CalendarPanel } from './CalendarPanel';
 
 interface AppShellProps {
   children: React.ReactNode;
+  /** Optional right panel content; defaults to CalendarPanel */
+  rightPanel?: React.ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, rightPanel }: AppShellProps) {
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="main-content">
         {children}
       </main>
-      <CalendarPanel />
+      {rightPanel ?? <CalendarPanel />}
     </div>
   );
 }

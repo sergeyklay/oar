@@ -2,6 +2,7 @@ import { getBillsFiltered } from '@/actions/bills';
 import { getTags } from '@/actions/tags';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { BillRow } from './BillRow';
+import { BillRowClickable } from './BillRowClickable';
 
 interface BillListProps {
   /** Filter by specific date (YYYY-MM-DD) */
@@ -10,9 +11,11 @@ interface BillListProps {
   month?: string;
   /** Filter by tag slug */
   tag?: string;
+  /** Currently selected bill ID */
+  selectedBillId?: string | null;
 }
 
-export async function BillList({ date, month, tag }: BillListProps) {
+export async function BillList({ date, month, tag, selectedBillId }: BillListProps) {
   const [bills, settings, availableTags] = await Promise.all([
     getBillsFiltered({ date, month, tag }),
     SettingsService.getAll(),
@@ -54,13 +57,18 @@ export async function BillList({ date, month, tag }: BillListProps) {
       </thead>
       <tbody>
         {bills.map((bill) => (
-          <BillRow
+          <BillRowClickable
             key={bill.id}
-            bill={bill}
-            currency={settings.currency}
-            locale={settings.locale}
-            availableTags={availableTags}
-          />
+            billId={bill.id}
+            isSelected={bill.id === selectedBillId}
+          >
+            <BillRow
+              bill={bill}
+              currency={settings.currency}
+              locale={settings.locale}
+              availableTags={availableTags}
+            />
+          </BillRowClickable>
         ))}
       </tbody>
     </table>
