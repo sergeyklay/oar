@@ -48,12 +48,16 @@ runs:
 
         # Determine action based on merge state:
         # - CLEAN/HAS_HOOKS: Ready to approve and merge
-        # - BEHIND/DIRTY: Request rebase from Dependabot
+        # - BEHIND/DIRTY/CONFLICTING: Request rebase from Dependabot
         # - BLOCKED/UNKNOWN/UNSTABLE: Skip (cannot proceed)
         if [ "$MERGE_STATE" = "CLEAN" ] || [ "$MERGE_STATE" = "HAS_HOOKS" ]; then
           echo "action=approve" >> "$GITHUB_OUTPUT"
           echo "reason=ready" >> "$GITHUB_OUTPUT"
-        elif [ "$MERGE_STATE" = "BEHIND" ] || [ "$MERGE_STATE" = "DIRTY" ] || [ "$MERGEABLE" = "CONFLICTING" ]; then
+        elif [ "$MERGEABLE" = "CONFLICTING" ]; then
+          # Check CONFLICTING first - it's the most specific indicator of merge conflicts
+          echo "action=rebase" >> "$GITHUB_OUTPUT"
+          echo "reason=CONFLICTING" >> "$GITHUB_OUTPUT"
+        elif [ "$MERGE_STATE" = "BEHIND" ] || [ "$MERGE_STATE" = "DIRTY" ]; then
           echo "action=rebase" >> "$GITHUB_OUTPUT"
           echo "reason=$MERGE_STATE" >> "$GITHUB_OUTPUT"
         else
