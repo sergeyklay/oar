@@ -74,8 +74,9 @@ jobs:
             echo "Checking PR #$PR_NUMBER"
             echo "=========================================="
 
-            # Wrap PR processing in error handling - continue to next PR on failure
-            if ! {
+            # Wrap PR processing in a SUBSHELL - exit only exits the subshell, not the loop
+            # Using ( ... ) instead of { ... } creates an actual subshell
+            if ! (
               # Check if CI has passed for this PR
               # Get the latest commit status/checks
               if ! PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json statusCheckRollup,mergeable,mergeStateStatus); then
@@ -167,7 +168,7 @@ jobs:
                 exit 1
               fi
               echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $REBASE_REASON)"
-            }; then
+            ); then
               echo "::error::Failed to process PR #$PR_NUMBER"
               FAILED_PRS="$FAILED_PRS $PR_NUMBER"
             fi
