@@ -1,5 +1,6 @@
 import { createBill, updateBill, getBillTags } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
+import { revalidatePath } from 'next/cache';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
@@ -359,6 +360,7 @@ describe('updateBill', () => {
 describe('getBillTags', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('returns success with tags when bill found', async () => {
@@ -382,6 +384,22 @@ describe('getBillTags', () => {
     expect(result.data).toEqual(mockTags);
   });
 
+  it('calls revalidatePath on success', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        innerJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      }),
+    });
+
+    await getBillTags('bill-1');
+
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+  });
+
   it('returns success with empty array when no tags assigned', async () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
@@ -399,11 +417,13 @@ describe('getBillTags', () => {
     expect(result.data).toEqual([]);
   });
 
-  it('returns error for empty bill ID', async () => {
+  it('returns error with fieldErrors and data:[] for empty bill ID', async () => {
     const result = await getBillTags('');
 
     expect(result.success).toBe(false);
     expect(result.error).toBeDefined();
+    expect(result.fieldErrors?.billId).toBeDefined();
+    expect(result.data).toEqual([]);
     expect(db.select).not.toHaveBeenCalled();
   });
 });
