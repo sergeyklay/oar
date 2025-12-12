@@ -164,7 +164,9 @@ describe('RecurrenceService', () => {
       });
 
       const mockSetFn = jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+        where: jest.fn().mockReturnValue({
+          returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+        }),
       });
       mockUpdate.mockReturnValue({ set: mockSetFn });
 
@@ -245,7 +247,9 @@ describe('RecurrenceService', () => {
 
       mockUpdate.mockReturnValue({
         set: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue(undefined),
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+          }),
         }),
       });
 
@@ -273,7 +277,9 @@ describe('RecurrenceService', () => {
 
       mockUpdate.mockReturnValue({
         set: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue(undefined),
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([{ id: 'some-id' }]),
+          }),
         }),
       });
 
@@ -302,7 +308,9 @@ describe('RecurrenceService', () => {
 
       mockUpdate.mockReturnValue({
         set: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue(undefined),
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+          }),
         }),
       });
 
@@ -311,6 +319,38 @@ describe('RecurrenceService', () => {
       expect(console.log).toHaveBeenCalledWith(
         expect.stringContaining('[RecurrenceService] Bill "Rent Payment" marked overdue')
       );
+    });
+
+    it('does not count update when no rows affected (TOCTOU protection)', async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const mockOverdueBill = {
+        id: 'bill-1',
+        title: 'Changed Bill',
+        dueDate: yesterday,
+        status: 'pending',
+      };
+
+      mockSelect.mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockOverdueBill]),
+        }),
+      });
+
+      // Simulate bill status changed between SELECT and UPDATE (returns empty array)
+      mockUpdate.mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await RecurrenceService.checkDailyBills();
+
+      expect(result).toEqual({ checked: 1, updated: 0 });
+      expect(mockUpdate).toHaveBeenCalled();
     });
 
     it('returns a promise', () => {
