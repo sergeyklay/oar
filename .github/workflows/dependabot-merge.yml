@@ -86,13 +86,6 @@ jobs:
           echo "::warning::Merge conflict detected. Requested @dependabot rebase."
           exit 0
 
-      - name: Dependabot metadata
-        if: steps.conflict-check.outputs.has_conflict != 'true'
-        id: metadata
-        uses: dependabot/fetch-metadata@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Approve Pull Request
         if: steps.conflict-check.outputs.has_conflict != 'true'
         env:
