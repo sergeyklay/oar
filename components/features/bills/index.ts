@@ -1,9 +1,12 @@
 export { AddBillButton } from './AddBillButton';
 export { BillActionsMenu } from './BillActionsMenu';
+export { BillDetailPanel } from './BillDetailPanel';
 export { BillFormDialog } from './BillFormDialog';
 export { BillList } from './BillList';
 export { BillRow } from './BillRow';
+export { BillRowClickable } from './BillRowClickable';
 export { BillStatusBadge } from './BillStatusBadge';
+export { CloseDetailButton } from './CloseDetailButton';
 export { LogPaymentDialog } from './LogPaymentDialog';
 export { PaymentHistoryDialog } from './PaymentHistoryDialog';
 export { TagCombobox } from './TagCombobox';

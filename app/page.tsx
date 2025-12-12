@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { MainContent } from '@/components/layout/MainContent';
+import { RightPanel } from '@/components/layout/RightPanel';
 import { AddBillButton, BillList, TagFilter } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getTags } from '@/actions/tags';
@@ -37,12 +38,28 @@ export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   // CRITICAL: In Next.js 15+, searchParams is a Promise that must be awaited
-  const { month, date, tag } = await searchParamsCache.parse(searchParams);
+  const { month, date, tag, selectedBill } = await searchParamsCache.parse(searchParams);
+
+  // Fetch settings for right panel
+  const settings = await SettingsService.getAll();
 
   return (
-    <AppShell>
+    <AppShell
+      rightPanel={
+        <RightPanel
+          selectedBillId={selectedBill ?? null}
+          currency={settings.currency}
+          locale={settings.locale}
+        />
+      }
+    >
       <MainContent header={<DashboardHeader />}>
-        <BillList month={month} date={date ?? undefined} tag={tag ?? undefined} />
+        <BillList
+          month={month}
+          date={date ?? undefined}
+          tag={tag ?? undefined}
+          selectedBillId={selectedBill}
+        />
       </MainContent>
     </AppShell>
   );

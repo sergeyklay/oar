@@ -59,7 +59,7 @@ export function TagFilter({ tags }: TagFilterProps) {
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-9">
             <Filter className="mr-2 h-4 w-4" />
-            {activeTag ? activeTag.name : 'Filter by Tag'}
+            {activeTag ? activeTag.name : 'All Bills'}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="end">
