@@ -73,7 +73,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '100.00',
+      amount: 10000, // 100.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -86,7 +86,7 @@ describe('logPayment', () => {
 
     const result = await logPayment({
       billId: 'bill-1',
-      amount: '50.00',
+      amount: 5000, // 50.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -96,7 +96,7 @@ describe('logPayment', () => {
     expect(updateMock).toHaveBeenCalledWith(bills);
   });
 
-  it('converts amount to minor units in transaction insert', async () => {
+  it('uses provided integer amount directly in transaction insert', async () => {
     let capturedAmount: number | undefined;
 
     (db.select as jest.Mock).mockReturnValue({
@@ -132,7 +132,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '75.50',
+      amount: 7550, // Already in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -145,7 +145,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '100.00',
+      amount: 10000, // 100.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -162,7 +162,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '100.00',
+      amount: 10000,
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -183,7 +183,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '50.00',
+      amount: 5000, // 50.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: false,
     });
@@ -231,7 +231,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '150.00',
+      amount: 15000, // 150.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: false,
     });
@@ -275,7 +275,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '150.00',
+      amount: 15000, // 150.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: false,
     });
@@ -320,7 +320,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '200.00',
+      amount: 20000, // 200.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -368,7 +368,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '200.00',
+      amount: 20000, // 200.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });
@@ -386,7 +386,7 @@ describe('logPayment', () => {
 
     const result = await logPayment({
       billId: 'nonexistent',
-      amount: '10.00',
+      amount: 1000, // 10.00 in minor units
       paidAt: new Date(),
       updateDueDate: true,
     });
@@ -396,10 +396,10 @@ describe('logPayment', () => {
     expect(db.transaction).not.toHaveBeenCalled();
   });
 
-  it('validates amount is positive', async () => {
+  it('validates amount is positive integer', async () => {
     const result = await logPayment({
       billId: 'bill-1',
-      amount: '0',
+      amount: 0,
       paidAt: new Date(),
       updateDueDate: true,
     });
@@ -409,10 +409,10 @@ describe('logPayment', () => {
     expect(db.select).not.toHaveBeenCalled();
   });
 
-  it('validates amount format', async () => {
+  it('validates amount is an integer', async () => {
     const result = await logPayment({
       billId: 'bill-1',
-      amount: 'invalid',
+      amount: 10.5, // Not an integer
       paidAt: new Date(),
       updateDueDate: true,
     });
@@ -426,7 +426,7 @@ describe('logPayment', () => {
 
     await logPayment({
       billId: 'bill-1',
-      amount: '100.00',
+      amount: 10000, // 100.00 in minor units
       paidAt: new Date('2025-12-15'),
       updateDueDate: true,
     });

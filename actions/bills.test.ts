@@ -1,6 +1,5 @@
-import { createBill, updateBill, getBillWithTags } from './bills';
+import { createBill, updateBill, getBillTags } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
-import type { Bill } from '@/db/schema';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
@@ -357,96 +356,50 @@ describe('updateBill', () => {
   });
 });
 
-describe('getBillWithTags', () => {
+describe('getBillTags', () => {
   beforeEach(() => {
     resetDbMocks();
   });
 
-  const mockBill: Bill = {
-    id: 'bill-1',
-    title: 'Electric Bill',
-    amount: 15000,
-    amountDue: 15000,
-    dueDate: new Date('2025-12-15'),
-    frequency: 'monthly',
-    isAutoPay: false,
-    isVariable: true,
-    status: 'pending',
-    isArchived: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  it('returns bill with tags when found', async () => {
+  it('returns success with tags when bill found', async () => {
     const mockTags = [
       { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
     ];
 
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue(mockTags),
-          }),
-        }),
-      });
-
-    const result = await getBillWithTags('bill-1');
-
-    expect(result).not.toBeNull();
-    expect(result?.id).toBe('bill-1');
-    expect(result?.title).toBe('Electric Bill');
-    expect(result?.tags).toEqual(mockTags);
-  });
-
-  it('returns null when bill not found', async () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+        innerJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(mockTags),
+        }),
       }),
     });
 
-    const result = await getBillWithTags('non-existent');
+    const result = await getBillTags('bill-1');
 
-    expect(result).toBeNull();
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(mockTags);
   });
 
-  it('returns bill with empty tags array when no tags assigned', async () => {
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
-
-    const result = await getBillWithTags('bill-1');
-
-    expect(result).not.toBeNull();
-    expect(result?.tags).toEqual([]);
-  });
-
-  it('excludes archived bills (returns null for archived bill ID)', async () => {
+  it('returns success with empty array when no tags assigned', async () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+        innerJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
       }),
     });
 
-    const result = await getBillWithTags('archived-bill-id');
+    const result = await getBillTags('bill-1');
 
-    expect(result).toBeNull();
-    expect(db.select).toHaveBeenCalledTimes(1);
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual([]);
+  });
+
+  it('returns error for empty bill ID', async () => {
+    const result = await getBillTags('');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
+    expect(db.select).not.toHaveBeenCalled();
   });
 });
