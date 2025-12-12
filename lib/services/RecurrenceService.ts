@@ -92,19 +92,26 @@ export const RecurrenceService = {
       const newStatus = this.deriveStatus(bill.dueDate);
 
       if (newStatus === 'overdue') {
-        await db
-          .update(bills)
-          .set({
-            status: 'overdue',
-            updatedAt: new Date(),
-          })
-          .where(eq(bills.id, bill.id));
+        try {
+          await db
+            .update(bills)
+            .set({
+              status: 'overdue',
+              updatedAt: new Date(),
+            })
+            .where(eq(bills.id, bill.id));
 
-        updated++;
+          updated++;
 
-        console.log(
-          `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
-        );
+          console.log(
+            `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
+          );
+        } catch (error) {
+          console.error(
+            `[RecurrenceService] Failed to update bill "${bill.title}" (${bill.id}):`,
+            error
+          );
+        }
       }
     }
 
