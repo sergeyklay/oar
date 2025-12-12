@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import type { BillStatus } from '@/db/schema';
+import type { BillStatus } from '@/lib/types';
 
 interface BillStatusBadgeProps {
   status: BillStatus;

@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import type { Tag } from '@/db/schema';
+import type { Tag } from '@/lib/types';
 
 interface TagFilterProps {
   /** All available tags */

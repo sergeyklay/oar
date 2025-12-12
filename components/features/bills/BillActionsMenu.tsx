@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { deleteBill, archiveBill } from '@/actions/bills';
-import type { Bill } from '@/db/schema';
+import type { Bill } from '@/lib/types';
 
 interface BillActionsMenuProps {
   bill: Bill;

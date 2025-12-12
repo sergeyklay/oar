@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatMoney } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { CloseDetailButton } from './CloseDetailButton';
-import type { BillWithTags } from '@/db/schema';
+import type { BillWithTags } from '@/lib/types';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { BillRow } from './BillRow';
-import type { BillWithTags } from '@/db/schema';
+import type { BillWithTags } from '@/lib/types';
 
 jest.mock('./BillStatusBadge', () => ({
   BillStatusBadge: ({ status }: { status: string }) => (
