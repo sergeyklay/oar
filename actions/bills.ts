@@ -407,36 +407,38 @@ export async function deleteBill(id: string): Promise<ActionResult> {
 const billIdSchema = z.string().min(1, 'Bill ID is required');
 
 /**
- * Fetch tags for a specific bill (used in edit form)
+ * Fetch tags for a specific bill.
+ *
+ * Server Action for client components that need to fetch bill tags.
  *
  * @param billId - Bill ID to fetch tags for
+ * @returns ActionResult with tags array or empty array on error
  */
-export async function getBillTags(billId: string): Promise<Tag[]> {
+export async function getBillTags(
+  billId: string
+): Promise<ActionResult<Tag[]>> {
   const parsed = billIdSchema.safeParse(billId);
 
   if (!parsed.success) {
-    return [];
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? 'Invalid bill ID',
+    };
   }
 
-  const { BillService } = await import('@/lib/services/BillService');
-  return BillService.getTags(parsed.data);
-}
+  try {
+    const { BillService } = await import('@/lib/services/BillService');
+    const tags = await BillService.getTags(parsed.data);
 
-/**
- * Fetch a single bill with its associated tags.
- *
- * Validates input and delegates to BillService.
- *
- * @param billId - Bill ID to fetch
- * @returns Bill with tags or null if not found/archived/invalid
- */
-export async function getBillWithTags(billId: string): Promise<BillWithTags | null> {
-  const parsed = billIdSchema.safeParse(billId);
-
-  if (!parsed.success) {
-    return null;
+    return {
+      success: true,
+      data: tags,
+    };
+  } catch (error) {
+    console.error('Failed to fetch bill tags:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch bill tags.',
+    };
   }
-
-  const { BillService } = await import('@/lib/services/BillService');
-  return BillService.getWithTags(parsed.data);
 }

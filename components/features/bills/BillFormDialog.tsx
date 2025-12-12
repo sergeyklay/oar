@@ -114,8 +114,10 @@ export function BillFormDialog({
         });
 
         // Fetch existing tags for this bill
-        getBillTags(bill.id).then((existingTags) => {
-          form.setValue('tagIds', existingTags.map((t) => t.id));
+        getBillTags(bill.id).then((result) => {
+          if (result.success && result.data) {
+            form.setValue('tagIds', result.data.map((t) => t.id));
+          }
         });
       } else {
         form.reset({

@@ -36,7 +36,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { toMajorUnits } from '@/lib/money';
+import { toMajorUnits, toMinorUnits, parseMoneyInput } from '@/lib/money';
 import { logPayment } from '@/actions/transactions';
 import type { Bill } from '@/lib/types';
 
@@ -90,9 +90,12 @@ export function LogPaymentDialog({
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
 
+    // Convert user input to integer minor units before sending to action
+    const amountInMinorUnits = toMinorUnits(parseMoneyInput(values.amount));
+
     const result = await logPayment({
       billId: bill.id,
-      amount: values.amount,
+      amount: amountInMinorUnits,
       paidAt: values.paidAt,
       notes: values.notes,
       updateDueDate: values.updateDueDate,

@@ -5,20 +5,15 @@ import { z } from 'zod';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 import { PaymentService } from '@/lib/services/PaymentService';
-import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
 
 /** Validation schema for logging a payment. */
 const logPaymentSchema = z.object({
   billId: z.string().min(1, 'Bill ID is required'),
+  /** Amount in minor units (integer). Conversion happens in the UI layer. */
   amount: z
-    .string()
-    .min(1, 'Amount is required')
-    .refine((val) => isValidMoneyInput(parseMoneyInput(val)), {
-      message: 'Please enter a valid amount',
-    })
-    .refine((val) => parseFloat(parseMoneyInput(val)) > 0, {
-      message: 'Amount must be greater than zero',
-    }),
+    .number()
+    .int('Amount must be an integer (minor units)')
+    .positive('Amount must be greater than zero'),
   paidAt: z.coerce.date({
     message: 'Please select a valid date',
   }),
@@ -80,12 +75,11 @@ export async function logPayment(
       };
     }
 
-    const amountInMinorUnits = toMinorUnits(parseMoneyInput(amount));
-
     // 3. Delegate to PaymentService for business logic
+    // Amount is already in minor units (converted by UI layer)
     const paymentResult = PaymentService.processPayment(
       bill,
-      amountInMinorUnits,
+      amount,
       updateDueDate
     );
 
@@ -98,7 +92,7 @@ export async function logPayment(
         .insert(transactions)
         .values({
           billId,
-          amount: amountInMinorUnits,
+          amount,
           paidAt,
           notes: notes || null,
         })
