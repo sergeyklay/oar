@@ -9,11 +9,12 @@ import { PaymentService } from '@/lib/services/PaymentService';
 /** Validation schema for logging a payment. */
 const logPaymentSchema = z.object({
   billId: z.string().min(1, 'Bill ID is required'),
-  /** Amount in minor units (integer). Conversion happens in the UI layer. */
-  amount: z
+  /** Amount in minor units (integer). Coerced from string for form/JSON compatibility. */
+  amount: z.coerce
     .number()
     .int('Amount must be an integer (minor units)')
-    .positive('Amount must be greater than zero'),
+    .positive('Amount must be greater than zero')
+    .max(Number.MAX_SAFE_INTEGER, 'Amount is too large'),
   paidAt: z.coerce.date({
     message: 'Please select a valid date',
   }),
