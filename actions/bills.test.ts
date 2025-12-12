@@ -369,7 +369,9 @@ describe('getBillTags', () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
         innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue(mockTags),
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue(mockTags),
+          }),
         }),
       }),
     });
@@ -384,7 +386,9 @@ describe('getBillTags', () => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
         innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([]),
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([]),
+          }),
         }),
       }),
     });
