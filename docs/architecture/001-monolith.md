@@ -30,7 +30,7 @@ This means a Server Action that logs a payment and a background job that checks 
 
 SQLite with WAL (Write-Ahead Logging) mode provides:
 
-- **Sub-millisecond reads:** The `better-sqlite3` driver accesses data through direct memory mapping. A query that takes 5ms over a network to PostgreSQL completes in microseconds when the database is a local file.
+- **Fast reads:** The `better-sqlite3` driver accesses data through direct memory mapping, eliminating network round-trip latency entirely. Local file access is inherently faster than queries over a network connection.
 - **Atomic writes:** WAL mode allows concurrent reads during writes. For a single-user app, this eliminates all contention concerns.
 - **Zero configuration:** No connection pooling, no replica management, no credentials to rotate.
 
@@ -67,7 +67,7 @@ This isn't a limitation; it's a feature. The user's financial data never touches
 
 **Debugging transparency:** One process means one set of logs. Stack traces show the complete call path from UI click to database write. No distributed tracing required.
 
-**Resource efficiency:** A single Node.js process with an embedded SQLite database runs comfortably on 256MB of RAM. The app works on hardware that microservices would exhaust.
+**Resource efficiency:** A single Node.js process with an embedded SQLite database has minimal memory requirements. The app runs on low-spec hardware that a microservices stack would exhaust.
 
 **Data sovereignty:** Users own their data absolutely. No vendor lock-in, no privacy policies to read, no "we've updated our terms" emails.
 
