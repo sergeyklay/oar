@@ -59,10 +59,11 @@ jobs:
         id: conflict-check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           # Get detailed PR info including mergeable state
-          PR_DATA=$(gh pr view "$PR_NUMBER" --json mergeable,mergeStateStatus)
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json mergeable,mergeStateStatus)
           MERGEABLE=$(echo "$PR_DATA" | jq -r '.mergeable')
           MERGE_STATE=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
 
@@ -79,27 +80,30 @@ jobs:
         if: steps.conflict-check.outputs.has_conflict == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           echo "Merge conflict detected. Requesting Dependabot to rebase..."
-          gh pr comment "$PR_NUMBER" --body "@dependabot rebase"
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
           echo "::warning::Merge conflict detected. Requested @dependabot rebase."
           exit 0
 
       - name: Approve Pull Request
         if: steps.conflict-check.outputs.has_conflict != 'true'
         env:
-          PR_URL: ${{ steps.pr.outputs.url }}
           GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
-          echo "Approving PR: $PR_URL"
-          gh pr review "$PR_URL" --approve --body "🤖 Auto-approved by @cicdbot after CI passed"
+          echo "Approving PR #$PR_NUMBER"
+          gh pr review "$PR_NUMBER" --repo "$GH_REPO" --approve --body "🤖 Auto-approved by @cicdbot after CI passed"
 
       - name: Enable auto-merge
         if: steps.conflict-check.outputs.has_conflict != 'true'
         env:
-          PR_URL: ${{ steps.pr.outputs.url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
-          echo "Enabling auto-merge for PR: $PR_URL"
-          gh pr merge --auto --squash "$PR_URL"
+          echo "Enabling auto-merge for PR #$PR_NUMBER"
+          gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --auto --squash
