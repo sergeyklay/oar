@@ -1,0 +1,128 @@
+name: Dependabot rebase sweep
+
+on:
+  schedule:
+    # Run every hour at minute 30
+    - cron: '30 * * * *'
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  sweep:
+    name: Check Dependabot PRs for rebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (for local action)
+        uses: actions/checkout@v4
+
+      - name: Find Dependabot PRs needing rebase
+        id: find-prs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          echo "Finding open Dependabot PRs..."
+
+          # Get all open PRs from Dependabot
+          # Note: Use --app flag for GitHub Apps, not --author
+          PRS=$(gh pr list \
+            --repo "$GH_REPO" \
+            --app dependabot \
+            --state open \
+            --json number,title,headRefName \
+            --jq '.[].number')
+
+          if [ -z "$PRS" ]; then
+            echo "No open Dependabot PRs found"
+            echo "pr_numbers=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Found Dependabot PRs: $PRS"
+          # Convert newlines to spaces for iteration
+          PR_LIST=$(echo "$PRS" | tr '\n' ' ')
+          echo "pr_numbers=$PR_LIST" >> "$GITHUB_OUTPUT"
+
+      - name: Check CI status and rebase PRs
+        if: steps.find-prs.outputs.pr_numbers != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CICDBOT_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBERS: ${{ steps.find-prs.outputs.pr_numbers }}
+        run: |
+          for PR_NUMBER in $PR_NUMBERS; do
+            echo ""
+            echo "=========================================="
+            echo "Checking PR #$PR_NUMBER"
+            echo "=========================================="
+
+            # Check if CI has passed for this PR
+            # Get the latest commit status/checks
+            PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json statusCheckRollup,mergeable,mergeStateStatus)
+
+            # Check overall CI status
+            CI_STATUS=$(echo "$PR_DATA" | jq -r '
+              .statusCheckRollup
+              | if . == null or . == [] then "PENDING"
+                elif all(.conclusion == "SUCCESS" or .conclusion == "NEUTRAL" or .conclusion == "SKIPPED") then "SUCCESS"
+                elif any(.conclusion == "FAILURE" or .conclusion == "CANCELLED" or .conclusion == "TIMED_OUT") then "FAILURE"
+                else "PENDING"
+                end
+            ')
+
+            echo "CI Status: $CI_STATUS"
+
+            if [ "$CI_STATUS" != "SUCCESS" ]; then
+              echo "⏭️  Skipping PR #$PR_NUMBER - CI has not passed (status: $CI_STATUS)"
+              continue
+            fi
+
+            # CI passed - check merge state
+            MERGEABLE=$(echo "$PR_DATA" | jq -r '.mergeable')
+            MERGE_STATE=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
+
+            echo "Mergeable: $MERGEABLE"
+            echo "Merge State: $MERGE_STATE"
+
+            # Determine action based on merge state
+            if [ "$MERGE_STATE" = "CLEAN" ] || [ "$MERGE_STATE" = "HAS_HOOKS" ]; then
+              echo "✅ PR #$PR_NUMBER is ready to merge (state: $MERGE_STATE)"
+              # Don't approve here - that's the event-driven workflow's job
+              continue
+            elif [ "$MERGE_STATE" = "BEHIND" ] || [ "$MERGE_STATE" = "DIRTY" ] || [ "$MERGEABLE" = "CONFLICTING" ]; then
+              echo "🔄 PR #$PR_NUMBER needs rebase (reason: $MERGE_STATE)"
+
+              # Check if we already requested a rebase recently (avoid spam)
+              RECENT_REBASE_COMMENT=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json comments \
+                --jq '.comments | map(select(.body | contains("@dependabot rebase"))) | last | .createdAt // empty')
+
+              if [ -n "$RECENT_REBASE_COMMENT" ]; then
+                # Check if comment was within last 2 hours
+                COMMENT_AGE_SECONDS=$(( $(date +%s) - $(date -d "$RECENT_REBASE_COMMENT" +%s) ))
+                if [ "$COMMENT_AGE_SECONDS" -lt 7200 ]; then
+                  echo "⏭️  Skipping - rebase already requested $(( COMMENT_AGE_SECONDS / 60 )) minutes ago"
+                  continue
+                fi
+              fi
+
+              # Request rebase using CICDBOT_TOKEN (has push access)
+              echo "Requesting rebase..."
+              GH_TOKEN="$CICDBOT_TOKEN" gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
+              echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $MERGE_STATE)"
+            else
+              echo "⏸️  PR #$PR_NUMBER - Cannot proceed (state: $MERGE_STATE)"
+            fi
+          done
+
+          echo ""
+          echo "=========================================="
+          echo "Sweep complete"
+          echo "=========================================="
+
