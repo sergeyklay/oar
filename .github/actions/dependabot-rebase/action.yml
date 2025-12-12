@@ -34,6 +34,9 @@ runs:
         GH_REPO: ${{ github.repository }}
         PR_NUMBER: ${{ inputs.pr-number }}
       run: |
+        set -euo pipefail
+        IFS=$'\n\t'
+
         # Get detailed PR info including mergeable state
         # mergeStateStatus values: BEHIND, BLOCKED, CLEAN, DIRTY, DRAFT, HAS_HOOKS, UNKNOWN, UNSTABLE
         PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json mergeable,mergeStateStatus)
@@ -68,6 +71,9 @@ runs:
         PR_NUMBER: ${{ inputs.pr-number }}
         REASON: ${{ steps.merge-check.outputs.reason }}
       run: |
+        set -euo pipefail
+        IFS=$'\n\t'
+
         echo "PR #$PR_NUMBER needs rebase (reason: $REASON). Requesting Dependabot to rebase..."
         gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
         echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $REASON)"
