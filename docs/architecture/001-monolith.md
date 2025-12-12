@@ -66,7 +66,7 @@ This isn't a limitation; it's a feature. The user's financial data never touches
 
 ### Benefits
 
-**Deployment simplicity:** Self-hosters can run Oar on any system that supports Docker. The cognitive overhead of deployment drops to near zero.
+**Deployment simplicity:** Self-hosters can run Oar on any system that supports Docker. Setup stays simple because you run one container.
 
 **Latency elimination:** A bill lookup that would require network round-trips in a microservices architecture happens through direct function calls. The application feels instant.
 

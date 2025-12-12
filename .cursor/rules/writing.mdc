@@ -43,6 +43,7 @@ globs: **/*.md
 - `blazing fast/lightning fast` -> "build XX% faster"
 - `business logic` -> remove
 - `cognitive load` -> remove
+- `cognitive overhead` -> remove
 - `commence` -> "start"
 - `delve` -> "go into"
 - `disrupt/disruptive` -> remove
