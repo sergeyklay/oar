@@ -23,6 +23,9 @@ jobs:
       github.event.workflow_run.actor.login == 'dependabot[bot]'
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Get Pull Request info
         id: pr
         uses: actions/github-script@v8
@@ -43,10 +46,8 @@ jobs:
             const pr = pullRequests[0];
             core.setOutput('number', pr.number);
             core.setOutput('url', pr.html_url);
-            core.setOutput('mergeable', pr.mergeable);
-            core.setOutput('mergeable_state', pr.mergeable_state);
 
-            console.log(`PR #${pr.number}: mergeable=${pr.mergeable}, state=${pr.mergeable_state}`);
+            console.log(`Found PR #${pr.number}`);
 
       - name: Check CI conclusion
         if: github.event.workflow_run.conclusion != 'success'
@@ -55,48 +56,21 @@ jobs:
           echo "Skipping approval and auto-merge."
           exit 1
 
-      - name: Check merge state
-        id: merge-check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+      - name: Check PR and request rebase if needed
+        id: pr-check
+        uses: ./.github/actions/dependabot-rebase
+        with:
+          pr-number: ${{ steps.pr.outputs.number }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          rebase-token: ${{ secrets.CICDBOT_TOKEN }}
+
+      - name: Skip - merge state not ready
+        if: steps.pr-check.outputs.action == 'skip'
         run: |
-          # Get detailed PR info including mergeable state
-          # mergeStateStatus values: BEHIND, BLOCKED, CLEAN, DIRTY, DRAFT, HAS_HOOKS, UNKNOWN, UNSTABLE
-          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json mergeable,mergeStateStatus)
-          MERGEABLE=$(echo "$PR_DATA" | jq -r '.mergeable')
-          MERGE_STATE=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
-
-          echo "Mergeable: $MERGEABLE"
-          echo "Merge State: $MERGE_STATE"
-
-          # DIRTY = merge conflict, BEHIND = out-of-date with base branch
-          # Both cases require a rebase before we can merge
-          if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$MERGE_STATE" = "DIRTY" ] || [ "$MERGE_STATE" = "BEHIND" ]; then
-            echo "needs_rebase=true" >> "$GITHUB_OUTPUT"
-            echo "reason=$MERGE_STATE" >> "$GITHUB_OUTPUT"
-          else
-            echo "needs_rebase=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Request rebase
-        if: steps.merge-check.outputs.needs_rebase == 'true'
-        env:
-          # Must use CICDBOT_TOKEN (PAT from user with push access)
-          # GITHUB_TOKEN creates comments as github-actions[bot] which Dependabot rejects
-          GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          REASON: ${{ steps.merge-check.outputs.reason }}
-        run: |
-          echo "Branch needs rebase (reason: $REASON). Requesting Dependabot to rebase..."
-          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
-          echo "::warning::Requested @dependabot rebase (reason: $REASON)"
-          exit 0
+          echo "::warning::Cannot proceed - merge state is ${{ steps.pr-check.outputs.reason }}. Waiting for state to resolve."
 
       - name: Approve Pull Request
-        if: steps.merge-check.outputs.needs_rebase != 'true'
+        if: steps.pr-check.outputs.action == 'approve'
         env:
           GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
           GH_REPO: ${{ github.repository }}
@@ -106,7 +80,7 @@ jobs:
           gh pr review "$PR_NUMBER" --repo "$GH_REPO" --approve --body "🤖 Auto-approved by @cicdbot after CI passed"
 
       - name: Enable auto-merge
-        if: steps.merge-check.outputs.needs_rebase != 'true'
+        if: steps.pr-check.outputs.action == 'approve'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
