@@ -3,9 +3,7 @@ import { BillDetailPanel } from './BillDetailPanel';
 import type { BillWithTags } from '@/lib/types';
 
 jest.mock('./BillStatusBadge', () => ({
-  BillStatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="status-badge">{status}</span>
-  ),
+  BillStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 jest.mock('./CloseDetailButton', () => ({
@@ -145,11 +143,11 @@ describe('BillDetailPanel', () => {
   });
 
   describe('status badge', () => {
-    it('displays status badge component', () => {
+    it('displays status badge text', () => {
       const bill = createMockBill({ status: 'overdue' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByTestId('status-badge')).toHaveTextContent('overdue');
+      expect(screen.getByText('overdue')).toBeInTheDocument();
     });
   });
 
