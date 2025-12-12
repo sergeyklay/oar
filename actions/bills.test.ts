@@ -1,6 +1,5 @@
 import { createBill, updateBill, getBillTags } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
-import { revalidatePath } from 'next/cache';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
