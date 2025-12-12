@@ -412,7 +412,7 @@ const billIdSchema = z.string().min(1, 'Bill ID is required');
  * Server Action for client components that need to fetch bill tags.
  *
  * @param billId - Bill ID to fetch tags for
- * @returns ActionResult with tags array or empty array on error
+ * @returns ActionResult with tags array (data always present)
  */
 export async function getBillTags(
   billId: string
@@ -423,22 +423,29 @@ export async function getBillTags(
     return {
       success: false,
       error: parsed.error.issues[0]?.message ?? 'Invalid bill ID',
+      fieldErrors: {
+        billId: parsed.error.issues.map((issue) => issue.message),
+      },
+      data: [],
     };
   }
 
   try {
     const { BillService } = await import('@/lib/services/BillService');
-    const tags = await BillService.getTags(parsed.data);
+    const billTags = await BillService.getTags(parsed.data);
+
+    revalidatePath('/');
 
     return {
       success: true,
-      data: tags,
+      data: billTags,
     };
   } catch (error) {
     console.error('Failed to fetch bill tags:', error);
     return {
       success: false,
       error: 'Failed to fetch bill tags.',
+      data: [],
     };
   }
 }
