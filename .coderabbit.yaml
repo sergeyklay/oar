@@ -74,6 +74,7 @@ reviews:
   suggested_reviewers: false
   auto_assign_reviewers: false
   poem: false
+  art: false
   labeling_instructions: []
   path_filters: []
   path_instructions:
