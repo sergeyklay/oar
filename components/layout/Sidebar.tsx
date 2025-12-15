@@ -12,6 +12,19 @@ type NavItem = {
   statsType?: 'all' | 'currentMonth';
 };
 
+/**
+ * Return a React node showing bill statistics subtitle for a navigation item.
+ *
+ * Renders count-only subtitle for "all bills" stats or count + total amount for "current month" stats.
+ * Returns null if the item does not have stats enabled or has invalid statsType.
+ * Has no side effects. Does not throw errors or handle exceptional cases.
+ *
+ * @param item - Navigation item with optional showStats and statsType properties
+ * @param currentMonthStats - Statistics for bills due in current month (count, total in minor units, hasVariable flag)
+ * @param allBillsStats - Statistics for all non-archived bills (count only)
+ * @param settings - User settings containing currency code and locale string for money formatting
+ * @returns React.ReactNode containing formatted subtitle text or null if stats should not be displayed
+ */
 function renderStatsSubtitle(
   item: NavItem,
   currentMonthStats: { count: number; total: number; hasVariable: boolean },
