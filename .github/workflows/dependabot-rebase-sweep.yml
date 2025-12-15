@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout (for local action)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Find Dependabot PRs needing rebase
         id: find-prs
