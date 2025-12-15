@@ -1,6 +1,25 @@
 import { db, bills, tags, billsToTags } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray } from 'drizzle-orm';
+import { startOfDay, endOfDay, parse } from 'date-fns';
+
+/**
+ * Filter options for bill queries.
+ */
+export interface GetBillsOptions {
+  /** Filter by specific date (YYYY-MM-DD) - takes precedence */
+  date?: string;
+  /**
+   * Filter by month (YYYY-MM) - not currently used
+   * Reserved for future month-level filtering feature
+   * Currently ignored to prevent filtering when no date is selected
+   */
+  month?: string;
+  /** Filter by tag slug */
+  tag?: string;
+  /** Include archived bills */
+  includeArchived?: boolean;
+}
 
 /**
  * BillService
@@ -100,6 +119,80 @@ export const BillService = {
     }
 
     return tagsByBillId;
+  },
+
+  /**
+   * Fetches bills with their associated tags based on filter options.
+   *
+   * Filtering behavior:
+   * - When `date` is provided, filters by that specific day (local time)
+   * - When no `date` is provided, returns all bills sorted by closest payment date
+   * - The `month` parameter is not used for filtering (reserved for calendar navigation)
+   *
+   * @param options - Filter options
+   * @returns Array of bills with tags
+   */
+  async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
+    const { date, tag, includeArchived = false } = options;
+
+    const conditions = [];
+
+    if (!includeArchived) {
+      conditions.push(eq(bills.isArchived, false));
+    }
+
+    if (date) {
+      const dayDate = parse(date, 'yyyy-MM-dd', new Date());
+      const dayStart = startOfDay(dayDate);
+      const dayEnd = endOfDay(dayDate);
+      conditions.push(gte(bills.dueDate, dayStart));
+      conditions.push(lte(bills.dueDate, dayEnd));
+    }
+
+    if (tag) {
+      const [tagRecord] = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, tag));
+
+      if (!tagRecord) {
+        return [];
+      }
+
+      const billsWithTag = await db
+        .select({ billId: billsToTags.billId })
+        .from(billsToTags)
+        .where(eq(billsToTags.tagId, tagRecord.id));
+
+      const billIds = billsWithTag.map((b) => b.billId);
+
+      if (billIds.length === 0) {
+        return [];
+      }
+
+      conditions.push(inArray(bills.id, billIds));
+    }
+
+    const billsResult =
+      conditions.length === 0
+        ? await db.select().from(bills).orderBy(bills.dueDate)
+        : await db
+            .select()
+            .from(bills)
+            .where(and(...conditions))
+            .orderBy(bills.dueDate);
+
+    if (billsResult.length === 0) {
+      return [];
+    }
+
+    const billIds = billsResult.map((b) => b.id);
+    const tagsByBillId = await this.getTagsForBills(billIds);
+
+    return billsResult.map((bill) => ({
+      ...bill,
+      tags: tagsByBillId.get(bill.id) ?? [],
+    }));
   },
 };
 

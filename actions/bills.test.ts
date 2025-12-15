@@ -1,9 +1,24 @@
 import { createBill, updateBill, getBillTags, getBillsFiltered } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
+import { BillService } from '@/lib/services/BillService';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
+}));
+jest.mock('@/lib/services/BillService', () => ({
+  BillService: {
+    getFiltered: jest.fn(),
+    getTags: jest.fn(),
+  },
+}));
+jest.mock('@/lib/services/RecurrenceService', () => ({
+  RecurrenceService: {
+    deriveStatus: jest.fn((dueDate: Date) => {
+      const now = new Date();
+      return dueDate < now ? 'overdue' : 'pending';
+    }),
+  },
 }));
 
 describe('createBill', () => {
@@ -358,7 +373,6 @@ describe('updateBill', () => {
 
 describe('getBillTags', () => {
   beforeEach(() => {
-    resetDbMocks();
     jest.clearAllMocks();
   });
 
@@ -367,37 +381,23 @@ describe('getBillTags', () => {
       { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
     ];
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue(mockTags),
-          }),
-        }),
-      }),
-    });
+    (BillService.getTags as jest.Mock).mockResolvedValue(mockTags);
 
     const result = await getBillTags('bill-1');
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual(mockTags);
+    expect(BillService.getTags).toHaveBeenCalledWith('bill-1');
   });
 
   it('returns success with empty array when no tags assigned', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      }),
-    });
+    (BillService.getTags as jest.Mock).mockResolvedValue([]);
 
     const result = await getBillTags('bill-1');
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual([]);
+    expect(BillService.getTags).toHaveBeenCalledWith('bill-1');
   });
 
   it('returns error with fieldErrors and data:[] for empty bill ID', async () => {
@@ -407,13 +407,12 @@ describe('getBillTags', () => {
     expect(result.error).toBeDefined();
     expect(result.fieldErrors?.billId).toBeDefined();
     expect(result.data).toEqual([]);
-    expect(db.select).not.toHaveBeenCalled();
+    expect(BillService.getTags).not.toHaveBeenCalled();
   });
 });
 
 describe('getBillsFiltered', () => {
   beforeEach(() => {
-    resetDbMocks();
     jest.clearAllMocks();
   });
 
@@ -431,6 +430,7 @@ describe('getBillsFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
     {
       id: 'bill-2',
@@ -445,6 +445,7 @@ describe('getBillsFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
     {
       id: 'bill-3',
@@ -459,39 +460,12 @@ describe('getBillsFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
   ];
 
-  const setupBillsAndTagsQuery = (
-    billsToReturn = mockBills,
-    tagAssociations: Array<{
-      billId: string;
-      tagId: string;
-      tagName: string;
-      tagSlug: string;
-      tagCreatedAt: Date;
-    }> = []
-  ) => {
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue(billsToReturn),
-          }),
-          orderBy: jest.fn().mockResolvedValue(billsToReturn),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue(tagAssociations),
-          }),
-        }),
-      });
-  };
-
   it('returns all non-archived bills sorted by dueDate when no filters provided', async () => {
-    setupBillsAndTagsQuery();
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsFiltered({});
 
@@ -499,30 +473,32 @@ describe('getBillsFiltered', () => {
     expect(result[0].id).toBe('bill-1');
     expect(result[1].id).toBe('bill-2');
     expect(result[2].id).toBe('bill-3');
-    expect(db.select).toHaveBeenCalled();
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 
   it('ignores month parameter and returns all bills', async () => {
-    setupBillsAndTagsQuery();
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
     const resultWithMonth = await getBillsFiltered({ month: '2025-01' });
 
-    setupBillsAndTagsQuery();
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
     const resultWithoutMonth = await getBillsFiltered({});
 
     expect(resultWithMonth).toHaveLength(3);
     expect(resultWithoutMonth).toHaveLength(3);
     expect(resultWithMonth.map(b => b.id)).toEqual(resultWithoutMonth.map(b => b.id));
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ month: '2025-01' });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 
   it('filters bills by specific date when date parameter provided', async () => {
     const billsOnDate = [mockBills[0]];
-    setupBillsAndTagsQuery(billsOnDate);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(billsOnDate);
 
     const result = await getBillsFiltered({ date: '2025-01-15' });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
-    expect(db.select).toHaveBeenCalled();
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-01-15' });
   });
 
   it('parses date string as local time to ensure correct day boundaries', async () => {
@@ -545,43 +521,33 @@ describe('getBillsFiltered', () => {
       ...mockBills[0],
       id: 'bill-start',
       dueDate: dayStart,
+      tags: [],
     };
     const billOnEnd = {
       ...mockBills[0],
       id: 'bill-end',
       dueDate: dayEnd,
+      tags: [],
     };
 
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([billOnStart, billOnEnd]),
-          }),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([billOnStart, billOnEnd]);
 
     const result = await getBillsFiltered({ date: dateString });
 
     expect(result).toHaveLength(2);
     expect(result.some(b => b.id === 'bill-start')).toBe(true);
     expect(result.some(b => b.id === 'bill-end')).toBe(true);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: dateString });
   });
 
   it('excludes archived bills by default', async () => {
-    setupBillsAndTagsQuery(mockBills);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsFiltered({});
 
     expect(result.every(bill => !bill.isArchived)).toBe(true);
     expect(result).toHaveLength(3);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 
   it('includes archived bills when includeArchived is true', async () => {
@@ -591,129 +557,80 @@ describe('getBillsFiltered', () => {
         ...mockBills[0],
         id: 'bill-archived',
         isArchived: true,
+        tags: [],
       },
     ];
-    setupBillsAndTagsQuery(billsWithArchived);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(billsWithArchived);
 
     const result = await getBillsFiltered({ includeArchived: true });
 
     expect(result.some(bill => bill.isArchived)).toBe(true);
     expect(result.length).toBeGreaterThan(3);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
   });
 
   it('filters bills by tag slug', async () => {
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([mockBills[0]]),
-          }),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([mockBills[0]]);
 
     const result = await getBillsFiltered({ tag: 'utilities' });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ tag: 'utilities' });
   });
 
   it('returns empty array when tag does not exist', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
-      }),
-    });
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
 
     const result = await getBillsFiltered({ tag: 'nonexistent' });
 
     expect(result).toEqual([]);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ tag: 'nonexistent' });
   });
 
   it('combines date and tag filters', async () => {
-    (db.select as jest.Mock)
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([mockBills[0]]),
-          }),
-        }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([]),
-          }),
-        }),
-      });
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([mockBills[0]]);
 
     const result = await getBillsFiltered({ date: '2025-01-15', tag: 'utilities' });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-01-15', tag: 'utilities' });
   });
 
   it('returns bills with tags attached', async () => {
-    const tagAssociations = [
-      {
-        billId: 'bill-1',
-        tagId: 'tag-1',
-        tagName: 'Utilities',
-        tagSlug: 'utilities',
-        tagCreatedAt: new Date('2025-01-01'),
-      },
-    ];
-    setupBillsAndTagsQuery([mockBills[0]], tagAssociations);
+    const billWithTags = {
+      ...mockBills[0],
+      tags: [
+        {
+          id: 'tag-1',
+          name: 'Utilities',
+          slug: 'utilities',
+          createdAt: new Date('2025-01-01'),
+        },
+      ],
+    };
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([billWithTags]);
 
     const result = await getBillsFiltered({});
 
     expect(result[0].tags).toHaveLength(1);
     expect(result[0].tags[0].slug).toBe('utilities');
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 
   it('returns empty array when no bills match filters', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockResolvedValue([]),
-        }),
-      }),
-    });
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
 
     const result = await getBillsFiltered({ date: '2025-12-31' });
 
     expect(result).toEqual([]);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-12-31' });
   });
 
   it('sorts bills by dueDate ascending', async () => {
     const sortedBills = [...mockBills].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-    setupBillsAndTagsQuery(sortedBills);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(sortedBills);
 
     const result = await getBillsFiltered({});
 
@@ -722,5 +639,6 @@ describe('getBillsFiltered', () => {
     expect(result[0].id).toBe('bill-1');
     expect(result[1].id).toBe('bill-2');
     expect(result[2].id).toBe('bill-3');
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 });

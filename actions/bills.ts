@@ -2,11 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { db, bills, tags, billsToTags } from '@/db';
+import { db, bills, billsToTags } from '@/db';
 import type { Tag, BillWithTags } from '@/db/schema';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
-import { and, eq, gte, lte, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, parse } from 'date-fns';
+import { eq } from 'drizzle-orm';
+import { BillService, type GetBillsOptions } from '@/lib/services/BillService';
+import { RecurrenceService } from '@/lib/services/RecurrenceService';
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -72,8 +73,7 @@ export async function createBill(
   try {
     const cleanedAmount = parseMoneyInput(amount);
     const amountInMinorUnits = toMinorUnits(cleanedAmount);
-    const now = new Date();
-    const status = dueDate < now ? 'overdue' : 'pending';
+    const status = RecurrenceService.deriveStatus(dueDate);
 
     // Insert bill (amountDue initialized to match amount for new bills)
     const [newBill] = await db
@@ -132,26 +132,8 @@ export async function getBills(includeArchived = false) {
   return db.select().from(bills).orderBy(bills.dueDate);
 }
 
-interface GetBillsOptions {
-  /** Filter by specific date (YYYY-MM-DD) - takes precedence */
-  date?: string;
-  /**
-   * Filter by month (YYYY-MM) - not currently used
-   * Reserved for future month-level filtering feature
-   * Currently ignored to prevent filtering when no date is selected
-   */
-  month?: string;
-  /** Filter by tag slug */
-  tag?: string;
-  /** Include archived bills */
-  includeArchived?: boolean;
-}
-
 /**
  * Fetches bills with their associated tags.
- *
- * Performance note: Uses a two-query approach for clarity.
- * For very large datasets (500+ bills), consider raw SQL with GROUP_CONCAT.
  *
  * Filtering behavior:
  * - When `date` is provided, filters by that specific day
@@ -161,102 +143,7 @@ interface GetBillsOptions {
 export async function getBillsFiltered(
   options: GetBillsOptions = {}
 ): Promise<BillWithTags[]> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { date, month, tag, includeArchived = false } = options;
-
-  const conditions = [];
-
-  // Always exclude archived unless requested
-  if (!includeArchived) {
-    conditions.push(eq(bills.isArchived, false));
-  }
-
-  // Date filter (specific day) - only active filter
-  if (date) {
-    const dayDate = parse(date, 'yyyy-MM-dd', new Date());
-    const dayStart = startOfDay(dayDate);
-    const dayEnd = endOfDay(dayDate);
-    conditions.push(gte(bills.dueDate, dayStart));
-    conditions.push(lte(bills.dueDate, dayEnd));
-  }
-  // NOTE: month parameter is reserved for calendar widget navigation only
-  // It is intentionally ignored in filtering logic to prevent incorrect filtering
-  // when no date is selected (month URL param is always present for calendar display)
-
-  // Tag filter - requires subquery
-  if (tag) {
-    // Get tag ID from slug
-    const [tagRecord] = await db
-      .select({ id: tags.id })
-      .from(tags)
-      .where(eq(tags.slug, tag));
-
-    if (!tagRecord) {
-      // Tag doesn't exist, return empty
-      return [];
-    }
-
-    // Get bill IDs that have this tag
-    const billsWithTag = await db
-      .select({ billId: billsToTags.billId })
-      .from(billsToTags)
-      .where(eq(billsToTags.tagId, tagRecord.id));
-
-    const billIds = billsWithTag.map((b) => b.billId);
-
-    if (billIds.length === 0) {
-      return [];
-    }
-
-    conditions.push(inArray(bills.id, billIds));
-  }
-
-  // Fetch bills
-  const billsResult =
-    conditions.length === 0
-      ? await db.select().from(bills).orderBy(bills.dueDate)
-      : await db
-          .select()
-          .from(bills)
-          .where(and(...conditions))
-          .orderBy(bills.dueDate);
-
-  if (billsResult.length === 0) {
-    return [];
-  }
-
-  // Fetch all tags for these bills in a single query
-  const billIds = billsResult.map((b) => b.id);
-  const tagAssociations = await db
-    .select({
-      billId: billsToTags.billId,
-      tagId: billsToTags.tagId,
-      tagName: tags.name,
-      tagSlug: tags.slug,
-      tagCreatedAt: tags.createdAt,
-    })
-    .from(billsToTags)
-    .innerJoin(tags, eq(billsToTags.tagId, tags.id))
-    .where(inArray(billsToTags.billId, billIds));
-
-  // Group tags by bill ID
-  const tagsByBillId = new Map<string, Tag[]>();
-  for (const assoc of tagAssociations) {
-    const billTags = tagsByBillId.get(assoc.billId) ?? [];
-    billTags.push({
-      id: assoc.tagId,
-      name: assoc.tagName,
-      slug: assoc.tagSlug,
-      createdAt: assoc.tagCreatedAt,
-    });
-    tagsByBillId.set(assoc.billId, billTags);
-  }
-
-  // Merge bills with their tags
-  return billsResult.map((bill) => ({
-    ...bill,
-    tags: tagsByBillId.get(bill.id) ?? [],
-  }));
+  return BillService.getFiltered(options);
 }
 
 /**
@@ -283,8 +170,8 @@ export async function updateBill(
   try {
     const cleanedAmount = parseMoneyInput(amount);
     const amountInMinorUnits = toMinorUnits(cleanedAmount);
+    const status = RecurrenceService.deriveStatus(dueDate);
     const now = new Date();
-    const status = dueDate < now ? 'overdue' : 'pending';
 
     // Update bill (amountDue is not updated here - it only changes via payment logging)
     await db
