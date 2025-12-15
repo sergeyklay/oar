@@ -6,7 +6,7 @@ import { db, bills, tags, billsToTags } from '@/db';
 import type { Tag, BillWithTags } from '@/db/schema';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
 import { and, eq, gte, lte, inArray } from 'drizzle-orm';
-import { startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -133,9 +133,13 @@ export async function getBills(includeArchived = false) {
 }
 
 interface GetBillsOptions {
-  /** Filter by specific date (YYYY-MM-DD) */
+  /** Filter by specific date (YYYY-MM-DD) - takes precedence */
   date?: string;
-  /** Filter by month (YYYY-MM) - used when date is not provided */
+  /**
+   * Filter by month (YYYY-MM) - not currently used
+   * Reserved for future month-level filtering feature
+   * Currently ignored to prevent filtering when no date is selected
+   */
   month?: string;
   /** Filter by tag slug */
   tag?: string;
@@ -149,11 +153,15 @@ interface GetBillsOptions {
  * Performance note: Uses a two-query approach for clarity.
  * For very large datasets (500+ bills), consider raw SQL with GROUP_CONCAT.
  *
- * Priority: date > month > all bills
+ * Filtering behavior:
+ * - When `date` is provided, filters by that specific day
+ * - When no `date` is provided, returns all bills sorted by closest payment date
+ * - The `month` parameter is not used for filtering (reserved for calendar navigation)
  */
 export async function getBillsFiltered(
   options: GetBillsOptions = {}
 ): Promise<BillWithTags[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { date, month, tag, includeArchived = false } = options;
 
   const conditions = [];
@@ -163,7 +171,7 @@ export async function getBillsFiltered(
     conditions.push(eq(bills.isArchived, false));
   }
 
-  // Date filter (specific day)
+  // Date filter (specific day) - ONLY active filter
   if (date) {
     const dayDate = new Date(date);
     const dayStart = startOfDay(dayDate);
@@ -171,13 +179,9 @@ export async function getBillsFiltered(
     conditions.push(gte(bills.dueDate, dayStart));
     conditions.push(lte(bills.dueDate, dayEnd));
   }
-  // Month filter (entire month)
-  else if (month) {
-    const [year, monthNum] = month.split('-').map(Number);
-    const monthDate = new Date(year, monthNum - 1, 1);
-    conditions.push(gte(bills.dueDate, startOfMonth(monthDate)));
-    conditions.push(lte(bills.dueDate, endOfMonth(monthDate)));
-  }
+  // NOTE: month parameter is reserved for calendar widget navigation only
+  // It is intentionally ignored in filtering logic to prevent incorrect filtering
+  // when no date is selected (month URL param is always present for calendar display)
 
   // Tag filter - requires subquery
   if (tag) {
