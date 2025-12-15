@@ -245,12 +245,10 @@ These patterns are explicitly banned. If you see them in existing code, do NOT r
 oar/
 ├── AGENTS.md                    ← YOU ARE HERE (Constitution)
 ├── .cursor/
-│   ├── rules/                   ← Tactical coding patterns (HOW)
-│   │   ├── testing.mdc
-│   │   ├── preservation.mdc     ← SACRED (DO NOT MODIFY)
-│   │   └── environment.mdc      ← SACRED (DO NOT MODIFY)
-│   ├── specs/                   ← Feature specifications
-│   └── plans/                   ← Implementation plans
+│   ├── commands/                ← Commands for the AI agents
+│   └── rules/                   ← Tactical coding patterns
+├── .specs/                      ← Feature specifications
+├── .plans/                      ← Implementation plans
 │
 ├── app/                         ← Next.js App Router
 │   ├── layout.tsx               ← SACRED (root providers, fonts)
