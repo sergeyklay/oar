@@ -170,6 +170,20 @@ export async function getBillsForCurrentMonthStats(): Promise<{
 }
 
 /**
+ * Fetches summary statistics for all non-archived bills.
+ *
+ * Used by Sidebar to display Overview menu item subtitle.
+ *
+ * @returns Summary stats: count of all bills
+ */
+export async function getAllBillsStats(): Promise<{
+  count: number;
+}> {
+  const bills = await BillService.getFiltered({});
+  return { count: bills.length };
+}
+
+/**
  * Updates an existing bill with tag associations.
  *
  * @param input - Bill data with ID for update

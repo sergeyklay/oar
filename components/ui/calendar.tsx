@@ -10,7 +10,7 @@ export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 const navButtonClass = cn(
   buttonVariants({ variant: 'outline' }),
-  'h-7 w-7 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
+  'h-8 w-8 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
 );
 
 function Calendar({
@@ -24,18 +24,18 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn('p-3', className)}
       classNames={{
-        months: 'relative flex flex-col sm:flex-row gap-4',
-        month: 'relative flex flex-col gap-4',
+        months: 'relative flex flex-col sm:flex-row gap-4 w-full',
+        month: 'relative flex flex-col gap-4 w-full items-center',
         month_caption: 'flex justify-center pt-1 items-center h-7',
         caption_label: 'text-sm font-medium',
-        nav: 'absolute top-0 flex w-full items-center justify-between z-10',
+        nav: 'absolute top-0 flex w-full items-center justify-between px-2 z-10',
         button_previous: navButtonClass,
         button_next: navButtonClass,
-        month_grid: 'w-full border-collapse',
-        weekdays: 'flex',
+        month_grid: 'border-collapse mx-auto',
+        weekdays: 'flex justify-center',
         weekday:
           'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
-        week: 'flex w-full mt-2',
+        week: 'flex w-full mt-2 justify-center',
         day: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].outside)]:bg-accent/50 rounded-md',
         day_button: cn(
           buttonVariants({ variant: 'ghost' }),
@@ -56,9 +56,9 @@ function Calendar({
       components={{
         Chevron: ({ orientation }) =>
           orientation === 'left' ? (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           ),
       }}
       {...props}

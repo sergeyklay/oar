@@ -70,14 +70,14 @@ export function CalendarWidget() {
   );
 
   return (
-    <div className="calendar-widget">
+    <div className="calendar-widget w-full max-w-[340px] mx-auto">
       <Calendar
         mode="single"
         month={monthDate}
         onMonthChange={handleMonthChange}
         selected={selectedDate}
         onSelect={handleSelect}
-        className="rounded-md border-0"
+        className="rounded-md border-0 w-full"
         classNames={{
           day: 'relative',
         }}
