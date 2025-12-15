@@ -1,6 +1,6 @@
 import { db, bills, tags, billsToTags } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, gte, lte, inArray } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray, ne } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse } from 'date-fns';
 
 /**
@@ -126,7 +126,7 @@ export const BillService = {
    *
    * Filtering behavior:
    * - When `date` is provided, filters by that specific day (local time) - takes precedence over `month`
-   * - When `month` is provided (and no `date`), filters by calendar month range
+   * - When `month` is provided (and no `date`), filters by calendar month range and excludes paid bills
    * - When neither is provided, returns all bills sorted by closest payment date
    *
    * @param options - Filter options
@@ -154,6 +154,7 @@ export const BillService = {
       const monthEnd = endOfMonth(monthDate);
       conditions.push(gte(bills.dueDate, monthStart));
       conditions.push(lte(bills.dueDate, monthEnd));
+      conditions.push(ne(bills.status, 'paid'));
     }
 
     if (tag) {

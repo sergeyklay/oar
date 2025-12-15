@@ -1,5 +1,6 @@
 import { BillService } from './BillService';
 import { db, bills, resetDbMocks } from '@/db';
+import type { BillWithTags } from '@/db/schema';
 
 jest.mock('@/db');
 
@@ -9,7 +10,7 @@ describe('BillService.getFiltered', () => {
     jest.clearAllMocks();
   });
 
-  const mockBills = [
+  const mockBills: BillWithTags[] = [
     {
       id: 'bill-1',
       title: 'December Bill',
@@ -23,6 +24,7 @@ describe('BillService.getFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
     {
       id: 'bill-2',
@@ -37,6 +39,7 @@ describe('BillService.getFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
     {
       id: 'bill-3',
@@ -51,10 +54,11 @@ describe('BillService.getFiltered', () => {
       isArchived: false,
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
+      tags: [],
     },
   ];
 
-  const createSelectMock = (returnValue: typeof mockBills) => {
+  const createSelectMock = (returnValue: BillWithTags[]) => {
     const mockBuilder = {
       from: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
@@ -140,6 +144,95 @@ describe('BillService.getFiltered', () => {
 
     expect(mockBuilder.orderBy).toHaveBeenCalledWith(bills.dueDate);
     expect(result).toHaveLength(3);
+  });
+
+  it('excludes paid bills when filtering by month', async () => {
+    const billsWithMixedStatus: BillWithTags[] = [
+      {
+        ...mockBills[0],
+        id: 'bill-pending',
+        status: 'pending' as const,
+        tags: [],
+      },
+      {
+        ...mockBills[0],
+        id: 'bill-paid',
+        status: 'paid' as const,
+        tags: [],
+      },
+      {
+        ...mockBills[0],
+        id: 'bill-overdue',
+        status: 'overdue' as const,
+        tags: [],
+      },
+    ];
+
+    const expectedBills = [billsWithMixedStatus[0], billsWithMixedStatus[2]];
+    const mockBuilder = createSelectMock(expectedBills);
+    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+    const result = await BillService.getFiltered({ month: '2025-12' });
+
+    expect(result).toHaveLength(2);
+    expect(result.every((bill) => bill.status !== 'paid')).toBe(true);
+    expect(result.some((bill) => bill.status === 'pending')).toBe(true);
+    expect(result.some((bill) => bill.status === 'overdue')).toBe(true);
+    expect(db.select).toHaveBeenCalled();
+    expect(mockBuilder.where).toHaveBeenCalled();
+  });
+
+  it('includes pending bills when filtering by month', async () => {
+    const pendingBill: BillWithTags[] = [
+      {
+        ...mockBills[0],
+        status: 'pending' as const,
+        tags: [],
+      },
+    ];
+    createSelectMock(pendingBill);
+    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+    const result = await BillService.getFiltered({ month: '2025-12' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].status).toBe('pending');
+  });
+
+  it('includes overdue bills when filtering by month', async () => {
+    const overdueBill: BillWithTags[] = [
+      {
+        ...mockBills[0],
+        status: 'overdue' as const,
+        tags: [],
+      },
+    ];
+    createSelectMock(overdueBill);
+    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+    const result = await BillService.getFiltered({ month: '2025-12' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].status).toBe('overdue');
+  });
+
+  it('includes paid bills when filtering by date', async () => {
+    const paidBill: BillWithTags[] = [
+      {
+        ...mockBills[0],
+        id: 'bill-paid',
+        status: 'paid' as const,
+        tags: [],
+      },
+    ];
+    createSelectMock(paidBill);
+    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+    const result = await BillService.getFiltered({ date: '2025-12-10' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].status).toBe('paid');
+    expect(db.select).toHaveBeenCalled();
   });
 });
 
