@@ -14,6 +14,8 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     # The maximum number of minutes to let a workflow run
     # before GitHub automatically cancels it. Default: 360
