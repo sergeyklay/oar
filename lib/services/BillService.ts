@@ -1,7 +1,7 @@
 import { db, bills, tags, billsToTags } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
 import { and, eq, gte, lte, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, parse } from 'date-fns';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse } from 'date-fns';
 
 /**
  * Filter options for bill queries.
@@ -10,9 +10,9 @@ export interface GetBillsOptions {
   /** Filter by specific date (YYYY-MM-DD) - takes precedence */
   date?: string;
   /**
-   * Filter by month (YYYY-MM) - not currently used
-   * Reserved for future month-level filtering feature
-   * Currently ignored to prevent filtering when no date is selected
+   * Filter by month (YYYY-MM format) - filters bills by calendar month
+   * Uses inclusive date range from start of month to end of month
+   * When both `date` and `month` are provided, `date` takes precedence
    */
   month?: string;
   /** Filter by tag slug */
@@ -125,15 +125,15 @@ export const BillService = {
    * Fetches bills with their associated tags based on filter options.
    *
    * Filtering behavior:
-   * - When `date` is provided, filters by that specific day (local time)
-   * - When no `date` is provided, returns all bills sorted by closest payment date
-   * - The `month` parameter is not used for filtering (reserved for calendar navigation)
+   * - When `date` is provided, filters by that specific day (local time) - takes precedence over `month`
+   * - When `month` is provided (and no `date`), filters by calendar month range
+   * - When neither is provided, returns all bills sorted by closest payment date
    *
    * @param options - Filter options
    * @returns Array of bills with tags
    */
   async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
-    const { date, tag, includeArchived = false } = options;
+    const { date, month, tag, includeArchived = false } = options;
 
     const conditions = [];
 
@@ -147,6 +147,13 @@ export const BillService = {
       const dayEnd = endOfDay(dayDate);
       conditions.push(gte(bills.dueDate, dayStart));
       conditions.push(lte(bills.dueDate, dayEnd));
+    } else if (month) {
+      const [year, monthNum] = month.split('-').map(Number);
+      const monthDate = new Date(year, monthNum - 1, 1);
+      const monthStart = startOfMonth(monthDate);
+      const monthEnd = endOfMonth(monthDate);
+      conditions.push(gte(bills.dueDate, monthStart));
+      conditions.push(lte(bills.dueDate, monthEnd));
     }
 
     if (tag) {

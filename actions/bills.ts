@@ -6,6 +6,7 @@ import { db, bills, billsToTags } from '@/db';
 import type { Tag, BillWithTags } from '@/db/schema';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
 import { eq } from 'drizzle-orm';
+import { format } from 'date-fns';
 import { BillService, type GetBillsOptions } from '@/lib/services/BillService';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 
@@ -137,13 +138,35 @@ export async function getBills(includeArchived = false) {
  *
  * Filtering behavior:
  * - When `date` is provided, filters by that specific day
- * - When no `date` is provided, returns all bills sorted by closest payment date
- * - The `month` parameter is not used for filtering (reserved for calendar navigation)
+ * - When `month` is provided (and no `date`), filters by calendar month
+ * - When neither is provided, returns all bills sorted by closest payment date
  */
 export async function getBillsFiltered(
   options: GetBillsOptions = {}
 ): Promise<BillWithTags[]> {
   return BillService.getFiltered(options);
+}
+
+/**
+ * Fetches summary statistics for bills due in the current month.
+ *
+ * Used by Sidebar to display menu item subtitle.
+ *
+ * @returns Summary stats: count, total amount (in minor units), and variable bill indicator
+ */
+export async function getBillsForCurrentMonthStats(): Promise<{
+  count: number;
+  total: number;
+  hasVariable: boolean;
+}> {
+  const currentMonth = format(new Date(), 'yyyy-MM');
+  const bills = await BillService.getFiltered({ month: currentMonth });
+
+  const count = bills.length;
+  const total = bills.reduce((sum, bill) => sum + bill.amountDue, 0);
+  const hasVariable = bills.some((bill) => bill.isVariable);
+
+  return { count, total, hasVariable };
 }
 
 /**
