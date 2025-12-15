@@ -37,8 +37,9 @@ async function DashboardHeader() {
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
-  // CRITICAL: In Next.js 15+, searchParams is a Promise that must be awaited
-  const { month, date, tag, selectedBill } = await searchParamsCache.parse(searchParams);
+  // In Next.js 15+, searchParams is a Promise that must be awaited
+  // Note: month is parsed but not used for filtering (calendar navigation only)
+  const { date, tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
   // Fetch settings for right panel
   const settings = await SettingsService.getAll();
@@ -55,7 +56,6 @@ export default async function DashboardPage({
     >
       <MainContent header={<DashboardHeader />}>
         <BillList
-          month={month}
           date={date ?? undefined}
           tag={tag ?? undefined}
           selectedBillId={selectedBill}

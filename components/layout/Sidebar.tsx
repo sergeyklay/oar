@@ -1,14 +1,23 @@
 import Link from 'next/link';
-import { Home, CreditCard, TrendingUp, Settings } from 'lucide-react';
+import { Home, CreditCard, TrendingUp, Settings, Calendar } from 'lucide-react';
+import { getBillsForCurrentMonthStats } from '@/actions/bills';
+import { SettingsService } from '@/lib/services/SettingsService';
+import { formatMoney } from '@/lib/money';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Dashboard' },
+  { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true },
   { href: '/bills', icon: CreditCard, label: 'Bills' },
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export function Sidebar() {
+export async function Sidebar() {
+  const [stats, settings] = await Promise.all([
+    getBillsForCurrentMonthStats(),
+    SettingsService.getAll(),
+  ]);
+
   return (
     <aside className="sidebar bg-card">
       {/* Logo */}
@@ -29,7 +38,24 @@ export function Sidebar() {
                        hover:bg-accent transition-colors"
           >
             <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
+            {item.showStats ? (
+              <div className="flex flex-col">
+                <span>{item.label}</span>
+                {stats.count > 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    {stats.count} bills - {formatMoney(stats.total, settings.currency, settings.locale)}
+                    {stats.hasVariable ? ' (est.)' : ''}
+                  </span>
+                )}
+                {stats.count === 0 && (
+                  <span className="text-xs text-muted-foreground">
+                    No bills
+                  </span>
+                )}
+              </div>
+            ) : (
+              <span>{item.label}</span>
+            )}
           </Link>
         ))}
       </nav>
