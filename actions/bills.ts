@@ -6,7 +6,7 @@ import { db, bills, tags, billsToTags } from '@/db';
 import type { Tag, BillWithTags } from '@/db/schema';
 import { toMinorUnits, parseMoneyInput, isValidMoneyInput } from '@/lib/money';
 import { and, eq, gte, lte, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, parse } from 'date-fns';
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -171,9 +171,9 @@ export async function getBillsFiltered(
     conditions.push(eq(bills.isArchived, false));
   }
 
-  // Date filter (specific day) - ONLY active filter
+  // Date filter (specific day) - only active filter
   if (date) {
-    const dayDate = new Date(date);
+    const dayDate = parse(date, 'yyyy-MM-dd', new Date());
     const dayStart = startOfDay(dayDate);
     const dayEnd = endOfDay(dayDate);
     conditions.push(gte(bills.dueDate, dayStart));

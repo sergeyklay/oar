@@ -525,6 +525,56 @@ describe('getBillsFiltered', () => {
     expect(db.select).toHaveBeenCalled();
   });
 
+  it('parses date string as local time to ensure correct day boundaries', async () => {
+    const { parse, startOfDay, endOfDay } = await import('date-fns');
+
+    const dateString = '2025-01-15';
+
+    const localDate = parse(dateString, 'yyyy-MM-dd', new Date());
+    const dayStart = startOfDay(localDate);
+    const dayEnd = endOfDay(localDate);
+
+    const expectedLocalDate = new Date(2025, 0, 15);
+    const expectedStart = startOfDay(expectedLocalDate);
+    const expectedEnd = endOfDay(expectedLocalDate);
+
+    expect(dayStart.getTime()).toBe(expectedStart.getTime());
+    expect(dayEnd.getTime()).toBe(expectedEnd.getTime());
+
+    const billOnStart = {
+      ...mockBills[0],
+      id: 'bill-start',
+      dueDate: dayStart,
+    };
+    const billOnEnd = {
+      ...mockBills[0],
+      id: 'bill-end',
+      dueDate: dayEnd,
+    };
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([billOnStart, billOnEnd]),
+          }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+    const result = await getBillsFiltered({ date: dateString });
+
+    expect(result).toHaveLength(2);
+    expect(result.some(b => b.id === 'bill-start')).toBe(true);
+    expect(result.some(b => b.id === 'bill-end')).toBe(true);
+  });
+
   it('excludes archived bills by default', async () => {
     setupBillsAndTagsQuery(mockBills);
 
