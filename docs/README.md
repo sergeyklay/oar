@@ -18,6 +18,7 @@ Explanations of user-facing functionality and domain logic.
 |----------|-------------|
 | [002-auto-pay](features/002-auto-pay.md) | Logging payments and updating due dates |
 | [003-organizing-bills-with-tags](features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
+| [004-due-this-month](features/004-due-this-month.md) | Viewing bills due in the current month |
 
 ## Development
 
