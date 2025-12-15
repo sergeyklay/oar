@@ -1,20 +1,21 @@
 import Link from 'next/link';
 import { Home, CreditCard, TrendingUp, Settings, Calendar } from 'lucide-react';
-import { getBillsForCurrentMonthStats } from '@/actions/bills';
+import { getBillsForCurrentMonthStats, getAllBillsStats } from '@/actions/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
 
 const navItems = [
-  { href: '/', icon: Home, label: 'Dashboard' },
-  { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true },
+  { href: '/', icon: Home, label: 'Overview', showStats: true, statsType: 'all' as const },
+  { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true, statsType: 'currentMonth' as const },
   { href: '/bills', icon: CreditCard, label: 'Bills' },
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export async function Sidebar() {
-  const [stats, settings] = await Promise.all([
+  const [currentMonthStats, allBillsStats, settings] = await Promise.all([
     getBillsForCurrentMonthStats(),
+    getAllBillsStats(),
     SettingsService.getAll(),
   ]);
 
@@ -41,17 +42,28 @@ export async function Sidebar() {
             {item.showStats ? (
               <div className="flex flex-col">
                 <span>{item.label}</span>
-                {stats.count > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {stats.count} bills - {formatMoney(stats.total, settings.currency, settings.locale)}
-                    {stats.hasVariable ? ' (est.)' : ''}
-                  </span>
-                )}
-                {stats.count === 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    No bills
-                  </span>
-                )}
+                {item.statsType === 'currentMonth' ? (
+                  currentMonthStats.count > 0 ? (
+                    <span className="text-xs text-muted-foreground">
+                      {currentMonthStats.count} bills - {formatMoney(currentMonthStats.total, settings.currency, settings.locale)}
+                      {currentMonthStats.hasVariable ? ' (est.)' : ''}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No bills
+                    </span>
+                  )
+                ) : item.statsType === 'all' ? (
+                  allBillsStats.count > 0 ? (
+                    <span className="text-xs text-muted-foreground">
+                      {allBillsStats.count} bills
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No bills
+                    </span>
+                  )
+                ) : null}
               </div>
             ) : (
               <span>{item.label}</span>
