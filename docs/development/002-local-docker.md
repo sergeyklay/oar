@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-11
-- **Related:**
 
 ## 1. Goal
 
