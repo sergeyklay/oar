@@ -2,7 +2,6 @@
 
 - **Status:** Accepted
 - **Last Updated:** 2025-12-12
-- **Related:** -
 
 ## Context
 
