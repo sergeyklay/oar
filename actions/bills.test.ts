@@ -871,7 +871,7 @@ describe('getAllBillsStats', () => {
   });
 
   it('excludes archived bills by calling getFiltered with empty options', async () => {
-    const mockBills = [
+    const allBills = [
       {
         id: 'bill-1',
         title: 'Active Bill',
@@ -887,9 +887,26 @@ describe('getAllBillsStats', () => {
         updatedAt: new Date('2025-01-01'),
         tags: [],
       },
+      {
+        id: 'bill-2',
+        title: 'Archived Bill',
+        amount: 50000,
+        amountDue: 50000,
+        dueDate: new Date('2025-11-10'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: true,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      },
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    const nonArchivedBills = allBills.filter((bill) => !bill.isArchived);
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(nonArchivedBills);
 
     const result = await getAllBillsStats();
 
