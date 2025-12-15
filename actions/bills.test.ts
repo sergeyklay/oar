@@ -1,4 +1,4 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats } from './bills';
+import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
 
@@ -796,5 +796,104 @@ describe('getBillsForCurrentMonthStats', () => {
     const result = await getBillsForCurrentMonthStats();
 
     expect(result.total).toBe(25000);
+  });
+});
+
+describe('getAllBillsStats', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns count of all non-archived bills', async () => {
+    const mockBills = [
+      {
+        id: 'bill-1',
+        title: 'Rent',
+        amount: 100000,
+        amountDue: 100000,
+        dueDate: new Date('2025-12-10'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      },
+      {
+        id: 'bill-2',
+        title: 'Electric',
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-12-20'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: true,
+        status: 'pending' as const,
+        isArchived: false,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      },
+      {
+        id: 'bill-3',
+        title: 'Internet',
+        amount: 8000,
+        amountDue: 8000,
+        dueDate: new Date('2025-11-25'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      },
+    ];
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getAllBillsStats();
+
+    expect(result.count).toBe(3);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
+  });
+
+  it('returns zero count when no bills exist', async () => {
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    const result = await getAllBillsStats();
+
+    expect(result.count).toBe(0);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
+  });
+
+  it('excludes archived bills by calling getFiltered with empty options', async () => {
+    const mockBills = [
+      {
+        id: 'bill-1',
+        title: 'Active Bill',
+        amount: 100000,
+        amountDue: 100000,
+        dueDate: new Date('2025-12-10'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      },
+    ];
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getAllBillsStats();
+
+    expect(result.count).toBe(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({});
   });
 });
