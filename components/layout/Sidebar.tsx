@@ -4,7 +4,59 @@ import { getBillsForCurrentMonthStats, getAllBillsStats } from '@/actions/bills'
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
 
-const navItems = [
+type NavItem = {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  showStats?: boolean;
+  statsType?: 'all' | 'currentMonth';
+};
+
+function renderStatsSubtitle(
+  item: NavItem,
+  currentMonthStats: { count: number; total: number; hasVariable: boolean },
+  allBillsStats: { count: number },
+  settings: { currency: string; locale: string }
+): React.ReactNode {
+  if (!item.showStats || !item.statsType) {
+    return null;
+  }
+
+  if (item.statsType === 'currentMonth') {
+    if (currentMonthStats.count === 0) {
+      return (
+        <span className="text-xs text-muted-foreground">
+          No bills
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs text-muted-foreground">
+        {currentMonthStats.count} bills - {formatMoney(currentMonthStats.total, settings.currency, settings.locale)}
+        {currentMonthStats.hasVariable ? ' (est.)' : ''}
+      </span>
+    );
+  }
+
+  if (item.statsType === 'all') {
+    if (allBillsStats.count === 0) {
+      return (
+        <span className="text-xs text-muted-foreground">
+          No bills
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs text-muted-foreground">
+        {allBillsStats.count} bills
+      </span>
+    );
+  }
+
+  return null;
+}
+
+const navItems: NavItem[] = [
   { href: '/', icon: Home, label: 'Overview', showStats: true, statsType: 'all' as const },
   { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true, statsType: 'currentMonth' as const },
   { href: '/bills', icon: CreditCard, label: 'Bills' },
@@ -42,28 +94,7 @@ export async function Sidebar() {
             {item.showStats ? (
               <div className="flex flex-col">
                 <span>{item.label}</span>
-                {item.statsType === 'currentMonth' ? (
-                  currentMonthStats.count > 0 ? (
-                    <span className="text-xs text-muted-foreground">
-                      {currentMonthStats.count} bills - {formatMoney(currentMonthStats.total, settings.currency, settings.locale)}
-                      {currentMonthStats.hasVariable ? ' (est.)' : ''}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      No bills
-                    </span>
-                  )
-                ) : item.statsType === 'all' ? (
-                  allBillsStats.count > 0 ? (
-                    <span className="text-xs text-muted-foreground">
-                      {allBillsStats.count} bills
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      No bills
-                    </span>
-                  )
-                ) : null}
+                {renderStatsSubtitle(item, currentMonthStats, allBillsStats, settings)}
               </div>
             ) : (
               <span>{item.label}</span>
