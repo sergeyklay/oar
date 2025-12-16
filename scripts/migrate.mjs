@@ -10,7 +10,7 @@
 
 import Database from 'better-sqlite3';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { join, dirname, resolve, isAbsolute } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,7 +28,7 @@ if (dbPath === ':memory:') {
 }
 
 // Resolve relative paths to absolute paths
-if (!dbPath.startsWith('/')) {
+if (!isAbsolute(dbPath)) {
   dbPath = resolve(ROOT_DIR, dbPath);
 }
 
