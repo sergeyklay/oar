@@ -61,10 +61,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
 
-# Validate that the encryption key is set
-RUN test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
-    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY must be provided at runtime" && exit 1)
-
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
