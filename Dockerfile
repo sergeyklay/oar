@@ -40,6 +40,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
 
+# Validate that the encryption key was provided
+RUN test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
+    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required. Generate one with: openssl rand -base64 32" && exit 1)
+
 # Build the Next.js application (standalone output)
 RUN npm run build
 
@@ -56,6 +60,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Can be provided via --build-arg or -e at runtime
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+
+# Validate that the encryption key is set
+RUN test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
+    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY must be provided at runtime" && exit 1)
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
