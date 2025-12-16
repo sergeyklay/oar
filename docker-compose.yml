@@ -1,0 +1,30 @@
+name: oar
+
+services:
+  oar:
+    build:
+      context: .
+      args:
+        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-"put your encryption key here"}
+    container_name: oar
+    restart: unless-stopped
+    mem_limit: ${OAR_MEMORY_LIMIT:-128MiB}
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-/app/data/oar.db}
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-"put your encryption key here"}
+    volumes:
+      - oar_data:/app/data
+    networks:
+      - oar-network
+    ports:
+      - 8080:8080
+
+volumes:
+  oar_data:
+    driver: local
+
+networks:
+  oar-network:
+    driver: bridge
+    name: oar-network

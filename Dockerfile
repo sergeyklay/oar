@@ -34,6 +34,12 @@ COPY . .
 ENV DATABASE_URL=":memory:"
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Server Actions encryption key (required for consistent builds)
+# Must be provided via --build-arg NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<key>
+# Generate a key with: openssl rand -base64 32
+ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+
 # Build the Next.js application (standalone output)
 RUN npm run build
 
@@ -45,6 +51,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Server Actions encryption key (must match build-time key)
+# Can be provided via --build-arg or -e at runtime
+ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
