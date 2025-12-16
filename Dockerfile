@@ -56,10 +56,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Server Actions encryption key (must match build-time key)
-# Can be provided via --build-arg or -e at runtime
+# Server Actions encryption key (required at build time)
+# The runtime NEXT_SERVER_ACTIONS_ENCRYPTION_KEY (passed via -e or docker-compose
+# environment) must exactly match the build-time --build-arg value. Mismatched keys will
+# cause "Failed to find Server Action" errors. If you need a different key, rebuild the
+# image with the new --build-arg value and use the same key at runtime.
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
-ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
