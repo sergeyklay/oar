@@ -60,7 +60,7 @@
     "rrule": "^2.8.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.1.13"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
