@@ -5,14 +5,14 @@ services:
     build:
       context: .
       args:
-        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-"put your encryption key here"}
+        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     container_name: oar
     restart: unless-stopped
     mem_limit: ${OAR_MEMORY_LIMIT:-128MiB}
     env_file: .env
     environment:
       DATABASE_URL: ${DATABASE_URL:-/app/data/oar.db}
-      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-"put your encryption key here"}
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
     volumes:
       - oar_data:/app/data
     networks:

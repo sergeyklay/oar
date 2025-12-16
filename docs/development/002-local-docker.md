@@ -48,7 +48,7 @@ DATABASE_URL=/app/data/oar.db
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 ```
 
-**Note:** The encryption key is required for Next.js Server Actions to work correctly in Docker. Use the same key for both build-time and runtime.
+**Note:** The encryption key is required for Next.js Server Actions to work correctly in Docker. The runtime `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (set in `.env` and passed via docker-compose environment) must exactly match the build-time key (passed via docker-compose build args). If they differ, Server Actions will fail with "Failed to find Server Action" errors. Always use the same key value for both build-time and runtime.
 
 ### Step 2: Build and start the container
 
@@ -88,7 +88,7 @@ Generate a Server Actions encryption key:
 openssl rand -base64 32
 ```
 
-Save this key; you'll need it for both build and runtime.
+Save this key; you'll need it for both build and runtime. The same exact key value must be used for both `--build-arg` during build and `-e` at runtime. Mismatched keys will break Server Actions decryption.
 
 ### Step 2: Build the Docker image
 
@@ -147,7 +147,7 @@ You should see `oar_app` listed with status `Up`.
 |----------|---------|-------------|
 | `DATABASE_URL` | `/app/data/oar.db` | Absolute or relative path to the SQLite database file |
 | `PORT` | `8080` | Port the application listens on |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Required | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`) |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Required | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). Must match exactly between build-time (`--build-arg`) and runtime (`-e` or docker-compose environment). |
 | `OAR_MEMORY_LIMIT` | `128MiB` | Memory limit for the container (docker-compose only) |
 
 ### Database path handling
@@ -241,11 +241,12 @@ Common causes:
 
 **Error:** `Failed to find Server Action "..."`
 
-**Fix:** The encryption key used at build-time must match the key used at runtime. Verify:
+**Fix:** The encryption key used at build-time must exactly match the key used at runtime. This is a hard constraint—mismatched keys will break Server Actions decryption. Verify:
 
-1. The same key is set in `.env` (for docker-compose) or passed via `-e` (for manual Docker)
-2. The key was passed during build via `--build-arg` (for manual Docker) or docker-compose build args
-3. Regenerate and use a consistent key if the error persists
+1. **For docker-compose:** The same key value is set in `.env` and used for both `build.args` and `environment` sections in `docker-compose.yml`
+2. **For manual Docker:** The exact same key value is passed via `--build-arg` during build and `-e` at runtime
+3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
+4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
 
 ### Database directory does not exist
 
