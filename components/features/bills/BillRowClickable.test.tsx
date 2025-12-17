@@ -161,5 +161,52 @@ describe('BillRowClickable', () => {
       await user.click(screen.getByRole('button'));
       expect(mockSetSelectedBill).toHaveBeenCalledWith('bill-1');
     });
+
+    it('does not call setSelectedBill when click target is inside a dialog', async () => {
+      const { container } = renderClickable(false);
+
+      // Simulate a dialog with content inside
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      const buttonInsideDialog = document.createElement('button');
+      buttonInsideDialog.textContent = 'Button inside dialog';
+      dialog.appendChild(buttonInsideDialog);
+      document.body.appendChild(dialog);
+
+      // Simulate clicking the button inside the dialog
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEvent, 'target', { value: buttonInsideDialog });
+
+      // Get the row element directly from the container
+      const row = container.querySelector('tr.bill-row-clickable');
+      if (row) {
+        row.dispatchEvent(clickEvent);
+      }
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not call setSelectedBill when click target is inside a popover (uses role="dialog")', async () => {
+      const { container } = renderClickable(false);
+
+      // Simulate a Radix Popover (which uses role="dialog" for accessibility)
+      const popover = document.createElement('div');
+      popover.setAttribute('role', 'dialog');
+      const popoverContent = document.createElement('div');
+      popoverContent.textContent = 'Popover content';
+      popover.appendChild(popoverContent);
+      document.body.appendChild(popover);
+
+      // Simulate clicking content inside the popover
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEvent, 'target', { value: popoverContent });
+
+      const row = container.querySelector('tr.bill-row-clickable');
+      if (row) {
+        row.dispatchEvent(clickEvent);
+      }
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
   });
 });

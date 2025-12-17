@@ -29,21 +29,11 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
     }
 
     // Don't handle clicks if the target is inside a dialog or popover
-    // This prevents clicks inside dialogs/popovers from triggering bill selection
+    // Radix UI Popover uses role="dialog" for accessibility, so this check covers both
     const target = e.target as HTMLElement;
-
-    // Check if click is inside a dialog (Radix UI Dialog uses role="dialog")
     const isInsideDialog = target.closest('[role="dialog"]') !== null;
 
-    // Check if click is inside a popover (Radix UI Popover content is in a portal)
-    // Popovers are typically rendered outside the DOM hierarchy, so we check
-    // if the target has a popover-related attribute or is inside a popover container
-    const isInsidePopover =
-      target.closest('[data-radix-popper-content-wrapper]') !== null ||
-      target.closest('[data-radix-popover-content]') !== null ||
-      target.closest('[role="dialog"][data-radix-popover-content]') !== null;
-
-    if (isInsideDialog || isInsidePopover) {
+    if (isInsideDialog) {
       e.stopPropagation();
       return;
     }
