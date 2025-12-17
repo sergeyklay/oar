@@ -1,0 +1,30 @@
+---
+description: Enforce Node.js environment via nvm.
+globs: **/*
+alwaysApply: true
+---
+
+# Environment & Runtime Constraints
+
+## Core Rule
+
+**CRITICAL:** This project requires Node.js defined in the `.nvmrc` file.
+
+The system environment might default to an older version. You MUST ensure the correct version is active before running commands.
+
+## Terminal Command Execution Rules
+
+**Context:** You are running in an interactive VS Code terminal. The environment is likely already loaded. If not, you must load it using `nvm use` once. You should never need to run `nvm use` more than once.
+
+**Rule:** DO NOT blindly chain `source ~/.nvm/nvm.sh` or `export` commands. It creates messy, fragile commands.
+
+
+## Quick Reference
+
+```bash
+# ✅ DO: Correct nvm usage
+nvm use
+
+# ✅ DO: Check version if unsure
+node -v
+```
