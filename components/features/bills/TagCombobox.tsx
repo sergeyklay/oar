@@ -198,10 +198,7 @@ export function TagCombobox({
                 <CommandItem
                   key={tag.id}
                   value={tag.id}
-                  onSelect={() => {
-                    // Prevent event propagation
-                    handleSelect(tag.id);
-                  }}
+                  onSelect={() => handleSelect(tag.id)}
                   onClick={(e) => {
                     // Stop propagation to prevent triggering parent click handlers
                     e.stopPropagation();
