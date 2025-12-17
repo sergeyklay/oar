@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -59,9 +60,10 @@ const formSchema = z.object({
   isAutoPay: z.boolean(),
   isVariable: z.boolean(),
   tagIds: z.array(z.string()),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
 });
 
-type FormValues = z.output<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface BillFormDialogProps {
   /** When provided, dialog operates in Edit mode */
@@ -95,6 +97,7 @@ export function BillFormDialog({
       isAutoPay: false,
       isVariable: false,
       tagIds: [],
+      notes: '',
     },
   });
 
@@ -111,6 +114,7 @@ export function BillFormDialog({
           isAutoPay: bill.isAutoPay,
           isVariable: bill.isVariable,
           tagIds: [],
+          notes: bill.notes || '',
         });
 
         // Fetch existing tags for this bill
@@ -127,6 +131,7 @@ export function BillFormDialog({
           isAutoPay: false,
           isVariable: false,
           tagIds: [],
+          notes: '',
           dueDate: undefined,
         });
       }
@@ -320,6 +325,24 @@ export function BillFormDialog({
                       selectedIds={field.value ?? []}
                       onChange={field.onChange}
                       placeholder="Add tags..."
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Add any additional information about this bill..."
+                      className="min-h-[100px]"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { CalendarDays, CreditCard, RefreshCw, Zap } from 'lucide-react';
+import { CalendarDays, CreditCard, FileText, RefreshCw, Zap } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { formatMoney } from '@/lib/money';
@@ -104,6 +104,19 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
             </p>
           </div>
         </div>
+
+        {/* Notes Section */}
+        {bill.notes && (
+          <div className="flex items-start gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
+              <FileText className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground mb-1">Notes</p>
+              <p className="text-sm whitespace-pre-wrap break-words">{bill.notes}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tags Section - At Bottom */}

@@ -21,6 +21,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   isVariable: false,
   status: 'pending',
   isArchived: false,
+  notes: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],
@@ -157,6 +158,47 @@ describe('BillDetailPanel', () => {
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('notes display', () => {
+    it('displays notes when present', () => {
+      const bill = createMockBill({
+        notes: 'Account number: 12345\nPayment instructions: Pay online',
+      });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByText('Notes')).toBeInTheDocument();
+      const notesElement = screen.getByText((content, element) => {
+        return element?.textContent === 'Account number: 12345\nPayment instructions: Pay online';
+      });
+      expect(notesElement).toBeInTheDocument();
+    });
+
+    it('preserves line breaks in notes', () => {
+      const bill = createMockBill({
+        notes: 'Line 1\nLine 2\nLine 3',
+      });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      const notesElement = screen.getByText((content, element) => {
+        return element?.textContent === 'Line 1\nLine 2\nLine 3';
+      });
+      expect(notesElement).toHaveClass('whitespace-pre-wrap');
+    });
+
+    it('does not display notes section when notes is null', () => {
+      const bill = createMockBill({ notes: null });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.queryByText('Notes')).not.toBeInTheDocument();
+    });
+
+    it('does not display notes section when notes is empty string', () => {
+      const bill = createMockBill({ notes: '' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.queryByText('Notes')).not.toBeInTheDocument();
     });
   });
 });
