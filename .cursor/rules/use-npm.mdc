@@ -1,0 +1,69 @@
+---
+description: Use npm as the package manager for all operations
+globs: **/package.json, **/package-lock.json
+alwaysApply: false
+---
+
+# Package Manager
+
+## Core Rule
+
+**Always use `npm` as the package manager.** Never use bun, yarn, or pnpm.
+
+## Commands
+
+### ✅ Always Use npm
+
+```bash
+# Install dependencies
+npm install package-name           # Add a new dependency
+npm install -D package-name        # Add a development dependency
+
+# To install with reproducible dependencies
+npm ci
+
+# To check the current project's packages for vulnerabilities
+npm audit --json
+
+# Remove packages
+npm remove axios                   # Remove a package
+
+# Run scripts
+npm run dev                        # Run development server
+npm run build                      # Build the application
+npm run lint                       # Run linting
+npm run test                       # Run tests
+
+# Execute binaries
+npx drizzle-kit generate          # Generate migration files
+npx drizzle-kit push --force      # Push schema changes to SQLite
+```
+
+### ❌ Never Use These
+
+```bash
+# bunnpm
+bun install
+bun run dev
+bunx drizzle-kit generate
+bun audit
+
+# yarn
+yarn add axios
+yarn dev
+
+# pnpm
+pnpm install
+pnpm run dev
+```
+
+## Quick Reference
+
+| Action             | Command                    |
+| ------------------ | -------------------------- |
+| Install all deps   | `npm ci`                   |
+| Add package        | `npm install <package>`    |
+| Add dev dependency | `npm install -D <package>` |
+| Remove package     | `npm remove <package>`     |
+| Run script         | `npm run <script>`         |
+| Execute binary     | `npx <command>`            |
