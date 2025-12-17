@@ -53,15 +53,19 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           // Don't handle keyboard events if any dialog is currently open
+          // This prevents keyboard events from triggering bill selection when editing
           const hasOpenDialog = document.querySelector('[role="dialog"][data-state="open"]') !== null;
           if (hasOpenDialog) {
             return;
           }
-          // Also check if focus is inside a dialog
+
+          // Don't handle keyboard events if focus is inside a dialog or popover
+          // Radix UI Popover uses role="dialog" for accessibility, so this check covers both
           const activeElement = document.activeElement;
           if (activeElement && activeElement.closest('[role="dialog"]')) {
             return;
           }
+
           setSelectedBill(isSelected ? null : billId);
         }
       }}
