@@ -204,7 +204,9 @@ export async function updateBill(
     };
   }
 
-  const { id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes } = parsed.data;
+  const {
+    id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes,
+  } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
