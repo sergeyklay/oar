@@ -14,7 +14,6 @@ jest.mock('nuqs', () => ({
 describe('BillRowClickable', () => {
   beforeEach(() => {
     mockSetSelectedBill.mockClear();
-    // Clean up any dialogs from previous tests
     document.body.innerHTML = '';
   });
 
@@ -99,7 +98,6 @@ describe('BillRowClickable', () => {
       const user = userEvent.setup();
       renderClickable(false);
 
-      // Simulate an open dialog in the DOM (like Edit Bill dialog)
       const dialog = document.createElement('div');
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('data-state', 'open');
@@ -114,7 +112,6 @@ describe('BillRowClickable', () => {
       const user = userEvent.setup();
       renderClickable(false);
 
-      // Simulate an open dialog
       const dialog = document.createElement('div');
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('data-state', 'open');
@@ -130,7 +127,6 @@ describe('BillRowClickable', () => {
       const user = userEvent.setup();
       renderClickable(false);
 
-      // Simulate an open dialog
       const dialog = document.createElement('div');
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('data-state', 'open');
@@ -146,7 +142,6 @@ describe('BillRowClickable', () => {
       const user = userEvent.setup();
       renderClickable(false);
 
-      // Simulate an open dialog
       const dialog = document.createElement('div');
       dialog.setAttribute('role', 'dialog');
       dialog.setAttribute('data-state', 'open');
@@ -155,7 +150,6 @@ describe('BillRowClickable', () => {
       await user.click(screen.getByRole('button'));
       expect(mockSetSelectedBill).not.toHaveBeenCalled();
 
-      // Close the dialog (change state or remove)
       dialog.setAttribute('data-state', 'closed');
 
       await user.click(screen.getByRole('button'));
@@ -165,7 +159,6 @@ describe('BillRowClickable', () => {
     it('does not call setSelectedBill when click target is inside a dialog', async () => {
       const { container } = renderClickable(false);
 
-      // Simulate a dialog with content inside
       const dialog = document.createElement('div');
       dialog.setAttribute('role', 'dialog');
       const buttonInsideDialog = document.createElement('button');
@@ -173,11 +166,73 @@ describe('BillRowClickable', () => {
       dialog.appendChild(buttonInsideDialog);
       document.body.appendChild(dialog);
 
-      // Simulate clicking the button inside the dialog
       const clickEvent = new MouseEvent('click', { bubbles: true });
       Object.defineProperty(clickEvent, 'target', { value: buttonInsideDialog });
 
-      // Get the row element directly from the container
+      const row = container.querySelector('tr.bill-row-clickable');
+      if (row) {
+        row.dispatchEvent(clickEvent);
+      }
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('popover detection (regression: tag selection sidebar switching)', () => {
+    it('does not call setSelectedBill when popover is open (click)', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      const popoverWrapper = document.createElement('div');
+      popoverWrapper.setAttribute('data-radix-popper-content-wrapper', '');
+      document.body.appendChild(popoverWrapper);
+
+      await user.click(screen.getByRole('button'));
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not call setSelectedBill when popover is open (Enter key)', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      const popoverWrapper = document.createElement('div');
+      popoverWrapper.setAttribute('data-radix-popper-content-wrapper', '');
+      document.body.appendChild(popoverWrapper);
+
+      screen.getByRole('button').focus();
+      await user.keyboard('{Enter}');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not call setSelectedBill when popover is open (Space key)', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      const popoverWrapper = document.createElement('div');
+      popoverWrapper.setAttribute('data-radix-popper-content-wrapper', '');
+      document.body.appendChild(popoverWrapper);
+
+      screen.getByRole('button').focus();
+      await user.keyboard(' ');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not call setSelectedBill when click target is inside popover content', async () => {
+      const { container } = renderClickable(false);
+
+      const popoverContent = document.createElement('div');
+      popoverContent.setAttribute('data-radix-popover-content', '');
+      const buttonInsidePopover = document.createElement('button');
+      buttonInsidePopover.textContent = 'Select Tag';
+      popoverContent.appendChild(buttonInsidePopover);
+      document.body.appendChild(popoverContent);
+
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEvent, 'target', { value: buttonInsidePopover });
+
       const row = container.querySelector('tr.bill-row-clickable');
       if (row) {
         row.dispatchEvent(clickEvent);
@@ -186,27 +241,21 @@ describe('BillRowClickable', () => {
       expect(mockSetSelectedBill).not.toHaveBeenCalled();
     });
 
-    it('does not call setSelectedBill when click target is inside a popover (uses role="dialog")', async () => {
-      const { container } = renderClickable(false);
+    it('resumes selection after popover is closed', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
 
-      // Simulate a Radix Popover (which uses role="dialog" for accessibility)
-      const popover = document.createElement('div');
-      popover.setAttribute('role', 'dialog');
-      const popoverContent = document.createElement('div');
-      popoverContent.textContent = 'Popover content';
-      popover.appendChild(popoverContent);
-      document.body.appendChild(popover);
+      const popoverWrapper = document.createElement('div');
+      popoverWrapper.setAttribute('data-radix-popper-content-wrapper', '');
+      document.body.appendChild(popoverWrapper);
 
-      // Simulate clicking content inside the popover
-      const clickEvent = new MouseEvent('click', { bubbles: true });
-      Object.defineProperty(clickEvent, 'target', { value: popoverContent });
-
-      const row = container.querySelector('tr.bill-row-clickable');
-      if (row) {
-        row.dispatchEvent(clickEvent);
-      }
-
+      await user.click(screen.getByRole('button'));
       expect(mockSetSelectedBill).not.toHaveBeenCalled();
+
+      popoverWrapper.remove();
+
+      await user.click(screen.getByRole('button'));
+      expect(mockSetSelectedBill).toHaveBeenCalledWith('bill-1');
     });
   });
 });
