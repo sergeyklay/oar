@@ -126,6 +126,10 @@ export function TagCombobox({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between min-h-[40px] h-auto"
+          onClick={(e) => {
+            // Prevent event from bubbling up to parent elements (e.g., BillRowClickable)
+            e.stopPropagation();
+          }}
         >
           <div className="flex flex-wrap gap-1">
             {selectedTags.length === 0 ? (
@@ -194,7 +198,14 @@ export function TagCombobox({
                 <CommandItem
                   key={tag.id}
                   value={tag.id}
-                  onSelect={() => handleSelect(tag.id)}
+                  onSelect={() => {
+                    // Prevent event propagation
+                    handleSelect(tag.id);
+                  }}
+                  onClick={(e) => {
+                    // Stop propagation to prevent triggering parent click handlers
+                    e.stopPropagation();
+                  }}
                 >
                   <Check
                     className={cn(
@@ -213,6 +224,10 @@ export function TagCombobox({
                   onSelect={handleCreate}
                   disabled={isCreating}
                   className="text-muted-foreground"
+                  onClick={(e) => {
+                    // Stop propagation to prevent triggering parent click handlers
+                    e.stopPropagation();
+                  }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create &quot;{search}&quot;
