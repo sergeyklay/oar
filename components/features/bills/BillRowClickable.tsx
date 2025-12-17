@@ -9,6 +9,19 @@ interface BillRowClickableProps {
 }
 
 /**
+ * Checks if an element is inside a dialog or popover.
+ * Radix UI Dialog uses role="dialog", while Popover uses data-radix-popper-content-wrapper.
+ */
+function isInsideDialogOrPopover(element: Element | null): boolean {
+  if (!element) return false;
+  const isInsideDialog = element.closest('[role="dialog"]') !== null;
+  const isInsidePopover =
+    element.closest('[data-radix-popper-content-wrapper]') !== null ||
+    element.closest('[data-radix-popover-content]') !== null;
+  return isInsideDialog || isInsidePopover;
+}
+
+/**
  * Clickable table row wrapper for bill selection.
  * Toggles the selectedBill URL parameter on click.
  */
@@ -20,20 +33,17 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
   );
 
   function handleClick(e: React.MouseEvent<HTMLTableRowElement>) {
-    // Don't handle clicks if any dialog is currently open
-    // This prevents clicks from triggering bill selection when editing
+    // Don't handle clicks if any dialog or popover is currently open
     const hasOpenDialog = document.querySelector('[role="dialog"][data-state="open"]') !== null;
-    if (hasOpenDialog) {
+    const hasOpenPopover = document.querySelector('[data-radix-popper-content-wrapper]') !== null;
+    if (hasOpenDialog || hasOpenPopover) {
       e.stopPropagation();
       return;
     }
 
     // Don't handle clicks if the target is inside a dialog or popover
-    // Radix UI Popover uses role="dialog" for accessibility, so this check covers both
     const target = e.target as HTMLElement;
-    const isInsideDialog = target.closest('[role="dialog"]') !== null;
-
-    if (isInsideDialog) {
+    if (isInsideDialogOrPopover(target)) {
       e.stopPropagation();
       return;
     }
@@ -52,17 +62,16 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          // Don't handle keyboard events if any dialog is currently open
-          // This prevents keyboard events from triggering bill selection when editing
+
+          // Don't handle keyboard events if any dialog or popover is currently open
           const hasOpenDialog = document.querySelector('[role="dialog"][data-state="open"]') !== null;
-          if (hasOpenDialog) {
+          const hasOpenPopover = document.querySelector('[data-radix-popper-content-wrapper]') !== null;
+          if (hasOpenDialog || hasOpenPopover) {
             return;
           }
 
           // Don't handle keyboard events if focus is inside a dialog or popover
-          // Radix UI Popover uses role="dialog" for accessibility, so this check covers both
-          const activeElement = document.activeElement;
-          if (activeElement && activeElement.closest('[role="dialog"]')) {
+          if (isInsideDialogOrPopover(document.activeElement)) {
             return;
           }
 
@@ -74,4 +83,3 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
     </tr>
   );
 }
-
