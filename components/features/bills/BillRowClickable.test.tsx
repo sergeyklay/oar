@@ -258,4 +258,61 @@ describe('BillRowClickable', () => {
       expect(mockSetSelectedBill).toHaveBeenCalledWith('bill-1');
     });
   });
+
+  describe('editable element detection (regression: space key in notes textarea)', () => {
+    it('does not trigger selection on Space key when textarea is focused', async () => {
+      const user = userEvent.setup();
+      const { container } = renderClickable(false);
+
+      const textarea = document.createElement('textarea');
+      textarea.value = 'test';
+      container.querySelector('tr')?.appendChild(textarea);
+      textarea.focus();
+
+      await user.keyboard(' ');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+      expect(textarea.value).toBe('test ');
+    });
+
+    it('does not trigger selection on Space key when input is focused', async () => {
+      const user = userEvent.setup();
+      const { container } = renderClickable(false);
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = 'test';
+      container.querySelector('tr')?.appendChild(input);
+      input.focus();
+
+      await user.keyboard(' ');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+      expect(input.value).toBe('test ');
+    });
+
+    it('does not trigger selection on Enter key when textarea is focused', async () => {
+      const user = userEvent.setup();
+      const { container } = renderClickable(false);
+
+      const textarea = document.createElement('textarea');
+      textarea.value = 'test';
+      container.querySelector('tr')?.appendChild(textarea);
+      textarea.focus();
+
+      await user.keyboard('{Enter}');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('still triggers selection on Space key when row itself is focused (not editable element)', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      screen.getByRole('button').focus();
+      await user.keyboard(' ');
+
+      expect(mockSetSelectedBill).toHaveBeenCalledWith('bill-1');
+    });
+  });
 });

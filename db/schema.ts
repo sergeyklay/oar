@@ -31,6 +31,8 @@ export const bills = sqliteTable('bills', {
     enum: ['pending', 'paid', 'overdue'],
   }).notNull().default('pending'),
   isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+  /** Optional user notes for bill context (account numbers, reminders, etc.) */
+  notes: text('notes'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),

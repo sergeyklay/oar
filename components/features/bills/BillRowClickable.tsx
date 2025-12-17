@@ -22,6 +22,19 @@ function isInsideDialogOrPopover(element: Element | null): boolean {
 }
 
 /**
+ * Checks if an element is an editable input (input, textarea, or contenteditable).
+ */
+function isEditableElement(element: Element | null): boolean {
+  if (!element) return false;
+  const tagName = element.tagName.toLowerCase();
+  const isInput = tagName === 'input' || tagName === 'textarea';
+  const isContentEditable =
+    element.getAttribute('contenteditable') === 'true' ||
+    (element as HTMLElement).isContentEditable;
+  return isInput || isContentEditable;
+}
+
+/**
  * Clickable table row wrapper for bill selection.
  * Toggles the selectedBill URL parameter on click.
  */
@@ -61,6 +74,11 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
+          // Don't handle keyboard events if focus is on an editable element (input, textarea, etc.)
+          if (isEditableElement(e.target as Element)) {
+            return;
+          }
+
           e.preventDefault();
 
           // Don't handle keyboard events if any dialog or popover is currently open

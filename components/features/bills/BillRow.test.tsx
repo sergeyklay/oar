@@ -35,6 +35,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   isVariable: false,
   status: 'pending',
   isArchived: false,
+  notes: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],

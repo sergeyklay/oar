@@ -31,6 +31,7 @@ const createBillSchema = z.object({
   isAutoPay: z.boolean().default(false),
   isVariable: z.boolean().default(false),
   tagIds: z.array(z.string()).optional().default([]),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional().default(''),
 });
 
 export type CreateBillInput = z.infer<typeof createBillSchema>;
@@ -69,7 +70,7 @@ export async function createBill(
     };
   }
 
-  const { title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds } = parsed.data;
+  const { title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -88,6 +89,7 @@ export async function createBill(
         isAutoPay,
         isVariable,
         status,
+        notes: notes || null,
       })
       .returning({ id: bills.id });
 
@@ -202,7 +204,7 @@ export async function updateBill(
     };
   }
 
-  const { id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds } = parsed.data;
+  const { id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -221,6 +223,7 @@ export async function updateBill(
         isAutoPay,
         isVariable,
         status,
+        notes: notes || null,
         updatedAt: now,
       })
       .where(eq(bills.id, id));
