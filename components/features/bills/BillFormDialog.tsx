@@ -60,7 +60,7 @@ const formSchema = z.object({
   isAutoPay: z.boolean(),
   isVariable: z.boolean(),
   tagIds: z.array(z.string()),
-  notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional().default(''),
 });
 
 type FormValues = z.infer<typeof formSchema>;
