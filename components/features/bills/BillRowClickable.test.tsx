@@ -14,6 +14,8 @@ jest.mock('nuqs', () => ({
 describe('BillRowClickable', () => {
   beforeEach(() => {
     mockSetSelectedBill.mockClear();
+    // Clean up any dialogs from previous tests
+    document.body.innerHTML = '';
   });
 
   const renderClickable = (isSelected = false) => {
@@ -91,5 +93,73 @@ describe('BillRowClickable', () => {
       expect(screen.getByText('Test Content')).toBeInTheDocument();
     });
   });
-});
 
+  describe('dialog detection (regression: tag selection sidebar switching)', () => {
+    it('does not call setSelectedBill when an open dialog exists', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      // Simulate an open dialog in the DOM (like Edit Bill dialog)
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('data-state', 'open');
+      document.body.appendChild(dialog);
+
+      await user.click(screen.getByRole('button'));
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger selection on Enter key when dialog is open', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      // Simulate an open dialog
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('data-state', 'open');
+      document.body.appendChild(dialog);
+
+      screen.getByRole('button').focus();
+      await user.keyboard('{Enter}');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('does not trigger selection on Space key when dialog is open', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      // Simulate an open dialog
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('data-state', 'open');
+      document.body.appendChild(dialog);
+
+      screen.getByRole('button').focus();
+      await user.keyboard(' ');
+
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+    });
+
+    it('resumes normal selection after dialog is closed', async () => {
+      const user = userEvent.setup();
+      renderClickable(false);
+
+      // Simulate an open dialog
+      const dialog = document.createElement('div');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('data-state', 'open');
+      document.body.appendChild(dialog);
+
+      await user.click(screen.getByRole('button'));
+      expect(mockSetSelectedBill).not.toHaveBeenCalled();
+
+      // Close the dialog (change state or remove)
+      dialog.setAttribute('data-state', 'closed');
+
+      await user.click(screen.getByRole('button'));
+      expect(mockSetSelectedBill).toHaveBeenCalledWith('bill-1');
+    });
+  });
+});
