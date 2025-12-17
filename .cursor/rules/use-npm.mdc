@@ -42,7 +42,7 @@ npx drizzle-kit push --force      # Push schema changes to SQLite
 ### ❌ Never Use These
 
 ```bash
-# bunnpm
+# bun
 bun install
 bun run dev
 bunx drizzle-kit generate
