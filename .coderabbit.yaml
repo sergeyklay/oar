@@ -36,7 +36,7 @@ reviews:
     ### 🧭 Reviewer Guide
     **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
     **Complexity:** [Low | Medium | High]
-    **Estimated Review Time:** [Estimated time in minutes to review the changes, see ERT section below]. For example: "~15 minutes".
+    **Estimated Review Time:** [Estimated time in minutes to review the changes, see ERT section below]. For example: "~15 minutes". Do NOT explain the formula, just the result.
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
