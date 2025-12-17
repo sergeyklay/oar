@@ -1,5 +1,5 @@
 ---
-description: Best practices for writing Jest unit tests in Next.js/Drizzle environment.
+description: Rules for writing Jest unit tests in Next.js/Drizzle environment.
 globs: **/*.test.ts, **/*.test.tsx, jest.config.ts
 alwaysApply: false
 ---

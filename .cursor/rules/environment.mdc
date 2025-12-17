@@ -42,7 +42,7 @@ If you encounter `npm error code ERESOLVE` (Peer Dependency Conflict):
 
 ## Essential Commands
 
-~~~bash
+```bash
 # ✅ DO: Correct nvm usage
 nvm use 24
 
@@ -67,11 +67,11 @@ yarn add package-name              # Never mix package managers
 npm install -g package-name        # Avoid global installs (use npx or devDeps)
 rm -rf node_modules                # Use 'npm ci' instead of manual cleaning
 # Manually editing package-lock.json
-~~~
+```
 
 ## Quick Reference
 
-~~~bash
+```bash
 # Add production dependency
 npm install axios
 
@@ -86,7 +86,7 @@ npm ci
 
 # Update minor/patch versions based on package.json constraints
 npm update
-~~~
+```
 
 ## Critical Rules
 
