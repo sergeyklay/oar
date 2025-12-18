@@ -1,3 +1,5 @@
+export const RANGE_KEYS = ['0', '1', '3', '5', '7', '10', '14', '20', '30'] as const;
+
 export const RANGE_LABELS: Record<string, string> = {
   '0': 'Today',
   '1': 'Today or tomorrow',

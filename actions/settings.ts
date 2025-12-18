@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { RANGE_KEYS } from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
 import type { ActionResult as BaseActionResult } from '@/lib/types';
 
@@ -32,7 +33,7 @@ export async function getSettingsStructure(): Promise<ActionResult<StructuredSet
 }
 
 const updateDueSoonRangeSchema = z.object({
-  range: z.enum(['0', '1', '3', '5', '7', '10', '14', '20', '30']),
+  range: z.enum(RANGE_KEYS as readonly [string, ...string[]]),
 });
 
 /**
