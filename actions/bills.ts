@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm';
 import { format } from 'date-fns';
 import { BillService, type GetBillsOptions } from '@/lib/services/BillService';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
+import { SettingsService } from '@/lib/services/SettingsService';
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -197,7 +198,6 @@ export async function getBillsForDueSoonStats(): Promise<{
   total: number;
   hasVariable: boolean;
 }> {
-  const { SettingsService } = await import('@/lib/services/SettingsService');
   const range = await SettingsService.getDueSoonRange();
   const bills = await BillService.getFiltered({ dateRange: range });
 
