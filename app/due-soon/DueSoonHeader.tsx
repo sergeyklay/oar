@@ -1,13 +1,13 @@
 import { TagFilter } from '@/components/features/bills';
 import { getTags } from '@/actions/tags';
-import { SettingsService } from '@/lib/services/SettingsService';
 import { RANGE_LABELS } from '@/lib/constants';
 
-export async function DueSoonHeader() {
-  const [tags, dueSoonRange] = await Promise.all([
-    getTags(),
-    SettingsService.getDueSoonRange(),
-  ]);
+interface DueSoonHeaderProps {
+  dueSoonRange: number;
+}
+
+export async function DueSoonHeader({ dueSoonRange }: DueSoonHeaderProps) {
+  const tags = await getTags();
 
   const rangeLabel = RANGE_LABELS[String(dueSoonRange)] || 'In next 7 days';
 

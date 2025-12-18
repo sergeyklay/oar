@@ -15,8 +15,10 @@ export default async function DueSoonPage({
 }: DueSoonPageProps) {
   const { tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
-  const settings = await SettingsService.getAll();
-  const dueSoonRange = await SettingsService.getDueSoonRange();
+  const [settings, dueSoonRange] = await Promise.all([
+    SettingsService.getAll(),
+    SettingsService.getDueSoonRange(),
+  ]);
 
   return (
     <AppShell
@@ -28,7 +30,7 @@ export default async function DueSoonPage({
         />
       }
     >
-      <MainContent header={<DueSoonHeader />}>
+      <MainContent header={<DueSoonHeader dueSoonRange={dueSoonRange} />}>
         <BillList
           dateRange={dueSoonRange}
           tag={tag ?? undefined}
