@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { DueSoonSettingDropdown } from './DueSoonSettingDropdown';
+import { updateDueSoonRange } from '@/actions/settings';
 
 jest.mock('@/actions/settings', () => ({
   updateDueSoonRange: jest.fn(),
@@ -18,9 +19,21 @@ jest.mock('@/lib/constants', () => ({
   },
 }));
 
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+Element.prototype.scrollIntoView = jest.fn();
+Element.prototype.hasPointerCapture = jest.fn();
+Element.prototype.setPointerCapture = jest.fn();
+Element.prototype.releasePointerCapture = jest.fn();
+
 describe('DueSoonSettingDropdown', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (updateDueSoonRange as jest.Mock).mockReset();
   });
 
   it('renders with current value', () => {
@@ -46,5 +59,127 @@ describe('DueSoonSettingDropdown', () => {
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
-});
 
+  describe('user interactions', () => {
+    it('calls updateDueSoonRange with correct range when value changes', async () => {
+      (updateDueSoonRange as jest.Mock).mockResolvedValue({ success: true });
+      render(<DueSoonSettingDropdown currentValue="7" />);
+
+      const select = screen.getByRole('combobox');
+      await act(async () => {
+        select.focus();
+        select.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+      });
+
+      const option = screen.getByRole('option', { name: 'In next 14 days' });
+      await act(async () => {
+        option.click();
+      });
+
+      await waitFor(() => {
+        expect(updateDueSoonRange).toHaveBeenCalledWith({ range: '14' });
+      });
+    });
+
+    it('persists new value when updateDueSoonRange resolves successfully', async () => {
+      (updateDueSoonRange as jest.Mock).mockResolvedValue({ success: true });
+      render(<DueSoonSettingDropdown currentValue="7" />);
+
+      const select = screen.getByRole('combobox');
+      await act(async () => {
+        select.focus();
+        select.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+      });
+
+      const option = screen.getByRole('option', { name: 'In next 3 days' });
+      await act(async () => {
+        option.click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('In next 3 days')).toBeInTheDocument();
+      });
+      expect(updateDueSoonRange).toHaveBeenCalledWith({ range: '3' });
+    });
+
+    it('reverts to original value when updateDueSoonRange fails', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      (updateDueSoonRange as jest.Mock).mockResolvedValue({
+        success: false,
+        error: 'Update failed',
+      });
+      render(<DueSoonSettingDropdown currentValue="7" />);
+
+      const select = screen.getByRole('combobox');
+      await act(async () => {
+        select.focus();
+        select.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+      });
+
+      const option = screen.getByRole('option', { name: 'In next 14 days' });
+      await act(async () => {
+        option.click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('In next 7 days')).toBeInTheDocument();
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to update due soon range:',
+          'Update failed'
+        );
+      });
+
+      consoleSpy.mockRestore();
+    });
+
+    it('shows loading spinner and disables select during pending update', async () => {
+      let resolveUpdate: (value: { success: boolean }) => void;
+      const updatePromise = new Promise<{ success: boolean }>((resolve) => {
+        resolveUpdate = resolve;
+      });
+      (updateDueSoonRange as jest.Mock).mockReturnValue(updatePromise);
+      render(<DueSoonSettingDropdown currentValue="7" />);
+
+      const select = screen.getByRole('combobox');
+      await act(async () => {
+        select.focus();
+        select.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByRole('listbox')).toBeInTheDocument();
+      });
+
+      const option = screen.getByRole('option', { name: 'In next 14 days' });
+      await act(async () => {
+        option.click();
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Updating...')).toBeInTheDocument();
+        expect(screen.getByRole('combobox')).toBeDisabled();
+      });
+
+      await act(async () => {
+        resolveUpdate!({ success: true });
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByText('Updating...')).not.toBeInTheDocument();
+        expect(screen.getByRole('combobox')).not.toBeDisabled();
+      });
+    });
+  });
+});
