@@ -1,7 +1,7 @@
 import { db, settings, settingsCategories, settingsSections } from '@/db';
 import { eq, asc, sql } from 'drizzle-orm';
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/lib/money';
-import { ALLOWED_RANGE_VALUES } from '@/lib/constants';
+import { ALLOWED_RANGE_VALUES, type AllowedRangeValue } from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
 
 export interface UserSettings {
@@ -131,7 +131,7 @@ export const SettingsService = {
 
     const parsedValue = parseInt(row.value, 10);
 
-    if (isNaN(parsedValue) || !ALLOWED_RANGE_VALUES.includes(parsedValue as typeof ALLOWED_RANGE_VALUES[number])) {
+    if (isNaN(parsedValue) || !ALLOWED_RANGE_VALUES.includes(parsedValue as AllowedRangeValue)) {
       console.warn(`Invalid dueSoonRange value: ${row.value}. Defaulting to 7.`);
       return 7;
     }
@@ -140,8 +140,8 @@ export const SettingsService = {
   },
 
   /** Updates the "due soon" range setting. */
-  async setDueSoonRange(days: number): Promise<void> {
-    if (!ALLOWED_RANGE_VALUES.includes(days as typeof ALLOWED_RANGE_VALUES[number])) {
+  async setDueSoonRange(days: AllowedRangeValue): Promise<void> {
+    if (!ALLOWED_RANGE_VALUES.includes(days)) {
       throw new Error(`Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`);
     }
 
