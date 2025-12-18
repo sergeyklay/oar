@@ -1,20 +1,8 @@
 import { SettingsSection } from './SettingsSection';
+import type { StructuredSettings } from '@/db/schema';
 
 interface SettingsCategoryProps {
-  category: {
-    id: string;
-    slug: string;
-    name: string;
-    displayOrder: number;
-    sections: Array<{
-      id: string;
-      slug: string;
-      name: string;
-      description: string | null;
-      displayOrder: number;
-      settingsCount: number;
-    }>;
-  };
+  category: StructuredSettings['categories'][number];
 }
 
 export function SettingsCategory({ category }: SettingsCategoryProps) {
