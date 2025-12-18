@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -29,7 +30,9 @@ export function DueSoonSettingDropdown({
         range: newValue as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30',
       });
       if (!result.success) {
-        console.error('Failed to update due soon range:', result.error);
+        toast.error('Failed to update setting', {
+          description: result.error || 'Please try again.',
+        });
         setValue(currentValue);
       }
     });

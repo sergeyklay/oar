@@ -1,7 +1,13 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
+import { toast } from 'sonner';
 import { DueSoonSettingDropdown } from './DueSoonSettingDropdown';
 import { updateDueSoonRange } from '@/actions/settings';
 
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+  },
+}));
 jest.mock('@/actions/settings', () => ({
   updateDueSoonRange: jest.fn(),
 }));
@@ -110,8 +116,7 @@ describe('DueSoonSettingDropdown', () => {
       expect(updateDueSoonRange).toHaveBeenCalledWith({ range: '3' });
     });
 
-    it('reverts to original value when updateDueSoonRange fails', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    it('reverts to original value and shows toast when updateDueSoonRange fails', async () => {
       (updateDueSoonRange as jest.Mock).mockResolvedValue({
         success: false,
         error: 'Update failed',
@@ -135,13 +140,10 @@ describe('DueSoonSettingDropdown', () => {
 
       await waitFor(() => {
         expect(screen.getByText('In next 7 days')).toBeInTheDocument();
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Failed to update due soon range:',
-          'Update failed'
-        );
+        expect(toast.error).toHaveBeenCalledWith('Failed to update setting', {
+          description: 'Update failed',
+        });
       });
-
-      consoleSpy.mockRestore();
     });
 
     it('shows loading spinner and disables select during pending update', async () => {
