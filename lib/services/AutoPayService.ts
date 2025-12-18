@@ -87,7 +87,7 @@ export const AutoPayService = {
               billId: bill.id,
               amount: bill.amount,
               paidAt: bill.dueDate, // Use original due date, not processing date
-              notes: 'Auto-processed on due date',
+              notes: 'Logged by Oar',
             })
             .run();
 
