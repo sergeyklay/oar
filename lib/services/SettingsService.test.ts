@@ -250,11 +250,15 @@ describe('SettingsService', () => {
 
   describe('initializeDefaults', () => {
     it('creates default categories and sections when none exist', async () => {
-      (db.select as jest.Mock).mockReturnValue({
+      const mockSelectChain = {
         from: jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue([]),
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
         }),
-      });
+      };
+      (db.select as jest.Mock).mockReturnValue(mockSelectChain);
 
       (db.insert as jest.Mock)
         .mockReturnValueOnce({
@@ -287,6 +291,9 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue([{ id: 'existing' }]),
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
         }),
       });
 
@@ -296,11 +303,15 @@ describe('SettingsService', () => {
     });
 
     it('creates correct default categories', async () => {
-      (db.select as jest.Mock).mockReturnValue({
+      const mockSelectChain = {
         from: jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue([]),
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
         }),
-      });
+      };
+      (db.select as jest.Mock).mockReturnValue(mockSelectChain);
 
       const valuesMock = jest.fn();
       const returningMock = jest.fn().mockResolvedValue([{ id: 'cat-id' }]);
@@ -320,11 +331,15 @@ describe('SettingsService', () => {
     });
 
     it('creates correct default sections for General category', async () => {
-      (db.select as jest.Mock).mockReturnValue({
+      const mockSelectChain = {
         from: jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue([]),
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
         }),
-      });
+      };
+      (db.select as jest.Mock).mockReturnValue(mockSelectChain);
 
       const valuesMock = jest.fn();
       const returningMock = jest.fn().mockResolvedValue([{ id: 'general-id' }]);
@@ -343,6 +358,185 @@ describe('SettingsService', () => {
       expect(sectionsValues[0].slug).toBe('view-options');
       expect(sectionsValues[0].name).toBe('View Options');
       expect(sectionsValues[0].categoryId).toBe('general-id');
+    });
+  });
+
+  describe('getDueSoonRange', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns default value of 7 when setting does not exist', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+
+      expect(result).toBe(7);
+    });
+
+    it('returns parsed value when setting exists', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: '14' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+
+      expect(result).toBe(14);
+    });
+
+    it('returns default value when setting value is invalid', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'invalid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+
+      expect(result).toBe(7);
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Invalid dueSoonRange value: invalid')
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('returns default value when setting value is not in allowed set', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: '99' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+
+      expect(result).toBe(7);
+      expect(consoleSpy).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it('returns correct value for all allowed range values', async () => {
+      const allowedValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
+
+      for (const value of allowedValues) {
+        (db.select as jest.Mock).mockReturnValue({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue([{ value: String(value) }]),
+            }),
+          }),
+        });
+
+        const result = await SettingsService.getDueSoonRange();
+
+        expect(result).toBe(value);
+      }
+    });
+  });
+
+  describe('setDueSoonRange', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('updates setting with valid days value', async () => {
+      (db.select as jest.Mock)
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+            }),
+          }),
+        })
+        .mockReturnValueOnce({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue([]),
+            }),
+          }),
+        });
+
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+        }),
+      });
+
+      await SettingsService.setDueSoonRange(14);
+
+      expect(db.insert).toHaveBeenCalled();
+      const insertCall = (db.insert as jest.Mock).mock.calls[0];
+      expect(insertCall[0]).toBeDefined();
+      const valuesCall = (db.insert as jest.Mock).mock.results[0].value.values.mock.calls[0][0];
+      expect(valuesCall.key).toBe('dueSoonRange');
+      expect(valuesCall.value).toBe('14');
+      expect(valuesCall.sectionId).toBe('section-id');
+    });
+
+    it('throws error for invalid days value', async () => {
+      await expect(SettingsService.setDueSoonRange(99)).rejects.toThrow(
+        'Invalid days value: 99'
+      );
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+
+    it('throws error when behavior options section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(SettingsService.setDueSoonRange(7)).rejects.toThrow(
+        'Behavior Options section not found'
+      );
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+
+    it('accepts all valid range values', async () => {
+      const validValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
+
+      for (const value of validValues) {
+        jest.clearAllMocks();
+        (db.select as jest.Mock).mockReturnValue({
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+            }),
+          }),
+        });
+
+        const valuesMock = jest.fn().mockReturnValue({
+          onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+        });
+        (db.insert as jest.Mock).mockReturnValue({
+          values: valuesMock,
+        });
+
+        await SettingsService.setDueSoonRange(value);
+
+        const valuesCall = valuesMock.mock.calls[0][0];
+        expect(valuesCall.value).toBe(String(value));
+      }
     });
   });
 });

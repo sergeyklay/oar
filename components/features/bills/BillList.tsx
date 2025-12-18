@@ -9,15 +9,17 @@ interface BillListProps {
   date?: string;
   /** Filter by month (YYYY-MM) */
   month?: string;
+  /** Filter by date range - number of days from today */
+  dateRange?: number;
   /** Filter by tag slug */
   tag?: string;
   /** Currently selected bill ID */
   selectedBillId?: string | null;
 }
 
-export async function BillList({ date, month, tag, selectedBillId }: BillListProps) {
+export async function BillList({ date, month, dateRange, tag, selectedBillId }: BillListProps) {
   const [bills, settings, availableTags] = await Promise.all([
-    getBillsFiltered({ date, month, tag }),
+    getBillsFiltered({ date, month, dateRange, tag }),
     SettingsService.getAll(),
     getTags(),
   ]);
@@ -32,10 +34,12 @@ export async function BillList({ date, month, tag, selectedBillId }: BillListPro
               ? 'No bills due on this date.'
               : month
                 ? 'No bills due this month.'
-                : 'No bills yet.'}
+                : dateRange !== undefined
+                  ? 'No bills due soon.'
+                  : 'No bills yet.'}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {tag || date || month
+          {tag || date || month || dateRange !== undefined
             ? 'Try selecting a different filter or clearing the filter.'
             : 'Click "Add Bill" to create your first bill.'}
         </p>

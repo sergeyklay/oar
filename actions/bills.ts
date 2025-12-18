@@ -186,6 +186,29 @@ export async function getAllBillsStats(): Promise<{
 }
 
 /**
+ * Fetches summary statistics for bills due within the configured "due soon" range.
+ *
+ * Used by Sidebar to display Due Soon menu item subtitle.
+ *
+ * @returns Summary stats: count, total amount (in minor units), and variable bill indicator
+ */
+export async function getBillsForDueSoonStats(): Promise<{
+  count: number;
+  total: number;
+  hasVariable: boolean;
+}> {
+  const { SettingsService } = await import('@/lib/services/SettingsService');
+  const range = await SettingsService.getDueSoonRange();
+  const bills = await BillService.getFiltered({ dateRange: range });
+
+  const count = bills.length;
+  const total = bills.reduce((sum, bill) => sum + bill.amountDue, 0);
+  const hasVariable = bills.some((bill) => bill.isVariable);
+
+  return { count, total, hasVariable };
+}
+
+/**
  * Updates an existing bill with tag associations.
  *
  * @param input - Bill data with ID for update

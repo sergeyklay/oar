@@ -1,6 +1,7 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, type CreateBillInput, type UpdateBillInput } from './bills';
+import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, type CreateBillInput, type UpdateBillInput } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
+import { SettingsService } from '@/lib/services/SettingsService';
 import type { BillWithTags } from '@/lib/types';
 
 jest.mock('@/db');
@@ -11,6 +12,11 @@ jest.mock('@/lib/services/BillService', () => ({
   BillService: {
     getFiltered: jest.fn(),
     getTags: jest.fn(),
+  },
+}));
+jest.mock('@/lib/services/SettingsService', () => ({
+  SettingsService: {
+    getDueSoonRange: jest.fn(),
   },
 }));
 jest.mock('@/lib/services/RecurrenceService', () => ({
@@ -975,5 +981,121 @@ describe('getAllBillsStats', () => {
 
     expect(result.count).toBe(1);
     expect(BillService.getFiltered).toHaveBeenCalledWith({});
+  });
+});
+
+describe('getBillsForDueSoonStats', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('calculates count, total, and hasVariable correctly for due soon bills', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+
+    const mockBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        title: 'Rent',
+        amount: 100000,
+        amountDue: 100000,
+        dueDate: new Date('2025-12-20'),
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+      }),
+      createMockBillWithTags({
+        id: 'bill-2',
+        title: 'Electric',
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-12-22'),
+        isVariable: true,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+      }),
+    ];
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getBillsForDueSoonStats();
+
+    expect(result.count).toBe(2);
+    expect(result.total).toBe(105000);
+    expect(result.hasVariable).toBe(true);
+    expect(SettingsService.getDueSoonRange).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 7 });
+  });
+
+  it('returns zero stats when no bills exist for due soon range', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    const result = await getBillsForDueSoonStats();
+
+    expect(result.count).toBe(0);
+    expect(result.total).toBe(0);
+    expect(result.hasVariable).toBe(false);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 7 });
+  });
+
+  it('calculates hasVariable as false when no variable bills exist', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+
+    const mockBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        title: 'Rent',
+        amount: 100000,
+        amountDue: 100000,
+        dueDate: new Date('2025-12-20'),
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+      }),
+    ];
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getBillsForDueSoonStats();
+
+    expect(result.hasVariable).toBe(false);
+  });
+
+  it('uses configured range from settings', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(14);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    await getBillsForDueSoonStats();
+
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 14 });
+  });
+
+  it('sums amountDue values correctly for total calculation', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+
+    const mockBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        title: 'Bill 1',
+        amount: 10000,
+        amountDue: 10000,
+        dueDate: new Date('2025-12-20'),
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+      }),
+      createMockBillWithTags({
+        id: 'bill-2',
+        title: 'Bill 2',
+        amount: 20000,
+        amountDue: 15000,
+        dueDate: new Date('2025-12-22'),
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+      }),
+    ];
+
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getBillsForDueSoonStats();
+
+    expect(result.total).toBe(25000);
   });
 });

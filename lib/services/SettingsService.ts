@@ -116,6 +116,59 @@ export const SettingsService = {
     return structure;
   },
 
+  /** Retrieves the configured "due soon" range in days. */
+  async getDueSoonRange(): Promise<number> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'dueSoonRange'))
+      .limit(1);
+
+    if (!row) {
+      return 7;
+    }
+
+    const parsedValue = parseInt(row.value, 10);
+    const allowedValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
+
+    if (isNaN(parsedValue) || !allowedValues.includes(parsedValue)) {
+      console.warn(`Invalid dueSoonRange value: ${row.value}. Defaulting to 7.`);
+      return 7;
+    }
+
+    return parsedValue;
+  },
+
+  /** Updates the "due soon" range setting. */
+  async setDueSoonRange(days: number): Promise<void> {
+    const allowedValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
+    if (!allowedValues.includes(days)) {
+      throw new Error(`Invalid days value: ${days}. Must be one of: ${allowedValues.join(', ')}`);
+    }
+
+    const [behaviorOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'behavior-options'))
+      .limit(1);
+
+    if (!behaviorOptionsSection) {
+      throw new Error('Behavior Options section not found');
+    }
+
+    await db
+      .insert(settings)
+      .values({
+        key: 'dueSoonRange',
+        value: String(days),
+        sectionId: behaviorOptionsSection.id,
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: String(days), updatedAt: new Date() },
+      });
+  },
+
   /** Seeds default categories and sections if they don't exist. */
   async initializeDefaults(): Promise<void> {
     const [existingCategory] = await db
@@ -123,75 +176,101 @@ export const SettingsService = {
       .from(settingsCategories)
       .limit(1);
 
-    if (existingCategory) {
-      return;
+    if (!existingCategory) {
+      await db.transaction(async (tx) => {
+        const [generalCategory] = await tx
+          .insert(settingsCategories)
+          .values({
+            slug: 'general',
+            name: 'General',
+            displayOrder: 1,
+          })
+          .returning({ id: settingsCategories.id });
+
+        const [notificationCategory] = await tx
+          .insert(settingsCategories)
+          .values({
+            slug: 'notification',
+            name: 'Notification',
+            displayOrder: 2,
+          })
+          .returning({ id: settingsCategories.id });
+
+        const [loggingCategory] = await tx
+          .insert(settingsCategories)
+          .values({
+            slug: 'logging',
+            name: 'Logging',
+            displayOrder: 3,
+          })
+          .returning({ id: settingsCategories.id });
+
+        await tx.insert(settingsSections).values([
+          {
+            categoryId: generalCategory.id,
+            slug: 'view-options',
+            name: 'View Options',
+            description: 'Customize how information is displayed',
+            displayOrder: 1,
+          },
+          {
+            categoryId: generalCategory.id,
+            slug: 'behavior-options',
+            name: 'Behavior Options',
+            description: 'Configure application behavior',
+            displayOrder: 2,
+          },
+          {
+            categoryId: generalCategory.id,
+            slug: 'other-options',
+            name: 'Other Options',
+            description: 'Additional preferences',
+            displayOrder: 3,
+          },
+          {
+            categoryId: notificationCategory.id,
+            slug: 'notification-settings',
+            name: 'Notification Settings',
+            description: 'Configure notification preferences',
+            displayOrder: 1,
+          },
+          {
+            categoryId: loggingCategory.id,
+            slug: 'logging-settings',
+            name: 'Logging Settings',
+            description: 'Configure logging preferences',
+            displayOrder: 1,
+          },
+        ]);
+      });
     }
 
-    await db.transaction(async (tx) => {
-      const [generalCategory] = await tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'general',
-          name: 'General',
-          displayOrder: 1,
-        })
-        .returning({ id: settingsCategories.id });
+    const [behaviorOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'behavior-options'))
+      .limit(1);
 
-      const [notificationCategory] = await tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'notification',
-          name: 'Notification',
-          displayOrder: 2,
-        })
-        .returning({ id: settingsCategories.id });
+    if (behaviorOptionsSection) {
+      const [existingSetting] = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.key, 'dueSoonRange'))
+        .limit(1);
 
-      const [loggingCategory] = await tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'logging',
-          name: 'Logging',
-          displayOrder: 3,
-        })
-        .returning({ id: settingsCategories.id });
-
-      await tx.insert(settingsSections).values([
-        {
-          categoryId: generalCategory.id,
-          slug: 'view-options',
-          name: 'View Options',
-          description: 'Customize how information is displayed',
-          displayOrder: 1,
-        },
-        {
-          categoryId: generalCategory.id,
-          slug: 'behavior-options',
-          name: 'Behavior Options',
-          description: 'Configure application behavior',
-          displayOrder: 2,
-        },
-        {
-          categoryId: generalCategory.id,
-          slug: 'other-options',
-          name: 'Other Options',
-          description: 'Additional preferences',
-          displayOrder: 3,
-        },
-        {
-          categoryId: notificationCategory.id,
-          slug: 'notification-settings',
-          name: 'Notification Settings',
-          description: 'Configure notification preferences',
-          displayOrder: 1,
-        },
-        {
-          categoryId: loggingCategory.id,
-          slug: 'logging-settings',
-          name: 'Logging Settings',
-          description: 'Configure logging preferences',
-          displayOrder: 1,
-        },
-      ]);
-    });
+      if (!existingSetting) {
+        await db
+          .insert(settings)
+          .values({
+            key: 'dueSoonRange',
+            value: '7',
+            sectionId: behaviorOptionsSection.id,
+          })
+          .onConflictDoUpdate({
+            target: settings.key,
+            set: { value: '7', updatedAt: new Date() },
+          });
+      }
+    }
   },
 };
