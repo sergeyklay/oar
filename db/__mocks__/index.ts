@@ -26,6 +26,7 @@ interface QueryBuilder {
   innerJoin: jest.Mock;
   limit: jest.Mock;
   onConflictDoUpdate: jest.Mock;
+  onConflictDoNothing: jest.Mock;
 }
 
 // Chainable query builder mock factory
@@ -43,11 +44,12 @@ const createQueryBuilder = (): QueryBuilder => {
     innerJoin: jest.fn(),
     limit: jest.fn(),
     onConflictDoUpdate: jest.fn(),
+    onConflictDoNothing: jest.fn(),
   };
 
   // Set up chainable returns
   builder.values.mockReturnValue(builder);
-  builder.returning.mockReturnValue(builder);
+  builder.returning.mockResolvedValue([{ id: 'mock-id' }]);
   builder.set.mockReturnValue(builder);
   builder.where.mockReturnValue(builder);
   builder.from.mockReturnValue(builder);
@@ -55,6 +57,7 @@ const createQueryBuilder = (): QueryBuilder => {
   builder.innerJoin.mockReturnValue(builder);
   builder.limit.mockResolvedValue([]);
   builder.onConflictDoUpdate.mockReturnValue(builder);
+  builder.onConflictDoNothing.mockResolvedValue(undefined);
 
   return builder;
 };

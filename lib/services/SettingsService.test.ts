@@ -1,5 +1,5 @@
 import { SettingsService } from './SettingsService';
-import { db, settingsCategories, settingsSections } from '@/db';
+import { db, settingsCategories } from '@/db';
 import { asc } from 'drizzle-orm';
 import type { AllowedRangeValue } from '@/lib/constants';
 
@@ -277,15 +277,24 @@ describe('SettingsService', () => {
             returning: jest.fn().mockResolvedValue([{ id: 'logging-id' }]),
           }),
         })
-        .mockReturnValue({
+        .mockReturnValueOnce({
           values: jest.fn().mockResolvedValue(undefined),
+        })
+        .mockReturnValueOnce({
+          values: jest.fn().mockReturnValue({
+            returning: jest.fn().mockResolvedValue([{ id: 'behavior-section-id' }]),
+          }),
+        })
+        .mockReturnValue({
+          values: jest.fn().mockReturnValue({
+            onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+          }),
         });
 
       await SettingsService.initializeDefaults();
 
-      expect(db.insert).toHaveBeenCalledTimes(4);
+      expect(db.insert).toHaveBeenCalledTimes(6);
       expect(db.insert).toHaveBeenNthCalledWith(1, settingsCategories);
-      expect(db.insert).toHaveBeenNthCalledWith(4, settingsSections);
     });
 
     it('does not create defaults when categories already exist', async () => {
@@ -316,7 +325,10 @@ describe('SettingsService', () => {
 
       const valuesMock = jest.fn();
       const returningMock = jest.fn().mockResolvedValue([{ id: 'cat-id' }]);
-      valuesMock.mockReturnValue({ returning: returningMock });
+      valuesMock.mockReturnValue({
+        returning: returningMock,
+        onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+      });
 
       (db.insert as jest.Mock).mockReturnValue({
         values: valuesMock,
@@ -344,7 +356,10 @@ describe('SettingsService', () => {
 
       const valuesMock = jest.fn();
       const returningMock = jest.fn().mockResolvedValue([{ id: 'general-id' }]);
-      valuesMock.mockReturnValue({ returning: returningMock });
+      valuesMock.mockReturnValue({
+        returning: returningMock,
+        onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+      });
 
       (db.insert as jest.Mock).mockReturnValue({
         values: valuesMock,
@@ -355,7 +370,7 @@ describe('SettingsService', () => {
       const sectionsCall = valuesMock.mock.calls[3];
       const sectionsValues = sectionsCall[0];
 
-      expect(sectionsValues).toHaveLength(5);
+      expect(sectionsValues).toHaveLength(4);
       expect(sectionsValues[0].slug).toBe('view-options');
       expect(sectionsValues[0].name).toBe('View Options');
       expect(sectionsValues[0].categoryId).toBe('general-id');
