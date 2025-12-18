@@ -48,9 +48,9 @@ You are the **Principal Technical Writer & Product Owner**. Your goal is to crea
 
 Produce a Markdown file strictly following the appropriate template:
 
-## Template A: Feature / Explanation (The "What & Why")
+## Template A: Feature / Explanation
 
-*(Use for: Features, Architecture decisions, Domain logic, etc.)*
+*(The "What & Why". Use for: Features, Architecture decisions, Domain logic, etc.)*
 
 Before writing, verify: Does this feature description align with "Active Payer"?
 If a feature adds automation, explicitly explain *how* it preserves user awareness.
@@ -62,37 +62,33 @@ If a feature adds automation, explicitly explain *how* it preserves user awarene
 - **Last Updated:** {YYYY-MM-DD}
 - **Related:** {Links to other docs or Specs (if any)}
 
-## 1. Concept (The "Why")
-*Concise summary of the user problem and the value proposition. Why does this feature exist?*
+## Concept
+*(The "Why". Concise summary of the user problem and the value proposition. Why does this feature exist?)*
 
-## 2. User Flow & Logic (The "How")
-*Describe the feature from a behavioral perspective.*
+## User Flow & Logic
+*(The "How". Describe the feature from a behavioral perspective.)*
+
 * **Trigger:** What starts the action? (e.g., User clicks button, Cron job runs).
 * **Rules:**
     * Rule 1...
     * Rule 2...
 * **UI Behavior:** What does the user see?
 
-## 3. Technical Implementation (High Level)
-* **Database:** Affected tables/columns.
-* **Services:** Key business logic location (e.g., `lib/services/X`).
-* **Key Components:** Main UI components involved.
-
-## 4. Edge Cases & Constraints
+## Edge Cases & Constraints
 *Critically important section.*
 * What happens in a leap year?
 * What if the amount is 0?
 * What if the user is offline?
 
-## 5. Future Scope
-*What is explicitly NOT included in this version?*
+## Future Scope
+*(What is explicitly NOT included in this version?)*
 ```
 
 For example of style documentation for a feature, see `docs/features/002-auto-pay.md`.
 
-## Template B: How-To / Guide (The "Action")
+## Template B: How-To / Guide
 
-*(Use for: Deployment, Setup, Migration, Testing, Contribution, Development, etc.)*
+*(The "Action". Use for: Deployment, Setup, Migration, Testing, Contribution, Development, etc.)*
 
 ~~~markdown
 # {Action Name} (e.g., Local Deployment Guide)
@@ -102,16 +98,16 @@ For example of style documentation for a feature, see `docs/features/002-auto-pa
 - **Related:** {Links to other docs or Specs (if any)}
 
 ## 1. Goal
-*What will the user achieve by following this guide?*
+*(What will the user achieve by following this guide?)*
 
 ## 2. Prerequisites
-*What must be installed/configured before starting? (e.g., Docker, Node.js)*
+*(What must be installed/configured before starting? (e.g., Docker, Node.js))*
 
 ## 3. Step-by-Step Guide
-*Sequential, atomic steps.*
+*(Sequential, atomic steps.)*
 
 ### Step 1: {Action}
-*Command or Action:*
+*(Command or Action:)*
 ```bash
 {command}
 ```
