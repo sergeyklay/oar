@@ -7,6 +7,8 @@ import { getTags } from '@/actions/tags';
 import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 
+export const dynamic = 'force-dynamic';
+
 interface DashboardPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

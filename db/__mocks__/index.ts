@@ -48,8 +48,9 @@ const createQueryBuilder = (): QueryBuilder => {
   };
 
   // Set up chainable returns
+  // All methods return builder for chaining (sync pattern for better-sqlite3)
   builder.values.mockReturnValue(builder);
-  builder.returning.mockResolvedValue([{ id: 'mock-id' }]);
+  builder.returning.mockReturnValue(builder);
   builder.set.mockReturnValue(builder);
   builder.where.mockReturnValue(builder);
   builder.from.mockReturnValue(builder);
@@ -57,7 +58,7 @@ const createQueryBuilder = (): QueryBuilder => {
   builder.innerJoin.mockReturnValue(builder);
   builder.limit.mockResolvedValue([]);
   builder.onConflictDoUpdate.mockReturnValue(builder);
-  builder.onConflictDoNothing.mockResolvedValue(undefined);
+  builder.onConflictDoNothing.mockReturnValue(builder);
 
   return builder;
 };
