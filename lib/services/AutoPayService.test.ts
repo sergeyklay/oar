@@ -331,7 +331,7 @@ describe('AutoPayService', () => {
       expect(insertedData).toBeDefined();
       expect(insertedData?.billId).toBe('bill-verify-transaction');
       expect(insertedData?.amount).toBe(12345);
-      expect(insertedData?.notes).toBe('Auto-processed on due date');
+      expect(insertedData?.notes).toBe('Logged by Oar');
     });
 
     it('handles yearly frequency bills', async () => {
