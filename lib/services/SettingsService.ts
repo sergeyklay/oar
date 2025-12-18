@@ -198,35 +198,38 @@ export const SettingsService = {
       return;
     }
 
-    await db.transaction(async (tx) => {
-      const [generalCategory] = await tx
+    db.transaction((tx) => {
+      const generalCategory = tx
         .insert(settingsCategories)
         .values({
           slug: 'general',
           name: 'General',
           displayOrder: 1,
         })
-        .returning({ id: settingsCategories.id });
+        .returning({ id: settingsCategories.id })
+        .get();
 
-      const [notificationCategory] = await tx
+      const notificationCategory = tx
         .insert(settingsCategories)
         .values({
           slug: 'notification',
           name: 'Notification',
           displayOrder: 2,
         })
-        .returning({ id: settingsCategories.id });
+        .returning({ id: settingsCategories.id })
+        .get();
 
-      const [loggingCategory] = await tx
+      const loggingCategory = tx
         .insert(settingsCategories)
         .values({
           slug: 'logging',
           name: 'Logging',
           displayOrder: 3,
         })
-        .returning({ id: settingsCategories.id });
+        .returning({ id: settingsCategories.id })
+        .get();
 
-      await tx.insert(settingsSections).values([
+      tx.insert(settingsSections).values([
         {
           categoryId: generalCategory.id,
           slug: 'view-options',
@@ -255,9 +258,9 @@ export const SettingsService = {
           description: 'Additional preferences',
           displayOrder: 3,
         },
-      ]);
+      ]).run();
 
-      const [behaviorOptionsSection] = await tx
+      const behaviorOptionsSection = tx
         .insert(settingsSections)
         .values({
           categoryId: generalCategory.id,
@@ -266,16 +269,18 @@ export const SettingsService = {
           description: 'Configure application behavior',
           displayOrder: 2,
         })
-        .returning({ id: settingsSections.id });
+        .returning({ id: settingsSections.id })
+        .get();
 
-      await tx
+      tx
         .insert(settings)
         .values({
           key: 'dueSoonRange',
           value: '7',
           sectionId: behaviorOptionsSection.id,
         })
-        .onConflictDoNothing();
+        .onConflictDoNothing()
+        .run();
     });
   },
 };

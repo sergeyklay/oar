@@ -7,6 +7,8 @@ import { searchParamsCache } from '@/lib/search-params';
 import { format } from 'date-fns';
 import { DueThisMonthHeader } from './DueThisMonthHeader';
 
+export const dynamic = 'force-dynamic';
+
 interface DueThisMonthPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

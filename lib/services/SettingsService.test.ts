@@ -264,30 +264,42 @@ describe('SettingsService', () => {
       (db.insert as jest.Mock)
         .mockReturnValueOnce({
           values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([{ id: 'general-id' }]),
+            returning: jest.fn().mockReturnValue({
+              get: jest.fn().mockReturnValue({ id: 'general-id' }),
+            }),
           }),
         })
         .mockReturnValueOnce({
           values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([{ id: 'notification-id' }]),
+            returning: jest.fn().mockReturnValue({
+              get: jest.fn().mockReturnValue({ id: 'notification-id' }),
+            }),
           }),
         })
         .mockReturnValueOnce({
           values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([{ id: 'logging-id' }]),
+            returning: jest.fn().mockReturnValue({
+              get: jest.fn().mockReturnValue({ id: 'logging-id' }),
+            }),
           }),
         })
         .mockReturnValueOnce({
-          values: jest.fn().mockResolvedValue(undefined),
+          values: jest.fn().mockReturnValue({
+            run: jest.fn(),
+          }),
         })
         .mockReturnValueOnce({
           values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([{ id: 'behavior-section-id' }]),
+            returning: jest.fn().mockReturnValue({
+              get: jest.fn().mockReturnValue({ id: 'behavior-section-id' }),
+            }),
           }),
         })
         .mockReturnValue({
           values: jest.fn().mockReturnValue({
-            onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+            onConflictDoNothing: jest.fn().mockReturnValue({
+              run: jest.fn(),
+            }),
           }),
         });
 
@@ -324,10 +336,15 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(mockSelectChain);
 
       const valuesMock = jest.fn();
-      const returningMock = jest.fn().mockResolvedValue([{ id: 'cat-id' }]);
+      const returningMock = jest.fn().mockReturnValue({
+        get: jest.fn().mockReturnValue({ id: 'cat-id' }),
+      });
       valuesMock.mockReturnValue({
         returning: returningMock,
-        onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+        run: jest.fn(),
+        onConflictDoNothing: jest.fn().mockReturnValue({
+          run: jest.fn(),
+        }),
       });
 
       (db.insert as jest.Mock).mockReturnValue({
@@ -355,10 +372,15 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(mockSelectChain);
 
       const valuesMock = jest.fn();
-      const returningMock = jest.fn().mockResolvedValue([{ id: 'general-id' }]);
+      const returningMock = jest.fn().mockReturnValue({
+        get: jest.fn().mockReturnValue({ id: 'general-id' }),
+      });
       valuesMock.mockReturnValue({
         returning: returningMock,
-        onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
+        run: jest.fn(),
+        onConflictDoNothing: jest.fn().mockReturnValue({
+          run: jest.fn(),
+        }),
       });
 
       (db.insert as jest.Mock).mockReturnValue({
@@ -487,10 +509,12 @@ describe('SettingsService', () => {
           }),
         });
 
+      const valuesMock = jest.fn();
+      valuesMock.mockReturnValue({
+        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      });
       (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
-        }),
+        values: valuesMock,
       });
 
       await SettingsService.setDueSoonRange(14);
@@ -498,7 +522,7 @@ describe('SettingsService', () => {
       expect(db.insert).toHaveBeenCalled();
       const insertCall = (db.insert as jest.Mock).mock.calls[0];
       expect(insertCall[0]).toBeDefined();
-      const valuesCall = (db.insert as jest.Mock).mock.results[0].value.values.mock.calls[0][0];
+      const valuesCall = valuesMock.mock.calls[0][0];
       expect(valuesCall.key).toBe('dueSoonRange');
       expect(valuesCall.value).toBe('14');
       expect(valuesCall.sectionId).toBe('section-id');

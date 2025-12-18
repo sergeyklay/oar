@@ -6,6 +6,8 @@ import { SettingsService } from '@/lib/services/SettingsService';
 import { searchParamsCache } from '@/lib/search-params';
 import { DueSoonHeader } from './DueSoonHeader';
 
+export const dynamic = 'force-dynamic';
+
 interface DueSoonPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

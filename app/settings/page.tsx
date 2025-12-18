@@ -4,6 +4,8 @@ import { SettingsService } from '@/lib/services/SettingsService';
 import { SettingsHeader } from '@/components/features/settings/SettingsHeader';
 import { SettingsCategoryList } from '@/components/features/settings/SettingsCategoryList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
   await SettingsService.initializeDefaults();
 
