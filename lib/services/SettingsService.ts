@@ -251,25 +251,14 @@ export const SettingsService = {
       .limit(1);
 
     if (behaviorOptionsSection) {
-      const [existingSetting] = await db
-        .select()
-        .from(settings)
-        .where(eq(settings.key, 'dueSoonRange'))
-        .limit(1);
-
-      if (!existingSetting) {
-        await db
-          .insert(settings)
-          .values({
-            key: 'dueSoonRange',
-            value: '7',
-            sectionId: behaviorOptionsSection.id,
-          })
-          .onConflictDoUpdate({
-            target: settings.key,
-            set: { value: '7', updatedAt: new Date() },
-          });
-      }
+      await db
+        .insert(settings)
+        .values({
+          key: 'dueSoonRange',
+          value: '7',
+          sectionId: behaviorOptionsSection.id,
+        })
+        .onConflictDoNothing();
     }
   },
 };
