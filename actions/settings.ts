@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { SettingsService } from '@/lib/services/SettingsService';
-import { RANGE_KEYS } from '@/lib/constants';
+import { RANGE_KEYS, type AllowedRangeValue } from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
 import type { ActionResult as BaseActionResult } from '@/lib/types';
 
@@ -56,7 +56,7 @@ export async function updateDueSoonRange(
   }
 
   try {
-    const parsedRange = parseInt(parsed.data.range, 10);
+    const parsedRange = parseInt(parsed.data.range, 10) as AllowedRangeValue;
     await SettingsService.setDueSoonRange(parsedRange);
     revalidatePath('/due-soon');
     revalidatePath('/');

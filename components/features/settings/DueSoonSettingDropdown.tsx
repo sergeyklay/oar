@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { updateDueSoonRange } from '@/actions/settings';
-import { RANGE_LABELS } from '@/lib/constants';
+import { RANGE_LABELS, type RangeKey } from '@/lib/constants';
 import { Loader2 } from 'lucide-react';
 
 interface DueSoonSettingDropdownProps {
@@ -27,7 +27,7 @@ export function DueSoonSettingDropdown({
     setValue(newValue);
     startTransition(async () => {
       const result = await updateDueSoonRange({
-        range: newValue as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30',
+        range: newValue as RangeKey,
       });
       if (!result.success) {
         toast.error('Failed to update setting', {

@@ -1,6 +1,7 @@
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories, settingsSections } from '@/db';
 import { asc } from 'drizzle-orm';
+import type { AllowedRangeValue } from '@/lib/constants';
 
 jest.mock('@/db');
 
@@ -491,7 +492,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error for invalid days value', async () => {
-      await expect(SettingsService.setDueSoonRange(99)).rejects.toThrow(
+      await expect(SettingsService.setDueSoonRange(99 as AllowedRangeValue)).rejects.toThrow(
         'Invalid days value: 99'
       );
       expect(db.insert).not.toHaveBeenCalled();
@@ -513,7 +514,7 @@ describe('SettingsService', () => {
     });
 
     it('accepts all valid range values', async () => {
-      const validValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
+      const validValues: AllowedRangeValue[] = [0, 1, 3, 5, 7, 10, 14, 20, 30];
 
       for (const value of validValues) {
         jest.clearAllMocks();
