@@ -14,3 +14,10 @@ export type {
   Transaction,
 } from '@/db/schema';
 
+
+/** Standardized action result type */
+export interface ActionResult<T = void> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}

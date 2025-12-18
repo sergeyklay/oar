@@ -2,13 +2,7 @@
 
 import { SettingsService } from '@/lib/services/SettingsService';
 import type { StructuredSettings } from '@/db/schema';
-
-/** Standardized action result type */
-interface ActionResult<T = void> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+import type { ActionResult } from '@/lib/types';
 
 /**
  * Fetches the complete settings structure (categories, sections, settings counts).
