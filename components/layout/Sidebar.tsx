@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { Home, CreditCard, TrendingUp, Settings, Calendar } from 'lucide-react';
-import { getBillsForCurrentMonthStats, getAllBillsStats } from '@/actions/bills';
+import { LayoutDashboard, CreditCard, TrendingUp, Settings, Calendar, Bell } from 'lucide-react';
+import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats } from '@/actions/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
 
@@ -9,19 +9,20 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   showStats?: boolean;
-  statsType?: 'all' | 'currentMonth';
+  statsType?: 'all' | 'currentMonth' | 'dueSoon';
 };
 
 /**
  * Return a React node showing bill statistics subtitle for a navigation item.
  *
- * Renders count-only subtitle for "all bills" stats or count + total amount for "current month" stats.
+ * Renders count-only subtitle for "all bills" stats or count + total amount for "current month" and "due soon" stats.
  * Returns null if the item does not have stats enabled or has invalid statsType.
  * Has no side effects. Does not throw errors or handle exceptional cases.
  *
  * @param item - Navigation item with optional showStats and statsType properties
  * @param currentMonthStats - Statistics for bills due in current month (count, total in minor units, hasVariable flag)
  * @param allBillsStats - Statistics for all non-archived bills (count only)
+ * @param dueSoonStats - Statistics for bills due soon (count, total in minor units, hasVariable flag)
  * @param settings - User settings containing currency code and locale string for money formatting
  * @returns React.ReactNode containing formatted subtitle text or null if stats should not be displayed
  */
@@ -29,6 +30,7 @@ function renderStatsSubtitle(
   item: NavItem,
   currentMonthStats: { count: number; total: number; hasVariable: boolean },
   allBillsStats: { count: number },
+  dueSoonStats: { count: number; total: number; hasVariable: boolean },
   settings: { currency: string; locale: string }
 ): React.ReactNode {
   if (!item.showStats || !item.statsType) {
@@ -47,6 +49,22 @@ function renderStatsSubtitle(
       <span className="text-xs text-muted-foreground">
         {currentMonthStats.count} bills - {formatMoney(currentMonthStats.total, settings.currency, settings.locale)}
         {currentMonthStats.hasVariable ? ' (est.)' : ''}
+      </span>
+    );
+  }
+
+  if (item.statsType === 'dueSoon') {
+    if (dueSoonStats.count === 0) {
+      return (
+        <span className="text-xs text-muted-foreground">
+          No bills
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs text-muted-foreground">
+        {dueSoonStats.count} bills - {formatMoney(dueSoonStats.total, settings.currency, settings.locale)}
+        {dueSoonStats.hasVariable ? ' (est.)' : ''}
       </span>
     );
   }
@@ -70,7 +88,8 @@ function renderStatsSubtitle(
 }
 
 const navItems: NavItem[] = [
-  { href: '/', icon: Home, label: 'Overview', showStats: true, statsType: 'all' as const },
+  { href: '/', icon: LayoutDashboard, label: 'Overview', showStats: true, statsType: 'all' as const },
+  { href: '/due-soon', icon: Bell, label: 'Due Soon', showStats: true, statsType: 'dueSoon' as const },
   { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true, statsType: 'currentMonth' as const },
   { href: '/bills', icon: CreditCard, label: 'Bills' },
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
@@ -78,9 +97,10 @@ const navItems: NavItem[] = [
 ];
 
 export async function Sidebar() {
-  const [currentMonthStats, allBillsStats, settings] = await Promise.all([
+  const [currentMonthStats, allBillsStats, dueSoonStats, settings] = await Promise.all([
     getBillsForCurrentMonthStats(),
     getAllBillsStats(),
+    getBillsForDueSoonStats(),
     SettingsService.getAll(),
   ]);
 
@@ -107,7 +127,7 @@ export async function Sidebar() {
             {item.showStats ? (
               <div className="flex flex-col">
                 <span>{item.label}</span>
-                {renderStatsSubtitle(item, currentMonthStats, allBillsStats, settings)}
+                {renderStatsSubtitle(item, currentMonthStats, allBillsStats, dueSoonStats, settings)}
               </div>
             ) : (
               <span>{item.label}</span>

@@ -1,7 +1,7 @@
 import { db, bills, tags, billsToTags } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, gte, lte, inArray, ne } from 'drizzle-orm';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse } from 'date-fns';
+import { and, eq, gte, lte, inArray, ne, or } from 'drizzle-orm';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
 
 /**
  * Filter options for bill queries.
@@ -15,6 +15,8 @@ export interface GetBillsOptions {
    * When both `date` and `month` are provided, `date` takes precedence
    */
   month?: string;
+  /** Filter by date range - number of days from today (0 = today only) */
+  dateRange?: number;
   /** Filter by tag slug */
   tag?: string;
   /** Include archived bills */
@@ -133,7 +135,7 @@ export const BillService = {
    * @returns Array of bills with tags
    */
   async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
-    const { date, month, tag, includeArchived = false } = options;
+    const { date, month, dateRange, tag, includeArchived = false } = options;
 
     const conditions = [];
 
@@ -147,13 +149,40 @@ export const BillService = {
       const dayEnd = endOfDay(dayDate);
       conditions.push(gte(bills.dueDate, dayStart));
       conditions.push(lte(bills.dueDate, dayEnd));
+    } else if (dateRange !== undefined) {
+      const today = startOfDay(new Date());
+      let endDate: Date;
+
+      if (dateRange === 0) {
+        endDate = endOfDay(today);
+      } else if (dateRange === 1) {
+        const tomorrow = addDays(today, 1);
+        endDate = endOfDay(tomorrow);
+      } else {
+        const rangeEnd = addDays(today, dateRange);
+        endDate = endOfDay(rangeEnd);
+      }
+
+      conditions.push(lte(bills.dueDate, endDate));
+      conditions.push(ne(bills.status, 'paid'));
     } else if (month) {
       const [year, monthNum] = month.split('-').map(Number);
       const monthDate = new Date(year, monthNum - 1, 1);
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
-      conditions.push(gte(bills.dueDate, monthStart));
-      conditions.push(lte(bills.dueDate, monthEnd));
+      const today = startOfDay(new Date());
+
+      if (monthStart <= today && today <= monthEnd) {
+        conditions.push(
+          or(
+            and(gte(bills.dueDate, monthStart), lte(bills.dueDate, monthEnd)),
+            eq(bills.status, 'overdue')
+          )
+        );
+      } else {
+        conditions.push(gte(bills.dueDate, monthStart));
+        conditions.push(lte(bills.dueDate, monthEnd));
+      }
       conditions.push(ne(bills.status, 'paid'));
     }
 

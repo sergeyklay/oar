@@ -237,5 +237,324 @@ describe('BillService.getFiltered', () => {
     expect(result[0].status).toBe('paid');
     expect(db.select).toHaveBeenCalled();
   });
+
+  describe('overdue bills inclusion for current month', () => {
+    it('includes overdue bills from previous months when filtering by current month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      const overdueBillFromPreviousMonth: BillWithTags = {
+        id: 'bill-overdue-old',
+        title: 'Old Overdue Bill',
+        amount: 50000,
+        amountDue: 50000,
+        dueDate: new Date('2025-11-20'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'overdue' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const billInCurrentMonth: BillWithTags = {
+        id: 'bill-current-month',
+        title: 'Current Month Bill',
+        amount: 30000,
+        amountDue: 30000,
+        dueDate: new Date('2026-01-20'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [overdueBillFromPreviousMonth, billInCurrentMonth];
+      const mockBuilder = createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2026-01' });
+
+      expect(result).toHaveLength(2);
+      expect(result.some((bill) => bill.id === 'bill-overdue-old')).toBe(true);
+      expect(result.some((bill) => bill.id === 'bill-current-month')).toBe(true);
+      expect(result.every((bill) => bill.status !== 'paid')).toBe(true);
+      expect(db.select).toHaveBeenCalled();
+      expect(mockBuilder.where).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('includes overdue bills from multiple months ago when filtering by current month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      const overdueBillFrom3MonthsAgo: BillWithTags = {
+        id: 'bill-overdue-3months',
+        title: '3 Months Overdue',
+        amount: 40000,
+        amountDue: 40000,
+        dueDate: new Date('2025-10-15'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'overdue' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const overdueBillFrom1YearAgo: BillWithTags = {
+        id: 'bill-overdue-1year',
+        title: '1 Year Overdue',
+        amount: 60000,
+        amountDue: 60000,
+        dueDate: new Date('2025-01-10'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'overdue' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const billInCurrentMonth: BillWithTags = {
+        id: 'bill-current',
+        title: 'Current Month Bill',
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2026-01-25'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [
+        overdueBillFrom1YearAgo,
+        overdueBillFrom3MonthsAgo,
+        billInCurrentMonth,
+      ];
+      createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2026-01' });
+
+      expect(result).toHaveLength(3);
+      expect(result.some((bill) => bill.id === 'bill-overdue-3months')).toBe(true);
+      expect(result.some((bill) => bill.id === 'bill-overdue-1year')).toBe(true);
+      expect(result.some((bill) => bill.id === 'bill-current')).toBe(true);
+      expect(result.every((bill) => bill.status !== 'paid')).toBe(true);
+      expect(db.select).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('excludes paid overdue bills when filtering by current month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      // paidOverdueBill is intentionally defined to document test intent:
+      // It represents a bill that would be filtered out by the query because it's paid
+      const _paidOverdueBill: BillWithTags = {
+        id: 'bill-paid-overdue',
+        title: 'Paid Overdue Bill',
+        amount: 30000,
+        amountDue: 30000,
+        dueDate: new Date('2025-11-20'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'paid' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+      void _paidOverdueBill;
+
+      const unpaidOverdueBill: BillWithTags = {
+        id: 'bill-unpaid-overdue',
+        title: 'Unpaid Overdue Bill',
+        amount: 40000,
+        amountDue: 40000,
+        dueDate: new Date('2025-12-10'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'overdue' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [unpaidOverdueBill];
+      createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2026-01' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('bill-unpaid-overdue');
+      expect(result[0].status).toBe('overdue');
+      expect(result.every((bill) => bill.status !== 'paid')).toBe(true);
+      expect(db.select).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('includes both overdue bills and bills due in current month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      const overdueBill: BillWithTags = {
+        id: 'bill-overdue',
+        title: 'Overdue Bill',
+        amount: 50000,
+        amountDue: 50000,
+        dueDate: new Date('2025-12-05'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'overdue' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const pendingBillInMonth: BillWithTags = {
+        id: 'bill-pending',
+        title: 'Pending Bill',
+        amount: 30000,
+        amountDue: 30000,
+        dueDate: new Date('2026-01-20'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [overdueBill, pendingBillInMonth];
+      createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2026-01' });
+
+      expect(result).toHaveLength(2);
+      expect(result.some((bill) => bill.id === 'bill-overdue' && bill.status === 'overdue')).toBe(
+        true
+      );
+      expect(
+        result.some((bill) => bill.id === 'bill-pending' && bill.status === 'pending')
+      ).toBe(true);
+      expect(db.select).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('does not include overdue bills when filtering by past month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      const billInPastMonth: BillWithTags = {
+        id: 'bill-past-month',
+        title: 'Past Month Bill',
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-11-15'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [billInPastMonth];
+      createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2025-11' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('bill-past-month');
+      expect(result[0].dueDate.getMonth()).toBe(10);
+      expect(db.select).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+
+    it('does not include overdue bills when filtering by future month', async () => {
+      const currentDate = new Date('2026-01-15');
+      jest.useFakeTimers();
+      jest.setSystemTime(currentDate);
+
+      const billInFutureMonth: BillWithTags = {
+        id: 'bill-future-month',
+        title: 'Future Month Bill',
+        amount: 25000,
+        amountDue: 25000,
+        dueDate: new Date('2026-02-15'),
+        frequency: 'monthly' as const,
+        isAutoPay: false,
+        isVariable: false,
+        status: 'pending' as const,
+        isArchived: false,
+        notes: null,
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-01'),
+        tags: [],
+      };
+
+      const expectedBills = [billInFutureMonth];
+      createSelectMock(expectedBills);
+      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+      const result = await BillService.getFiltered({ month: '2026-02' });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('bill-future-month');
+      expect(result[0].dueDate.getMonth()).toBe(1);
+      expect(db.select).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    });
+  });
 });
 

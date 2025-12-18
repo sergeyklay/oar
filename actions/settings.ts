@@ -1,8 +1,14 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { SettingsService } from '@/lib/services/SettingsService';
 import type { StructuredSettings } from '@/db/schema';
-import type { ActionResult } from '@/lib/types';
+import type { ActionResult as BaseActionResult } from '@/lib/types';
+
+interface ActionResult<T = void> extends BaseActionResult<T> {
+  fieldErrors?: Record<string, string[]>;
+}
 
 /**
  * Fetches the complete settings structure (categories, sections, settings counts).
@@ -21,6 +27,44 @@ export async function getSettingsStructure(): Promise<ActionResult<StructuredSet
     return {
       success: false,
       error: 'Failed to load settings structure',
+    };
+  }
+}
+
+const updateDueSoonRangeSchema = z.object({
+  range: z.enum(['0', '1', '3', '5', '7', '10', '14', '20', '30']),
+});
+
+/**
+ * Updates the "due soon" range setting.
+ *
+ * @param input - Object containing the range value as a string
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateDueSoonRange(
+  input: z.infer<typeof updateDueSoonRangeSchema>
+): Promise<ActionResult<void>> {
+  const parsed = updateDueSoonRangeSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const parsedRange = parseInt(parsed.data.range, 10);
+    await SettingsService.setDueSoonRange(parsedRange);
+    revalidatePath('/due-soon');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update due soon range:', error);
+    return {
+      success: false,
+      error: 'Failed to update setting',
     };
   }
 }
