@@ -127,69 +127,71 @@ export const SettingsService = {
       return;
     }
 
-    const [generalCategory] = await db
-      .insert(settingsCategories)
-      .values({
-        slug: 'general',
-        name: 'General',
-        displayOrder: 1,
-      })
-      .returning({ id: settingsCategories.id });
+    await db.transaction(async (tx) => {
+      const [generalCategory] = await tx
+        .insert(settingsCategories)
+        .values({
+          slug: 'general',
+          name: 'General',
+          displayOrder: 1,
+        })
+        .returning({ id: settingsCategories.id });
 
-    const [notificationCategory] = await db
-      .insert(settingsCategories)
-      .values({
-        slug: 'notification',
-        name: 'Notification',
-        displayOrder: 2,
-      })
-      .returning({ id: settingsCategories.id });
+      const [notificationCategory] = await tx
+        .insert(settingsCategories)
+        .values({
+          slug: 'notification',
+          name: 'Notification',
+          displayOrder: 2,
+        })
+        .returning({ id: settingsCategories.id });
 
-    const [loggingCategory] = await db
-      .insert(settingsCategories)
-      .values({
-        slug: 'logging',
-        name: 'Logging',
-        displayOrder: 3,
-      })
-      .returning({ id: settingsCategories.id });
+      const [loggingCategory] = await tx
+        .insert(settingsCategories)
+        .values({
+          slug: 'logging',
+          name: 'Logging',
+          displayOrder: 3,
+        })
+        .returning({ id: settingsCategories.id });
 
-    await db.insert(settingsSections).values([
-      {
-        categoryId: generalCategory.id,
-        slug: 'view-options',
-        name: 'View Options',
-        description: 'Customize how information is displayed',
-        displayOrder: 1,
-      },
-      {
-        categoryId: generalCategory.id,
-        slug: 'behavior-options',
-        name: 'Behavior Options',
-        description: 'Configure application behavior',
-        displayOrder: 2,
-      },
-      {
-        categoryId: generalCategory.id,
-        slug: 'other-options',
-        name: 'Other Options',
-        description: 'Additional preferences',
-        displayOrder: 3,
-      },
-      {
-        categoryId: notificationCategory.id,
-        slug: 'notification-settings',
-        name: 'Notification Settings',
-        description: 'Configure notification preferences',
-        displayOrder: 1,
-      },
-      {
-        categoryId: loggingCategory.id,
-        slug: 'logging-settings',
-        name: 'Logging Settings',
-        description: 'Configure logging preferences',
-        displayOrder: 1,
-      },
-    ]);
+      await tx.insert(settingsSections).values([
+        {
+          categoryId: generalCategory.id,
+          slug: 'view-options',
+          name: 'View Options',
+          description: 'Customize how information is displayed',
+          displayOrder: 1,
+        },
+        {
+          categoryId: generalCategory.id,
+          slug: 'behavior-options',
+          name: 'Behavior Options',
+          description: 'Configure application behavior',
+          displayOrder: 2,
+        },
+        {
+          categoryId: generalCategory.id,
+          slug: 'other-options',
+          name: 'Other Options',
+          description: 'Additional preferences',
+          displayOrder: 3,
+        },
+        {
+          categoryId: notificationCategory.id,
+          slug: 'notification-settings',
+          name: 'Notification Settings',
+          description: 'Configure notification preferences',
+          displayOrder: 1,
+        },
+        {
+          categoryId: loggingCategory.id,
+          slug: 'logging-settings',
+          name: 'Logging Settings',
+          description: 'Configure logging preferences',
+          displayOrder: 1,
+        },
+      ]);
+    });
   },
 };
