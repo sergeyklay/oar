@@ -117,7 +117,12 @@ export const SettingsService = {
     return structure;
   },
 
-  /** Retrieves the configured "due soon" range in days. */
+  /**
+   * Retrieves the configured "due soon" range in days.
+   *
+   * @returns {Promise<number>} The range in days, or 7 if missing/invalid.
+   * @remarks Logs an error when an invalid value is encountered.
+   */
   async getDueSoonRange(): Promise<number> {
     const [row] = await db
       .select()
@@ -131,15 +136,22 @@ export const SettingsService = {
 
     const parsedValue = parseInt(row.value, 10);
 
-    if (isNaN(parsedValue) || !ALLOWED_RANGE_VALUES.includes(parsedValue as AllowedRangeValue)) {
-      console.warn(`Invalid dueSoonRange value: ${row.value}. Defaulting to 7.`);
+    if (isNaN(parsedValue) || !(ALLOWED_RANGE_VALUES as readonly number[]).includes(parsedValue)) {
+      console.error(`Invalid dueSoonRange value: ${row.value}. Defaulting to 7.`);
       return 7;
     }
 
     return parsedValue;
   },
 
-  /** Updates the "due soon" range setting. */
+  /**
+   * Persists the "due soon" range setting to the database.
+   *
+   * @param {AllowedRangeValue} days - Number of days (0, 1, 3, 5, 7, 10, 14, 20, or 30).
+   * @returns {Promise<void>} Resolves when the setting is saved.
+   * @throws {Error} If days is not one of the allowed values.
+   * @throws {Error} If the "behavior-options" section does not exist.
+   */
   async setDueSoonRange(days: AllowedRangeValue): Promise<void> {
     if (!ALLOWED_RANGE_VALUES.includes(days)) {
       throw new Error(`Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`);

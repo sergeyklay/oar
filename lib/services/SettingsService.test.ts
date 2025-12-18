@@ -396,7 +396,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default value when setting value is invalid', async () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -416,7 +416,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default value when setting value is not in allowed set', async () => {
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
