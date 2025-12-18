@@ -1,7 +1,7 @@
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories } from '@/db';
 import { asc } from 'drizzle-orm';
-import type { AllowedRangeValue } from '@/lib/constants';
+import { ALLOWED_RANGE_VALUES, type AllowedRangeValue } from '@/lib/constants';
 
 jest.mock('@/db');
 
@@ -449,9 +449,7 @@ describe('SettingsService', () => {
     });
 
     it('returns correct value for all allowed range values', async () => {
-      const allowedValues = [0, 1, 3, 5, 7, 10, 14, 20, 30];
-
-      for (const value of allowedValues) {
+      for (const value of ALLOWED_RANGE_VALUES) {
         (db.select as jest.Mock).mockReturnValue({
           from: jest.fn().mockReturnValue({
             where: jest.fn().mockReturnValue({
@@ -529,9 +527,7 @@ describe('SettingsService', () => {
     });
 
     it('accepts all valid range values', async () => {
-      const validValues: AllowedRangeValue[] = [0, 1, 3, 5, 7, 10, 14, 20, 30];
-
-      for (const value of validValues) {
+      for (const value of ALLOWED_RANGE_VALUES) {
         jest.clearAllMocks();
         (db.select as jest.Mock).mockReturnValue({
           from: jest.fn().mockReturnValue({
