@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { createId } from '@paralleldrive/cuid2';
 import { relations } from 'drizzle-orm';
 
@@ -67,10 +67,61 @@ export const transactions = sqliteTable('transactions', {
     .$defaultFn(() => new Date()),
 });
 
+/**
+ * Settings Categories Table
+ *
+ * Top-level organization for settings (e.g., General, Notification, Logging).
+ * Categories are displayed as major sections on the Settings page.
+ */
+export const settingsCategories = sqliteTable('settings_categories', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  /** URL-safe identifier (e.g., "general", "notification", "logging") */
+  slug: text('slug').notNull().unique(),
+  /** Display name (e.g., "General", "Notification", "Logging") */
+  name: text('name').notNull(),
+  /** Display order (lower numbers appear first) */
+  displayOrder: integer('display_order').notNull().default(0),
+  /** Creation timestamp */
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+/**
+ * Settings Sections Table
+ *
+ * Sub-organization within categories (e.g., General → View Options, Behavior Options).
+ * Sections group related settings together.
+ */
+export const settingsSections = sqliteTable('settings_sections', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  /** Foreign key to settings_categories */
+  categoryId: text('category_id')
+    .notNull()
+    .references(() => settingsCategories.id, { onDelete: 'cascade' }),
+  /** URL-safe identifier (e.g., "view-options", "behavior-options") */
+  slug: text('slug').notNull(),
+  /** Display name (e.g., "View Options", "Behavior Options") */
+  name: text('name').notNull(),
+  /** Optional description for the section */
+  description: text('description'),
+  /** Display order within category (lower numbers appear first) */
+  displayOrder: integer('display_order').notNull().default(0),
+  /** Creation timestamp */
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+}, (table) => [
+  // Composite unique constraint: slug must be unique within each category
+  uniqueIndex('category_slug_unique').on(table.categoryId, table.slug),
+]);
+
 /** Key-value settings table for user preferences. */
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
   value: text('value').notNull(),
+  /** Optional foreign key to settings_sections for organization */
+  sectionId: text('section_id').references(() => settingsSections.id, { onDelete: 'set null' }),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -141,6 +192,25 @@ export const billsToTagsRelations = relations(billsToTags, ({ one }) => ({
   }),
 }));
 
+export const settingsCategoriesRelations = relations(settingsCategories, ({ many }) => ({
+  sections: many(settingsSections),
+}));
+
+export const settingsSectionsRelations = relations(settingsSections, ({ one, many }) => ({
+  category: one(settingsCategories, {
+    fields: [settingsSections.categoryId],
+    references: [settingsCategories.id],
+  }),
+  settings: many(settings),
+}));
+
+export const settingsRelations = relations(settings, ({ one }) => ({
+  section: one(settingsSections, {
+    fields: [settings.sectionId],
+    references: [settingsSections.id],
+  }),
+}));
+
 // ============================================
 // TYPE EXPORTS
 // ============================================
@@ -162,3 +232,28 @@ export interface BillWithTags extends Bill {
 
 export type BillFrequency = 'once' | 'monthly' | 'yearly';
 export type BillStatus = 'pending' | 'paid' | 'overdue';
+
+export type SettingsCategory = typeof settingsCategories.$inferSelect;
+export type NewSettingsCategory = typeof settingsCategories.$inferInsert;
+export type SettingsSection = typeof settingsSections.$inferSelect;
+export type NewSettingsSection = typeof settingsSections.$inferInsert;
+
+/**
+ * Structured representation of settings hierarchy
+ */
+export interface StructuredSettings {
+  categories: Array<{
+    id: string;
+    slug: string;
+    name: string;
+    displayOrder: number;
+    sections: Array<{
+      id: string;
+      slug: string;
+      name: string;
+      description: string | null;
+      displayOrder: number;
+      settingsCount: number;
+    }>;
+  }>;
+}
