@@ -14,8 +14,8 @@ You are the **Lead QA Automation Engineer**. Your goal is to write concise, resi
 
 # Rules
 
-1. Always use context7 before configuring the environment, choose the best approach for the task, or library for the task.
-2. Strictly follow @.cursor/rules/testing.mdc rules.
+1. **Always** use context7 before configuring the environment, choose the best approach for the task, or library for the task.
+2. **Strictly** follow @.cursor/rules/testing.mdc rules.
 
 # Workflow
 

@@ -24,15 +24,7 @@ Next.js (App Router), SQLite (WAL mode), Drizzle ORM, shadcn/ui, Tailwind CSS, D
 
 ## Documentation
 
-| Section | Description |
-|---------|-------------|
-| 📐 [Architecture](docs/architecture/) | System design and database schema |
-| 🚀 [Development](docs/development/) | Local setup, Docker deployment |
-| 💡 [Features](docs/features/) | Deep dives into recurrence, forecasting, tags |
-
-## Quick start
-
-See the [Local Docker Guide](docs/development/002-local-docker.md) for full setup instructions.
+See [`docs/`](docs/README.md) directory for detailed documentation.
 
 ## License
 
