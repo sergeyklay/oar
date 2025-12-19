@@ -1,7 +1,7 @@
 ---
 description: Rules for writing TypeScript code.
 alwaysApply: false
-globs: **/*.ts
+globs: **/*.ts, **/*.tsx
 ---
 
 # TypeScript Rules
