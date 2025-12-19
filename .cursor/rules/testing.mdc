@@ -6,22 +6,47 @@ alwaysApply: false
 
 # Testing Standards
 
-## 1. Mocking Drizzle ORM
+**For test files:** Comprehensive testing practices for reliable code.
+
+## Test Quality
+
+- Tests should be understandable without comments. Minimize comments by keeping tests simple; comment **ONLY** when the alternative is confusion. If test needs a comment, it's a sign the test is too complex and needs to be simplified.
+- Break complex tests into smaller, focused tests
+- Each test should have only one logical scenario per test.
+
+## Test Organization
+
+- Maintain a 1:1 ratio between test files and implementation files
+- All new features require tests; bug fixes need regression tests
+- Arrange-Act-Assert pattern clearly separated. Do NOT use "// Arrange", "// Act", "// Assert" comments.
+
+## Mocking Drizzle ORM
+
 When testing Server Actions, NEVER import the real `db` instance.
 - Use `jest.mock('@/db')` to mock the Drizzle client.
 - Mock return values of queries using `mockReturnValue` or `mockResolvedValue`.
 - Example for insert: `(db.insert as jest.Mock).mockReturnValue({ values: jest.fn().mockReturnValue({ returning: jest.fn().mockResolvedValue([mockData]) }) })`.
 - **Don't mock `@/db/schema`:** just mock `@/db`. Schema is side-effect-free and gives real Column objects needed by `drizzle-orm`.
 
-## 2. React Testing Library
+## React Testing Library
+
 - **Queries:** Prioritize `getByRole`, `getByLabelText`, `getByText` (Accessibility-first). Avoid `getByTestId` unless necessary.
 - **User Events:** Use `user-event` for interactions (typing, clicking), as it simulates real browser behavior better than `fireEvent`.
 
-## 3. Structure
+## Structure
+
 - **Describe:** Top level describes the Component/Function. Nested describes for scenarios.
 - **It:** Should read like a sentence: `it('calculates the next due date correctly for monthly bills')`.
 
-## 4. Forbidden
+## DRY Principle in Tests
+
+- Extract common setup patterns into reusable common components following the testing library documentation
+- Eliminate duplication across test files without over-centralizing
+- Refactor repetitive test setup into fixture composition
+
+## Forbidden
+
 - ❌ **Snapshot Testing** for complex UI (too brittle). Use specific assertions instead.
 - ❌ **Real DB Calls** in unit tests.
 - ❌ **Any type:** Use proper TypeScript types for mocks.
+- ❌ **No Async/Await for transactions in tests:** With better-sqlite3, drizzle-orm transactions are synchronous and the callback is not awaited.
