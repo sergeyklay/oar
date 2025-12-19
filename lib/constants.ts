@@ -18,3 +18,53 @@ export const RANGE_LABELS: Record<string, string> = {
   '30': 'In next 30 days',
 };
 
+export const DEFAULT_CATEGORIES = [
+  { slug: 'general', name: 'General', displayOrder: 1 },
+  { slug: 'notification', name: 'Notification', displayOrder: 2 },
+  { slug: 'logging', name: 'Logging', displayOrder: 3 },
+] as const;
+
+export const DEFAULT_SECTIONS = [
+  {
+    categorySlug: 'general',
+    slug: 'view-options',
+    name: 'View Options',
+    description: 'Customize how information is displayed',
+    displayOrder: 1,
+  },
+  {
+    categorySlug: 'general',
+    slug: 'behavior-options',
+    name: 'Behavior Options',
+    description: 'Configure application behavior',
+    displayOrder: 2,
+  },
+  {
+    categorySlug: 'general',
+    slug: 'other-options',
+    name: 'Other Options',
+    description: 'Additional preferences',
+    displayOrder: 3,
+  },
+  {
+    categorySlug: 'notification',
+    slug: 'notification-settings',
+    name: 'Notification Settings',
+    description: 'Configure notification preferences',
+    displayOrder: 1,
+  },
+  {
+    categorySlug: 'logging',
+    slug: 'logging-settings',
+    name: 'Logging Settings',
+    description: 'Configure logging preferences',
+    displayOrder: 1,
+  },
+] as const;
+
+export const DEFAULT_SETTINGS_VALUES = [
+  { key: 'dueSoonRange', value: '7', sectionSlug: 'behavior-options' },
+  { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
+  { key: 'theme', value: 'system', sectionSlug: 'view-options' },
+  { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
+] as const;
