@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 import { PaymentService } from '@/lib/services/PaymentService';
+import { TransactionService } from '@/lib/services/TransactionService';
+import { SettingsService } from '@/lib/services/SettingsService';
 
 /** Validation schema for logging a payment. */
 const logPaymentSchema = z.object({
@@ -128,6 +130,23 @@ export async function logPayment(
       error: 'Failed to log payment. Please try again.',
     };
   }
+}
+
+/**
+ * Fetches stats for recent payments within the configured range.
+ * Used by Sidebar to display "Paid Recently" menu item subtitle.
+ */
+export async function getRecentPaymentsStats(): Promise<{
+  count: number;
+  total: number;
+}> {
+  const range = await SettingsService.getPaidRecentlyRange();
+  const payments = await TransactionService.getRecentPayments(range);
+
+  const count = payments.length;
+  const total = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
+  return { count, total };
 }
 
 /**

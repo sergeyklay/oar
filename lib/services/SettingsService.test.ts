@@ -1,4 +1,3 @@
-
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories, settingsSections, settings } from '@/db';
 import { DEFAULT_CATEGORIES, DEFAULT_SECTIONS, DEFAULT_SETTINGS_VALUES } from '@/lib/constants';
@@ -84,6 +83,176 @@ describe('SettingsService', () => {
 
       expect(db.transaction).not.toHaveBeenCalled();
       expect(db.insert).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getDueSoonRange', () => {
+    it('returns stored value when valid', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: '14' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+      expect(result).toBe(14);
+    });
+
+    it('returns default (7) when setting missing', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+      expect(result).toBe(7);
+    });
+
+    it('returns default (7) when stored value is invalid', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'invalid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getDueSoonRange();
+      expect(result).toBe(7);
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('setDueSoonRange', () => {
+    it('updates setting when valid', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setDueSoonRange(14);
+
+      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(onConflictDoUpdateMock).toHaveBeenCalled();
+    });
+
+    it('throws error when value is invalid', async () => {
+      // @ts-expect-error Testing invalid input
+      await expect(SettingsService.setDueSoonRange(99)).rejects.toThrow('Invalid days value');
+    });
+
+    it('throws error when section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(SettingsService.setDueSoonRange(7)).rejects.toThrow('Behavior Options section not found');
+    });
+  });
+
+  describe('getPaidRecentlyRange', () => {
+    it('returns stored value when valid', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: '14' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getPaidRecentlyRange();
+      expect(result).toBe(14);
+    });
+
+    it('returns default (7) when setting missing', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getPaidRecentlyRange();
+      expect(result).toBe(7);
+    });
+
+    it('returns default (7) when stored value is invalid', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'invalid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getPaidRecentlyRange();
+      expect(result).toBe(7);
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('setPaidRecentlyRange', () => {
+    it('updates setting when valid', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setPaidRecentlyRange(14);
+
+      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(onConflictDoUpdateMock).toHaveBeenCalled();
+    });
+
+    it('throws error when value is invalid', async () => {
+      // @ts-expect-error Testing invalid input
+      await expect(SettingsService.setPaidRecentlyRange(99)).rejects.toThrow('Invalid days value');
+    });
+
+    it('throws error when section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(SettingsService.setPaidRecentlyRange(7)).rejects.toThrow('Behavior Options section not found');
     });
   });
 });

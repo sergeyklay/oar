@@ -62,3 +62,21 @@ export interface ActionResult<T = void> {
   data?: T;
   error?: string;
 }
+
+/**
+ * Represents a payment transaction with associated bill information.
+ * Used for displaying recent payments in the Paid Recently view.
+ *
+ * @property {string} id - Transaction ID
+ * @property {string} billTitle - Bill name for display
+ * @property {number} amount - Payment amount in minor units
+ * @property {Date} paidAt - Payment date
+ * @property {string | null} notes - Optional payment notes
+ */
+export interface PaymentWithBill {
+  id: string;
+  billTitle: string;
+  amount: number;
+  paidAt: Date;
+  notes: string | null;
+}
