@@ -15,16 +15,8 @@ export const TransactionService = {
    */
   async getRecentPayments(days: number): Promise<PaymentWithBill[]> {
     const now = new Date();
-    let startDate: Date;
     const endDate = endOfDay(now);
-
-    if (days === 0) {
-      startDate = startOfDay(now);
-    } else if (days === 1) {
-      startDate = startOfDay(subDays(now, 1));
-    } else {
-      startDate = startOfDay(subDays(now, days));
-    }
+    const startDate = days === 0 ? startOfDay(now) : startOfDay(subDays(now, days));
 
     const results = await db
       .select({
