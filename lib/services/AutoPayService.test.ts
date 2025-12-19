@@ -42,6 +42,7 @@ describe('AutoPayService', () => {
     status: 'pending',
     isArchived: false,
     notes: null,
+    categoryId: 'category-1',
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

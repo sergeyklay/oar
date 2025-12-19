@@ -31,6 +31,7 @@ const createBillSchema = z.object({
   }),
   isAutoPay: z.boolean().default(false),
   isVariable: z.boolean().default(false),
+  categoryId: z.string().min(1, 'Category is required'),
   tagIds: z.array(z.string()).optional().default([]),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional().default(''),
 });
@@ -71,7 +72,7 @@ export async function createBill(
     };
   }
 
-  const { title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes } = parsed.data;
+  const { title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -89,6 +90,7 @@ export async function createBill(
         frequency,
         isAutoPay,
         isVariable,
+        categoryId,
         status,
         notes: notes || null,
       })
@@ -228,7 +230,7 @@ export async function updateBill(
   }
 
   const {
-    id, title, amount, dueDate, frequency, isAutoPay, isVariable, tagIds, notes,
+    id, title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes,
   } = parsed.data;
 
   try {
@@ -247,6 +249,7 @@ export async function updateBill(
         frequency,
         isAutoPay,
         isVariable,
+        categoryId,
         status,
         notes: notes || null,
         updatedAt: now,
@@ -361,6 +364,46 @@ export async function deleteBill(id: string): Promise<ActionResult> {
 
 /** Validation schema for bill ID parameter */
 const billIdSchema = z.string().min(1, 'Bill ID is required');
+
+/**
+ * Fetch the category ID for a specific bill.
+ *
+ * @param billId - Bill ID to fetch category for
+ * @returns ActionResult with categoryId or null
+ */
+export async function getBillCategory(
+  billId: string
+): Promise<ActionResult<string | null>> {
+  const parsed = billIdSchema.safeParse(billId);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? 'Invalid bill ID',
+      data: null,
+    };
+  }
+
+  try {
+    const [bill] = await db
+      .select({ categoryId: bills.categoryId })
+      .from(bills)
+      .where(eq(bills.id, parsed.data))
+      .limit(1);
+
+    return {
+      success: true,
+      data: bill?.categoryId ?? null,
+    };
+  } catch (error) {
+    console.error('Failed to fetch bill category:', error);
+    return {
+      success: false,
+      error: 'Failed to fetch bill category.',
+      data: null,
+    };
+  }
+}
 
 /**
  * Fetch tags for a specific bill.

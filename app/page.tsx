@@ -4,6 +4,7 @@ import { RightPanel } from '@/components/layout/RightPanel';
 import { AddBillButton, BillList, TagFilter } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
 import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 
@@ -14,9 +15,11 @@ interface DashboardPageProps {
 }
 
 async function DashboardHeader() {
-  const [settings, tags] = await Promise.all([
+  const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
     getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
   ]);
   const currencySymbol = getCurrencySymbol(settings.currency);
 
@@ -30,7 +33,12 @@ async function DashboardHeader() {
       </div>
       <div className="flex items-center gap-2">
         <TagFilter tags={tags} />
-        <AddBillButton currencySymbol={currencySymbol} availableTags={tags} />
+        <AddBillButton
+          currencySymbol={currencySymbol}
+          availableTags={tags}
+          categoriesGrouped={categoriesGrouped}
+          defaultCategoryId={defaultCategoryId ?? ''}
+        />
       </div>
     </div>
   );

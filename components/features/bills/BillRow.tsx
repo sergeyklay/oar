@@ -10,7 +10,7 @@ import { BillActionsMenu } from './BillActionsMenu';
 import { BillFormDialog } from './BillFormDialog';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
-import type { BillWithTags, Tag } from '@/lib/types';
+import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
 interface BillRowProps {
   bill: BillWithTags;
@@ -18,6 +18,10 @@ interface BillRowProps {
   locale: string;
   /** All available tags for the edit dialog */
   availableTags?: Tag[];
+  /** Category groups with nested categories for dropdown */
+  categoriesGrouped: BillCategoryGroupWithCategories[];
+  /** Default category ID for new bills */
+  defaultCategoryId: string;
 }
 
 /**
@@ -25,7 +29,14 @@ interface BillRowProps {
  * The <tr> wrapper is provided by BillRowClickable.
  * Tags are NOT displayed here per guide requirement.
  */
-export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowProps) {
+export function BillRow({
+  bill,
+  currency,
+  locale,
+  availableTags = [],
+  categoriesGrouped,
+  defaultCategoryId,
+}: BillRowProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -79,6 +90,8 @@ export function BillRow({ bill, currency, locale, availableTags = [] }: BillRowP
           onOpenChange={setEditDialogOpen}
           currencySymbol={currencySymbol}
           availableTags={availableTags}
+          categoriesGrouped={categoriesGrouped}
+          defaultCategoryId={defaultCategoryId}
         />
 
         <LogPaymentDialog

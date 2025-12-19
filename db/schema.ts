@@ -2,6 +2,58 @@ import { sqliteTable, text, integer, primaryKey, uniqueIndex } from 'drizzle-orm
 import { createId } from '@paralleldrive/cuid2';
 import { relations } from 'drizzle-orm';
 
+// ============================================
+// BILL CATEGORY TABLES
+// ============================================
+
+/**
+ * Bill Category Groups Table
+ *
+ * Semantic groupings for categories (e.g., "Housing & Essential Services").
+ * Groups are stored for future use but not currently displayed in UI.
+ */
+export const billCategoryGroups = sqliteTable('bill_category_groups', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  /** Display name (e.g., "Housing & Essential Services") */
+  name: text('name').notNull(),
+  /** URL-safe slug for potential future filtering */
+  slug: text('slug').notNull().unique(),
+  /** Display order (lower numbers appear first) */
+  displayOrder: integer('display_order').notNull().default(0),
+  /** Creation timestamp */
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+/**
+ * Bill Categories Table
+ *
+ * Predefined categories for bill classification.
+ * Categories belong to a group for semantic organization.
+ */
+export const billCategories = sqliteTable('bill_categories', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  /** Foreign key to bill_category_groups */
+  groupId: text('group_id')
+    .notNull()
+    .references(() => billCategoryGroups.id, { onDelete: 'cascade' }),
+  /** Display name (e.g., "Electric & Utilities") */
+  name: text('name').notNull(),
+  /** URL-safe slug for potential future filtering */
+  slug: text('slug').notNull().unique(),
+  /** Display order within group (lower numbers appear first) */
+  displayOrder: integer('display_order').notNull().default(0),
+  /** Creation timestamp */
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+// ============================================
+// BILLS TABLE
+// ============================================
+
 /** Bills table for tracking recurring and one-time payments. */
 export const bills = sqliteTable('bills', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -33,6 +85,9 @@ export const bills = sqliteTable('bills', {
   isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
   /** Optional user notes for bill context (account numbers, reminders, etc.) */
   notes: text('notes'),
+  /** Foreign key to bill_categories (nullable for migration; Zod enforces required for new bills) */
+  categoryId: text('category_id')
+    .references(() => billCategories.id, { onDelete: 'set null' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -173,8 +228,24 @@ export const billsToTags = sqliteTable('bills_to_tags', {
 // DRIZZLE RELATIONS (for relational queries)
 // ============================================
 
-export const billsRelations = relations(bills, ({ many }) => ({
+export const billCategoryGroupsRelations = relations(billCategoryGroups, ({ many }) => ({
+  categories: many(billCategories),
+}));
+
+export const billCategoriesRelations = relations(billCategories, ({ one, many }) => ({
+  group: one(billCategoryGroups, {
+    fields: [billCategories.groupId],
+    references: [billCategoryGroups.id],
+  }),
+  bills: many(bills),
+}));
+
+export const billsRelations = relations(bills, ({ one, many }) => ({
   billsToTags: many(billsToTags),
+  category: one(billCategories, {
+    fields: [bills.categoryId],
+    references: [billCategories.id],
+  }),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
@@ -232,6 +303,21 @@ export interface BillWithTags extends Bill {
 
 export type BillFrequency = 'once' | 'monthly' | 'yearly';
 export type BillStatus = 'pending' | 'paid' | 'overdue';
+
+export type BillCategoryGroup = typeof billCategoryGroups.$inferSelect;
+export type NewBillCategoryGroup = typeof billCategoryGroups.$inferInsert;
+export type BillCategory = typeof billCategories.$inferSelect;
+export type NewBillCategory = typeof billCategories.$inferInsert;
+
+/** Category with its parent group for display */
+export interface BillCategoryWithGroup extends BillCategory {
+  group: BillCategoryGroup;
+}
+
+/** Group with nested categories for grouped dropdown display */
+export interface BillCategoryGroupWithCategories extends BillCategoryGroup {
+  categories: BillCategory[];
+}
 
 export type SettingsCategory = typeof settingsCategories.$inferSelect;
 export type NewSettingsCategory = typeof settingsCategories.$inferInsert;

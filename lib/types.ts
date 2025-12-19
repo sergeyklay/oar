@@ -12,6 +12,10 @@ export type {
   BillStatus,
   Tag,
   Transaction,
+  BillCategory,
+  BillCategoryGroup,
+  BillCategoryWithGroup,
+  BillCategoryGroupWithCategories,
 } from '@/db/schema';
 
 /**

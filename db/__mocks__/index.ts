@@ -4,13 +4,15 @@
  */
 
 // Mock table references (used by eq(), inArray(), etc.)
-export const bills = { id: 'bills.id' };
+export const bills = { id: 'bills.id', categoryId: 'bills.categoryId' };
 export const transactions = { id: 'transactions.id', billId: 'transactions.billId' };
 export const tags = { id: 'tags.id', slug: 'tags.slug' };
 export const billsToTags = { billId: 'billsToTags.billId', tagId: 'billsToTags.tagId' };
 export const settings = { key: 'settings.key', sectionId: 'settings.sectionId' };
 export const settingsCategories = { id: 'settingsCategories.id', slug: 'settingsCategories.slug', displayOrder: 'settingsCategories.displayOrder', name: 'settingsCategories.name' };
 export const settingsSections = { id: 'settingsSections.id', categoryId: 'settingsSections.categoryId', slug: 'settingsSections.slug', displayOrder: 'settingsSections.displayOrder', name: 'settingsSections.name' };
+export const billCategoryGroups = { id: 'billCategoryGroups.id', displayOrder: 'billCategoryGroups.displayOrder' };
+export const billCategories = { id: 'billCategories.id', groupId: 'billCategories.groupId', displayOrder: 'billCategories.displayOrder' };
 
 // Type for the chainable query builder
 interface QueryBuilder {

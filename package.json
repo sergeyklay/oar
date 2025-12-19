@@ -29,6 +29,7 @@
     "test:coverage": "jest --coverage",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts",
+    "db:seed:categories": "node scripts/seed-categories.mjs",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate"
   },
