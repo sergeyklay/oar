@@ -83,8 +83,6 @@ function seedTags(tx: SeedTransaction) {
  * Seed default settings hierarchy.
  *
  * Uses SettingsService to ensure consistency with the application logic.
- *
- * @param tx - Database transaction instance (not used directly, but passed for type consistency in caller)
  */
 async function seedSettings() {
   console.log('Seeding settings...');
