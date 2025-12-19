@@ -1,6 +1,6 @@
 import { getBillsFiltered } from '@/actions/bills';
 import { getTags } from '@/actions/tags';
-import { getAllCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { BillRow } from './BillRow';
 import { BillRowClickable } from './BillRowClickable';
@@ -23,7 +23,7 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId }: 
     getBillsFiltered({ date, month, dateRange, tag }),
     SettingsService.getAll(),
     getTags(),
-    getAllCategoriesGrouped(),
+    getCategoriesGrouped(),
     getDefaultCategoryId(),
   ]);
 
