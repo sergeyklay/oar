@@ -18,6 +18,10 @@ describe('SettingsService', () => {
       };
       (db.select as jest.Mock).mockReturnValue(mockSelectBuilder);
 
+      (db.transaction as jest.Mock).mockImplementation((callback) => {
+        return callback(db);
+      });
+
       await SettingsService.initializeDefaults();
 
       expect(db.transaction).toHaveBeenCalled();
