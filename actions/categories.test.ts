@@ -1,5 +1,5 @@
 import { getCategoriesGrouped, getAllCategoriesGrouped, getDefaultCategoryId } from './categories';
-import { db, resetDbMocks } from '@/db';
+import { db, resetDbMocks, billCategoryGroups, billCategories } from '@/db';
 import type { BillCategoryGroup, BillCategory } from '@/db/schema';
 
 jest.mock('@/db');
@@ -33,12 +33,9 @@ const mockUncategorized: BillCategory = {
 };
 
 const createSelectMock = (groupsResult: BillCategoryGroup[], categoriesResult: BillCategory[]) => {
-  let selectCallCount = 0;
-
   const createBuilder = (result: unknown[]) => {
     const resultPromise = Promise.resolve(result);
-    const builder = {
-      from: jest.fn().mockReturnThis(),
+    return {
       where: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnValue({
         limit: jest.fn().mockResolvedValue(result),
@@ -46,16 +43,19 @@ const createSelectMock = (groupsResult: BillCategoryGroup[], categoriesResult: B
         catch: resultPromise.catch.bind(resultPromise),
       }),
     };
-    return builder;
   };
 
-  (db.select as jest.Mock).mockImplementation(() => {
-    selectCallCount++;
-    if (selectCallCount % 2 === 1) {
-      return createBuilder(groupsResult);
-    }
-    return createBuilder(categoriesResult);
-  });
+  (db.select as jest.Mock).mockImplementation(() => ({
+    from: jest.fn((table: unknown) => {
+      if (table === billCategoryGroups) {
+        return createBuilder(groupsResult);
+      }
+      if (table === billCategories) {
+        return createBuilder(categoriesResult);
+      }
+      return createBuilder([]);
+    }),
+  }));
 };
 
 describe('getCategoriesGrouped', () => {
@@ -155,6 +155,93 @@ describe('getDefaultCategoryId', () => {
     const result = await getDefaultCategoryId();
 
     expect(result).toBeNull();
+  });
+
+  it('returns category from first group even when later group has lower displayOrder category', async () => {
+    const firstGroup: BillCategoryGroup = {
+      id: 'group-first',
+      name: 'First Group',
+      slug: 'first-group',
+      displayOrder: 1,
+      createdAt: new Date(),
+    };
+    const secondGroup: BillCategoryGroup = {
+      id: 'group-second',
+      name: 'Second Group',
+      slug: 'second-group',
+      displayOrder: 2,
+      createdAt: new Date(),
+    };
+    const firstGroupCategory: BillCategory = {
+      id: 'cat-first-group',
+      groupId: 'group-first',
+      name: 'First Group Cat',
+      slug: 'first-group-cat',
+      displayOrder: 5,
+      createdAt: new Date(),
+    };
+    const secondGroupCategoryLowerOrder: BillCategory = {
+      id: 'cat-second-group',
+      groupId: 'group-second',
+      name: 'Second Group Cat',
+      slug: 'second-group-cat',
+      displayOrder: 1,
+      createdAt: new Date(),
+    };
+
+    let capturedGroupId: string | null = null;
+    const createFilteredBuilder = (groups: BillCategoryGroup[], categories: BillCategory[]) => {
+      const createGroupBuilder = () => {
+        const result = [groups[0]];
+        const resultPromise = Promise.resolve(result);
+        return {
+          where: jest.fn().mockReturnThis(),
+          orderBy: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue(result),
+            then: resultPromise.then.bind(resultPromise),
+            catch: resultPromise.catch.bind(resultPromise),
+          }),
+        };
+      };
+
+      const createCategoryBuilder = () => {
+        return {
+          where: jest.fn().mockImplementation(() => {
+            const filteredCats = categories.filter((c) => c.groupId === capturedGroupId);
+            const resultPromise = Promise.resolve(filteredCats);
+            return {
+              orderBy: jest.fn().mockReturnValue({
+                limit: jest.fn().mockResolvedValue(filteredCats.slice(0, 1)),
+                then: resultPromise.then.bind(resultPromise),
+                catch: resultPromise.catch.bind(resultPromise),
+              }),
+            };
+          }),
+        };
+      };
+
+      (db.select as jest.Mock).mockImplementation(() => ({
+        from: jest.fn((table: unknown) => {
+          if (table === billCategoryGroups) {
+            capturedGroupId = groups[0]?.id ?? null;
+            return createGroupBuilder();
+          }
+          if (table === billCategories) {
+            return createCategoryBuilder();
+          }
+          return { where: jest.fn().mockReturnThis(), orderBy: jest.fn().mockReturnThis() };
+        }),
+      }));
+    };
+
+    createFilteredBuilder(
+      [firstGroup, secondGroup],
+      [firstGroupCategory, secondGroupCategoryLowerOrder]
+    );
+
+    const result = await getDefaultCategoryId();
+
+    expect(result).toBe('cat-first-group');
   });
 });
 
