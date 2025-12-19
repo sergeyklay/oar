@@ -48,7 +48,7 @@ You must analyze which file you are editing and apply the correct architectural 
 - **No Phases Mentioning:** Don't mention phases in your code, e.g. "TODO: Implement in Phase 2".
 - **No Reinventing:** Use `shadcn/ui` components for UI. Use `date-fns` for dates.
 - **Strict Typing:** No `any`. Use generic types properly. Avoid Enums (use string unions).
-- **Adherence:** Strictly follow @AGENTS.md and use @.cursor/rules/context7.mdc.
+- **Adherence:** Strictly follow @AGENTS.md, @.cursor/rules/typescript.mdc and @.cursor/rules/context7.mdc.
 - **Architecture:** Follow best practices and professional architecture principles.
 
 # Bug Fix Protocol (The "Regression Lock")
