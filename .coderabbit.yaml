@@ -35,11 +35,11 @@ reviews:
 
     ### 🧭 Reviewer Guide
     **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic. Example: "Start with the schema.ts file to understand the database schema. Then look at ..., then look at ..." ]
-    **Complexity:** [Choice one of: Low | Medium | High]
+    **Complexity:** [Choose one of: Low | Medium | High]
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
-    - **Breaking Changes:** [Choice one of:  Yes + details | No breaking changes]
+    - **Breaking Changes:** [Choose one of:  Yes + details | No breaking changes]
     - **Migrations/State:** [Database migrations or manual steps required? If none, just "No migrations or state changes"]
     ```
   auto_title_placeholder: "@coderabbitai title"
