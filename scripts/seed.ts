@@ -3,6 +3,16 @@ import * as schema from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { faker } from '@faker-js/faker';
 import { addDays, subDays, subMonths } from 'date-fns';
+import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
+import { type RunResult } from 'better-sqlite3';
+import { type ExtractTablesWithRelations } from 'drizzle-orm';
+
+type SeedTransaction = SQLiteTransaction<
+  'sync',
+  RunResult,
+  typeof schema,
+  ExtractTablesWithRelations<typeof schema>
+>;
 
 /**
  * Wipe all data from the database in reverse order of dependencies.
@@ -10,23 +20,23 @@ import { addDays, subDays, subMonths } from 'date-fns';
  * Ensures a clean state before seeding by deleting records from all
  * application tables while respecting foreign key constraints.
  *
- * @returns A promise that resolves when the database is wiped
+ * @param tx - Database transaction instance
  */
-async function wipeData() {
+function wipeData(tx: SeedTransaction) {
   console.log('Wiping existing data...');
 
   // Junction tables and dependent tables first
-  await db.delete(schema.billsToTags);
-  await db.delete(schema.transactions);
+  tx.delete(schema.billsToTags).run();
+  tx.delete(schema.transactions).run();
 
   // Main entity tables
-  await db.delete(schema.bills);
-  await db.delete(schema.tags);
+  tx.delete(schema.bills).run();
+  tx.delete(schema.tags).run();
 
   // Settings hierarchy
-  await db.delete(schema.settings);
-  await db.delete(schema.settingsSections);
-  await db.delete(schema.settingsCategories);
+  tx.delete(schema.settings).run();
+  tx.delete(schema.settingsSections).run();
+  tx.delete(schema.settingsCategories).run();
 
   console.log('Database wiped clean.');
 }
@@ -36,9 +46,10 @@ async function wipeData() {
  *
  * Generates a set of common financial categories used to group bills.
  *
+ * @param tx - Database transaction instance
  * @returns Array of inserted tag records
  */
-async function seedTags() {
+function seedTags(tx: SeedTransaction) {
   console.log('Seeding tags...');
 
   const tagNames = [
@@ -61,7 +72,8 @@ async function seedTags() {
     createdAt: new Date()
   }));
 
-  await db.insert(schema.tags).values(tags);
+  tx.insert(schema.tags).values(tags).run();
+
   console.log(`Seeded ${tags.length} tags.`);
   return tags;
 }
@@ -72,9 +84,9 @@ async function seedTags() {
  * Populates settings categories, sections, and default key-value pairs
  * to ensure the settings management UI is fully functional.
  *
- * @returns A promise that resolves when settings are seeded
+ * @param tx - Database transaction instance
  */
-async function seedSettings() {
+function seedSettings(tx: SeedTransaction) {
   console.log('Seeding settings...');
 
   const categories = [
@@ -83,7 +95,7 @@ async function seedSettings() {
     { id: createId(), slug: 'appearance', name: 'Appearance', displayOrder: 3 }
   ];
 
-  await db.insert(schema.settingsCategories).values(categories);
+  tx.insert(schema.settingsCategories).values(categories).run();
 
   const sections = [
     {
@@ -104,7 +116,7 @@ async function seedSettings() {
     }
   ];
 
-  await db.insert(schema.settingsSections).values(sections);
+  tx.insert(schema.settingsSections).values(sections).run();
 
   const defaultSettings = [
     { key: 'currency', value: 'USD', sectionId: sections[0].id },
@@ -112,17 +124,19 @@ async function seedSettings() {
     { key: 'notifications_enabled', value: 'true', sectionId: sections[1].id }
   ];
 
-  await db.insert(schema.settings).values(defaultSettings);
+  tx.insert(schema.settings).values(defaultSettings).run();
+
   console.log('Seeded settings hierarchy.');
 }
 
 /**
  * Seed bills with various statuses and frequencies.
  *
+ * @param tx - Database transaction instance
  * @param tags - Array of tag records to associate with bills
  * @returns Array of inserted bill records for transaction seeding
  */
-async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
+function seedBills(tx: SeedTransaction, tags: typeof schema.tags.$inferSelect[]) {
   console.log('Seeding bills...');
 
   const billsToInsert: (typeof schema.bills.$inferInsert)[] = [];
@@ -133,12 +147,20 @@ async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
   // Create 20 bills
   for (let i = 0; i < 20; i++) {
     const id = createId();
-    const frequency = faker.helpers.arrayElement(['monthly', 'monthly', 'monthly', 'yearly', 'once'] as const);
+
+    const frequencies = ['monthly', 'monthly', 'monthly', 'yearly', 'once'] as const;
+    const frequency = faker.helpers.arrayElement(frequencies);
+
     const isVariable = faker.datatype.boolean(0.3);
     const amount = faker.number.int({ min: 1000, max: 200000 }); // $10.00 to $2000.00
 
     // Status distribution: 60% pending, 30% paid, 10% overdue
-    const status = faker.helpers.arrayElement(['pending', 'pending', 'pending', 'pending', 'pending', 'pending', 'paid', 'paid', 'paid', 'overdue'] as const);
+    const statuses = [
+      'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
+      'paid', 'paid', 'paid',
+      'overdue'
+    ] as const;
+    const status = faker.helpers.arrayElement(statuses);
 
     // Date ranges: overdue (-30 to -1 days), pending (0 to 60 days), paid (-30 to 0 days)
     let dueDate: Date;
@@ -152,7 +174,7 @@ async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
-      title: faker.finance.accountName() + ' ' + faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice']),
+      title: `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`,
       amount,
       amountDue: status === 'paid' ? 0 : amount,
       dueDate,
@@ -177,8 +199,8 @@ async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
     });
   }
 
-  await db.insert(schema.bills).values(billsToInsert);
-  await db.insert(schema.billsToTags).values(billsToTagsToInsert);
+  tx.insert(schema.bills).values(billsToInsert).run();
+  tx.insert(schema.billsToTags).values(billsToTagsToInsert).run();
 
   console.log(`Seeded ${billsToInsert.length} bills.`);
   return billsToInsert;
@@ -190,10 +212,10 @@ async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
  * Generates past payment records for each bill based on its frequency
  * and status to populate the transaction history view.
  *
+ * @param tx - Database transaction instance
  * @param bills - Array of bill records to generate transactions for
- * @returns A promise that resolves when transactions are seeded
  */
-async function seedTransactions(bills: (typeof schema.bills.$inferInsert)[]) {
+function seedTransactions(tx: SeedTransaction, bills: (typeof schema.bills.$inferInsert)[]) {
   console.log('Seeding transactions...');
 
   const transactionsToInsert: (typeof schema.transactions.$inferInsert)[] = [];
@@ -226,7 +248,7 @@ async function seedTransactions(bills: (typeof schema.bills.$inferInsert)[]) {
   }
 
   if (transactionsToInsert.length > 0) {
-    await db.insert(schema.transactions).values(transactionsToInsert);
+    tx.insert(schema.transactions).values(transactionsToInsert).run();
   }
 
   console.log(`Seeded ${transactionsToInsert.length} transactions.`);
@@ -244,11 +266,13 @@ async function main() {
   try {
     console.log('Starting database seed...');
 
-    await wipeData();
-    const tags = await seedTags();
-    await seedSettings();
-    const bills = await seedBills(tags);
-    await seedTransactions(bills);
+    db.transaction((tx) => {
+      wipeData(tx);
+      const tags = seedTags(tx);
+      seedSettings(tx);
+      const bills = seedBills(tx, tags);
+      seedTransactions(tx, bills);
+    });
 
     console.log('Seeding complete!');
     process.exit(0);
