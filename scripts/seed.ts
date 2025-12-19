@@ -78,78 +78,18 @@ function seedTags(tx: SeedTransaction) {
   return tags;
 }
 
-import {
-  DEFAULT_CATEGORIES,
-  DEFAULT_SECTIONS,
-  DEFAULT_SETTINGS_VALUES,
-} from '@/lib/constants';
+import { SettingsService } from '@/lib/services/SettingsService';
 
 /**
  * Seed default settings hierarchy.
  *
- * Populates settings categories, sections, and default key-value pairs
- * to ensure the settings management UI is fully functional.
+ * Uses SettingsService to ensure consistency with the application logic.
  *
- * @param tx - Database transaction instance
+ * @param tx - Database transaction instance (not used directly, but passed for type consistency in caller)
  */
-function seedSettings(tx: SeedTransaction) {
+async function seedSettings() {
   console.log('Seeding settings...');
-
-  // 1. Insert Categories
-  const categoryMap = new Map<string, string>();
-  for (const cat of DEFAULT_CATEGORIES) {
-    const result = tx
-      .insert(schema.settingsCategories)
-      .values({
-        id: createId(),
-        slug: cat.slug,
-        name: cat.name,
-        displayOrder: cat.displayOrder,
-      })
-      .returning({ id: schema.settingsCategories.id })
-      .get();
-    categoryMap.set(cat.slug, result.id);
-  }
-
-  // 2. Insert Sections
-  const sectionMap = new Map<string, string>();
-  for (const section of DEFAULT_SECTIONS) {
-    const categoryId = categoryMap.get(section.categorySlug);
-    if (!categoryId) {
-      throw new Error(`Category not found for slug: ${section.categorySlug}`);
-    }
-
-    const result = tx
-      .insert(schema.settingsSections)
-      .values({
-        id: createId(),
-        categoryId: categoryId,
-        slug: section.slug,
-        name: section.name,
-        description: section.description,
-        displayOrder: section.displayOrder,
-      })
-      .returning({ id: schema.settingsSections.id })
-      .get();
-    sectionMap.set(section.slug, result.id);
-  }
-
-  // 3. Insert Settings
-  for (const setting of DEFAULT_SETTINGS_VALUES) {
-    const sectionId = sectionMap.get(setting.sectionSlug);
-    if (!sectionId) {
-      throw new Error(`Section not found for slug: ${setting.sectionSlug}`);
-    }
-
-    tx.insert(schema.settings)
-      .values({
-        key: setting.key,
-        value: setting.value,
-        sectionId: sectionId,
-      })
-      .run();
-  }
-
+  await SettingsService.initializeDefaults();
   console.log('Seeded settings hierarchy.');
 }
 
@@ -292,8 +232,12 @@ async function main() {
 
     db.transaction((tx) => {
       wipeData(tx);
+    });
+
+    await seedSettings();
+
+    db.transaction((tx) => {
       const tags = seedTags(tx);
-      seedSettings(tx);
       const bills = seedBills(tx, tags);
       seedTransactions(tx, bills);
     });
