@@ -72,17 +72,39 @@ describe('SettingsService', () => {
       }
     });
 
-    it('does not seed settings when database is already populated', async () => {
-      const mockSelectBuilder = {
-        from: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue([{ id: 'existing-id' }]),
-      };
-      (db.select as jest.Mock).mockReturnValue(mockSelectBuilder);
+    it('does not recreate structure when database is already populated', async () => {
+      let selectCallCount = 0;
+      (db.select as jest.Mock).mockImplementation(() => {
+        selectCallCount++;
+        if (selectCallCount === 1) {
+          // First call: check for existing categories
+          return {
+            from: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockResolvedValue([{ id: 'existing-category-id' }]),
+          };
+        }
+        // Second call: get existing sections for ensureDefaultSettings
+        return {
+          from: jest.fn().mockResolvedValue([
+            { id: 'section-1', slug: 'behavior-options' },
+            { id: 'section-2', slug: 'view-options' },
+            { id: 'section-3', slug: 'notification-settings' },
+          ]),
+        };
+      });
+
+      const onConflictDoNothingMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoNothing: onConflictDoNothingMock,
+        }),
+      });
 
       await SettingsService.initializeDefaults();
 
       expect(db.transaction).not.toHaveBeenCalled();
-      expect(db.insert).not.toHaveBeenCalled();
+      // ensureDefaultSettings inserts missing settings (uses onConflictDoNothing)
+      expect(db.insert).toHaveBeenCalled();
     });
   });
 
