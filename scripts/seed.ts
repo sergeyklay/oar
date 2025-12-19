@@ -202,7 +202,7 @@ function seedTransactions(tx: SeedTransaction, bills: (typeof schema.bills.$infe
         billId: bill.id,
         amount: bill.amount,
         paidAt,
-        notes: faker.datatype.boolean(0.2) ? 'Auto-payment' : null,
+        notes: faker.datatype.boolean(0.2) ? 'Logged by Oar' : null,
         createdAt: paidAt
       });
     }
