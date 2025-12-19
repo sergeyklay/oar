@@ -78,6 +78,12 @@ function seedTags(tx: SeedTransaction) {
   return tags;
 }
 
+import {
+  DEFAULT_CATEGORIES,
+  DEFAULT_SECTIONS,
+  DEFAULT_SETTINGS_VALUES,
+} from '@/lib/constants';
+
 /**
  * Seed default settings hierarchy.
  *
@@ -89,42 +95,60 @@ function seedTags(tx: SeedTransaction) {
 function seedSettings(tx: SeedTransaction) {
   console.log('Seeding settings...');
 
-  const categories = [
-    { id: createId(), slug: 'general', name: 'General', displayOrder: 1 },
-    { id: createId(), slug: 'notifications', name: 'Notifications', displayOrder: 2 },
-    { id: createId(), slug: 'appearance', name: 'Appearance', displayOrder: 3 }
-  ];
+  // 1. Insert Categories
+  const categoryMap = new Map<string, string>();
+  for (const cat of DEFAULT_CATEGORIES) {
+    const result = tx
+      .insert(schema.settingsCategories)
+      .values({
+        id: createId(),
+        slug: cat.slug,
+        name: cat.name,
+        displayOrder: cat.displayOrder,
+      })
+      .returning({ id: schema.settingsCategories.id })
+      .get();
+    categoryMap.set(cat.slug, result.id);
+  }
 
-  tx.insert(schema.settingsCategories).values(categories).run();
-
-  const sections = [
-    {
-      id: createId(),
-      categoryId: categories[0].id,
-      slug: 'display',
-      name: 'Display options',
-      description: 'Configure how your data is displayed.',
-      displayOrder: 1
-    },
-    {
-      id: createId(),
-      categoryId: categories[1].id,
-      slug: 'email',
-      name: 'Email alerts',
-      description: 'Configure email notification preferences.',
-      displayOrder: 1
+  // 2. Insert Sections
+  const sectionMap = new Map<string, string>();
+  for (const section of DEFAULT_SECTIONS) {
+    const categoryId = categoryMap.get(section.categorySlug);
+    if (!categoryId) {
+      throw new Error(`Category not found for slug: ${section.categorySlug}`);
     }
-  ];
 
-  tx.insert(schema.settingsSections).values(sections).run();
+    const result = tx
+      .insert(schema.settingsSections)
+      .values({
+        id: createId(),
+        categoryId: categoryId,
+        slug: section.slug,
+        name: section.name,
+        description: section.description,
+        displayOrder: section.displayOrder,
+      })
+      .returning({ id: schema.settingsSections.id })
+      .get();
+    sectionMap.set(section.slug, result.id);
+  }
 
-  const defaultSettings = [
-    { key: 'currency', value: 'USD', sectionId: sections[0].id },
-    { key: 'theme', value: 'system', sectionId: sections[0].id },
-    { key: 'notifications_enabled', value: 'true', sectionId: sections[1].id }
-  ];
+  // 3. Insert Settings
+  for (const setting of DEFAULT_SETTINGS_VALUES) {
+    const sectionId = sectionMap.get(setting.sectionSlug);
+    if (!sectionId) {
+      throw new Error(`Section not found for slug: ${setting.sectionSlug}`);
+    }
 
-  tx.insert(schema.settings).values(defaultSettings).run();
+    tx.insert(schema.settings)
+      .values({
+        key: setting.key,
+        value: setting.value,
+        sectionId: sectionId,
+      })
+      .run();
+  }
 
   console.log('Seeded settings hierarchy.');
 }

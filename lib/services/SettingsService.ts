@@ -1,8 +1,15 @@
 import { db, settings, settingsCategories, settingsSections } from '@/db';
 import { eq, asc, sql } from 'drizzle-orm';
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/lib/money';
-import { ALLOWED_RANGE_VALUES, type AllowedRangeValue } from '@/lib/constants';
+import {
+  ALLOWED_RANGE_VALUES,
+  type AllowedRangeValue,
+  DEFAULT_CATEGORIES,
+  DEFAULT_SECTIONS,
+  DEFAULT_SETTINGS_VALUES,
+} from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
+import { createId } from '@paralleldrive/cuid2';
 
 export interface UserSettings {
   currency: string;
@@ -199,88 +206,58 @@ export const SettingsService = {
     }
 
     db.transaction((tx) => {
-      const generalCategory = tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'general',
-          name: 'General',
-          displayOrder: 1,
-        })
-        .returning({ id: settingsCategories.id })
-        .get();
+      const categoryMap = new Map<string, string>();
+      for (const cat of DEFAULT_CATEGORIES) {
+        const result = tx
+          .insert(settingsCategories)
+          .values({
+            id: createId(),
+            slug: cat.slug,
+            name: cat.name,
+            displayOrder: cat.displayOrder,
+          })
+          .returning({ id: settingsCategories.id })
+          .get();
+        categoryMap.set(cat.slug, result.id);
+      }
 
-      const notificationCategory = tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'notification',
-          name: 'Notification',
-          displayOrder: 2,
-        })
-        .returning({ id: settingsCategories.id })
-        .get();
+      const sectionMap = new Map<string, string>();
+      for (const section of DEFAULT_SECTIONS) {
+        const categoryId = categoryMap.get(section.categorySlug);
+        if (!categoryId) {
+          throw new Error(`Category not found for slug: ${section.categorySlug}`);
+        }
 
-      const loggingCategory = tx
-        .insert(settingsCategories)
-        .values({
-          slug: 'logging',
-          name: 'Logging',
-          displayOrder: 3,
-        })
-        .returning({ id: settingsCategories.id })
-        .get();
+        const result = tx
+          .insert(settingsSections)
+          .values({
+            id: createId(),
+            categoryId: categoryId,
+            slug: section.slug,
+            name: section.name,
+            description: section.description,
+            displayOrder: section.displayOrder,
+          })
+          .returning({ id: settingsSections.id })
+          .get();
+        sectionMap.set(section.slug, result.id);
+      }
 
-      tx.insert(settingsSections).values([
-        {
-          categoryId: generalCategory.id,
-          slug: 'view-options',
-          name: 'View Options',
-          description: 'Customize how information is displayed',
-          displayOrder: 1,
-        },
-        {
-          categoryId: notificationCategory.id,
-          slug: 'notification-settings',
-          name: 'Notification Settings',
-          description: 'Configure notification preferences',
-          displayOrder: 1,
-        },
-        {
-          categoryId: loggingCategory.id,
-          slug: 'logging-settings',
-          name: 'Logging Settings',
-          description: 'Configure logging preferences',
-          displayOrder: 1,
-        },
-        {
-          categoryId: generalCategory.id,
-          slug: 'other-options',
-          name: 'Other Options',
-          description: 'Additional preferences',
-          displayOrder: 3,
-        },
-      ]).run();
+      for (const setting of DEFAULT_SETTINGS_VALUES) {
+        const sectionId = sectionMap.get(setting.sectionSlug);
+        if (!sectionId) {
+          throw new Error(`Section not found for slug: ${setting.sectionSlug}`);
+        }
 
-      const behaviorOptionsSection = tx
-        .insert(settingsSections)
-        .values({
-          categoryId: generalCategory.id,
-          slug: 'behavior-options',
-          name: 'Behavior Options',
-          description: 'Configure application behavior',
-          displayOrder: 2,
-        })
-        .returning({ id: settingsSections.id })
-        .get();
-
-      tx
-        .insert(settings)
-        .values({
-          key: 'dueSoonRange',
-          value: '7',
-          sectionId: behaviorOptionsSection.id,
-        })
-        .onConflictDoNothing()
-        .run();
+        tx.insert(settings)
+          .values({
+            key: setting.key,
+            value: setting.value,
+            sectionId: sectionId,
+          })
+          .onConflictDoNothing()
+          .run();
+      }
     });
   },
 };
