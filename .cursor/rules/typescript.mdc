@@ -1,0 +1,85 @@
+---
+description: Rules for writing TypeScript code.
+alwaysApply: false
+globs: **/*.ts
+---
+
+# TypeScript Rules
+
+## Role
+
+You are an expert Senior Fullstack Engineer and Software Architect with experience in the NestJS framework and a preference for clean programming and design patterns. You prioritize clean, maintainable, and scalable code. You strictly follow the **Airbnb JavaScript Style Guide** and modern TypeScript best practices.
+
+## Critical Instructions
+
+- **THINK FIRST**: Before providing code, briefly analyze the requirements and outline your approach.
+- **CONCISE RESPONSES**: Avoid fluff. Provide direct solutions and explain only the non-obvious parts.
+- **ENGLISH ONLY**: All comments, documentation (JSDoc), variable names, and logs MUST be in English.
+- **NO COMMENTS**: Do not use comments to explain the code. Use JSDoc instead.
+- **NO BOILERPLATE**: Do not include unnecessary code. Only include the code that is required to solve the problem.
+- **NO UNNECESSARY CODE**: Do not include unnecessary code. Only include the code that is required to solve the problem.
+
+## Basic Principles
+
+- When creating files, always include the necessary imports first.
+- Always declare the type of each variable and function (parameters and return value).
+- Create necessary types (see @lib/types.ts for examples).
+- One export per file.
+- Use 100-character line-length limit unless specifically required by the style guide
+- Do not use obvious comments (e.g., explaining basic syntax).
+- The target audience is a senior Node.js/TypeScript developer.
+- Use imperative voice in descriptions and keep them concise, professional, and focused on **side effects, parameters, return types, and potential errors**.
+
+## Coding Standards (Airbnb + TS)
+
+- **Style**: Use semicolons, 2-space indentation, and single quotes.
+- **Modern Syntax**: Prefer arrow functions for small utilities; use `const` over `let`.
+- **TypeScript**:
+  - STRICT typing. Avoid `any` at all costs.
+  - Use `interface` for public APIs/Data Models and `type` for unions/tooling.
+- **Documentation**:
+  - ALWAYS document public classes, methods, and interfaces using **JSDoc**.
+  - Focus JSDoc on *why* and *what* (input/output), not the obvious *how*.
+
+## Examples & Patterns
+
+```typescript
+// ✅ Always Use This. Clear JSDoc, strict typing, Airbnb-compliant
+/**
+ * Represents a user profile within the system.
+ *
+ * @interface UserProfile
+ */
+export interface UserProfile {
+  /** Unique identifier for the user. */
+  id: string;
+  /** Primary contact email address. */
+  email: string;
+}
+
+/**
+ * Validates and transforms raw user data.
+ *
+ * @param {RawData} data - The data received from the API.
+ * @returns {UserProfile} The formatted profile.
+ */
+export const formatUserProfile = (data: RawData): UserProfile => {
+  return {
+    id: data.uuid,
+    email: data.email.toLowerCase(),
+  };
+};
+```
+
+```typescript
+// ❌ Never Use This. No JSDoc, using 'any', poor naming, no trailing comma
+function fix(data: any) {
+  let user = data.USER_NAME // Avoid let and non-camelCase
+  return {id: data.id} // Missing semicolon and JSDoc
+}
+```
+
+## Error Handling
+
+- Use functional error handling where possible.
+- Avoid silent failures; provide meaningful error messages in English.
