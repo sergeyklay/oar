@@ -5,10 +5,15 @@ import { faker } from '@faker-js/faker';
 import { addDays, subDays, subMonths } from 'date-fns';
 
 /**
- * Wipes all data from the database in reverse order of dependencies.
+ * Wipe all data from the database in reverse order of dependencies.
+ *
+ * Ensures a clean state before seeding by deleting records from all
+ * application tables while respecting foreign key constraints.
+ *
+ * @returns A promise that resolves when the database is wiped
  */
 async function wipeData() {
-  console.log('🧹 Wiping existing data...');
+  console.log('Wiping existing data...');
 
   // Junction tables and dependent tables first
   await db.delete(schema.billsToTags);
@@ -23,14 +28,18 @@ async function wipeData() {
   await db.delete(schema.settingsSections);
   await db.delete(schema.settingsCategories);
 
-  console.log('✅ Database wiped clean.');
+  console.log('Database wiped clean.');
 }
 
 /**
- * Seeds tags for bill organization.
+ * Seed tags for bill organization.
+ *
+ * Generates a set of common financial categories used to group bills.
+ *
+ * @returns Array of inserted tag records
  */
 async function seedTags() {
-  console.log('🏷️ Seeding tags...');
+  console.log('Seeding tags...');
 
   const tagNames = [
     'Utilities',
@@ -53,15 +62,20 @@ async function seedTags() {
   }));
 
   await db.insert(schema.tags).values(tags);
-  console.log(`✅ Seeded ${tags.length} tags.`);
+  console.log(`Seeded ${tags.length} tags.`);
   return tags;
 }
 
 /**
- * Seeds default settings hierarchy.
+ * Seed default settings hierarchy.
+ *
+ * Populates settings categories, sections, and default key-value pairs
+ * to ensure the settings management UI is fully functional.
+ *
+ * @returns A promise that resolves when settings are seeded
  */
 async function seedSettings() {
-  console.log('⚙️ Seeding settings...');
+  console.log('Seeding settings...');
 
   const categories = [
     { id: createId(), slug: 'general', name: 'General', displayOrder: 1 },
@@ -99,14 +113,17 @@ async function seedSettings() {
   ];
 
   await db.insert(schema.settings).values(defaultSettings);
-  console.log('✅ Seeded settings hierarchy.');
+  console.log('Seeded settings hierarchy.');
 }
 
 /**
- * Seeds bills with various statuses and frequencies.
+ * Seed bills with various statuses and frequencies.
+ *
+ * @param tags - Array of tag records to associate with bills
+ * @returns Array of inserted bill records for transaction seeding
  */
 async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
-  console.log('💸 Seeding bills...');
+  console.log('Seeding bills...');
 
   const billsToInsert: (typeof schema.bills.$inferInsert)[] = [];
   const billsToTagsToInsert: (typeof schema.billsToTags.$inferInsert)[] = [];
@@ -163,15 +180,21 @@ async function seedBills(tags: typeof schema.tags.$inferSelect[]) {
   await db.insert(schema.bills).values(billsToInsert);
   await db.insert(schema.billsToTags).values(billsToTagsToInsert);
 
-  console.log(`✅ Seeded ${billsToInsert.length} bills.`);
+  console.log(`Seeded ${billsToInsert.length} bills.`);
   return billsToInsert;
 }
 
 /**
- * Seeds historical transactions for bills.
+ * Seed historical transactions for bills.
+ *
+ * Generates past payment records for each bill based on its frequency
+ * and status to populate the transaction history view.
+ *
+ * @param bills - Array of bill records to generate transactions for
+ * @returns A promise that resolves when transactions are seeded
  */
 async function seedTransactions(bills: (typeof schema.bills.$inferInsert)[]) {
-  console.log('💳 Seeding transactions...');
+  console.log('Seeding transactions...');
 
   const transactionsToInsert: (typeof schema.transactions.$inferInsert)[] = [];
 
@@ -187,12 +210,14 @@ async function seedTransactions(bills: (typeof schema.bills.$inferInsert)[]) {
     else if (bill.frequency === 'once' && bill.status === 'paid') count = 1;
 
     for (let j = 0; j < count; j++) {
+      if (bill.dueDate === undefined || bill.amount === undefined) continue;
+
       const paidAt = subMonths(bill.dueDate as Date, j + (bill.status === 'paid' ? 0 : 1));
 
       transactionsToInsert.push({
         id: createId(),
         billId: bill.id,
-        amount: bill.amount as number,
+        amount: bill.amount,
         paidAt,
         notes: faker.datatype.boolean(0.2) ? 'Auto-payment' : null,
         createdAt: paidAt
@@ -204,12 +229,20 @@ async function seedTransactions(bills: (typeof schema.bills.$inferInsert)[]) {
     await db.insert(schema.transactions).values(transactionsToInsert);
   }
 
-  console.log(`✅ Seeded ${transactionsToInsert.length} transactions.`);
+  console.log(`Seeded ${transactionsToInsert.length} transactions.`);
 }
 
+/**
+ * Main execution entry point for the seeding script.
+ *
+ * Orchestrates the full seeding process: wiping existing data,
+ * seeding tags, settings, bills, and transactions.
+ *
+ * @returns A promise that resolves when the seeding is complete
+ */
 async function main() {
   try {
-    console.log('🌱 Starting database seed...');
+    console.log('Starting database seed...');
 
     await wipeData();
     const tags = await seedTags();
@@ -217,9 +250,10 @@ async function main() {
     const bills = await seedBills(tags);
     await seedTransactions(bills);
 
-    console.log('✨ Seeding complete!');
+    console.log('Seeding complete!');
+    process.exit(0);
   } catch (error) {
-    console.error('❌ Seeding failed:', error);
+    console.error('Seeding failed:', error);
     process.exit(1);
   }
 }
