@@ -254,7 +254,8 @@ export const SettingsService = {
    * Creates: General, Notification, Logging categories with their sections
    * (view-options, behavior-options, other-options, notification-settings,
    * logging-settings) and settings with their default values.
-   * Runs idempotently - skips if already initialized.
+   * Runs idempotently - skips structure creation if already initialized,
+   * but always ensures all default settings exist.
    */
   async initializeDefaults(): Promise<void> {
     const [existingCategory] = await db
@@ -262,63 +263,98 @@ export const SettingsService = {
       .from(settingsCategories)
       .limit(1);
 
-    if (existingCategory) {
-      return;
+    if (!existingCategory) {
+      // First-time initialization: create all categories, sections, and settings
+      db.transaction((tx) => {
+        const categoryMap = new Map<string, string>();
+        for (const cat of DEFAULT_CATEGORIES) {
+          const result = tx
+            .insert(settingsCategories)
+            .values({
+              id: createId(),
+              slug: cat.slug,
+              name: cat.name,
+              displayOrder: cat.displayOrder,
+            })
+            .returning({ id: settingsCategories.id })
+            .get();
+          categoryMap.set(cat.slug, result.id);
+        }
+
+        const sectionMap = new Map<string, string>();
+        for (const section of DEFAULT_SECTIONS) {
+          const categoryId = categoryMap.get(section.categorySlug);
+          if (!categoryId) {
+            throw new Error(`Category not found for slug: ${section.categorySlug}`);
+          }
+
+          const result = tx
+            .insert(settingsSections)
+            .values({
+              id: createId(),
+              categoryId: categoryId,
+              slug: section.slug,
+              name: section.name,
+              description: section.description,
+              displayOrder: section.displayOrder,
+            })
+            .returning({ id: settingsSections.id })
+            .get();
+          sectionMap.set(section.slug, result.id);
+        }
+
+        for (const setting of DEFAULT_SETTINGS_VALUES) {
+          const sectionId = sectionMap.get(setting.sectionSlug);
+          if (!sectionId) {
+            throw new Error(`Section not found for slug: ${setting.sectionSlug}`);
+          }
+
+          tx.insert(settings)
+            .values({
+              key: setting.key,
+              value: setting.value,
+              sectionId: sectionId,
+            })
+            .onConflictDoNothing()
+            .run();
+        }
+      });
+    } else {
+      // Structure exists: ensure all default settings are present
+      // This handles cases where new settings are added after initial setup
+      await this.ensureDefaultSettings();
+    }
+  },
+
+  /**
+   * Ensures all settings from DEFAULT_SETTINGS_VALUES exist in the database.
+   * Uses upsert with onConflictDoNothing to avoid overwriting user values.
+   */
+  async ensureDefaultSettings(): Promise<void> {
+    // Build a section slug -> id map from existing sections
+    const existingSections = await db.select().from(settingsSections);
+    const sectionMap = new Map<string, string>();
+    for (const section of existingSections) {
+      sectionMap.set(section.slug, section.id);
     }
 
-    db.transaction((tx) => {
-      const categoryMap = new Map<string, string>();
-      for (const cat of DEFAULT_CATEGORIES) {
-        const result = tx
-          .insert(settingsCategories)
-          .values({
-            id: createId(),
-            slug: cat.slug,
-            name: cat.name,
-            displayOrder: cat.displayOrder,
-          })
-          .returning({ id: settingsCategories.id })
-          .get();
-        categoryMap.set(cat.slug, result.id);
+    // Insert any missing settings
+    for (const setting of DEFAULT_SETTINGS_VALUES) {
+      const sectionId = sectionMap.get(setting.sectionSlug);
+      if (!sectionId) {
+        // Section doesn't exist; skip this setting
+        console.warn(`Section not found for slug: ${setting.sectionSlug}. Skipping setting: ${setting.key}`);
+        continue;
       }
 
-      const sectionMap = new Map<string, string>();
-      for (const section of DEFAULT_SECTIONS) {
-        const categoryId = categoryMap.get(section.categorySlug);
-        if (!categoryId) {
-          throw new Error(`Category not found for slug: ${section.categorySlug}`);
-        }
-
-        const result = tx
-          .insert(settingsSections)
-          .values({
-            id: createId(),
-            categoryId: categoryId,
-            slug: section.slug,
-            name: section.name,
-            description: section.description,
-            displayOrder: section.displayOrder,
-          })
-          .returning({ id: settingsSections.id })
-          .get();
-        sectionMap.set(section.slug, result.id);
-      }
-
-      for (const setting of DEFAULT_SETTINGS_VALUES) {
-        const sectionId = sectionMap.get(setting.sectionSlug);
-        if (!sectionId) {
-          throw new Error(`Section not found for slug: ${setting.sectionSlug}`);
-        }
-
-        tx.insert(settings)
-          .values({
-            key: setting.key,
-            value: setting.value,
-            sectionId: sectionId,
-          })
-          .onConflictDoNothing()
-          .run();
-      }
-    });
+      await db
+        .insert(settings)
+        .values({
+          key: setting.key,
+          value: setting.value,
+          sectionId: sectionId,
+        })
+        .onConflictDoNothing();
+    }
   },
 };
