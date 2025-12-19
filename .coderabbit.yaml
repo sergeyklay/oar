@@ -31,10 +31,10 @@ reviews:
     ### 🎯 Scope & Context
     **Type:** [Feat | Fix | Refactor | Chore | Perf]
     **Intent:** [1-2 sentences explaining the business or technical goal - the "Why"]
-    **Related Issues:** [Extract issue numbers (e.g., #123 for GitHub, PROJ-456 for Jira, etc.) from commits. If none, omit this line. Do NOT use empty section here.]
+    **Related Issues:** [Extract issue numbers (e.g., #123 for GitHub, PROJ-456 for Jira, etc.) from commits. If none, omit this line. Do NOT use empty values here - "Related Issues: " - this is NOT allowed.]
 
     ### 🧭 Reviewer Guide
-    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic. Example: "Start with the schema.ts file to understand the database schema. Then look at ..., then look at ..." ]
+    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic. Example to follow: "Start with the `schema.ts` file to understand the database schema and the core changes to the schema. Then look at ..., then look at ...". Do not use just file name, you have to explain what the file is and why it is important to understand the changes.]
     **Complexity:** [Choose one of: Low | Medium | High]
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
