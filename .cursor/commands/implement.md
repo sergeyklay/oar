@@ -36,7 +36,7 @@ You must analyze which file you are editing and apply the correct architectural 
     - **Context:** Schema Definitions.
     - ✅ **ALLOWED:** Drizzle schema definitions, Zod schemas.
 
-5.  **IF editing ANY database related code:**
+5.  **IF editing ANY database-related code:**
     - **Context:** Database operations.
     - ❌ **FORBIDDEN:** No Async/Await for transactions. With better-sqlite3, drizzle-orm transactions are synchronous and the callback is not awaited.
 
