@@ -1,4 +1,4 @@
-# Organizing bills with tags
+# Organizing Bills with Tags
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-12
