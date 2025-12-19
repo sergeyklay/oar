@@ -2,7 +2,7 @@
 
 import { db, billCategoryGroups, billCategories } from '@/db';
 import type { BillCategoryGroupWithCategories } from '@/db/schema';
-import { asc, lt } from 'drizzle-orm';
+import { asc, lt, eq } from 'drizzle-orm';
 
 /**
  * Fetches all category groups with nested categories for dropdown display.
@@ -69,6 +69,7 @@ export async function getDefaultCategoryId(): Promise<string | null> {
   const categories = await db
     .select()
     .from(billCategories)
+    .where(eq(billCategories.groupId, groups[0].id))
     .orderBy(asc(billCategories.displayOrder))
     .limit(1);
 
