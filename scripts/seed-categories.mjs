@@ -13,21 +13,10 @@
 import Database from 'better-sqlite3';
 import { dirname, resolve, isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
-import { randomBytes } from 'crypto';
+import { createId } from '@paralleldrive/cuid2';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
-
-/**
- * Generate a CUID2-like ID.
- *
- * @returns {string} A unique identifier
- */
-function createId() {
-  const timestamp = Date.now().toString(36);
-  const random = randomBytes(8).toString('base64url').slice(0, 12);
-  return `${timestamp}${random}`;
-}
 
 // Read database path from environment or use default
 const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
