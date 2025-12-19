@@ -357,9 +357,7 @@ export const SettingsService = {
         }
       });
     } else {
-      // Structure exists: ensure all default settings are present
-      // This handles cases where new settings are added after initial setup
-      this.ensureDefaultSettings();
+      SettingsService.ensureDefaultSettings();
     }
   },
 
