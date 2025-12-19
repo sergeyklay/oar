@@ -14,6 +14,7 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
 
@@ -62,6 +63,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci --include=dev
 
+      - name: Run type check
+        run: npm run typecheck
+
+      - name: Run lint
+        run: npm run lint
+
       - name: Run unit tests
         run: npm run test:coverage
 
@@ -82,6 +89,9 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+
+      - name: Audit packages
+        run: npm audit --audit-level=high
 
       - name: Success Reporting
         if: success()

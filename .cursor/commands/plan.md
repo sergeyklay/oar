@@ -106,7 +106,7 @@ Produce a Markdown checklist in `.plans/Plan-{TASK_NAME}.md`. Group steps into L
 **Phase 5: Verification & Cleanup**
 
 - [ ] Run linter: `npm run lint 2>&1`
-- [ ] Run type check: `npx tsc --noEmit 2>&1`
+- [ ] Run type check: `npm run typecheck 2>&1`
 - [ ] Manual verification: [Describe the user flow to test]
 - [ ] Verify all domain logic lives in Services, not Actions or Components
 
