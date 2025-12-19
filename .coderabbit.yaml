@@ -23,7 +23,8 @@ reviews:
     6. USING DASHES. Use a single hyphen "-" and add spaces before and after the hyphen. Do not use "—" for dashes.
        * FORBIDDEN: Breaking Changes: No—all modifications are documentation and configuration updates with no functional impact to codebase or build process.
        * ALLOWED: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
-    7. **CRITICAL**. Make sure the summary and EVERY ELEMENT of the summary is up to date, following the output format, and accurate for every commit in the PR as well as the overall PR. This is a critical requirement. The summary should NOT contain anything that is not described in this instruction.
+    7. FILENAMES. Filenames should be wrapped in backticks: `lib/services/AutoPayService.ts`
+    8. **CRITICAL**. Make sure the summary and EVERY ELEMENT of the summary is up to date, following the output format, and accurate for every commit in the PR as well as the overall PR. This is a critical requirement. The summary should NOT contain anything that is not described in this instruction.
 
     ## Output Format
 
@@ -34,9 +35,11 @@ reviews:
     **Related Issues:** [Extract issue numbers (e.g., #123 for GitHub, PROJ-456 for Jira, etc.) from commits. If none, omit this line. Do NOT use empty values here - "Related Issues: " - this is NOT allowed.]
 
     ### 🧭 Reviewer Guide
-    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic. Example to follow: "Start with the `schema.ts` file to understand the database schema and the core changes to the schema. Then look at ..., then look at ...". Do not use just file name, you have to explain what the file is and why it is important to understand the changes.]
     **Complexity:** [Choose one of: Low | Medium | High]
-    **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
+    #### Entry Point
+    [Identify the most critical or complex file where the reviewer should start to understand the logic. Example to follow: "Start with the `schema.ts` file to understand the database schema and the core changes to the schema. Then look at ..., then look at ...". Do not use just file name, you have to explain what the file is and why it is important to understand the changes.]
+    #### Sensitive Areas
+    [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
     - **Breaking Changes:** [Choose one of:  Yes + details | No breaking changes]
@@ -52,11 +55,16 @@ reviews:
     **Intent:** Update transaction notes in AutoPayService to reflect accurate logging information. The notes field in auto-pay transaction records is changed from "Auto-processed on due date" to "Logged by Oar" to better represent the system's logging behavior.
 
     ### 🧭 Reviewer Guide
-    **Entry Point:** Start with the `lib/services/AutoPayService.ts` file. This contains the most substantial rework, changes the logic of the service to log payments accurately.
-
     **Complexity:** Low
 
-    **Sensitive Areas:** Database transaction insertion logic with notes field value
+    #### Entry Point
+    Start with the `lib/services/AutoPayService.ts` file. This contains the most substantial rework, changes the logic of the service to log payments accurately.
+
+    #### Sensitive Areas
+
+    - `lib/services/foo.ts`: Database transaction insertion logic with notes field value
+    - `lib/services/bar.ts`: Service logic to calculate next due date for recurring bills
+    - `lib/services/baz.ts`: Service logic to derive bill status based on next due date
 
     ### ⚠️ Risk Assessment
     - **Breaking Changes:** No breaking changes
