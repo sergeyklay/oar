@@ -1,4 +1,4 @@
-# Recurrence engine
+# Recurrence Engine
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-18

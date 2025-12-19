@@ -8,7 +8,7 @@ Foundational decisions about system design and technical direction.
 
 | Document | Description |
 |----------|-------------|
-| [001-monolith](architecture/001-monolith.md) | Hyper-optimized modular monolith architecture |
+| [ADR-001: Hyper-optimized modular monolith](./architecture/001-monolith.md) | Hyper-optimized modular monolith architecture |
 
 ## Features
 
@@ -16,10 +16,10 @@ Explanations of user-facing functionality and domain logic.
 
 | Document | Description |
 |----------|-------------|
-| [001-recurrence-engine](features/001-recurrence-engine.md) | Handling recurring and one-time payments |
-| [002-auto-pay](features/002-auto-pay.md) | Logging payments and updating due dates |
-| [003-organizing-bills-with-tags](features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
-| [004-due-this-month](features/004-due-this-month.md) | Viewing bills due in the current month |
+| [Recurrence Engine](./features/001-recurrence-engine.md) | Handling recurring and one-time payments |
+| [Logging Payments](./features/002-auto-pay.md) | Logging payments and updating due dates |
+| [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
+| [Due This Month View](./features/004-due-this-month.md) | Viewing bills due in the current month |
 
 ## Development
 
@@ -27,5 +27,6 @@ Guides for contributors and local development.
 
 | Document | Description |
 |----------|-------------|
-| [002-local-docker](development/002-local-docker.md) | Running Oar locally with Docker |
+| [Getting Started](./development/001-getting-started.md) | Getting started with Oar |
+| [Local Docker Deployment](./development/002-local-docker.md) | Running Oar locally with Docker |
 
