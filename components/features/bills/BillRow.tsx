@@ -20,8 +20,8 @@ interface BillRowProps {
   availableTags?: Tag[];
   /** Category groups with nested categories for dropdown */
   categoriesGrouped: BillCategoryGroupWithCategories[];
-  /** Default category ID for new bills */
-  defaultCategoryId: string;
+  /** Default category ID for new bills (null if no categories exist) */
+  defaultCategoryId: string | null;
 }
 
 /**
