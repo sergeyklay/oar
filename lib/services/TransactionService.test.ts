@@ -1,6 +1,7 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills } from '@/db';
 import { PaymentWithBill } from '@/lib/types';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -19,10 +20,39 @@ jest.mock('@/db', () => ({
   },
 }));
 
+const mockGte = jest.fn();
+const mockLte = jest.fn();
+const mockAnd = jest.fn();
+
+jest.mock('drizzle-orm', () => ({
+  gte: (...args: unknown[]) => {
+    mockGte(...args);
+    return { type: 'gte', args };
+  },
+  lte: (...args: unknown[]) => {
+    mockLte(...args);
+    return { type: 'lte', args };
+  },
+  and: (...args: unknown[]) => {
+    mockAnd(...args);
+    return { type: 'and', args };
+  },
+  desc: jest.fn((col) => ({ type: 'desc', col })),
+  eq: jest.fn((a, b) => ({ type: 'eq', a, b })),
+}));
+
 describe('TransactionService', () => {
   describe('getRecentPayments', () => {
+    const FIXED_DATE = new Date('2025-12-19T14:30:00.000Z');
+
     beforeEach(() => {
       jest.clearAllMocks();
+      jest.useFakeTimers();
+      jest.setSystemTime(FIXED_DATE);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
     });
 
     const mockPayments: PaymentWithBill[] = [
@@ -46,7 +76,7 @@ describe('TransactionService', () => {
     };
 
     it('fetches payments within date range', async () => {
-      const { fromMock, innerJoinMock, whereMock, orderByMock } = setupDbMock(mockPayments);
+      const { fromMock, innerJoinMock } = setupDbMock(mockPayments);
 
       const result = await TransactionService.getRecentPayments(7);
 
@@ -54,8 +84,6 @@ describe('TransactionService', () => {
       expect(db.select).toHaveBeenCalled();
       expect(fromMock).toHaveBeenCalledWith(transactions);
       expect(innerJoinMock).toHaveBeenCalledWith(bills, expect.anything());
-      expect(whereMock).toHaveBeenCalled();
-      expect(orderByMock).toHaveBeenCalled();
     });
 
     it('returns empty array when no payments found', async () => {
@@ -66,28 +94,63 @@ describe('TransactionService', () => {
       expect(result).toEqual([]);
     });
 
-    it('handles days=0 for today only', async () => {
-      const { whereMock } = setupDbMock(mockPayments);
+    it('calculates date range for days=0 (today only)', async () => {
+      setupDbMock(mockPayments);
 
       await TransactionService.getRecentPayments(0);
 
-      expect(whereMock).toHaveBeenCalled();
+      const expectedStart = startOfDay(FIXED_DATE);
+      const expectedEnd = endOfDay(FIXED_DATE);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
     });
 
-    it('handles days=1 for today or yesterday', async () => {
-      const { whereMock } = setupDbMock(mockPayments);
+    it('calculates date range for days=1 (today or yesterday)', async () => {
+      setupDbMock(mockPayments);
 
       await TransactionService.getRecentPayments(1);
 
-      expect(whereMock).toHaveBeenCalled();
+      const expectedStart = startOfDay(subDays(FIXED_DATE, 1));
+      const expectedEnd = endOfDay(FIXED_DATE);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
     });
 
-    it('orders results by paidAt descending', async () => {
-      const { orderByMock } = setupDbMock(mockPayments);
+    it('calculates date range for days=7 (last 7 days)', async () => {
+      setupDbMock(mockPayments);
 
       await TransactionService.getRecentPayments(7);
 
-      expect(orderByMock).toHaveBeenCalled();
+      const expectedStart = startOfDay(subDays(FIXED_DATE, 7));
+      const expectedEnd = endOfDay(FIXED_DATE);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
+    });
+
+    it('calculates date range for days=30 (last 30 days)', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getRecentPayments(30);
+
+      const expectedStart = startOfDay(subDays(FIXED_DATE, 30));
+      const expectedEnd = endOfDay(FIXED_DATE);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
+    });
+
+    it('combines date conditions with and()', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getRecentPayments(7);
+
+      expect(mockAnd).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'gte' }),
+        expect.objectContaining({ type: 'lte' })
+      );
     });
   });
 });
