@@ -75,7 +75,7 @@ Jest uses **two distinct `__mocks__` directory locations** based on what you're 
 
 For scoped npm packages like `@paralleldrive/cuid2`, mirror the scope in the directory structure:
 
-```
+```plaintext
 __mocks__/
   @paralleldrive/
     cuid2.ts     # Mocks @paralleldrive/cuid2
