@@ -23,29 +23,24 @@ reviews:
     6. USING DASHES. Use a single hyphen "-" and add spaces before and after the hyphen. Do not use "—" for dashes.
        * FORBIDDEN: Breaking Changes: No—all modifications are documentation and configuration updates with no functional impact to codebase or build process.
        * ALLOWED: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
-    7. **CRITICAL**. Make sure the summary and EVERY ELEMENT of the summary is up to date, following the output format, and accurate for every commit in the PR as well as the overall PR. This is a critical requirement.
+    7. **CRITICAL**. Make sure the summary and EVERY ELEMENT of the summary is up to date, following the output format, and accurate for every commit in the PR as well as the overall PR. This is a critical requirement. The summary should NOT contain anything that is not described in this instruction.
 
     ## Output Format
 
     ```markdown
     ### 🎯 Scope & Context
     **Type:** [Feat | Fix | Refactor | Chore | Perf]
-
     **Intent:** [1-2 sentences explaining the business or technical goal - the "Why"]
-
-    **Related Issues:** [Extract issue numbers (e.g., #123, PROJ-456) from commits. If none, omit this line]
+    **Related Issues:** [Extract issue numbers (e.g., #123 for GitHub, PROJ-456 for Jira, etc.) from commits. If none, omit this line. Do NOT use empty section here.]
 
     ### 🧭 Reviewer Guide
-    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic]
-
-    **Complexity:** [Low | Medium | High]
-
+    **Entry Point:** [Identify the most critical or complex file where the reviewer should start to understand the logic. Example: "Start with the schema.ts file to understand the database schema. Then look at ..., then look at ..." ]
+    **Complexity:** [Choice one of: Low | Medium | High]
     **Sensitive Areas:** [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
 
     ### ⚠️ Risk Assessment
-    **Breaking Changes:** [Yes/No + details]
-
-    **Migrations/State:** [Database migrations or manual steps required?]
+    - **Breaking Changes:** [Choice one of:  Yes + details | No breaking changes]
+    - **Migrations/State:** [Database migrations or manual steps required? If none, just "No migrations or state changes"]
     ```
   auto_title_placeholder: "@coderabbitai title"
   auto_title_instructions: >-
