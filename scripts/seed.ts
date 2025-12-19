@@ -6,6 +6,7 @@ import { addDays, subDays, subMonths } from 'date-fns';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations } from 'drizzle-orm';
+import { SettingsService } from '@/lib/services/SettingsService';
 
 type SeedTransaction = SQLiteTransaction<
   'sync',
@@ -77,8 +78,6 @@ function seedTags(tx: SeedTransaction) {
   console.log(`Seeded ${tags.length} tags.`);
   return tags;
 }
-
-import { SettingsService } from '@/lib/services/SettingsService';
 
 /**
  * Seed default settings hierarchy.
