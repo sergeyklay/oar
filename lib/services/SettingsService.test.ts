@@ -77,33 +77,40 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockImplementation(() => {
         selectCallCount++;
         if (selectCallCount === 1) {
-          // First call: check for existing categories
+          // First call: check for existing categories (async with limit)
           return {
             from: jest.fn().mockReturnThis(),
             limit: jest.fn().mockResolvedValue([{ id: 'existing-category-id' }]),
           };
         }
-        // Second call: get existing sections for ensureDefaultSettings
+        // Second call: get existing sections for ensureDefaultSettings (sync with .all())
         return {
-          from: jest.fn().mockResolvedValue([
-            { id: 'section-1', slug: 'behavior-options' },
-            { id: 'section-2', slug: 'view-options' },
-            { id: 'section-3', slug: 'notification-settings' },
-          ]),
+          from: jest.fn().mockReturnValue({
+            all: jest.fn().mockReturnValue([
+              { id: 'section-1', slug: 'behavior-options' },
+              { id: 'section-2', slug: 'view-options' },
+              { id: 'section-3', slug: 'notification-settings' },
+            ]),
+          }),
         };
       });
 
-      const onConflictDoNothingMock = jest.fn().mockResolvedValue(undefined);
+      const runMock = jest.fn();
+      const onConflictDoNothingMock = jest.fn().mockReturnValue({ run: runMock });
       (db.insert as jest.Mock).mockReturnValue({
         values: jest.fn().mockReturnValue({
           onConflictDoNothing: onConflictDoNothingMock,
         }),
       });
 
+      (db.transaction as jest.Mock).mockImplementation((callback) => {
+        callback(db);
+      });
+
       await SettingsService.initializeDefaults();
 
-      expect(db.transaction).not.toHaveBeenCalled();
-      // ensureDefaultSettings inserts missing settings (uses onConflictDoNothing)
+      // ensureDefaultSettings uses a transaction for batched insert
+      expect(db.transaction).toHaveBeenCalled();
       expect(db.insert).toHaveBeenCalled();
     });
   });

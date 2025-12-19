@@ -11,8 +11,15 @@ import {
 import type { StructuredSettings } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 
+/**
+ * User preferences for display and localization.
+ *
+ * @interface UserSettings
+ */
 export interface UserSettings {
+  /** Currency code for monetary formatting (e.g., "USD", "EUR"). */
   currency: string;
+  /** Locale identifier for number and date formatting (e.g., "en-US"). */
   locale: string;
 }
 
@@ -21,9 +28,16 @@ const DEFAULT_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
 };
 
-/** Service for managing user preferences stored as key-value pairs. */
+/**
+ * Service for managing user preferences stored as key-value pairs.
+ * Handles currency, locale, and behavior settings with SQLite persistence.
+ */
 export const SettingsService = {
-  /** Retrieves all settings, merged with defaults. */
+  /**
+   * Retrieves all user settings, merged with defaults for missing values.
+   *
+   * @returns {Promise<UserSettings>} Complete settings object with defaults applied.
+   */
   async getAll(): Promise<UserSettings> {
     const rows = await db.select().from(settings);
 
@@ -41,14 +55,27 @@ export const SettingsService = {
     };
   },
 
-  /** Retrieves a single setting by key. */
+  /**
+   * Retrieves a single setting by key with type-safe return value.
+   *
+   * @template K - The setting key type.
+   * @param {K} key - The setting key to retrieve.
+   * @returns {Promise<UserSettings[K]>} The setting value or its default.
+   */
   async get<K extends keyof UserSettings>(key: K): Promise<UserSettings[K]> {
     const [row] = await db.select().from(settings).where(eq(settings.key, key));
 
     return (row?.value ?? DEFAULT_SETTINGS[key]) as UserSettings[K];
   },
 
-  /** Updates or creates a setting. */
+  /**
+   * Updates or creates a setting using upsert semantics.
+   *
+   * @template K - The setting key type.
+   * @param {K} key - The setting key to update.
+   * @param {UserSettings[K]} value - The new value to persist.
+   * @returns {Promise<void>} Resolves when the setting is saved.
+   */
   async set<K extends keyof UserSettings>(
     key: K,
     value: UserSettings[K]
@@ -62,7 +89,12 @@ export const SettingsService = {
       });
   },
 
-  /** Seeds default settings if they don't exist. */
+  /**
+   * Seeds default user settings if they don't exist.
+   * Idempotent: skips settings that are already present.
+   *
+   * @returns {Promise<void>} Resolves when initialization completes.
+   */
   async initialize(): Promise<void> {
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
       const [existing] = await db
@@ -76,7 +108,12 @@ export const SettingsService = {
     }
   },
 
-  /** Fetches the complete settings structure (categories, sections, settings counts). */
+  /**
+   * Fetches the complete settings structure with categories, sections, and counts.
+   * Used by the Settings page to render the full hierarchy.
+   *
+   * @returns {Promise<StructuredSettings>} Nested structure of categories and sections.
+   */
   async getStructure(): Promise<StructuredSettings> {
     const categories = await db
       .select()
@@ -322,39 +359,41 @@ export const SettingsService = {
     } else {
       // Structure exists: ensure all default settings are present
       // This handles cases where new settings are added after initial setup
-      await this.ensureDefaultSettings();
+      this.ensureDefaultSettings();
     }
   },
 
   /**
    * Ensures all settings from DEFAULT_SETTINGS_VALUES exist in the database.
-   * Uses upsert with onConflictDoNothing to avoid overwriting user values.
+   * Uses batched insert with onConflictDoNothing to avoid overwriting user values.
    */
-  async ensureDefaultSettings(): Promise<void> {
-    // Build a section slug -> id map from existing sections
-    const existingSections = await db.select().from(settingsSections);
+  ensureDefaultSettings(): void {
+    const existingSections = db.select().from(settingsSections).all();
     const sectionMap = new Map<string, string>();
     for (const section of existingSections) {
       sectionMap.set(section.slug, section.id);
     }
 
-    // Insert any missing settings
+    const valuesArray: { key: string; value: string; sectionId: string }[] = [];
+
     for (const setting of DEFAULT_SETTINGS_VALUES) {
       const sectionId = sectionMap.get(setting.sectionSlug);
       if (!sectionId) {
-        // Section doesn't exist; skip this setting
         console.warn(`Section not found for slug: ${setting.sectionSlug}. Skipping setting: ${setting.key}`);
         continue;
       }
 
-      await db
-        .insert(settings)
-        .values({
-          key: setting.key,
-          value: setting.value,
-          sectionId: sectionId,
-        })
-        .onConflictDoNothing();
+      valuesArray.push({
+        key: setting.key,
+        value: setting.value,
+        sectionId: sectionId,
+      });
+    }
+
+    if (valuesArray.length > 0) {
+      db.transaction(() => {
+        db.insert(settings).values(valuesArray).onConflictDoNothing().run();
+      });
     }
   },
 };
