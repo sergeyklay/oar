@@ -42,6 +42,27 @@ reviews:
     - **Breaking Changes:** [Choose one of:  Yes + details | No breaking changes]
     - **Migrations/State:** [Database migrations or manual steps required? If none, just "No migrations or state changes"]
     ```
+
+    ## Example
+    ```markdown
+    ### 🎯 Scope & Context
+
+    **Type:** Chore
+
+    **Intent:** Update transaction notes in AutoPayService to reflect accurate logging information. The notes field in auto-pay transaction records is changed from "Auto-processed on due date" to "Logged by Oar" to better represent the system's logging behavior.
+
+    ### 🧭 Reviewer Guide
+    **Entry Point:** Start with the `lib/services/AutoPayService.ts` file. This contains the most substantial rework, changes the logic of the service to log payments accurately.
+
+    **Complexity:** Low
+
+    **Sensitive Areas:** Database transaction insertion logic with notes field value
+
+    ### ⚠️ Risk Assessment
+    - **Breaking Changes:** No breaking changes
+    - **Migrations/State:** No migrations or state changes
+    ```
+
   auto_title_placeholder: "@coderabbitai title"
   auto_title_instructions: >-
     Compose concise, self-explanatory titles (max 72 characters including any prefix),
