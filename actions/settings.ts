@@ -32,7 +32,7 @@ export async function getSettingsStructure(): Promise<ActionResult<StructuredSet
   }
 }
 
-const updateDueSoonRangeSchema = z.object({
+const updateRangeSchema = z.object({
   range: z.enum(RANGE_KEYS as readonly [string, ...string[]]),
 });
 
@@ -43,9 +43,9 @@ const updateDueSoonRangeSchema = z.object({
  * @returns ActionResult indicating success or failure
  */
 export async function updateDueSoonRange(
-  input: z.infer<typeof updateDueSoonRangeSchema>
+  input: z.infer<typeof updateRangeSchema>
 ): Promise<ActionResult<void>> {
-  const parsed = updateDueSoonRangeSchema.safeParse(input);
+  const parsed = updateRangeSchema.safeParse(input);
 
   if (!parsed.success) {
     return {
@@ -63,6 +63,40 @@ export async function updateDueSoonRange(
     return { success: true };
   } catch (error) {
     console.error('Failed to update due soon range:', error);
+    return {
+      success: false,
+      error: 'Failed to update setting',
+    };
+  }
+}
+
+/**
+ * Updates the "paid recently" range setting.
+ *
+ * @param input - Object containing the range value as a string
+ * @returns ActionResult indicating success or failure
+ */
+export async function updatePaidRecentlyRange(
+  input: z.infer<typeof updateRangeSchema>
+): Promise<ActionResult<void>> {
+  const parsed = updateRangeSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    const parsedRange = parseInt(parsed.data.range, 10) as AllowedRangeValue;
+    await SettingsService.setPaidRecentlyRange(parsedRange);
+    revalidatePath('/paid-recently');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update paid recently range:', error);
     return {
       success: false,
       error: 'Failed to update setting',

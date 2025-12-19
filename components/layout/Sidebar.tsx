@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { LayoutDashboard, CreditCard, TrendingUp, Settings, Calendar, Bell } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle } from 'lucide-react';
 import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats } from '@/actions/bills';
+import { getRecentPaymentsStats } from '@/actions/transactions';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
 
@@ -9,28 +10,30 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   showStats?: boolean;
-  statsType?: 'all' | 'currentMonth' | 'dueSoon';
+  statsType?: 'all' | 'currentMonth' | 'dueSoon' | 'paidRecently';
 };
 
 /**
- * Return a React node showing bill statistics subtitle for a navigation item.
+ * Return a React node showing statistics subtitle for a navigation item.
  *
- * Renders count-only subtitle for "all bills" stats or count + total amount for "current month" and "due soon" stats.
+ * Renders count-only subtitle for "all bills" stats, count + total for bills views,
+ * and payment count + total for "paid recently" view.
  * Returns null if the item does not have stats enabled or has invalid statsType.
- * Has no side effects. Does not throw errors or handle exceptional cases.
  *
- * @param item - Navigation item with optional showStats and statsType properties
- * @param currentMonthStats - Statistics for bills due in current month (count, total in minor units, hasVariable flag)
- * @param allBillsStats - Statistics for all non-archived bills (count only)
- * @param dueSoonStats - Statistics for bills due soon (count, total in minor units, hasVariable flag)
- * @param settings - User settings containing currency code and locale string for money formatting
- * @returns React.ReactNode containing formatted subtitle text or null if stats should not be displayed
+ * @param item - The navigation item to render the stats for
+ * @param currentMonthStats - The statistics for the current month
+ * @param allBillsStats - The statistics for all bills
+ * @param dueSoonStats - The statistics for bills due soon
+ * @param paidRecentlyStats - The statistics for paid recently
+ * @param settings - The settings for the application
+ * @returns A React node showing the statistics subtitle
  */
 function renderStatsSubtitle(
   item: NavItem,
   currentMonthStats: { count: number; total: number; hasVariable: boolean },
   allBillsStats: { count: number },
   dueSoonStats: { count: number; total: number; hasVariable: boolean },
+  paidRecentlyStats: { count: number; total: number },
   settings: { currency: string; locale: string }
 ): React.ReactNode {
   if (!item.showStats || !item.statsType) {
@@ -69,6 +72,21 @@ function renderStatsSubtitle(
     );
   }
 
+  if (item.statsType === 'paidRecently') {
+    if (paidRecentlyStats.count === 0) {
+      return (
+        <span className="text-xs text-muted-foreground">
+          No payments
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs text-muted-foreground">
+        {paidRecentlyStats.count} payments - {formatMoney(paidRecentlyStats.total, settings.currency, settings.locale)}
+      </span>
+    );
+  }
+
   if (item.statsType === 'all') {
     if (allBillsStats.count === 0) {
       return (
@@ -91,16 +109,17 @@ const navItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Overview', showStats: true, statsType: 'all' as const },
   { href: '/due-soon', icon: Bell, label: 'Due Soon', showStats: true, statsType: 'dueSoon' as const },
   { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true, statsType: 'currentMonth' as const },
-  { href: '/bills', icon: CreditCard, label: 'Bills' },
+  { href: '/paid-recently', icon: CheckCircle, label: 'Paid Recently', showStats: true, statsType: 'paidRecently' as const },
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export async function Sidebar() {
-  const [currentMonthStats, allBillsStats, dueSoonStats, settings] = await Promise.all([
+  const [currentMonthStats, allBillsStats, dueSoonStats, paidRecentlyStats, settings] = await Promise.all([
     getBillsForCurrentMonthStats(),
     getAllBillsStats(),
     getBillsForDueSoonStats(),
+    getRecentPaymentsStats(),
     SettingsService.getAll(),
   ]);
 
@@ -127,7 +146,7 @@ export async function Sidebar() {
             {item.showStats ? (
               <div className="flex flex-col">
                 <span>{item.label}</span>
-                {renderStatsSubtitle(item, currentMonthStats, allBillsStats, dueSoonStats, settings)}
+                {renderStatsSubtitle(item, currentMonthStats, allBillsStats, dueSoonStats, paidRecentlyStats, settings)}
               </div>
             ) : (
               <span>{item.label}</span>

@@ -1,29 +1,24 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { toast } from 'sonner';
-import { DueSoonSettingDropdown } from './DueSoonSettingDropdown';
-import { updateDueSoonRange } from '@/actions/settings';
+import { RangeSettingDropdown } from './RangeSettingDropdown';
 
 jest.mock('sonner', () => ({
   toast: {
     error: jest.fn(),
   },
 }));
-jest.mock('@/actions/settings', () => ({
-  updateDueSoonRange: jest.fn(),
-}));
-jest.mock('@/lib/constants', () => ({
-  RANGE_LABELS: {
-    '0': 'Today',
-    '1': 'Today or tomorrow',
-    '3': 'In next 3 days',
-    '5': 'In next 5 days',
-    '7': 'In next 7 days',
-    '10': 'In next 10 days',
-    '14': 'In next 14 days',
-    '20': 'In next 20 days',
-    '30': 'In next 30 days',
-  },
-}));
+
+const mockLabels = {
+  '0': 'Today',
+  '1': 'Today or tomorrow',
+  '3': 'In next 3 days',
+  '5': 'In next 5 days',
+  '7': 'In next 7 days',
+  '10': 'In next 10 days',
+  '14': 'In next 14 days',
+  '20': 'In next 20 days',
+  '30': 'In next 30 days',
+};
 
 global.ResizeObserver = class ResizeObserver {
   observe() {}
@@ -36,40 +31,72 @@ Element.prototype.hasPointerCapture = jest.fn();
 Element.prototype.setPointerCapture = jest.fn();
 Element.prototype.releasePointerCapture = jest.fn();
 
-describe('DueSoonSettingDropdown', () => {
+describe('RangeSettingDropdown', () => {
+  let mockOnUpdate: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (updateDueSoonRange as jest.Mock).mockReset();
+    mockOnUpdate = jest.fn();
   });
 
   it('renders with current value', () => {
-    render(<DueSoonSettingDropdown currentValue="7" />);
+    render(
+      <RangeSettingDropdown
+        currentValue="7"
+        labels={mockLabels}
+        onUpdate={mockOnUpdate}
+      />
+    );
 
     expect(screen.getByText('In next 7 days')).toBeInTheDocument();
   });
 
   it('displays correct label for current value', () => {
-    render(<DueSoonSettingDropdown currentValue="14" />);
+    render(
+      <RangeSettingDropdown
+        currentValue="14"
+        labels={mockLabels}
+        onUpdate={mockOnUpdate}
+      />
+    );
 
     expect(screen.getByText('In next 14 days')).toBeInTheDocument();
   });
 
   it('displays fallback value when label not found', () => {
-    render(<DueSoonSettingDropdown currentValue="unknown" />);
+    render(
+      <RangeSettingDropdown
+        currentValue="unknown"
+        labels={mockLabels}
+        onUpdate={mockOnUpdate}
+      />
+    );
 
     expect(screen.getByText('unknown')).toBeInTheDocument();
   });
 
   it('renders select component', () => {
-    render(<DueSoonSettingDropdown currentValue="7" />);
+    render(
+      <RangeSettingDropdown
+        currentValue="7"
+        labels={mockLabels}
+        onUpdate={mockOnUpdate}
+      />
+    );
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
 
   describe('user interactions', () => {
-    it('calls updateDueSoonRange with correct range when value changes', async () => {
-      (updateDueSoonRange as jest.Mock).mockResolvedValue({ success: true });
-      render(<DueSoonSettingDropdown currentValue="7" />);
+    it('calls onUpdate with correct range when value changes', async () => {
+      mockOnUpdate.mockResolvedValue({ success: true });
+      render(
+        <RangeSettingDropdown
+          currentValue="7"
+          labels={mockLabels}
+          onUpdate={mockOnUpdate}
+        />
+      );
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -87,13 +114,19 @@ describe('DueSoonSettingDropdown', () => {
       });
 
       await waitFor(() => {
-        expect(updateDueSoonRange).toHaveBeenCalledWith({ range: '14' });
+        expect(mockOnUpdate).toHaveBeenCalledWith({ range: '14' });
       });
     });
 
-    it('persists new value when updateDueSoonRange resolves successfully', async () => {
-      (updateDueSoonRange as jest.Mock).mockResolvedValue({ success: true });
-      render(<DueSoonSettingDropdown currentValue="7" />);
+    it('persists new value when onUpdate resolves successfully', async () => {
+      mockOnUpdate.mockResolvedValue({ success: true });
+      render(
+        <RangeSettingDropdown
+          currentValue="7"
+          labels={mockLabels}
+          onUpdate={mockOnUpdate}
+        />
+      );
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -113,15 +146,21 @@ describe('DueSoonSettingDropdown', () => {
       await waitFor(() => {
         expect(screen.getByText('In next 3 days')).toBeInTheDocument();
       });
-      expect(updateDueSoonRange).toHaveBeenCalledWith({ range: '3' });
+      expect(mockOnUpdate).toHaveBeenCalledWith({ range: '3' });
     });
 
-    it('reverts to original value and shows toast when updateDueSoonRange fails', async () => {
-      (updateDueSoonRange as jest.Mock).mockResolvedValue({
+    it('reverts to original value and shows toast when onUpdate fails', async () => {
+      mockOnUpdate.mockResolvedValue({
         success: false,
         error: 'Update failed',
       });
-      render(<DueSoonSettingDropdown currentValue="7" />);
+      render(
+        <RangeSettingDropdown
+          currentValue="7"
+          labels={mockLabels}
+          onUpdate={mockOnUpdate}
+        />
+      );
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -151,8 +190,14 @@ describe('DueSoonSettingDropdown', () => {
       const updatePromise = new Promise<{ success: boolean }>((resolve) => {
         resolveUpdate = resolve;
       });
-      (updateDueSoonRange as jest.Mock).mockReturnValue(updatePromise);
-      render(<DueSoonSettingDropdown currentValue="7" />);
+      mockOnUpdate.mockReturnValue(updatePromise);
+      render(
+        <RangeSettingDropdown
+          currentValue="7"
+          labels={mockLabels}
+          onUpdate={mockOnUpdate}
+        />
+      );
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -185,3 +230,4 @@ describe('DueSoonSettingDropdown', () => {
     });
   });
 });
+

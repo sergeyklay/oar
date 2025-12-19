@@ -188,12 +188,73 @@ export const SettingsService = {
   },
 
   /**
+   * Retrieves the configured "paid recently" range in days.
+   *
+   * @returns The range in days, or 7 if missing/invalid.
+   */
+  async getPaidRecentlyRange(): Promise<number> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'paidRecentlyRange'))
+      .limit(1);
+
+    if (!row) {
+      return 7;
+    }
+
+    const parsedValue = parseInt(row.value, 10);
+
+    if (isNaN(parsedValue) || !(ALLOWED_RANGE_VALUES as readonly number[]).includes(parsedValue)) {
+      console.error(`Invalid paidRecentlyRange value: ${row.value}. Defaulting to 7.`);
+      return 7;
+    }
+
+    return parsedValue;
+  },
+
+  /**
+   * Persists the "paid recently" range setting to the database.
+   *
+   * @param days - Number of days (0, 1, 3, 5, 7, 10, 14, 20, or 30).
+   * @throws If days is not one of the allowed values.
+   * @throws If the "behavior-options" section does not exist.
+   */
+  async setPaidRecentlyRange(days: AllowedRangeValue): Promise<void> {
+    if (!ALLOWED_RANGE_VALUES.includes(days)) {
+      throw new Error(`Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`);
+    }
+
+    const [behaviorOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'behavior-options'))
+      .limit(1);
+
+    if (!behaviorOptionsSection) {
+      throw new Error('Behavior Options section not found');
+    }
+
+    await db
+      .insert(settings)
+      .values({
+        key: 'paidRecentlyRange',
+        value: String(days),
+        sectionId: behaviorOptionsSection.id,
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: String(days), updatedAt: new Date() },
+      });
+  },
+
+  /**
    * Seeds default categories, sections, and settings if they don't exist.
    *
    * Creates: General, Notification, Logging categories with their sections
    * (view-options, behavior-options, other-options, notification-settings,
-   * logging-settings) and the dueSoonRange setting with default value 7.
-   * Runs idempotently—skips if already initialized.
+   * logging-settings) and settings with their default values.
+   * Runs idempotently - skips if already initialized.
    */
   async initializeDefaults(): Promise<void> {
     const [existingCategory] = await db

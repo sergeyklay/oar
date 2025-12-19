@@ -6,7 +6,8 @@ export const ALLOWED_RANGE_VALUES = [0, 1, 3, 5, 7, 10, 14, 20, 30] as const;
 
 export type AllowedRangeValue = typeof ALLOWED_RANGE_VALUES[number];
 
-export const RANGE_LABELS: Record<string, string> = {
+/** Labels for future-looking ranges (Due Soon) */
+export const FUTURE_RANGE_LABELS: Record<string, string> = {
   '0': 'Today',
   '1': 'Today or tomorrow',
   '3': 'In next 3 days',
@@ -16,6 +17,19 @@ export const RANGE_LABELS: Record<string, string> = {
   '14': 'In next 14 days',
   '20': 'In next 20 days',
   '30': 'In next 30 days',
+};
+
+/** Labels for past-looking ranges (Paid Recently) */
+export const PAST_RANGE_LABELS: Record<string, string> = {
+  '0': 'Today',
+  '1': 'Today or yesterday',
+  '3': 'Last 3 days',
+  '5': 'Last 5 days',
+  '7': 'Last 7 days',
+  '10': 'Last 10 days',
+  '14': 'Last 14 days',
+  '20': 'Last 20 days',
+  '30': 'Last 30 days',
 };
 
 export const DEFAULT_CATEGORIES = [
@@ -64,6 +78,7 @@ export const DEFAULT_SECTIONS = [
 
 export const DEFAULT_SETTINGS_VALUES = [
   { key: 'dueSoonRange', value: '7', sectionSlug: 'behavior-options' },
+  { key: 'paidRecentlyRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },

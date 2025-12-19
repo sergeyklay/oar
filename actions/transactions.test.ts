@@ -1,4 +1,4 @@
-import { logPayment, deleteTransaction } from './transactions';
+import { logPayment, deleteTransaction, getRecentPaymentsStats } from './transactions';
 import { db, bills, transactions, resetDbMocks } from '@/db';
 import { revalidatePath } from 'next/cache';
 
@@ -11,8 +11,20 @@ jest.mock('@/lib/services/PaymentService', () => ({
     processPayment: jest.fn(),
   },
 }));
+jest.mock('@/lib/services/SettingsService', () => ({
+  SettingsService: {
+    getPaidRecentlyRange: jest.fn(),
+  },
+}));
+jest.mock('@/lib/services/TransactionService', () => ({
+  TransactionService: {
+    getRecentPayments: jest.fn(),
+  },
+}));
 
 import { PaymentService } from '@/lib/services/PaymentService';
+import { SettingsService } from '@/lib/services/SettingsService';
+import { TransactionService } from '@/lib/services/TransactionService';
 
 describe('logPayment', () => {
   beforeEach(() => {
@@ -501,5 +513,58 @@ describe('deleteTransaction', () => {
     await deleteTransaction({ id: 'tx-1' });
 
     expect(db.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('getRecentPaymentsStats', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns count and total from recent payments', async () => {
+    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([
+      { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date(), notes: null },
+      { id: 'tx-2', amount: 3000, billTitle: 'Electric', paidAt: new Date(), notes: null },
+    ]);
+
+    const result = await getRecentPaymentsStats();
+
+    expect(result.count).toBe(2);
+    expect(result.total).toBe(8000);
+  });
+
+  it('calls SettingsService to get range', async () => {
+    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(14);
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+
+    await getRecentPaymentsStats();
+
+    expect(SettingsService.getPaidRecentlyRange).toHaveBeenCalled();
+    expect(TransactionService.getRecentPayments).toHaveBeenCalledWith(14);
+  });
+
+  it('returns zero count and total when no payments', async () => {
+    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+
+    const result = await getRecentPaymentsStats();
+
+    expect(result.count).toBe(0);
+    expect(result.total).toBe(0);
+  });
+
+  it('calculates total correctly with multiple payments', async () => {
+    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([
+      { id: 'tx-1', amount: 10000, billTitle: 'Rent', paidAt: new Date(), notes: null },
+      { id: 'tx-2', amount: 5000, billTitle: 'Electric', paidAt: new Date(), notes: null },
+      { id: 'tx-3', amount: 2500, billTitle: 'Internet', paidAt: new Date(), notes: null },
+    ]);
+
+    const result = await getRecentPaymentsStats();
+
+    expect(result.count).toBe(3);
+    expect(result.total).toBe(17500);
   });
 });

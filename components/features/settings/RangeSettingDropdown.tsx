@@ -9,24 +9,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { updateDueSoonRange } from '@/actions/settings';
-import { RANGE_LABELS, type RangeKey } from '@/lib/constants';
 import { Loader2 } from 'lucide-react';
+import type { RangeKey } from '@/lib/constants';
+import type { ActionResult } from '@/lib/types';
 
-interface DueSoonSettingDropdownProps {
+interface RangeSettingDropdownProps {
+  /** Current value as string (e.g., "7") */
   currentValue: string;
+  /** Label map for dropdown options */
+  labels: Record<string, string>;
+  /** Server action to call on value change */
+  onUpdate: (input: { range: RangeKey }) => Promise<ActionResult<void>>;
 }
 
-export function DueSoonSettingDropdown({
+export function RangeSettingDropdown({
   currentValue,
-}: DueSoonSettingDropdownProps) {
+  labels,
+  onUpdate,
+}: RangeSettingDropdownProps) {
   const [value, setValue] = useState(currentValue);
   const [isPending, startTransition] = useTransition();
 
   const handleValueChange = (newValue: string) => {
     setValue(newValue);
     startTransition(async () => {
-      const result = await updateDueSoonRange({
+      const result = await onUpdate({
         range: newValue as RangeKey,
       });
       if (!result.success) {
@@ -49,12 +56,12 @@ export function DueSoonSettingDropdown({
                 Updating...
               </span>
             ) : (
-              RANGE_LABELS[value] || value
+              labels[value] || value
             )}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {Object.entries(RANGE_LABELS).map(([key, label]) => (
+          {Object.entries(labels).map(([key, label]) => (
             <SelectItem key={key} value={key}>
               {label}
             </SelectItem>
