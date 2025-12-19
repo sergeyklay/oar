@@ -75,7 +75,7 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId }: 
               locale={settings.locale}
               availableTags={availableTags}
               categoriesGrouped={categoriesGrouped}
-              defaultCategoryId={defaultCategoryId ?? ''}
+              defaultCategoryId={defaultCategoryId}
             />
           </BillRowClickable>
         ))}

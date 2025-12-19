@@ -81,8 +81,8 @@ interface BillFormDialogProps {
   availableTags?: Tag[];
   /** Category groups with nested categories for dropdown */
   categoriesGrouped: BillCategoryGroupWithCategories[];
-  /** Default category ID for new bills */
-  defaultCategoryId: string;
+  /** Default category ID for new bills (null if no categories exist) */
+  defaultCategoryId: string | null;
 }
 
 export function BillFormDialog({
@@ -105,7 +105,7 @@ export function BillFormDialog({
       frequency: 'monthly',
       isAutoPay: false,
       isVariable: false,
-      categoryId: defaultCategoryId,
+      categoryId: defaultCategoryId ?? '',
       tagIds: [],
       notes: '',
     },
@@ -123,7 +123,7 @@ export function BillFormDialog({
           frequency: bill.frequency,
           isAutoPay: bill.isAutoPay,
           isVariable: bill.isVariable,
-          categoryId: defaultCategoryId,
+          categoryId: defaultCategoryId ?? '',
           tagIds: [],
           notes: bill.notes || '',
         });
@@ -148,7 +148,7 @@ export function BillFormDialog({
           frequency: 'monthly',
           isAutoPay: false,
           isVariable: false,
-          categoryId: defaultCategoryId,
+          categoryId: defaultCategoryId ?? '',
           tagIds: [],
           notes: '',
           dueDate: undefined,

@@ -37,7 +37,7 @@ async function DashboardHeader() {
           currencySymbol={currencySymbol}
           availableTags={tags}
           categoriesGrouped={categoriesGrouped}
-          defaultCategoryId={defaultCategoryId ?? ''}
+          defaultCategoryId={defaultCategoryId}
         />
       </div>
     </div>
