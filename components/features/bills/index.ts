@@ -6,6 +6,7 @@ export { BillList } from './BillList';
 export { BillRow } from './BillRow';
 export { BillRowClickable } from './BillRowClickable';
 export { BillStatusBadge } from './BillStatusBadge';
+export { CategorySelect } from './CategorySelect';
 export { CloseDetailButton } from './CloseDetailButton';
 export { LogPaymentDialog } from './LogPaymentDialog';
 export { PaymentHistoryDialog } from './PaymentHistoryDialog';

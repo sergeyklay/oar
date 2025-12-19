@@ -68,7 +68,18 @@ npm run db:push
 Note: This creates the SQLite database file at the path specified by
 `DATABASE_URL` (default: `./data/oar.db`).
 
-### Step 5: Seed Sample Data (Optional)
+### Step 5: Seed Bill Categories
+
+Oar requires predefined bill categories. Seed them into your database:
+
+```bash
+npm run db:seed:categories
+```
+
+Note: This script is idempotent and skips seeding if categories already
+exist.
+
+### Step 6: Seed Sample Data (Optional)
 
 To populate the application with mock bills and transactions for testing,
 run the seed script:
@@ -77,7 +88,10 @@ run the seed script:
 npm run db:seed
 ```
 
-### Step 6: Start the Development Server
+Note: The sample data seed assigns random categories to bills. If you skip
+Step 5, bills will be created without categories.
+
+### Step 7: Start the Development Server
 
 Launch the Next.js development server:
 

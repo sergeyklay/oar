@@ -36,18 +36,38 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   status: 'pending',
   isArchived: false,
   notes: null,
+  categoryId: 'category-1',
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],
   ...overrides,
 });
 
+const mockCategoriesGrouped = [
+  {
+    id: 'group-1',
+    name: 'Housing',
+    slug: 'housing',
+    displayOrder: 1,
+    createdAt: new Date(),
+    categories: [
+      { id: 'category-1', groupId: 'group-1', name: 'Rent', slug: 'rent', displayOrder: 1, createdAt: new Date() },
+    ],
+  },
+];
+
 const renderBillRow = (bill: BillWithTags) => {
   return render(
     <table>
       <tbody>
         <tr>
-          <BillRow bill={bill} currency="USD" locale="en-US" />
+          <BillRow
+            bill={bill}
+            currency="USD"
+            locale="en-US"
+            categoriesGrouped={mockCategoriesGrouped}
+            defaultCategoryId="category-1"
+          />
         </tr>
       </tbody>
     </table>

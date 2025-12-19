@@ -12,6 +12,9 @@ fi
 echo "Running database migrations..."
 node scripts/migrate.mjs
 
+echo "Seeding bill categories..."
+node scripts/seed-categories.mjs
+
 echo "Starting Next.js server..."
 exec node server.js
 

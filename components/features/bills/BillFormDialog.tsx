@@ -40,12 +40,14 @@ import {
   createBill,
   updateBill,
   getBillTags,
+  getBillCategory,
   type CreateBillInput,
   type UpdateBillInput,
 } from '@/actions/bills';
 import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
-import type { Bill, Tag } from '@/lib/types';
+import type { Bill, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 import { TagCombobox } from './TagCombobox';
+import { CategorySelect } from './CategorySelect';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
@@ -59,6 +61,7 @@ const formSchema = z.object({
   frequency: z.enum(['once', 'monthly', 'yearly']),
   isAutoPay: z.boolean(),
   isVariable: z.boolean(),
+  categoryId: z.string().min(1, 'Category is required'),
   tagIds: z.array(z.string()),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
 });
@@ -76,6 +79,10 @@ interface BillFormDialogProps {
   currencySymbol?: string;
   /** All available tags for the combobox */
   availableTags?: Tag[];
+  /** Category groups with nested categories for dropdown */
+  categoriesGrouped: BillCategoryGroupWithCategories[];
+  /** Default category ID for new bills */
+  defaultCategoryId: string;
 }
 
 export function BillFormDialog({
@@ -84,6 +91,8 @@ export function BillFormDialog({
   onOpenChange,
   currencySymbol = 'zł',
   availableTags = [],
+  categoriesGrouped,
+  defaultCategoryId,
 }: BillFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!bill;
@@ -96,6 +105,7 @@ export function BillFormDialog({
       frequency: 'monthly',
       isAutoPay: false,
       isVariable: false,
+      categoryId: defaultCategoryId,
       tagIds: [],
       notes: '',
     },
@@ -113,6 +123,7 @@ export function BillFormDialog({
           frequency: bill.frequency,
           isAutoPay: bill.isAutoPay,
           isVariable: bill.isVariable,
+          categoryId: defaultCategoryId,
           tagIds: [],
           notes: bill.notes || '',
         });
@@ -123,6 +134,13 @@ export function BillFormDialog({
             form.setValue('tagIds', result.data.map((t) => t.id));
           }
         });
+
+        // Fetch existing category for this bill
+        getBillCategory(bill.id).then((result) => {
+          if (result.success && result.data) {
+            form.setValue('categoryId', result.data);
+          }
+        });
       } else {
         form.reset({
           title: '',
@@ -130,13 +148,14 @@ export function BillFormDialog({
           frequency: 'monthly',
           isAutoPay: false,
           isVariable: false,
+          categoryId: defaultCategoryId,
           tagIds: [],
           notes: '',
           dueDate: undefined,
         });
       }
     }
-  }, [bill, open, form]);
+  }, [bill, open, form, defaultCategoryId]);
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true);
@@ -229,6 +248,25 @@ export function BillFormDialog({
                   <div className="space-y-1 leading-none">
                     <FormLabel>Variable amount</FormLabel>
                   </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <CategorySelect
+                      categoriesGrouped={categoriesGrouped}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select category"
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

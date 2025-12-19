@@ -4,15 +4,24 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BillFormDialog } from './BillFormDialog';
-import type { Tag } from '@/lib/types';
+import type { Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
 interface AddBillButtonProps {
   currencySymbol?: string;
   /** All available tags for the form */
   availableTags?: Tag[];
+  /** Category groups with nested categories for dropdown */
+  categoriesGrouped: BillCategoryGroupWithCategories[];
+  /** Default category ID for new bills */
+  defaultCategoryId: string;
 }
 
-export function AddBillButton({ currencySymbol, availableTags = [] }: AddBillButtonProps) {
+export function AddBillButton({
+  currencySymbol,
+  availableTags = [],
+  categoriesGrouped,
+  defaultCategoryId,
+}: AddBillButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -26,6 +35,8 @@ export function AddBillButton({ currencySymbol, availableTags = [] }: AddBillBut
         onOpenChange={setOpen}
         currencySymbol={currencySymbol}
         availableTags={availableTags}
+        categoriesGrouped={categoriesGrouped}
+        defaultCategoryId={defaultCategoryId}
       />
     </>
   );
