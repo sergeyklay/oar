@@ -67,7 +67,7 @@
   background: hsl(var(--background));
 }
 
-.app-shell[data-has-right-panel="false"] {
+.app-shell.no-right-panel {
   grid-template-columns: var(--sidebar-width) 1fr;
 }
 

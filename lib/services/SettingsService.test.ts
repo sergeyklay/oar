@@ -357,4 +357,152 @@ describe('SettingsService', () => {
       expect(result?.sections[1].slug).toBe('behavior-options');
     });
   });
+
+  describe('getAll', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns all settings merged with defaults', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockResolvedValue([
+          { key: 'currency', value: 'EUR' },
+          { key: 'locale', value: 'de-DE' },
+          { key: 'weekStart', value: '1' },
+        ]),
+      });
+
+      const result = await SettingsService.getAll();
+
+      expect(result.currency).toBe('EUR');
+      expect(result.locale).toBe('de-DE');
+      expect(result.weekStart).toBe(1);
+    });
+
+    it('uses defaults when settings are missing', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockResolvedValue([]),
+      });
+
+      const result = await SettingsService.getAll();
+
+      expect(result.currency).toBe('USD');
+      expect(result.locale).toBe('en-US');
+      expect(result.weekStart).toBe(0);
+    });
+
+    it('parses weekStart as number', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockResolvedValue([
+          { key: 'weekStart', value: '6' },
+        ]),
+      });
+
+      const result = await SettingsService.getAll();
+
+      expect(result.weekStart).toBe(6);
+      expect(typeof result.weekStart).toBe('number');
+    });
+
+    it('uses default weekStart for invalid values', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockResolvedValue([
+          { key: 'weekStart', value: 'invalid' },
+        ]),
+      });
+
+      const result = await SettingsService.getAll();
+
+      expect(result.weekStart).toBe(0);
+    });
+
+    it('uses default weekStart for out-of-range values', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockResolvedValue([
+          { key: 'weekStart', value: '7' },
+        ]),
+      });
+
+      const result = await SettingsService.getAll();
+
+      expect(result.weekStart).toBe(0);
+    });
+  });
+
+  describe('setViewOptions', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('upserts all view options settings', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'view-options-section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setViewOptions({
+        currency: 'EUR',
+        locale: 'de-DE',
+        weekStart: 1,
+      });
+
+      expect(db.insert).toHaveBeenCalledTimes(3);
+      expect(db.insert).toHaveBeenCalledWith(settings);
+    });
+
+    it('throws error when view-options section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(
+        SettingsService.setViewOptions({
+          currency: 'USD',
+          locale: 'en-US',
+          weekStart: 0,
+        })
+      ).rejects.toThrow('View Options section not found');
+    });
+
+    it('converts weekStart number to string for storage', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const valuesMock = jest.fn().mockReturnValue({
+        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      });
+      (db.insert as jest.Mock).mockReturnValue({
+        values: valuesMock,
+      });
+
+      await SettingsService.setViewOptions({
+        currency: 'USD',
+        locale: 'en-US',
+        weekStart: 6,
+      });
+
+      expect(valuesMock).toHaveBeenCalledWith(
+        expect.objectContaining({ key: 'weekStart', value: '6' })
+      );
+    });
+  });
 });

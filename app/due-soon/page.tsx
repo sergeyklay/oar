@@ -29,6 +29,7 @@ export default async function DueSoonPage({
           selectedBillId={selectedBill ?? null}
           currency={settings.currency}
           locale={settings.locale}
+          weekStart={settings.weekStart}
         />
       }
     >

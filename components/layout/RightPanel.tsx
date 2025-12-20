@@ -1,11 +1,13 @@
 import { BillService } from '@/lib/services/BillService';
 import { CalendarPanel } from './CalendarPanel';
 import { BillDetailPanel } from '@/components/features/bills/BillDetailPanel';
+import type { WeekStartDay } from '@/lib/services/SettingsService';
 
 interface RightPanelProps {
   selectedBillId: string | null;
   currency: string;
   locale: string;
+  weekStart: WeekStartDay;
 }
 
 /**
@@ -15,15 +17,15 @@ interface RightPanelProps {
  *
  * Server Component: calls BillService directly for read-only data.
  */
-export async function RightPanel({ selectedBillId, currency, locale }: RightPanelProps) {
+export async function RightPanel({ selectedBillId, currency, locale, weekStart }: RightPanelProps) {
   if (!selectedBillId) {
-    return <CalendarPanel />;
+    return <CalendarPanel weekStartsOn={weekStart} />;
   }
 
   const bill = await BillService.getWithTags(selectedBillId);
 
   if (!bill) {
-    return <CalendarPanel />;
+    return <CalendarPanel weekStartsOn={weekStart} />;
   }
 
   return <BillDetailPanel bill={bill} currency={currency} locale={locale} />;

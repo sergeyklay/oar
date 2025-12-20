@@ -28,6 +28,7 @@ export default async function DueThisMonthPage({
           selectedBillId={selectedBill ?? null}
           currency={settings.currency}
           locale={settings.locale}
+          weekStart={settings.weekStart}
         />
       }
     >

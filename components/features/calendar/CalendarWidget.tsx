@@ -7,7 +7,11 @@ import { useCalendarState } from './useCalendarState';
 import { DayWithDots } from './DayWithDots';
 import { parse, format } from 'date-fns';
 
-export function CalendarWidget() {
+interface CalendarWidgetProps {
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+}
+
+export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
   const { month, date, setMonth, setDate, clearDate } = useCalendarState();
   const [dateStatuses, setDateStatuses] = useState<DateStatusMap>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +81,7 @@ export function CalendarWidget() {
         onMonthChange={handleMonthChange}
         selected={selectedDate}
         onSelect={handleSelect}
+        weekStartsOn={weekStartsOn}
         className="rounded-md border-0 w-full"
         classNames={{
           day: 'relative',

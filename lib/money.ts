@@ -1,29 +1,31 @@
-/**
- * ISO 4217 currency configuration.
- */
-export interface CurrencyConfig {
-  /** ISO 4217 currency code */
-  code: string;
-  /** Number of decimal places (e.g., 2 for PLN, 0 for JPY) */
-  minorUnits: number;
-  /** Display symbol */
-  symbol: string;
-}
-
-/** Supported currency configurations */
-export const CURRENCIES: Record<string, CurrencyConfig> = {
-  PLN: { code: 'PLN', minorUnits: 2, symbol: 'zł' },
-  USD: { code: 'USD', minorUnits: 2, symbol: '$' },
-  EUR: { code: 'EUR', minorUnits: 2, symbol: '€' },
-  GBP: { code: 'GBP', minorUnits: 2, symbol: '£' },
-  JPY: { code: 'JPY', minorUnits: 0, symbol: '¥' },
-} as const;
-
 /** Default currency code */
-export const DEFAULT_CURRENCY = 'PLN';
+export const DEFAULT_CURRENCY = 'USD';
 
 /** Default locale for formatting */
-export const DEFAULT_LOCALE = 'pl-PL';
+export const DEFAULT_LOCALE = 'en-US';
+
+/**
+ * Determines the number of minor units (decimal places) for a currency.
+ * Uses Intl.NumberFormat to resolve the currency's fraction digits.
+ *
+ * @param currencyCode - ISO 4217 currency code
+ * @returns Number of decimal places (e.g., 2 for USD, 0 for JPY)
+ *
+ * @example
+ * getMinorUnits('USD') // 2
+ * getMinorUnits('JPY') // 0
+ */
+export function getMinorUnits(currencyCode: string): number {
+  try {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+    });
+    return formatter.resolvedOptions().minimumFractionDigits ?? 2;
+  } catch {
+    return 2;
+  }
+}
 
 /**
  * Converts a decimal amount to minor units (e.g., cents).
@@ -31,28 +33,24 @@ export const DEFAULT_LOCALE = 'pl-PL';
  * @param amount - Decimal amount as string or number
  * @param currencyCode - ISO 4217 currency code
  * @returns Amount in minor units as integer
- * @throws Error if currency is unsupported or amount is invalid
+ * @throws Error if amount is invalid
  *
  * @example
- * toMinorUnits('49.99', 'PLN') // 4999
+ * toMinorUnits('49.99', 'USD') // 4999
  * toMinorUnits(100, 'JPY')     // 100
  */
 export function toMinorUnits(
   amount: string | number,
   currencyCode: string = DEFAULT_CURRENCY
 ): number {
-  const currency = CURRENCIES[currencyCode];
-  if (!currency) {
-    throw new Error(`Unsupported currency: ${currencyCode}`);
-  }
-
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
   if (isNaN(numericAmount)) {
     throw new Error(`Invalid amount: ${amount}`);
   }
 
-  const multiplier = Math.pow(10, currency.minorUnits);
+  const minorUnits = getMinorUnits(currencyCode);
+  const multiplier = Math.pow(10, minorUnits);
   return Math.round(numericAmount * multiplier);
 }
 
@@ -62,21 +60,16 @@ export function toMinorUnits(
  * @param minorAmount - Amount in minor units
  * @param currencyCode - ISO 4217 currency code
  * @returns Amount in major units
- * @throws Error if currency is unsupported
  *
  * @example
- * toMajorUnits(4999, 'PLN') // 49.99
+ * toMajorUnits(4999, 'USD') // 49.99
  */
 export function toMajorUnits(
   minorAmount: number,
   currencyCode: string = DEFAULT_CURRENCY
 ): number {
-  const currency = CURRENCIES[currencyCode];
-  if (!currency) {
-    throw new Error(`Unsupported currency: ${currencyCode}`);
-  }
-
-  const divisor = Math.pow(10, currency.minorUnits);
+  const minorUnits = getMinorUnits(currencyCode);
+  const divisor = Math.pow(10, minorUnits);
   return minorAmount / divisor;
 }
 
@@ -89,8 +82,8 @@ export function toMajorUnits(
  * @returns Formatted currency string
  *
  * @example
- * formatMoney(4999, 'PLN', 'pl-PL') // "49,99 zł"
  * formatMoney(4999, 'USD', 'en-US') // "$49.99"
+ * formatMoney(4999, 'PLN', 'pl-PL') // "49,99 zł"
  */
 export function formatMoney(
   minorAmount: number,
@@ -98,29 +91,42 @@ export function formatMoney(
   locale: string = DEFAULT_LOCALE
 ): string {
   const majorAmount = toMajorUnits(minorAmount, currencyCode);
-  const currency = CURRENCIES[currencyCode];
+  const minorUnits = getMinorUnits(currencyCode);
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currencyCode,
-    minimumFractionDigits: currency?.minorUnits ?? 2,
-    maximumFractionDigits: currency?.minorUnits ?? 2,
+    minimumFractionDigits: minorUnits,
+    maximumFractionDigits: minorUnits,
   }).format(majorAmount);
 }
 
 /**
  * Returns the display symbol for a currency.
+ * Uses Intl.NumberFormat to extract the symbol dynamically.
  *
  * @param currencyCode - ISO 4217 currency code
  * @returns Currency symbol or code as fallback
  *
  * @example
+ * getCurrencySymbol('USD') // "$"
  * getCurrencySymbol('PLN') // "zł"
  */
 export function getCurrencySymbol(
   currencyCode: string = DEFAULT_CURRENCY
 ): string {
-  return CURRENCIES[currencyCode]?.symbol ?? currencyCode;
+  try {
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'narrowSymbol',
+    });
+    const parts = formatter.formatToParts(0);
+    const symbolPart = parts.find((part) => part.type === 'currency');
+    return symbolPart?.value ?? currencyCode;
+  } catch {
+    return currencyCode;
+  }
 }
 
 /**

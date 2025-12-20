@@ -85,8 +85,55 @@ export const DEFAULT_SETTINGS_VALUES = [
   { key: 'dueSoonRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'paidRecentlyRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
+  { key: 'locale', value: 'en-US', sectionSlug: 'view-options' },
+  { key: 'weekStart', value: '0', sectionSlug: 'view-options' },
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
+] as const;
+
+/** Currency options for the view settings dropdown */
+export const CURRENCY_OPTIONS = [
+  { code: 'USD', label: 'USD ($)' },
+  { code: 'EUR', label: 'EUR (€)' },
+  { code: 'GBP', label: 'GBP (£)' },
+  { code: 'JPY', label: 'JPY (¥)' },
+  { code: 'CAD', label: 'CAD (C$)' },
+  { code: 'AUD', label: 'AUD (A$)' },
+  { code: 'CHF', label: 'CHF (Fr)' },
+  { code: 'CNY', label: 'CNY (¥)' },
+  { code: 'SEK', label: 'SEK (kr)' },
+  { code: 'NZD', label: 'NZD ($)' },
+  { code: 'PLN', label: 'PLN (zł)' },
+  { code: 'INR', label: 'INR (₹)' },
+  { code: 'BRL', label: 'BRL (R$)' },
+  { code: 'ZAR', label: 'ZAR (R)' },
+  { code: 'MXN', label: 'MXN ($)' },
+  { code: 'UAH', label: 'UAH (₴)' },
+] as const;
+
+/** Locale options for the view settings dropdown */
+export const LOCALE_OPTIONS = [
+  { code: 'en-US', label: 'English (United States)' },
+  { code: 'en-GB', label: 'English (United Kingdom)' },
+  { code: 'en-CA', label: 'English (Canada)' },
+  { code: 'en-AU', label: 'English (Australia)' },
+  { code: 'pl-PL', label: 'Polish (Poland)' },
+  { code: 'de-DE', label: 'German (Germany)' },
+  { code: 'fr-FR', label: 'French (France)' },
+  { code: 'es-ES', label: 'Spanish (Spain)' },
+  { code: 'it-IT', label: 'Italian (Italy)' },
+  { code: 'ja-JP', label: 'Japanese (Japan)' },
+  { code: 'zh-CN', label: 'Chinese (China)' },
+  { code: 'pt-BR', label: 'Portuguese (Brazil)' },
+  { code: 'ru-RU', label: 'Russian (Russia)' },
+  { code: 'uk-UA', label: 'Ukrainian (Ukraine)' },
+] as const;
+
+/** Week start day options for the calendar */
+export const WEEK_START_OPTIONS = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 6, label: 'Saturday' },
 ] as const;
 
 /**

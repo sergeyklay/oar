@@ -1,5 +1,6 @@
 import { Sidebar } from './Sidebar';
 import { CalendarPanel } from './CalendarPanel';
+import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
   const showRightPanel = rightPanel !== null;
 
   return (
-    <div className="app-shell" data-has-right-panel={showRightPanel}>
+    <div className={cn('app-shell', !showRightPanel && 'no-right-panel')}>
       <Sidebar />
       <main className="main-content">
         {children}

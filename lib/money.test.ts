@@ -3,9 +3,9 @@ import {
   toMajorUnits,
   formatMoney,
   getCurrencySymbol,
+  getMinorUnits,
   isValidMoneyInput,
   parseMoneyInput,
-  CURRENCIES,
   DEFAULT_CURRENCY,
 } from './money';
 
@@ -34,12 +34,12 @@ describe('toMinorUnits', () => {
     expect(toMinorUnits(100.5, 'JPY')).toBe(101);
   });
 
-  it('uses default currency when not specified', () => {
+  it('uses default currency (USD) when not specified', () => {
     expect(toMinorUnits(10.5)).toBe(1050);
   });
 
-  it('throws error for unsupported currency', () => {
-    expect(() => toMinorUnits(100, 'XYZ')).toThrow('Unsupported currency: XYZ');
+  it('handles unknown currencies with fallback to 2 decimal places', () => {
+    expect(toMinorUnits(100, 'XYZ')).toBe(10000);
   });
 
   it('throws error for invalid amount', () => {
@@ -59,12 +59,12 @@ describe('toMajorUnits', () => {
     expect(toMajorUnits(100, 'JPY')).toBe(100);
   });
 
-  it('uses default currency when not specified', () => {
+  it('uses default currency (USD) when not specified', () => {
     expect(toMajorUnits(1050)).toBe(10.5);
   });
 
-  it('throws error for unsupported currency', () => {
-    expect(() => toMajorUnits(100, 'XYZ')).toThrow('Unsupported currency: XYZ');
+  it('handles unknown currencies with fallback to 2 decimal places', () => {
+    expect(toMajorUnits(10000, 'XYZ')).toBe(100);
   });
 });
 
@@ -101,8 +101,8 @@ describe('getCurrencySymbol', () => {
     expect(getCurrencySymbol('XYZ')).toBe('XYZ');
   });
 
-  it('uses default currency when not specified', () => {
-    expect(getCurrencySymbol()).toBe('zł');
+  it('uses default currency (USD) when not specified', () => {
+    expect(getCurrencySymbol()).toBe('$');
   });
 });
 
@@ -154,20 +154,21 @@ describe('parseMoneyInput', () => {
   });
 });
 
-describe('CURRENCIES config', () => {
-  it('contains expected currencies', () => {
-    expect(Object.keys(CURRENCIES)).toEqual(['PLN', 'USD', 'EUR', 'GBP', 'JPY']);
+describe('getMinorUnits', () => {
+  it('returns correct minor units for common currencies', () => {
+    expect(getMinorUnits('USD')).toBe(2);
+    expect(getMinorUnits('EUR')).toBe(2);
+    expect(getMinorUnits('PLN')).toBe(2);
+    expect(getMinorUnits('JPY')).toBe(0);
   });
 
-  it('has correct minor units for each currency', () => {
-    expect(CURRENCIES.PLN.minorUnits).toBe(2);
-    expect(CURRENCIES.USD.minorUnits).toBe(2);
-    expect(CURRENCIES.JPY.minorUnits).toBe(0);
+  it('returns 2 as fallback for unknown currencies', () => {
+    expect(getMinorUnits('INVALID')).toBe(2);
   });
 });
 
 describe('DEFAULT_CURRENCY', () => {
-  it('is set to PLN', () => {
-    expect(DEFAULT_CURRENCY).toBe('PLN');
+  it('is set to USD', () => {
+    expect(DEFAULT_CURRENCY).toBe('USD');
   });
 });
