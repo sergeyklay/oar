@@ -8,7 +8,7 @@ import type { SettingsLayoutProps } from './types';
  */
 export function SettingsLayout({ navigation, children }: SettingsLayoutProps) {
   return (
-    <div className="grid grid-cols-[280px_1fr] min-h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] min-h-full">
       <aside className="bg-card border-r border-border overflow-y-auto">
         {navigation}
       </aside>
