@@ -30,7 +30,7 @@ build
 .env.*
 
 # Database files (will be mounted as volume)
-data/
+/data
 *.db
 *.db-wal
 *.db-shm
@@ -48,7 +48,7 @@ jest.setup.*
 junit.xml
 
 # Documentation
-docs/
+/docs
 
 # Misc
 .DS_Store
@@ -56,4 +56,4 @@ Thumbs.db
 *.log
 
 # Backups
-backups/
+/backups

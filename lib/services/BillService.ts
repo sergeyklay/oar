@@ -1,6 +1,6 @@
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, gte, lte, inArray, ne, or, sql } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray, ne, or } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
 
 /**
@@ -215,31 +215,27 @@ export const BillService = {
       conditions.push(inArray(bills.id, billIds));
     }
 
-    const billsWithCategories =
-      conditions.length === 0
-        ? await db
-            .select({
-              bill: bills,
-              categoryIcon: billCategories.icon,
-            })
-            .from(bills)
-            .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-            .orderBy(
-              sql`CASE WHEN ${bills.status} = 'paid' THEN 1 ELSE 0 END`,
-              bills.dueDate
-            )
-        : await db
-            .select({
-              bill: bills,
-              categoryIcon: billCategories.icon,
-            })
-            .from(bills)
-            .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-            .where(and(...conditions))
-            .orderBy(
-              sql`CASE WHEN ${bills.status} = 'paid' THEN 1 ELSE 0 END`,
-              bills.dueDate
-            );
+    const baseQuery = db
+      .select({
+        bill: bills,
+        categoryIcon: billCategories.icon,
+      })
+      .from(bills)
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id));
+
+    const finalConditions = conditions.length > 0 ? and(...conditions) : undefined;
+
+    // Fetch in two parts to group paid bills at the bottom without raw SQL CASE expressions.
+    // This maintains the "Active Payer" focus by prioritizing pending/overdue obligations.
+    const activeResults = await baseQuery
+      .where(and(finalConditions, ne(bills.status, 'paid')))
+      .orderBy(bills.dueDate);
+
+    const paidResults = await baseQuery
+      .where(and(finalConditions, eq(bills.status, 'paid')))
+      .orderBy(bills.dueDate);
+
+    const billsWithCategories = [...activeResults, ...paidResults];
 
     if (billsWithCategories.length === 0) {
       return [];
