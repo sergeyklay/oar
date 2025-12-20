@@ -58,8 +58,6 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId }: 
           <th>Name</th>
           <th>Amount</th>
           <th>Due Date</th>
-          <th>Frequency</th>
-          <th>Status</th>
           <th className="w-[100px]">Actions</th>
         </tr>
       </thead>

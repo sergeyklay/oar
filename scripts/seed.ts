@@ -288,29 +288,53 @@ function seedBills(
     const isVariable = faker.datatype.boolean(0.3);
     const amount = faker.number.int({ min: 1000, max: 200000 });
 
-    const statuses = [
-      'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
-      'paid', 'paid', 'paid',
-      'overdue'
-    ] as const;
-    const status = faker.helpers.arrayElement(statuses);
-
-    let dueDate: Date;
-    if (status === 'overdue') {
-      dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
-    } else if (status === 'paid') {
-      dueDate = faker.date.between({ from: subDays(now, 30), to: now });
-    } else {
-      dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
-    }
-
     const categoryId = faker.helpers.arrayElement(categories).id;
+
+    // Generate realistic bill states based on frequency
+    let status: 'pending' | 'paid' | 'overdue';
+    let dueDate: Date;
+    let amountDue: number;
+
+    if (frequency === 'once') {
+      // One-time bills: can be pending, paid, or overdue
+      const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
+      status = faker.helpers.arrayElement(oneTimeStatuses);
+
+      if (status === 'paid') {
+        // Paid one-time: due date in past, amountDue = 0
+        dueDate = faker.date.between({ from: subDays(now, 60), to: subDays(now, 1) });
+        amountDue = 0;
+      } else if (status === 'overdue') {
+        // Overdue one-time: due date in past, full amount still due
+        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
+        amountDue = amount;
+      } else {
+        // Pending one-time: due date in future
+        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
+        amountDue = amount;
+      }
+    } else {
+      // Recurring bills (monthly/yearly): never 'paid' status
+      // After payment, due date advances and status becomes pending/overdue
+      const recurringStatuses = ['pending', 'pending', 'pending', 'pending', 'overdue'] as const;
+      status = faker.helpers.arrayElement(recurringStatuses);
+
+      if (status === 'overdue') {
+        // Overdue recurring: due date in past
+        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
+        amountDue = amount;
+      } else {
+        // Pending recurring: due date in future
+        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
+        amountDue = amount;
+      }
+    }
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
       title: `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`,
       amount,
-      amountDue: status === 'paid' ? 0 : amount,
+      amountDue,
       dueDate,
       frequency,
       isAutoPay: faker.datatype.boolean(0.2),
