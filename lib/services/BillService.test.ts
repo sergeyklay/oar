@@ -67,9 +67,9 @@ describe('BillService.getFiltered', () => {
     },
   ];
 
-  const createSelectMock = (returnValue: BillWithTags[]) => {
+  const createSelectMock = (activeBills: BillWithTags[], paidBills: BillWithTags[] = []) => {
     // Convert BillWithTags[] to the format returned by the JOIN query
-    const joinedResults = returnValue.map((bill) => ({
+    const mapToJoined = (bills: BillWithTags[]) => bills.map((bill) => ({
       bill: {
         id: bill.id,
         title: bill.title,
@@ -89,11 +89,16 @@ describe('BillService.getFiltered', () => {
       categoryIcon: bill.categoryIcon,
     }));
 
+    const activeJoined = mapToJoined(activeBills);
+    const paidJoined = mapToJoined(paidBills);
+
     const mockBuilder = {
       from: jest.fn().mockReturnThis(),
       innerJoin: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockResolvedValue(joinedResults),
+      orderBy: jest.fn()
+        .mockResolvedValueOnce(activeJoined)
+        .mockResolvedValueOnce(paidJoined),
     };
     (db.select as jest.Mock).mockReturnValue(mockBuilder);
     return mockBuilder;
@@ -112,10 +117,7 @@ describe('BillService.getFiltered', () => {
     expect(result[2].tags).toEqual([]);
     expect(db.select).toHaveBeenCalled();
     expect(mockBuilder.from).toHaveBeenCalledWith(bills);
-    expect(mockBuilder.orderBy).toHaveBeenCalledWith(
-      expect.any(Object),
-      bills.dueDate
-    );
+    expect(mockBuilder.orderBy).toHaveBeenCalledWith(bills.dueDate);
     expect(BillService.getTagsForBills).toHaveBeenCalledWith(['bill-1', 'bill-2', 'bill-3']);
   });
 
@@ -176,10 +178,7 @@ describe('BillService.getFiltered', () => {
 
     const result = await BillService.getFiltered({});
 
-    expect(mockBuilder.orderBy).toHaveBeenCalledWith(
-      expect.any(Object),
-      bills.dueDate
-    );
+    expect(mockBuilder.orderBy).toHaveBeenCalledWith(bills.dueDate);
     expect(result).toHaveLength(3);
   });
 
