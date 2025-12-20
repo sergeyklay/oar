@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryState } from 'nuqs';
+import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 import type { SettingsNavLinkProps } from './types';
 
 /**
@@ -11,7 +12,7 @@ import type { SettingsNavLinkProps } from './types';
  */
 export function SettingsNavLink({ slug, name }: SettingsNavLinkProps) {
   const [category, setCategory] = useQueryState('category', {
-    defaultValue: 'general',
+    defaultValue: DEFAULT_SETTINGS_CATEGORY,
     shallow: false,
   });
 

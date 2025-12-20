@@ -8,8 +8,36 @@ import {
   DEFAULT_SECTIONS,
   DEFAULT_SETTINGS_VALUES,
 } from '@/lib/constants';
-import type { StructuredSettings } from '@/db/schema';
+import type { StructuredSettings, SettingsSection } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
+
+type EnrichedSection = StructuredSettings['categories'][number]['sections'][number];
+
+/**
+ * Enriches sections with their settings counts.
+ *
+ * @param sections - Raw section rows from the database.
+ * @returns Sections with settingsCount added.
+ */
+async function enrichSectionsWithCounts(sections: SettingsSection[]): Promise<EnrichedSection[]> {
+  return Promise.all(
+    sections.map(async (section) => {
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(settings)
+        .where(eq(settings.sectionId, section.id));
+
+      return {
+        id: section.id,
+        slug: section.slug,
+        name: section.name,
+        description: section.description,
+        displayOrder: section.displayOrder,
+        settingsCount: Number(countResult?.count ?? 0),
+      };
+    })
+  );
+}
 
 /**
  * User preferences for display and localization.
@@ -131,23 +159,7 @@ export const SettingsService = {
       .where(eq(settingsSections.categoryId, category.id))
       .orderBy(asc(settingsSections.displayOrder), asc(settingsSections.name));
 
-    const sectionsWithCounts = await Promise.all(
-      sections.map(async (section) => {
-        const [countResult] = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(settings)
-          .where(eq(settings.sectionId, section.id));
-
-        return {
-          id: section.id,
-          slug: section.slug,
-          name: section.name,
-          description: section.description,
-          displayOrder: section.displayOrder,
-          settingsCount: Number(countResult?.count ?? 0),
-        };
-      })
-    );
+    const sectionsWithCounts = await enrichSectionsWithCounts(sections);
 
     return {
       id: category.id,
@@ -181,23 +193,7 @@ export const SettingsService = {
         .where(eq(settingsSections.categoryId, category.id))
         .orderBy(asc(settingsSections.displayOrder), asc(settingsSections.name));
 
-      const sectionsWithCounts = await Promise.all(
-        sections.map(async (section) => {
-          const [countResult] = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(settings)
-            .where(eq(settings.sectionId, section.id));
-
-          return {
-            id: section.id,
-            slug: section.slug,
-            name: section.name,
-            description: section.description,
-            displayOrder: section.displayOrder,
-            settingsCount: Number(countResult?.count ?? 0),
-          };
-        })
-      );
+      const sectionsWithCounts = await enrichSectionsWithCounts(sections);
 
       structure.categories.push({
         id: category.id,
