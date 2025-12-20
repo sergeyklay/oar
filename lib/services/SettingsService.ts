@@ -39,6 +39,9 @@ async function enrichSectionsWithCounts(sections: SettingsSection[]): Promise<En
   );
 }
 
+/** Day of week values for calendar week start */
+export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 /**
  * User preferences for display and localization.
  *
@@ -49,11 +52,14 @@ export interface UserSettings {
   currency: string;
   /** Locale identifier for number and date formatting (e.g., "en-US"). */
   locale: string;
+  /** Day of week the calendar should start on (0=Sunday, 1=Monday, etc.). */
+  weekStart: WeekStartDay;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
   currency: DEFAULT_CURRENCY,
   locale: DEFAULT_LOCALE,
+  weekStart: 0,
 };
 
 /**
@@ -77,9 +83,15 @@ export const SettingsService = {
       {} as Record<string, string>
     );
 
+    const weekStartValue = parseInt(settingsMap['weekStart'] ?? '0', 10);
+    const weekStart = (weekStartValue >= 0 && weekStartValue <= 6
+      ? weekStartValue
+      : DEFAULT_SETTINGS.weekStart) as WeekStartDay;
+
     return {
       currency: settingsMap['currency'] ?? DEFAULT_SETTINGS.currency,
       locale: settingsMap['locale'] ?? DEFAULT_SETTINGS.locale,
+      weekStart,
     };
   },
 
@@ -115,6 +127,48 @@ export const SettingsService = {
         target: settings.key,
         set: { value: String(value), updatedAt: new Date() },
       });
+  },
+
+  /**
+   * Updates multiple view options settings at once.
+   *
+   * @param options - Object containing currency, locale, and weekStart values.
+   * @throws {Error} If the "view-options" section does not exist.
+   */
+  async setViewOptions(options: {
+    currency: string;
+    locale: string;
+    weekStart: number;
+  }): Promise<void> {
+    const [viewOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'view-options'))
+      .limit(1);
+
+    if (!viewOptionsSection) {
+      throw new Error('View Options section not found');
+    }
+
+    const settingsToUpsert = [
+      { key: 'currency', value: options.currency },
+      { key: 'locale', value: options.locale },
+      { key: 'weekStart', value: String(options.weekStart) },
+    ];
+
+    for (const setting of settingsToUpsert) {
+      await db
+        .insert(settings)
+        .values({
+          key: setting.key,
+          value: setting.value,
+          sectionId: viewOptionsSection.id,
+        })
+        .onConflictDoUpdate({
+          target: settings.key,
+          set: { value: setting.value, updatedAt: new Date() },
+        });
+    }
   },
 
   /**

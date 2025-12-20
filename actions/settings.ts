@@ -104,3 +104,42 @@ export async function updatePaidRecentlyRange(
   }
 }
 
+const updateViewOptionsSchema = z.object({
+  currency: z.string().length(3),
+  locale: z.string().min(2),
+  weekStart: z.coerce.number().min(0).max(6),
+});
+
+/**
+ * Updates the view options settings (currency, locale, week start).
+ *
+ * @param input - Object containing currency, locale, and weekStart values
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateViewOptions(
+  input: z.infer<typeof updateViewOptionsSchema>
+): Promise<ActionResult<void>> {
+  const parsed = updateViewOptionsSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    await SettingsService.setViewOptions(parsed.data);
+    revalidatePath('/');
+    revalidatePath('/settings');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update view options:', error);
+    return {
+      success: false,
+      error: 'Failed to update settings',
+    };
+  }
+}
+

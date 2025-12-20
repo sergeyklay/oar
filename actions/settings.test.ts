@@ -1,4 +1,9 @@
-import { getSettingsStructure, updateDueSoonRange, updatePaidRecentlyRange } from './settings';
+import {
+  getSettingsStructure,
+  updateDueSoonRange,
+  updatePaidRecentlyRange,
+  updateViewOptions,
+} from './settings';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
 
@@ -191,6 +196,134 @@ describe('updatePaidRecentlyRange', () => {
       type RangeKey = '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30';
       await updatePaidRecentlyRange({ range: range as RangeKey });
       expect(SettingsService.setPaidRecentlyRange).toHaveBeenCalledWith(parseInt(range, 10));
+    }
+  });
+});
+
+describe('updateViewOptions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('updates view options successfully', async () => {
+    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+
+    const result = await updateViewOptions({
+      currency: 'EUR',
+      locale: 'de-DE',
+      weekStart: 1,
+    });
+
+    expect(result.success).toBe(true);
+    expect(SettingsService.setViewOptions).toHaveBeenCalledWith({
+      currency: 'EUR',
+      locale: 'de-DE',
+      weekStart: 1,
+    });
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+    expect(revalidatePath).toHaveBeenCalledWith('/settings');
+  });
+
+  it('coerces weekStart string to number', async () => {
+    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+
+    const result = await updateViewOptions({
+      currency: 'USD',
+      locale: 'en-US',
+      weekStart: '0' as unknown as number,
+    });
+
+    expect(result.success).toBe(true);
+    expect(SettingsService.setViewOptions).toHaveBeenCalledWith({
+      currency: 'USD',
+      locale: 'en-US',
+      weekStart: 0,
+    });
+  });
+
+  it('returns validation error for invalid currency length', async () => {
+    const result = await updateViewOptions({
+      currency: 'US',
+      locale: 'en-US',
+      weekStart: 0,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors?.currency).toBeDefined();
+    expect(SettingsService.setViewOptions).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error for empty locale', async () => {
+    const result = await updateViewOptions({
+      currency: 'USD',
+      locale: 'a',
+      weekStart: 0,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors?.locale).toBeDefined();
+  });
+
+  it('returns validation error for weekStart out of range', async () => {
+    const result = await updateViewOptions({
+      currency: 'USD',
+      locale: 'en-US',
+      weekStart: 7,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors?.weekStart).toBeDefined();
+  });
+
+  it('returns validation error for negative weekStart', async () => {
+    const result = await updateViewOptions({
+      currency: 'USD',
+      locale: 'en-US',
+      weekStart: -1,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors?.weekStart).toBeDefined();
+  });
+
+  it('returns error when service throws', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    const error = new Error('Database error');
+    (SettingsService.setViewOptions as jest.Mock).mockRejectedValue(error);
+
+    const result = await updateViewOptions({
+      currency: 'USD',
+      locale: 'en-US',
+      weekStart: 0,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to update settings');
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to update view options:', error);
+
+    consoleSpy.mockRestore();
+  });
+
+  it('accepts all valid weekStart values (0-6)', async () => {
+    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+
+    for (let day = 0; day <= 6; day++) {
+      jest.clearAllMocks();
+
+      const result = await updateViewOptions({
+        currency: 'USD',
+        locale: 'en-US',
+        weekStart: day,
+      });
+
+      expect(result.success).toBe(true);
+      expect(SettingsService.setViewOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ weekStart: day })
+      );
     }
   });
 });

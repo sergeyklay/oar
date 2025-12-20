@@ -61,6 +61,7 @@ export default async function DashboardPage({
           selectedBillId={selectedBill ?? null}
           currency={settings.currency}
           locale={settings.locale}
+          weekStart={settings.weekStart}
         />
       }
     >
