@@ -45,7 +45,8 @@ import {
   type UpdateBillInput,
 } from '@/actions/bills';
 import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
-import type { Bill, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
+import type { Bill, Tag, BillCategoryGroupWithCategories, BillFrequency } from '@/lib/types';
+import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
 import { TagCombobox } from './TagCombobox';
 import { CategorySelect } from './CategorySelect';
 
@@ -332,14 +333,22 @@ export function BillFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="weekly">Every Week</SelectItem>
-                      <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
-                      <SelectItem value="twicemonthly">Twice Per Month</SelectItem>
-                      <SelectItem value="monthly">Every Month</SelectItem>
-                      <SelectItem value="bimonthly">Every 2 Months</SelectItem>
-                      <SelectItem value="quarterly">Every 3 Months</SelectItem>
-                      <SelectItem value="yearly">Every Year</SelectItem>
-                      <SelectItem value="once">Never</SelectItem>
+                      {(
+                        [
+                          'weekly',
+                          'biweekly',
+                          'twicemonthly',
+                          'monthly',
+                          'bimonthly',
+                          'quarterly',
+                          'yearly',
+                          'once',
+                        ] as BillFrequency[]
+                      ).map((freq) => (
+                        <SelectItem key={freq} value={freq}>
+                          {FREQUENCY_DISPLAY_LABELS[freq]}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
