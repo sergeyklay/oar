@@ -11,7 +11,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
   const showRightPanel = rightPanel !== null;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-has-right-panel={showRightPanel}>
       <Sidebar />
       <main className="main-content">
         {children}
