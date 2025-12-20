@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { differenceInDays, format, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import { Banknote } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -14,31 +14,7 @@ import { BillFormDialog } from './BillFormDialog';
 import { CategoryIcon } from './CategoryIcon';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
-import type { BillWithTags, Tag, BillCategoryGroupWithCategories, BillStatus } from '@/lib/types';
-
-/**
- * Determines the status bar color based on bill status and due date.
- * Bills due more than 30 days away show blue instead of amber.
- */
-function getStatusBarColor(status: BillStatus, dueDate: Date): string {
-  if (status === 'paid') {
-    return 'bg-emerald-500';
-  }
-
-  if (status === 'overdue') {
-    return 'bg-red-500';
-  }
-
-  const today = startOfDay(new Date());
-  const target = startOfDay(dueDate);
-  const daysUntilDue = differenceInDays(target, today);
-
-  if (daysUntilDue > 30) {
-    return 'bg-blue-500';
-  }
-
-  return 'bg-amber-500';
-}
+import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
 interface BillRowProps {
   bill: BillWithTags;
@@ -96,7 +72,7 @@ export function BillRow({
       <td>
         <div className="flex items-stretch gap-3">
           <div
-            className={cn('w-[3px] self-stretch rounded-sm', getStatusBarColor(bill.status, bill.dueDate))}
+            className={cn('w-[3px] self-stretch rounded-sm', DueDateService.getStatusBarColor(bill.dueDate, bill.status))}
             aria-hidden="true"
           />
           <div className="flex flex-col">

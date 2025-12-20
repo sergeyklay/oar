@@ -1,12 +1,52 @@
 import { differenceInDays, differenceInMonths, startOfDay } from 'date-fns';
 import type { BillStatus } from '@/lib/types';
 
+/** Tailwind CSS class for status bar background color. */
+export type StatusBarColor = 'bg-emerald-500' | 'bg-red-500' | 'bg-blue-500' | 'bg-amber-500';
+
 /**
- * Service for due date formatting.
+ * Service for due date formatting and status display.
  *
- * Provides human-readable relative date strings for bill due dates.
+ * Provides human-readable relative date strings and visual status indicators.
  */
 export const DueDateService = {
+  /**
+   * Returns the Tailwind CSS class for the status bar color.
+   *
+   * @param dueDate - The bill's due date.
+   * @param status - The bill's current status.
+   * @returns Tailwind background color class.
+   */
+  getStatusBarColor(dueDate: Date, status: BillStatus): StatusBarColor {
+    if (status === 'paid') {
+      return 'bg-emerald-500';
+    }
+
+    if (status === 'overdue') {
+      return 'bg-red-500';
+    }
+
+    const daysUntilDue = this.getDaysUntilDue(dueDate);
+
+    if (daysUntilDue > 30) {
+      return 'bg-blue-500';
+    }
+
+    return 'bg-amber-500';
+  },
+
+  /**
+   * Calculates days until the due date from today.
+   *
+   * @param dueDate - The bill's due date.
+   * @returns Number of days (negative if overdue).
+   */
+  getDaysUntilDue(dueDate: Date): number {
+    const today = startOfDay(new Date());
+    const target = startOfDay(dueDate);
+    return differenceInDays(target, today);
+  },
+
   /**
    * Format a due date as a human-readable relative string.
    *
@@ -23,9 +63,7 @@ export const DueDateService = {
       return 'Paid';
     }
 
-    const today = startOfDay(new Date());
-    const target = startOfDay(dueDate);
-    const diffDays = differenceInDays(target, today);
+    const diffDays = this.getDaysUntilDue(dueDate);
 
     if (diffDays < 0) {
       const absDays = Math.abs(diffDays);
@@ -57,6 +95,8 @@ export const DueDateService = {
       return `Due in ${weeks} weeks`;
     }
 
+    const today = startOfDay(new Date());
+    const target = startOfDay(dueDate);
     const months = differenceInMonths(target, today);
 
     if (months === 1 || diffDays <= 45) {
