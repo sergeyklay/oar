@@ -150,9 +150,52 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      // Tags should NOT appear in the row - they're displayed in the detail panel
-      expect(screen.queryByText('Utilities')).not.toBeInTheDocument();
+    // Tags should NOT appear in the row - they're displayed in the detail panel
+    expect(screen.queryByText('Utilities')).not.toBeInTheDocument();
+  });
+
+  describe('paid status display', () => {
+    it('hides secondary due date for paid one-time bills', () => {
+      const paidOneTimeBill = createMockBill({
+        status: 'paid',
+        frequency: 'once',
+        dueDate: new Date('2025-12-15'),
+      });
+
+      renderBillRow(paidOneTimeBill);
+
+      // "Paid" label should be visible
+      expect(screen.getByText('Paid')).toBeInTheDocument();
+      // Secondary date format "Mon, Dec 15" should NOT be visible
+      expect(screen.queryByText('Mon, Dec 15')).not.toBeInTheDocument();
+    });
+
+    it('shows secondary due date for unpaid one-time bills', () => {
+      const pendingOneTimeBill = createMockBill({
+        status: 'pending',
+        frequency: 'once',
+        dueDate: new Date('2025-12-15'),
+      });
+
+      renderBillRow(pendingOneTimeBill);
+
+      // Secondary date format "Mon, Dec 15" should be visible
+      expect(screen.getByText('Mon, Dec 15')).toBeInTheDocument();
+    });
+
+    it('shows secondary due date for recurring bills regardless of status', () => {
+      const monthlyBill = createMockBill({
+        status: 'pending',
+        frequency: 'monthly',
+        dueDate: new Date('2025-12-15'),
+      });
+
+      renderBillRow(monthlyBill);
+
+      // Secondary date format "Mon, Dec 15" should be visible
+      expect(screen.getByText('Mon, Dec 15')).toBeInTheDocument();
     });
   });
+});
 });
 

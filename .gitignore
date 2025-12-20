@@ -35,3 +35,6 @@
 # Code coverage stuff.
 /coverage
 /junit.xml
+
+# Backups
+/backups

@@ -1,6 +1,6 @@
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, gte, lte, inArray, ne, or } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray, ne, or, sql } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
 
 /**
@@ -224,7 +224,10 @@ export const BillService = {
             })
             .from(bills)
             .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-            .orderBy(bills.dueDate)
+            .orderBy(
+              sql`CASE WHEN ${bills.status} = 'paid' THEN 1 ELSE 0 END`,
+              bills.dueDate
+            )
         : await db
             .select({
               bill: bills,
@@ -233,7 +236,10 @@ export const BillService = {
             .from(bills)
             .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
             .where(and(...conditions))
-            .orderBy(bills.dueDate);
+            .orderBy(
+              sql`CASE WHEN ${bills.status} = 'paid' THEN 1 ELSE 0 END`,
+              bills.dueDate
+            );
 
     if (billsWithCategories.length === 0) {
       return [];
