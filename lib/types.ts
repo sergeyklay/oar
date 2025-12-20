@@ -76,6 +76,7 @@ export interface ActionResult<T = void> {
  * @property {number} amount - Payment amount in minor units
  * @property {Date} paidAt - Payment date
  * @property {string | null} notes - Optional payment notes
+ * @property {string} categoryIcon - Lucide icon name for category
  */
 export interface PaymentWithBill {
   id: string;
@@ -83,4 +84,5 @@ export interface PaymentWithBill {
   amount: number;
   paidAt: Date;
   notes: string | null;
+  categoryIcon: string;
 }

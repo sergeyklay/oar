@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { BillCategoryGroupWithCategories } from '@/lib/types';
+import { CategoryIcon } from './CategoryIcon';
 
 interface CategorySelectProps {
   categoriesGrouped: BillCategoryGroupWithCategories[];
@@ -22,7 +23,7 @@ interface CategorySelectProps {
 /**
  * Grouped category dropdown for bill categorization.
  *
- * Displays categories organized by their parent groups with group names as section headers.
+ * Displays categories organized by their parent groups with icons and group names as section headers.
  */
 export function CategorySelect({
   categoriesGrouped,
@@ -44,7 +45,10 @@ export function CategorySelect({
             </SelectLabel>
             {group.categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
-                {category.name}
+                <span className="flex items-center gap-2">
+                  <CategoryIcon icon={category.icon} size={16} className="text-muted-foreground" />
+                  <span>{category.name}</span>
+                </span>
               </SelectItem>
             ))}
           </SelectGroup>

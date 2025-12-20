@@ -17,6 +17,11 @@ jest.mock('@/db', () => ({
   bills: {
     id: 'bills.id',
     title: 'bills.title',
+    categoryId: 'bills.category_id',
+  },
+  billCategories: {
+    id: 'bill_categories.id',
+    icon: 'bill_categories.icon',
   },
 }));
 
@@ -62,17 +67,19 @@ describe('TransactionService', () => {
         amount: 5000,
         paidAt: new Date(),
         notes: 'Monthly rent',
+        categoryIcon: 'house',
       },
     ];
 
     const setupDbMock = (returnValue: PaymentWithBill[]) => {
       const orderByMock = jest.fn().mockResolvedValue(returnValue);
       const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-      const innerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
-      const fromMock = jest.fn().mockReturnValue({ innerJoin: innerJoinMock });
+      const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
+      const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+      const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
       (db.select as jest.Mock).mockReturnValue({ from: fromMock });
 
-      return { orderByMock, whereMock, innerJoinMock, fromMock };
+      return { orderByMock, whereMock, innerJoinMock: firstInnerJoinMock, fromMock };
     };
 
     it('fetches payments within date range', async () => {

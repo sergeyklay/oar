@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { formatMoney } from '@/lib/money';
+import { CategoryIcon } from '@/components/features/bills/CategoryIcon';
 import type { PaymentWithBill } from '@/lib/types';
 
 interface PaidRecentlyListProps {
@@ -30,6 +31,7 @@ export function PaidRecentlyList({
     <table className="bill-table">
       <thead>
         <tr>
+          <th className="w-10" aria-hidden="true" />
           <th>Name</th>
           <th>Amount Paid</th>
           <th>Payment Date</th>
@@ -38,6 +40,9 @@ export function PaidRecentlyList({
       <tbody>
         {payments.map((payment) => (
           <tr key={payment.id}>
+            <td className="w-10 text-center">
+              <CategoryIcon icon={payment.categoryIcon} size={16} className="text-muted-foreground" />
+            </td>
             <td className="font-medium">{payment.billTitle}</td>
             <td>{formatMoney(payment.amount, currency, locale)}</td>
             <td>

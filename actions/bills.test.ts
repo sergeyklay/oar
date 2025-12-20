@@ -57,6 +57,7 @@ const createMockBillWithTags = (overrides: Partial<BillWithTags> = {}): BillWith
   createdAt: new Date('2025-01-01'),
   updatedAt: new Date('2025-01-01'),
   tags: [],
+  categoryIcon: 'house',
   ...overrides,
 });
 

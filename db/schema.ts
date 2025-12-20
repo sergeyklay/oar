@@ -30,7 +30,7 @@ export const billCategoryGroups = sqliteTable('bill_category_groups', {
  * Bill Categories Table
  *
  * Predefined categories for bill classification.
- * Categories belong to a group for semantic organization.
+ * Each category has a unique icon for visual identification.
  */
 export const billCategories = sqliteTable('bill_categories', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
@@ -42,6 +42,8 @@ export const billCategories = sqliteTable('bill_categories', {
   name: text('name').notNull(),
   /** URL-safe slug for potential future filtering */
   slug: text('slug').notNull().unique(),
+  /** Lucide icon name for visual identification (e.g., "home", "credit-card") */
+  icon: text('icon').notNull(),
   /** Display order within group (lower numbers appear first) */
   displayOrder: integer('display_order').notNull().default(0),
   /** Creation timestamp */
@@ -85,9 +87,10 @@ export const bills = sqliteTable('bills', {
   isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
   /** Optional user notes for bill context (account numbers, reminders, etc.) */
   notes: text('notes'),
-  /** Foreign key to bill_categories (nullable for migration; Zod enforces required for new bills) */
+  /** Foreign key to bill_categories */
   categoryId: text('category_id')
-    .references(() => billCategories.id, { onDelete: 'set null' }),
+    .notNull()
+    .references(() => billCategories.id, { onDelete: 'restrict' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -296,9 +299,10 @@ export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
 export type BillToTag = typeof billsToTags.$inferSelect;
 
-// Extended Bill type with tags
+/** Bill with tags and category icon for display */
 export interface BillWithTags extends Bill {
   tags: Tag[];
+  categoryIcon: string;
 }
 
 export type BillFrequency = 'once' | 'monthly' | 'yearly';

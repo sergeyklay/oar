@@ -40,6 +40,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   createdAt: new Date(),
   updatedAt: new Date(),
   tags: [],
+  categoryIcon: 'house',
   ...overrides,
 });
 
@@ -51,7 +52,7 @@ const mockCategoriesGrouped = [
     displayOrder: 1,
     createdAt: new Date(),
     categories: [
-      { id: 'category-1', groupId: 'group-1', name: 'Rent', slug: 'rent', displayOrder: 1, createdAt: new Date() },
+      { id: 'category-1', groupId: 'group-1', name: 'Rent', slug: 'rent', icon: 'house', displayOrder: 1, createdAt: new Date() },
     ],
   },
 ];

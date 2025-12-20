@@ -37,6 +37,7 @@ describe('PaidRecentlyList', () => {
         amount: 100000,
         paidAt: new Date('2025-12-15T10:00:00'),
         notes: null,
+        categoryIcon: 'house',
       },
       {
         id: 'tx-2',
@@ -44,6 +45,7 @@ describe('PaidRecentlyList', () => {
         amount: 15000,
         paidAt: new Date('2025-12-14T10:00:00'),
         notes: 'Paid via bank transfer',
+        categoryIcon: 'zap',
       },
     ];
 
@@ -108,6 +110,7 @@ describe('PaidRecentlyList', () => {
         amount: 5000,
         paidAt: new Date('2025-12-18T10:00:00'),
         notes: 'Monthly subscription',
+        categoryIcon: 'wifi',
       },
     ];
 

@@ -8,6 +8,7 @@ import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { BillActionsMenu } from './BillActionsMenu';
 import { BillFormDialog } from './BillFormDialog';
+import { CategoryIcon } from './CategoryIcon';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
 import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
@@ -46,6 +47,9 @@ export function BillRow({
 
   return (
     <>
+      <td className="w-10 text-center">
+        <CategoryIcon icon={bill.categoryIcon} size={16} className="text-muted-foreground" />
+      </td>
       <td className="font-medium">{bill.title}</td>
       <td className="font-mono">
         {formatMoney(bill.amount, currency, locale)}
