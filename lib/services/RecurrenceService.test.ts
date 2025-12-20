@@ -55,6 +55,77 @@ describe('RecurrenceService', () => {
       expect(result!.getDate()).toBe(20);
     });
 
+    it('calculates next week for weekly bills', () => {
+      const currentDate = new Date('2025-01-01');
+
+      const result = RecurrenceService.calculateNextDueDate(currentDate, 'weekly');
+
+      expect(result).not.toBeNull();
+      expect(result!.getDate()).toBe(8);
+      expect(result!.getMonth()).toBe(0);
+    });
+
+    it('calculates every 2 weeks for biweekly bills', () => {
+      const currentDate = new Date('2025-01-01');
+
+      const result = RecurrenceService.calculateNextDueDate(currentDate, 'biweekly');
+
+      expect(result).not.toBeNull();
+      expect(result!.getDate()).toBe(15);
+      expect(result!.getMonth()).toBe(0);
+    });
+
+    it('calculates every 2 months for bimonthly bills', () => {
+      const currentDate = new Date('2025-01-01');
+
+      const result = RecurrenceService.calculateNextDueDate(currentDate, 'bimonthly');
+
+      expect(result).not.toBeNull();
+      expect(result!.getMonth()).toBe(2); // March
+      expect(result!.getDate()).toBe(1);
+    });
+
+    it('calculates every 3 months for quarterly bills', () => {
+      const currentDate = new Date('2025-01-01');
+
+      const result = RecurrenceService.calculateNextDueDate(currentDate, 'quarterly');
+
+      expect(result).not.toBeNull();
+      expect(result!.getMonth()).toBe(3); // April
+      expect(result!.getDate()).toBe(1);
+    });
+
+    describe('twicemonthly', () => {
+      it('calculates 15th when starting on 1st', () => {
+        const currentDate = new Date('2025-01-01');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(15);
+        expect(result!.getMonth()).toBe(0);
+      });
+
+      it('calculates 1st of next month when starting on 15th', () => {
+        const currentDate = new Date('2025-01-15');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(1);
+        expect(result!.getMonth()).toBe(1); // February
+      });
+
+      it('calculates 14 days later when starting on custom day', () => {
+        const currentDate = new Date('2025-01-05');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(19);
+      });
+    });
+
     it('handles month-end dates correctly for monthly bills', () => {
       const currentDate = new Date('2025-01-31');
 

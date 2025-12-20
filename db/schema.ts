@@ -76,7 +76,16 @@ export const bills = sqliteTable('bills', {
   amountDue: integer('amount_due').notNull().default(0),
   dueDate: integer('due_date', { mode: 'timestamp_ms' }).notNull(),
   frequency: text('frequency', {
-    enum: ['once', 'monthly', 'yearly'],
+    enum: [
+      'once',
+      'weekly',
+      'biweekly',
+      'twicemonthly',
+      'monthly',
+      'bimonthly',
+      'quarterly',
+      'yearly'
+    ],
   }).notNull().default('monthly'),
   isAutoPay: integer('is_auto_pay', { mode: 'boolean' }).notNull().default(false),
   /** Distinguishes fixed amounts (Rent) from variable estimates (Electric) */
@@ -305,7 +314,7 @@ export interface BillWithTags extends Bill {
   categoryIcon: string;
 }
 
-export type BillFrequency = 'once' | 'monthly' | 'yearly';
+export type BillFrequency = 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';
 export type BillStatus = 'pending' | 'paid' | 'overdue';
 
 export type BillCategoryGroup = typeof billCategoryGroups.$inferSelect;

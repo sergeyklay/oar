@@ -58,7 +58,16 @@ const formSchema = z.object({
       message: 'Please enter a valid amount',
     }),
   dueDate: z.date({ message: 'Due date is required' }),
-  frequency: z.enum(['once', 'monthly', 'yearly']),
+  frequency: z.enum([
+    'once',
+    'weekly',
+    'biweekly',
+    'twicemonthly',
+    'monthly',
+    'bimonthly',
+    'quarterly',
+    'yearly'
+  ]),
   isAutoPay: z.boolean(),
   isVariable: z.boolean(),
   categoryId: z.string().min(1, 'Category is required'),
@@ -315,17 +324,22 @@ export function BillFormDialog({
               name="frequency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Frequency</FormLabel>
+                  <FormLabel>Repeat Interval</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select frequency" />
+                        <SelectValue placeholder="Select repeat interval" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="once">One-time</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="weekly">Every Week</SelectItem>
+                      <SelectItem value="biweekly">Every 2 Weeks</SelectItem>
+                      <SelectItem value="twicemonthly">Twice Per Month</SelectItem>
+                      <SelectItem value="monthly">Every Month</SelectItem>
+                      <SelectItem value="bimonthly">Every 2 Months</SelectItem>
+                      <SelectItem value="quarterly">Every 3 Months</SelectItem>
+                      <SelectItem value="yearly">Every Year</SelectItem>
+                      <SelectItem value="once">Never</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

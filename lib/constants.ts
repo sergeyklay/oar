@@ -141,7 +141,12 @@ export const WEEK_START_OPTIONS = [
  * Used in the Overview table Name column subtitle.
  */
 export const FREQUENCY_DISPLAY_LABELS: Record<BillFrequency, string> = {
-  once: 'One-time',
+  once: 'Never',
+  weekly: 'Every week',
+  biweekly: 'Every 2 weeks',
+  twicemonthly: 'Twice per month',
   monthly: 'Every month',
+  bimonthly: 'Every 2 months',
+  quarterly: 'Every 3 months',
   yearly: 'Every year',
 };

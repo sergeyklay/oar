@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { BillDetailPanel } from './BillDetailPanel';
-import type { BillWithTags } from '@/lib/types';
+import type { BillWithTags, BillFrequency } from '@/lib/types';
 
 jest.mock('./BillStatusBadge', () => ({
   BillStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
@@ -53,25 +53,46 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText('December 25, 2025')).toBeInTheDocument();
     });
 
-    it('displays frequency label for monthly', () => {
+    it('displays repeat interval label for monthly', () => {
       const bill = createMockBill({ frequency: 'monthly' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByText('Monthly')).toBeInTheDocument();
+      expect(screen.getByText('Repeat Interval')).toBeInTheDocument();
+      expect(screen.getByText('Every month')).toBeInTheDocument();
     });
 
-    it('displays frequency label for yearly', () => {
+    it('displays repeat interval label for yearly', () => {
       const bill = createMockBill({ frequency: 'yearly' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByText('Yearly')).toBeInTheDocument();
+      expect(screen.getByText('Every year')).toBeInTheDocument();
     });
 
-    it('displays frequency label for one-time', () => {
+    it('displays repeat interval label for never', () => {
       const bill = createMockBill({ frequency: 'once' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByText('One-time')).toBeInTheDocument();
+      expect(screen.getByText('Never')).toBeInTheDocument();
+    });
+
+    it('displays repeat interval label for all frequency types', () => {
+      const frequencies: Array<{ freq: BillFrequency; expected: string }> = [
+        { freq: 'weekly', expected: 'Every week' },
+        { freq: 'biweekly', expected: 'Every 2 weeks' },
+        { freq: 'twicemonthly', expected: 'Twice per month' },
+        { freq: 'monthly', expected: 'Every month' },
+        { freq: 'bimonthly', expected: 'Every 2 months' },
+        { freq: 'quarterly', expected: 'Every 3 months' },
+        { freq: 'yearly', expected: 'Every year' },
+        { freq: 'once', expected: 'Never' },
+      ];
+
+      for (const { freq, expected } of frequencies) {
+        const bill = createMockBill({ frequency: freq });
+        const { unmount } = render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+        expect(screen.getByText(expected)).toBeInTheDocument();
+        unmount();
+      }
     });
 
     it('displays remaining amount due', () => {

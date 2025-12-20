@@ -197,6 +197,28 @@ describe('createBill', () => {
     expect(valuesCall.isVariable).toBe(true);
   });
 
+  it('validates all new frequency types', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const frequencies: Array<CreateBillInput['frequency']> = [
+      'weekly',
+      'biweekly',
+      'twicemonthly',
+      'bimonthly',
+      'quarterly',
+    ];
+
+    for (const frequency of frequencies) {
+      const input = createMockBillInput({ frequency });
+      const result = await createBill(input);
+      expect(result.success).toBe(true);
+    }
+  });
+
   it('stores notes when provided', async () => {
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
