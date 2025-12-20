@@ -121,6 +121,37 @@ describe('BillService.getFiltered', () => {
     expect(BillService.getTagsForBills).toHaveBeenCalledWith(['bill-1', 'bill-2', 'bill-3']);
   });
 
+  it('returns active bills before paid bills when no filter provided', async () => {
+    const activeBills: BillWithTags[] = [
+      {
+        ...mockBills[0],
+        id: 'active-1',
+        status: 'pending' as const,
+        dueDate: new Date('2026-01-15'),
+      },
+    ];
+
+    const paidBills: BillWithTags[] = [
+      {
+        ...mockBills[1],
+        id: 'paid-1',
+        status: 'paid' as const,
+        dueDate: new Date('2025-12-10'),
+      },
+    ];
+
+    createSelectMock(activeBills, paidBills);
+    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+
+    const result = await BillService.getFiltered({});
+
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe('active-1');
+    expect(result[0].status).toBe('pending');
+    expect(result[1].id).toBe('paid-1');
+    expect(result[1].status).toBe('paid');
+  });
+
   it('returns only bills from specified month when month filter provided', async () => {
     const decemberBills = [mockBills[0]];
     const mockBuilder = createSelectMock(decemberBills);
@@ -261,7 +292,7 @@ describe('BillService.getFiltered', () => {
         tags: [],
       },
     ];
-    createSelectMock(paidBill);
+    createSelectMock([], paidBill);
     jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ date: '2025-12-10' });
