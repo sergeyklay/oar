@@ -40,6 +40,10 @@ You must analyze which file you are editing and apply the correct architectural 
     - **Context:** Database operations.
     - ❌ **FORBIDDEN:** No Async/Await for transactions. With better-sqlite3, drizzle-orm transactions are synchronous and the callback is not awaited.
 
+6.  **Use DRY Principle:**
+    - **Context:** Any typescript code.
+    - **Rule:** If a piece of logic is used in multiple places, it should be extracted to a shared component, library function or service.
+
 # Rules
 
 - **No Tests:** Do not implement tests. Tests will be created by a specialized agent.
