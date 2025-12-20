@@ -63,14 +63,9 @@ export const RecurrenceService = {
     // Handle twice-monthly logic
     if (frequency === 'twicemonthly') {
       const day = currentDueDate.getDate();
-      // Logic: If current is 1st or 15th, use [1, 15].
-      // Otherwise, use current day and (current day + 14) % 31
-      if (day === 1 || day === 15) {
-        options.bymonthday = [1, 15];
-      } else {
-        const secondDay = (day + 14) % 31 || 1;
-        options.bymonthday = [day, secondDay].sort((a, b) => a - b);
-      }
+      // Use current day and a day 14 days apart to simulate semi-monthly (e.g., 1st and 15th)
+      const secondDay = day <= 14 ? day + 14 : day - 14;
+      options.bymonthday = [day, secondDay].sort((a, b) => a - b);
     }
 
     const rule = new RRule(options);
