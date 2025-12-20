@@ -211,6 +211,22 @@ describe('PaymentService', () => {
       expect(result.newAmountDue).toBe(7000);
       expect(result.newStatus).toBe('pending');
     });
+
+    it('marks one-time bill as paid when fully paid via partial payment mode', () => {
+      const bill = {
+        amount: 31126,
+        amountDue: 31126,
+        dueDate: new Date('2026-05-23'),
+        frequency: 'once' as const,
+      };
+
+      const result = PaymentService.processPayment(bill, 31126, false);
+
+      expect(result.nextDueDate).toBeNull();
+      expect(result.newAmountDue).toBe(0);
+      expect(result.newStatus).toBe('paid');
+      expect(RecurrenceService.deriveStatus).not.toHaveBeenCalled();
+    });
   });
 
   describe('edge cases', () => {
