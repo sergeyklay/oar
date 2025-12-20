@@ -67,6 +67,10 @@
   background: hsl(var(--background));
 }
 
+.app-shell[data-has-right-panel="false"] {
+  grid-template-columns: var(--sidebar-width) 1fr;
+}
+
 .sidebar {
   height: 100dvh;
   overflow: hidden;
