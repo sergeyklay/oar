@@ -109,6 +109,56 @@ export const SettingsService = {
   },
 
   /**
+   * Fetches a single category by slug with its sections and settings counts.
+   *
+   * @param slug - The URL-safe category identifier (e.g., "general", "notification").
+   * @returns The category with sections, or null if not found.
+   */
+  async getCategoryBySlug(slug: string): Promise<StructuredSettings['categories'][number] | null> {
+    const [category] = await db
+      .select()
+      .from(settingsCategories)
+      .where(eq(settingsCategories.slug, slug))
+      .limit(1);
+
+    if (!category) {
+      return null;
+    }
+
+    const sections = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.categoryId, category.id))
+      .orderBy(asc(settingsSections.displayOrder), asc(settingsSections.name));
+
+    const sectionsWithCounts = await Promise.all(
+      sections.map(async (section) => {
+        const [countResult] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(settings)
+          .where(eq(settings.sectionId, section.id));
+
+        return {
+          id: section.id,
+          slug: section.slug,
+          name: section.name,
+          description: section.description,
+          displayOrder: section.displayOrder,
+          settingsCount: Number(countResult?.count ?? 0),
+        };
+      })
+    );
+
+    return {
+      id: category.id,
+      slug: category.slug,
+      name: category.name,
+      displayOrder: category.displayOrder,
+      sections: sectionsWithCounts,
+    };
+  },
+
+  /**
    * Fetches the complete settings structure with categories, sections, and counts.
    * Used by the Settings page to render the full hierarchy.
    *
