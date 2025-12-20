@@ -18,9 +18,9 @@ const mockSystemGroup: BillCategoryGroup = {
 };
 
 const mockCategories: BillCategory[] = [
-  { id: 'cat-1', groupId: 'group-1', name: 'Rent', slug: 'rent', displayOrder: 1, createdAt: new Date() },
-  { id: 'cat-2', groupId: 'group-1', name: 'Mortgage', slug: 'mortgage', displayOrder: 2, createdAt: new Date() },
-  { id: 'cat-3', groupId: 'group-2', name: 'Electric', slug: 'electric', displayOrder: 1, createdAt: new Date() },
+  { id: 'cat-1', groupId: 'group-1', name: 'Rent', slug: 'rent', icon: 'house', displayOrder: 1, createdAt: new Date() },
+  { id: 'cat-2', groupId: 'group-1', name: 'Mortgage', slug: 'mortgage', icon: 'house', displayOrder: 2, createdAt: new Date() },
+  { id: 'cat-3', groupId: 'group-2', name: 'Electric', slug: 'electric', icon: 'zap', displayOrder: 1, createdAt: new Date() },
 ];
 
 const mockUncategorized: BillCategory = {
@@ -28,6 +28,7 @@ const mockUncategorized: BillCategory = {
   groupId: 'group-system',
   name: 'Uncategorized',
   slug: 'uncategorized',
+  icon: 'circle-dashed',
   displayOrder: 1,
   createdAt: new Date(),
 };
@@ -177,6 +178,7 @@ describe('getDefaultCategoryId', () => {
       groupId: 'group-first',
       name: 'First Group Cat',
       slug: 'first-group-cat',
+      icon: 'house',
       displayOrder: 5,
       createdAt: new Date(),
     };
@@ -185,6 +187,7 @@ describe('getDefaultCategoryId', () => {
       groupId: 'group-second',
       name: 'Second Group Cat',
       slug: 'second-group-cat',
+      icon: 'zap',
       displayOrder: 1,
       createdAt: new Date(),
     };

@@ -1,4 +1,4 @@
-import { db, bills, tags, billsToTags } from '@/db';
+import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
 import { and, eq, gte, lte, inArray, ne, or } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
@@ -31,18 +31,22 @@ export interface GetBillsOptions {
  */
 export const BillService = {
   /**
-   * Fetch a single bill with its associated tags.
+   * Fetch a single bill with its associated tags and category icon.
    *
    * @param billId - Bill ID to fetch (assumed valid)
-   * @returns Bill with tags or null if not found/archived
+   * @returns Bill with tags and category icon or null if not found/archived
    */
   async getWithTags(billId: string): Promise<BillWithTags | null> {
-    const [bill] = await db
-      .select()
+    const [result] = await db
+      .select({
+        bill: bills,
+        categoryIcon: billCategories.icon,
+      })
       .from(bills)
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
       .where(and(eq(bills.id, billId), eq(bills.isArchived, false)));
 
-    if (!bill) {
+    if (!result) {
       return null;
     }
 
@@ -59,8 +63,9 @@ export const BillService = {
       .orderBy(tags.name);
 
     return {
-      ...bill,
+      ...result.bill,
       tags: billTags,
+      categoryIcon: result.categoryIcon,
     };
   },
 
@@ -124,7 +129,7 @@ export const BillService = {
   },
 
   /**
-   * Fetches bills with their associated tags based on filter options.
+   * Fetches bills with their associated tags and category icons based on filter options.
    *
    * Filtering behavior:
    * - When `date` is provided, filters by that specific day (local time) - takes precedence over `month`
@@ -132,7 +137,7 @@ export const BillService = {
    * - When neither is provided, returns all bills sorted by closest payment date
    *
    * @param options - Filter options
-   * @returns Array of bills with tags
+   * @returns Array of bills with tags and category icons
    */
   async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
     const { date, month, dateRange, tag, includeArchived = false } = options;
@@ -210,25 +215,37 @@ export const BillService = {
       conditions.push(inArray(bills.id, billIds));
     }
 
-    const billsResult =
+    const billsWithCategories =
       conditions.length === 0
-        ? await db.select().from(bills).orderBy(bills.dueDate)
-        : await db
-            .select()
+        ? await db
+            .select({
+              bill: bills,
+              categoryIcon: billCategories.icon,
+            })
             .from(bills)
+            .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
+            .orderBy(bills.dueDate)
+        : await db
+            .select({
+              bill: bills,
+              categoryIcon: billCategories.icon,
+            })
+            .from(bills)
+            .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
             .where(and(...conditions))
             .orderBy(bills.dueDate);
 
-    if (billsResult.length === 0) {
+    if (billsWithCategories.length === 0) {
       return [];
     }
 
-    const billIds = billsResult.map((b) => b.id);
+    const billIds = billsWithCategories.map((b) => b.bill.id);
     const tagsByBillId = await this.getTagsForBills(billIds);
 
-    return billsResult.map((bill) => ({
+    return billsWithCategories.map(({ bill, categoryIcon }) => ({
       ...bill,
       tags: tagsByBillId.get(bill.id) ?? [],
+      categoryIcon,
     }));
   },
 };

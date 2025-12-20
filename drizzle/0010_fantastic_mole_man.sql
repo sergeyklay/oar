@@ -1,0 +1,1 @@
+ALTER TABLE `bill_categories` ADD `icon` text NOT NULL;

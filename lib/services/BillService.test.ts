@@ -27,6 +27,7 @@ describe('BillService.getFiltered', () => {
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
       tags: [],
+      categoryIcon: 'house',
     },
     {
       id: 'bill-2',
@@ -44,6 +45,7 @@ describe('BillService.getFiltered', () => {
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
       tags: [],
+      categoryIcon: 'house',
     },
     {
       id: 'bill-3',
@@ -61,14 +63,37 @@ describe('BillService.getFiltered', () => {
       createdAt: new Date('2025-01-01'),
       updatedAt: new Date('2025-01-01'),
       tags: [],
+      categoryIcon: 'house',
     },
   ];
 
   const createSelectMock = (returnValue: BillWithTags[]) => {
+    // Convert BillWithTags[] to the format returned by the JOIN query
+    const joinedResults = returnValue.map((bill) => ({
+      bill: {
+        id: bill.id,
+        title: bill.title,
+        amount: bill.amount,
+        amountDue: bill.amountDue,
+        dueDate: bill.dueDate,
+        frequency: bill.frequency,
+        isAutoPay: bill.isAutoPay,
+        isVariable: bill.isVariable,
+        status: bill.status,
+        isArchived: bill.isArchived,
+        notes: bill.notes,
+        categoryId: bill.categoryId,
+        createdAt: bill.createdAt,
+        updatedAt: bill.updatedAt,
+      },
+      categoryIcon: bill.categoryIcon,
+    }));
+
     const mockBuilder = {
       from: jest.fn().mockReturnThis(),
+      innerJoin: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockResolvedValue(returnValue),
+      orderBy: jest.fn().mockResolvedValue(joinedResults),
     };
     (db.select as jest.Mock).mockReturnValue(mockBuilder);
     return mockBuilder;
@@ -263,6 +288,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const billInCurrentMonth: BillWithTags = {
@@ -281,6 +307,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [overdueBillFromPreviousMonth, billInCurrentMonth];
@@ -320,6 +347,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const overdueBillFrom1YearAgo: BillWithTags = {
@@ -338,6 +366,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const billInCurrentMonth: BillWithTags = {
@@ -356,6 +385,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [
@@ -401,6 +431,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
       void _paidOverdueBill;
 
@@ -420,6 +451,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [unpaidOverdueBill];
@@ -458,6 +490,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const pendingBillInMonth: BillWithTags = {
@@ -476,6 +509,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [overdueBill, pendingBillInMonth];
@@ -517,6 +551,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [billInPastMonth];
@@ -554,6 +589,7 @@ describe('BillService.getFiltered', () => {
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
         tags: [],
+        categoryIcon: 'house',
       };
 
       const expectedBills = [billInFutureMonth];

@@ -1,4 +1,4 @@
-import { db, transactions, bills } from '@/db';
+import { db, transactions, bills, billCategories } from '@/db';
 import { gte, lte, desc, eq, and } from 'drizzle-orm';
 import { startOfDay, endOfDay, subDays } from 'date-fns';
 import type { PaymentWithBill } from '@/lib/types';
@@ -11,7 +11,7 @@ export const TransactionService = {
    * Fetches recent payments within the specified lookback period.
    *
    * @param days - Number of days to look back (0 = today only, 7 = last 7 days)
-   * @returns Payments with bill information, ordered by paidAt descending
+   * @returns Payments with bill information and category icons, ordered by paidAt descending
    */
   async getRecentPayments(days: number): Promise<PaymentWithBill[]> {
     const now = new Date();
@@ -25,9 +25,11 @@ export const TransactionService = {
         amount: transactions.amount,
         paidAt: transactions.paidAt,
         notes: transactions.notes,
+        categoryIcon: billCategories.icon,
       })
       .from(transactions)
       .innerJoin(bills, eq(transactions.billId, bills.id))
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
       .where(
         and(
           gte(transactions.paidAt, startDate),

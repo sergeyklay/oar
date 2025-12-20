@@ -84,6 +84,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
+# Copy required node_modules for seed/migration scripts
+# These packages are not included in Next.js standalone output but are needed
+# for database initialization scripts that run at container startup
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@paralleldrive ./node_modules/@paralleldrive
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@noble ./node_modules/@noble
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bignumber.js ./node_modules/bignumber.js
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/error-causes ./node_modules/error-causes
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bindings ./node_modules/bindings
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prebuild-install ./node_modules/prebuild-install
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/file-uri-to-path ./node_modules/file-uri-to-path
+
 # Make entrypoint executable
 RUN chmod +x scripts/docker-entrypoint.sh
 

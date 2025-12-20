@@ -16,32 +16,178 @@ type SeedTransaction = SQLiteTransaction<
 >;
 
 /**
- * Wipe all data from the database in reverse order of dependencies.
+ * Predefined bill category seed data with icons.
  *
- * Ensures a clean state before seeding by deleting records from all
- * application tables while respecting foreign key constraints.
- * Bill categories are NOT wiped as they are seeded separately via seed-categories.mjs.
+ * Categories are organized into groups for semantic structure.
+ * Each category has a unique Lucide icon for visual identification.
+ */
+const CATEGORY_SEED_DATA = [
+  {
+    group: { name: 'Housing & Essential Services', slug: 'housing-essential-services', displayOrder: 1 },
+    categories: [
+      { name: 'Home, Mortgage & Rent', slug: 'home-mortgage-rent', icon: 'house', displayOrder: 1 },
+      { name: 'Credit Cards', slug: 'credit-cards', icon: 'credit-card', displayOrder: 2 },
+      { name: 'Cellphone & Mobile Service', slug: 'cellphone-mobile-service', icon: 'smartphone', displayOrder: 3 },
+      { name: 'Auto & Car', slug: 'auto-car', icon: 'car', displayOrder: 4 },
+      { name: 'Insurance', slug: 'insurance', icon: 'shield', displayOrder: 5 },
+    ],
+  },
+  {
+    group: { name: 'Utilities', slug: 'utilities', displayOrder: 2 },
+    categories: [
+      { name: 'Electric & Utilities', slug: 'electric-utilities', icon: 'zap', displayOrder: 1 },
+      { name: 'Gas', slug: 'gas', icon: 'flame', displayOrder: 2 },
+      { name: 'Internet & Broadband', slug: 'internet-broadband', icon: 'wifi', displayOrder: 3 },
+      { name: 'Phone & Business Communication', slug: 'phone-business-communication', icon: 'phone', displayOrder: 4 },
+      { name: 'Trash', slug: 'trash', icon: 'trash-2', displayOrder: 5 },
+      { name: 'Water', slug: 'water', icon: 'droplet', displayOrder: 6 },
+    ],
+  },
+  {
+    group: { name: 'Transportation & Travel', slug: 'transportation-travel', displayOrder: 3 },
+    categories: [
+      { name: 'Boat & Marine', slug: 'boat-marine', icon: 'ship', displayOrder: 1 },
+      { name: 'Motorcycle', slug: 'motorcycle', icon: 'bike', displayOrder: 2 },
+      { name: 'Maintenance & Repairs', slug: 'maintenance-repairs', icon: 'wrench', displayOrder: 3 },
+      { name: 'Travel', slug: 'travel', icon: 'plane', displayOrder: 4 },
+    ],
+  },
+  {
+    group: { name: 'Digital Services & Subscriptions', slug: 'digital-services-subscriptions', displayOrder: 4 },
+    categories: [
+      { name: 'Video Streaming & Television', slug: 'video-streaming-television', icon: 'tv', displayOrder: 1 },
+      { name: 'Apps', slug: 'apps', icon: 'app-window', displayOrder: 2 },
+      { name: 'Cloud Services', slug: 'cloud-services', icon: 'cloud', displayOrder: 3 },
+      { name: 'Music Subscriptions', slug: 'music-subscriptions', icon: 'music', displayOrder: 4 },
+      { name: 'Subscriptions', slug: 'subscriptions', icon: 'repeat', displayOrder: 5 },
+    ],
+  },
+  {
+    group: { name: 'Home Maintenance & Household', slug: 'home-maintenance-household', displayOrder: 5 },
+    categories: [
+      { name: 'Cleaning', slug: 'cleaning', icon: 'sparkles', displayOrder: 1 },
+      { name: 'Food', slug: 'food', icon: 'utensils', displayOrder: 2 },
+      { name: 'Lawn & Garden', slug: 'lawn-garden', icon: 'tree-deciduous', displayOrder: 3 },
+      { name: 'Alarm & Reminder Services', slug: 'alarm-reminder-services', icon: 'bell', displayOrder: 4 },
+    ],
+  },
+  {
+    group: { name: 'Goods & Shopping', slug: 'goods-shopping', displayOrder: 6 },
+    categories: [
+      { name: 'Appliances', slug: 'appliances', icon: 'refrigerator', displayOrder: 1 },
+      { name: 'Television, Audio & Computer Equipment', slug: 'television-audio-computer', icon: 'monitor', displayOrder: 2 },
+      { name: 'Furniture', slug: 'furniture', icon: 'armchair', displayOrder: 3 },
+      { name: 'Gaming', slug: 'gaming', icon: 'gamepad-2', displayOrder: 4 },
+      { name: 'Jewelry', slug: 'jewelry', icon: 'gem', displayOrder: 5 },
+      { name: 'Watches & Smartwatches', slug: 'watches-smartwatches', icon: 'watch', displayOrder: 6 },
+      { name: 'Shopping & Purchases', slug: 'shopping-purchases', icon: 'shopping-bag', displayOrder: 7 },
+      { name: 'Childcare', slug: 'childcare', icon: 'baby', displayOrder: 8 },
+      { name: 'Community & Organizations', slug: 'community-organizations', icon: 'users', displayOrder: 9 },
+      { name: 'Concerts, Tickets & Events', slug: 'concerts-tickets-events', icon: 'ticket', displayOrder: 10 },
+      { name: 'Dental', slug: 'dental', icon: 'smile', displayOrder: 11 },
+      { name: 'Gifts & Donations', slug: 'gifts-donations', icon: 'gift', displayOrder: 12 },
+      { name: 'Gym', slug: 'gym', icon: 'dumbbell', displayOrder: 13 },
+      { name: 'Health, Hospital & Medicine', slug: 'health-hospital-medicine', icon: 'heart-pulse', displayOrder: 14 },
+      { name: 'Legal', slug: 'legal', icon: 'scale', displayOrder: 15 },
+      { name: 'Personal Care', slug: 'personal-care', icon: 'user', displayOrder: 16 },
+      { name: 'Pet', slug: 'pet', icon: 'paw-print', displayOrder: 17 },
+      { name: 'School & Student Loans', slug: 'school-student-loans', icon: 'graduation-cap', displayOrder: 18 },
+      { name: 'Sports', slug: 'sports', icon: 'trophy', displayOrder: 19 },
+    ],
+  },
+  {
+    group: { name: 'Financial Management & Business', slug: 'financial-management-business', displayOrder: 7 },
+    categories: [
+      { name: 'Business', slug: 'business', icon: 'briefcase', displayOrder: 1 },
+      { name: 'Storage & Security', slug: 'storage-security', icon: 'lock', displayOrder: 2 },
+      { name: 'Loans', slug: 'loans', icon: 'banknote', displayOrder: 3 },
+      { name: 'Mail', slug: 'mail', icon: 'mail', displayOrder: 4 },
+      { name: 'Savings', slug: 'savings', icon: 'piggy-bank', displayOrder: 5 },
+      { name: 'Taxes & General', slug: 'taxes-general', icon: 'receipt', displayOrder: 6 },
+    ],
+  },
+  {
+    group: { name: 'System', slug: 'system', displayOrder: 999 },
+    categories: [
+      { name: 'Uncategorized', slug: 'uncategorized', icon: 'circle-dashed', displayOrder: 1 },
+    ],
+  },
+];
+
+/**
+ * Seed bill categories into the database.
+ *
+ * This function is idempotent: it skips seeding if categories already exist.
+ * Categories are required for bill creation and are predefined by the system.
+ *
+ * @returns True if categories were seeded, false if they already existed
+ */
+function seedCategories(): boolean {
+  const existingCount = db
+    .select()
+    .from(schema.billCategoryGroups)
+    .all()
+    .length;
+
+  if (existingCount > 0) {
+    console.log(`Found ${existingCount} existing category groups. Skipping category seed.`);
+    return false;
+  }
+
+  console.log('Seeding bill categories...');
+
+  const now = new Date();
+  let totalCategories = 0;
+
+  db.transaction((tx) => {
+    for (const { group, categories } of CATEGORY_SEED_DATA) {
+      const groupId = createId();
+
+      tx.insert(schema.billCategoryGroups).values({
+        id: groupId,
+        name: group.name,
+        slug: group.slug,
+        displayOrder: group.displayOrder,
+        createdAt: now,
+      }).run();
+
+      for (const category of categories) {
+        tx.insert(schema.billCategories).values({
+          id: createId(),
+          groupId,
+          name: category.name,
+          slug: category.slug,
+          icon: category.icon,
+          displayOrder: category.displayOrder,
+          createdAt: now,
+        }).run();
+        totalCategories++;
+      }
+    }
+  });
+
+  console.log(`Seeded ${totalCategories} categories across ${CATEGORY_SEED_DATA.length} groups.`);
+  return true;
+}
+
+/**
+ * Wipe all application data from the database.
+ *
+ * Deletes records from all application tables in reverse dependency order.
+ * Preserves bill categories as they are system-defined reference data.
  *
  * @param tx - Database transaction instance
  */
-function wipeData(tx: SeedTransaction) {
+function wipeData(tx: SeedTransaction): void {
   console.log('Wiping existing data...');
 
-  // Junction tables and dependent tables first
   tx.delete(schema.billsToTags).run();
   tx.delete(schema.transactions).run();
-
-  // Main entity tables
   tx.delete(schema.bills).run();
   tx.delete(schema.tags).run();
-
-  // Settings hierarchy
   tx.delete(schema.settings).run();
   tx.delete(schema.settingsSections).run();
   tx.delete(schema.settingsCategories).run();
-
-  // NOTE: bill_category_groups and bill_categories are NOT wiped.
-  // They are seeded separately via scripts/seed-categories.mjs and should persist.
 
   console.log('Database wiped clean.');
 }
@@ -49,12 +195,10 @@ function wipeData(tx: SeedTransaction) {
 /**
  * Seed tags for bill organization.
  *
- * Generates a set of common financial categories used to group bills.
- *
  * @param tx - Database transaction instance
  * @returns Array of inserted tag records
  */
-function seedTags(tx: SeedTransaction) {
+function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
   console.log('Seeding tags...');
 
   const tagNames = [
@@ -85,10 +229,8 @@ function seedTags(tx: SeedTransaction) {
 
 /**
  * Seed default settings hierarchy.
- *
- * Uses SettingsService to ensure consistency with the application logic.
  */
-async function seedSettings() {
+async function seedSettings(): Promise<void> {
   console.log('Seeding settings...');
   await SettingsService.initializeDefaults();
   console.log('Seeded settings hierarchy.');
@@ -100,7 +242,6 @@ async function seedSettings() {
  * @returns Array of category records for bill assignment
  */
 function getCategories(): typeof schema.billCategories.$inferSelect[] {
-  // Filter out System group categories (displayOrder >= 999)
   const filteredCategories = db
     .select()
     .from(schema.billCategories)
@@ -120,26 +261,24 @@ function getCategories(): typeof schema.billCategories.$inferSelect[] {
  * @param tx - Database transaction instance
  * @param tags - Array of tag records to associate with bills
  * @param categories - Array of category records for bill assignment
- * @returns Array of inserted bill records for transaction seeding
+ * @returns Array of inserted bill records
  */
 function seedBills(
   tx: SeedTransaction,
   tags: typeof schema.tags.$inferSelect[],
   categories: typeof schema.billCategories.$inferSelect[]
-) {
+): typeof schema.bills.$inferInsert[] {
   console.log('Seeding bills...');
 
   if (categories.length === 0) {
-    console.warn('No bill categories found. Run: node scripts/seed-categories.mjs');
-    console.warn('Bills will be created without categories.');
+    throw new Error('No categories found. Categories must be seeded first.');
   }
 
-  const billsToInsert: (typeof schema.bills.$inferInsert)[] = [];
-  const billsToTagsToInsert: (typeof schema.billsToTags.$inferInsert)[] = [];
+  const billsToInsert: typeof schema.bills.$inferInsert[] = [];
+  const billsToTagsToInsert: typeof schema.billsToTags.$inferInsert[] = [];
 
   const now = new Date();
 
-  // Create 20 bills
   for (let i = 0; i < 20; i++) {
     const id = createId();
 
@@ -147,9 +286,8 @@ function seedBills(
     const frequency = faker.helpers.arrayElement(frequencies);
 
     const isVariable = faker.datatype.boolean(0.3);
-    const amount = faker.number.int({ min: 1000, max: 200000 }); // $10.00 to $2000.00
+    const amount = faker.number.int({ min: 1000, max: 200000 });
 
-    // Status distribution: 60% pending, 30% paid, 10% overdue
     const statuses = [
       'pending', 'pending', 'pending', 'pending', 'pending', 'pending',
       'paid', 'paid', 'paid',
@@ -157,7 +295,6 @@ function seedBills(
     ] as const;
     const status = faker.helpers.arrayElement(statuses);
 
-    // Date ranges: overdue (-30 to -1 days), pending (0 to 60 days), paid (-30 to 0 days)
     let dueDate: Date;
     if (status === 'overdue') {
       dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
@@ -167,10 +304,7 @@ function seedBills(
       dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
     }
 
-    // Assign a random category (or null if none available)
-    const categoryId = categories.length > 0
-      ? faker.helpers.arrayElement(categories).id
-      : null;
+    const categoryId = faker.helpers.arrayElement(categories).id;
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
@@ -190,7 +324,6 @@ function seedBills(
 
     billsToInsert.push(bill);
 
-    // Randomly assign 1-3 tags
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
     selectedTags.forEach(tag => {
       billsToTagsToInsert.push({
@@ -203,30 +336,24 @@ function seedBills(
   tx.insert(schema.bills).values(billsToInsert).run();
   tx.insert(schema.billsToTags).values(billsToTagsToInsert).run();
 
-  console.log(`Seeded ${billsToInsert.length} bills with categories.`);
+  console.log(`Seeded ${billsToInsert.length} bills.`);
   return billsToInsert;
 }
 
 /**
  * Seed historical transactions for bills.
  *
- * Generates past payment records for each bill based on its frequency
- * and status to populate the transaction history view.
- *
  * @param tx - Database transaction instance
  * @param bills - Array of bill records to generate transactions for
  */
-function seedTransactions(tx: SeedTransaction, bills: (typeof schema.bills.$inferInsert)[]) {
+function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$inferInsert[]): void {
   console.log('Seeding transactions...');
 
-  const transactionsToInsert: (typeof schema.transactions.$inferInsert)[] = [];
+  const transactionsToInsert: typeof schema.transactions.$inferInsert[] = [];
 
   for (const bill of bills) {
     if (bill.id === undefined) continue;
 
-    // Monthly bills get 1-5 past transactions
-    // Yearly bills get 0-1 past transactions
-    // One-time bills get 1 past transaction if status is 'paid'
     let count = 0;
     if (bill.frequency === 'monthly') count = faker.number.int({ min: 1, max: 5 });
     else if (bill.frequency === 'yearly') count = faker.number.int({ min: 0, max: 1 });
@@ -256,19 +383,19 @@ function seedTransactions(tx: SeedTransaction, bills: (typeof schema.bills.$infe
 }
 
 /**
- * Main execution entry point for the seeding script.
+ * Main seed entry point.
  *
- * Orchestrates the full seeding process: wiping existing data,
- * seeding tags, settings, bills, and transactions.
- * Bill categories must be seeded first via: node scripts/seed-categories.mjs
- *
- * @returns A promise that resolves when the seeding is complete
+ * Seeds the database with:
+ * 1. Bill categories (idempotent - skips if exist)
+ * 2. Settings hierarchy
+ * 3. Sample tags, bills, and transactions
  */
-async function main() {
+async function main(): Promise<void> {
   try {
     console.log('Starting database seed...');
 
-    // Fetch existing categories before wiping other data
+    seedCategories();
+
     const categories = getCategories();
     console.log(`Found ${categories.length} bill categories.`);
 
@@ -293,4 +420,3 @@ async function main() {
 }
 
 main();
-

@@ -1,7 +1,7 @@
 # Getting Started
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-19
+- **Last Updated:** 2025-12-20
 
 ## 1. Goal
 
@@ -65,33 +65,22 @@ file:
 npm run db:push
 ```
 
-Note: This creates the SQLite database file at the path specified by
+This creates the SQLite database file at the path specified by
 `DATABASE_URL` (default: `./data/oar.db`).
 
-### Step 5: Seed Bill Categories
+### Step 5: Seed Sample Data
 
-Oar requires predefined bill categories. Seed them into your database:
-
-```bash
-npm run db:seed:categories
-```
-
-Note: This script is idempotent and skips seeding if categories already
-exist.
-
-### Step 6: Seed Sample Data (Optional)
-
-To populate the application with mock bills and transactions for testing,
-run the seed script:
+To populate the application with categories, tags, bills, and transactions
+for testing, run the seed script:
 
 ```bash
 npm run db:seed
 ```
 
-Note: The sample data seed assigns random categories to bills. If you skip
-Step 5, bills will be created without categories.
+This seeds predefined bill categories (required for bill creation) and
+generates sample bills with transaction history.
 
-### Step 7: Start the Development Server
+### Step 6: Start the Development Server
 
 Launch the Next.js development server:
 
@@ -109,7 +98,7 @@ The application uses the following environment variables:
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Key for Server Actions. | Required |
 | `OAR_MEMORY_LIMIT` | Docker memory limit. | `128MiB` |
 
-Note: `OAR_MEMORY_LIMIT` is used only for Docker deployment.
+`OAR_MEMORY_LIMIT` is used only for Docker deployment.
 For more see [Local Docker Deployment](./002-local-docker.md).
 
 ## 5. Verification
