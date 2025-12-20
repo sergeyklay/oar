@@ -25,7 +25,7 @@ The table shows your bills with these columns:
 
 ## Due date display
 
-The due date column shows when a bill is due using everyday language instead of raw dates. The formatted date (like "Wed, Dec 25") appears below as a reference.
+The due date column shows when a bill is due using everyday language instead of raw dates. The formatted date (like "Thu, Dec 25") appears below as a reference.
 
 ### Relative date formats
 
