@@ -283,7 +283,18 @@ function seedBills(
   for (let i = 0; i < 20; i++) {
     const id = createId();
 
-    const frequencies = ['monthly', 'monthly', 'monthly', 'yearly', 'once'] as const;
+    const frequencies = [
+      'weekly',
+      'biweekly',
+      'twicemonthly',
+      'monthly',
+      'monthly',
+      'monthly',
+      'bimonthly',
+      'quarterly',
+      'yearly',
+      'once'
+    ] as const;
     const frequency = faker.helpers.arrayElement(frequencies);
 
     const isVariable = faker.datatype.boolean(0.3);
@@ -380,14 +391,28 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     if (bill.id === undefined) continue;
 
     let count = 0;
-    if (bill.frequency === 'monthly') count = faker.number.int({ min: 1, max: 5 });
+    if (bill.frequency === 'weekly') count = faker.number.int({ min: 1, max: 12 });
+    else if (bill.frequency === 'biweekly') count = faker.number.int({ min: 1, max: 6 });
+    else if (bill.frequency === 'twicemonthly') count = faker.number.int({ min: 1, max: 6 });
+    else if (bill.frequency === 'monthly') count = faker.number.int({ min: 1, max: 5 });
+    else if (bill.frequency === 'bimonthly') count = faker.number.int({ min: 1, max: 3 });
+    else if (bill.frequency === 'quarterly') count = faker.number.int({ min: 1, max: 2 });
     else if (bill.frequency === 'yearly') count = faker.number.int({ min: 0, max: 1 });
     else if (bill.frequency === 'once' && bill.status === 'paid') count = 1;
 
     for (let j = 0; j < count; j++) {
       if (bill.dueDate === undefined || bill.amount === undefined) continue;
 
-      const paidAt = subMonths(bill.dueDate as Date, j + (bill.status === 'paid' ? 0 : 1));
+      let paidAt: Date;
+      const offset = j + (bill.status === 'paid' ? 0 : 1);
+
+      if (bill.frequency === 'weekly') paidAt = subDays(bill.dueDate as Date, offset * 7);
+      else if (bill.frequency === 'biweekly') paidAt = subDays(bill.dueDate as Date, offset * 14);
+      else if (bill.frequency === 'twicemonthly') paidAt = subDays(bill.dueDate as Date, offset * 15); // Approximation
+      else if (bill.frequency === 'bimonthly') paidAt = subMonths(bill.dueDate as Date, offset * 2);
+      else if (bill.frequency === 'quarterly') paidAt = subMonths(bill.dueDate as Date, offset * 3);
+      else if (bill.frequency === 'yearly') paidAt = subMonths(bill.dueDate as Date, offset * 12);
+      else paidAt = subMonths(bill.dueDate as Date, offset); // Monthly and default
 
       transactionsToInsert.push({
         id: createId(),
