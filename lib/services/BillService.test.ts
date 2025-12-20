@@ -112,7 +112,10 @@ describe('BillService.getFiltered', () => {
     expect(result[2].tags).toEqual([]);
     expect(db.select).toHaveBeenCalled();
     expect(mockBuilder.from).toHaveBeenCalledWith(bills);
-    expect(mockBuilder.orderBy).toHaveBeenCalledWith(bills.dueDate);
+    expect(mockBuilder.orderBy).toHaveBeenCalledWith(
+      expect.any(Object),
+      bills.dueDate
+    );
     expect(BillService.getTagsForBills).toHaveBeenCalledWith(['bill-1', 'bill-2', 'bill-3']);
   });
 
@@ -173,7 +176,10 @@ describe('BillService.getFiltered', () => {
 
     const result = await BillService.getFiltered({});
 
-    expect(mockBuilder.orderBy).toHaveBeenCalledWith(bills.dueDate);
+    expect(mockBuilder.orderBy).toHaveBeenCalledWith(
+      expect.any(Object),
+      bills.dueDate
+    );
     expect(result).toHaveLength(3);
   });
 

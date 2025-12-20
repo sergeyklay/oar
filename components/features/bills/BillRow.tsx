@@ -77,9 +77,11 @@ export function BillRow({
           />
           <div className="flex flex-col">
             <span>{DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}</span>
-            <span className="text-xs text-muted-foreground">
-              {format(bill.dueDate, 'EEE, MMM d')}
-            </span>
+            {!(bill.status === 'paid' && bill.frequency === 'once') && (
+              <span className="text-xs text-muted-foreground">
+                {format(bill.dueDate, 'EEE, MMM d')}
+              </span>
+            )}
           </div>
         </div>
       </td>
