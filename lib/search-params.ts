@@ -27,3 +27,17 @@ export const calendarSearchParams = {
  * Server-side cache for reading search params in RSC.
  */
 export const searchParamsCache = createSearchParamsCache(calendarSearchParams);
+
+/**
+ * Settings page URL search params schema.
+ *
+ * - category: Selected settings category slug (default: "general")
+ */
+export const settingsSearchParams = {
+  category: parseAsString.withDefault('general'),
+};
+
+/**
+ * Server-side cache for reading settings page search params in RSC.
+ */
+export const settingsSearchParamsCache = createSearchParamsCache(settingsSearchParams);

@@ -284,4 +284,77 @@ describe('SettingsService', () => {
       await expect(SettingsService.setPaidRecentlyRange(7)).rejects.toThrow('Behavior Options section not found');
     });
   });
+
+  describe('getCategoryBySlug', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns null when category not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getCategoryBySlug('nonexistent');
+
+      expect(result).toBeNull();
+    });
+
+    it('returns category with sections and settings counts', async () => {
+      const mockCategory = {
+        id: 'cat-1',
+        slug: 'general',
+        name: 'General',
+        displayOrder: 1,
+      };
+      const mockSections = [
+        { id: 'sec-1', slug: 'view-options', name: 'View Options', description: 'View settings', displayOrder: 1 },
+        { id: 'sec-2', slug: 'behavior-options', name: 'Behavior Options', description: null, displayOrder: 2 },
+      ];
+
+      let selectCallCount = 0;
+      (db.select as jest.Mock).mockImplementation(() => {
+        selectCallCount++;
+
+        if (selectCallCount === 1) {
+          return {
+            from: jest.fn().mockReturnValue({
+              where: jest.fn().mockReturnValue({
+                limit: jest.fn().mockResolvedValue([mockCategory]),
+              }),
+            }),
+          };
+        }
+
+        if (selectCallCount === 2) {
+          return {
+            from: jest.fn().mockReturnValue({
+              where: jest.fn().mockReturnValue({
+                orderBy: jest.fn().mockResolvedValue(mockSections),
+              }),
+            }),
+          };
+        }
+
+        return {
+          from: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([{ count: selectCallCount === 3 ? 2 : 1 }]),
+          }),
+        };
+      });
+
+      const result = await SettingsService.getCategoryBySlug('general');
+
+      expect(result).not.toBeNull();
+      expect(result?.slug).toBe('general');
+      expect(result?.name).toBe('General');
+      expect(result?.sections).toHaveLength(2);
+      expect(result?.sections[0].slug).toBe('view-options');
+      expect(result?.sections[1].slug).toBe('behavior-options');
+    });
+  });
 });
