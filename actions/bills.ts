@@ -26,8 +26,17 @@ const createBillSchema = z.object({
   dueDate: z.coerce.date({
     message: 'Please select a valid date',
   }),
-  frequency: z.enum(['once', 'monthly', 'yearly'], {
-    message: 'Please select a frequency',
+  frequency: z.enum([
+    'once',
+    'weekly',
+    'biweekly',
+    'twicemonthly',
+    'monthly',
+    'bimonthly',
+    'quarterly',
+    'yearly'
+  ], {
+    message: 'Please select a repeat interval',
   }),
   isAutoPay: z.boolean().default(false),
   isVariable: z.boolean().default(false),

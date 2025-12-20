@@ -5,19 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { formatMoney } from '@/lib/money';
 import { BillStatusBadge } from './BillStatusBadge';
 import { CloseDetailButton } from './CloseDetailButton';
-import type { BillWithTags, BillFrequency } from '@/lib/types';
+import type { BillWithTags } from '@/lib/types';
+import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;
   currency: string;
   locale: string;
 }
-
-const frequencyLabels = {
-  once: 'One-time',
-  monthly: 'Monthly',
-  yearly: 'Yearly',
-} satisfies Record<BillFrequency, string>;
 
 /**
  * Display bill details in the right panel.
@@ -68,14 +63,14 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
           </div>
         </div>
 
-        {/* Frequency */}
+        {/* Repeat Interval */}
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
             <RefreshCw className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Frequency</p>
-            <p className="font-medium">{frequencyLabels[bill.frequency]}</p>
+            <p className="text-sm text-muted-foreground">Repeat Interval</p>
+            <p className="font-medium">{FREQUENCY_DISPLAY_LABELS[bill.frequency]}</p>
           </div>
         </div>
 

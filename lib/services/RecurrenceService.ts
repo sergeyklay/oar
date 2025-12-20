@@ -11,7 +11,12 @@ import { bills, type BillFrequency } from '@/db/schema';
  */
 const FREQUENCY_MAP: Record<BillFrequency, Frequency | null> = {
   once: null,
+  weekly: Frequency.WEEKLY,
+  biweekly: Frequency.WEEKLY,
+  twicemonthly: Frequency.MONTHLY,
   monthly: Frequency.MONTHLY,
+  bimonthly: Frequency.MONTHLY,
+  quarterly: Frequency.MONTHLY,
   yearly: Frequency.YEARLY,
 };
 
@@ -34,16 +39,55 @@ export const RecurrenceService = {
       return null;
     }
 
-    const rule = new RRule({
-      freq: rruleFrequency,
-      dtstart: currentDueDate,
-      count: 2, // Get current + next occurrence
-    });
+    // Use UTC date with same components as local date to avoid timezone issues with rrule
+    const localAsUtc = new Date(Date.UTC(
+      currentDueDate.getFullYear(),
+      currentDueDate.getMonth(),
+      currentDueDate.getDate(),
+      currentDueDate.getHours(),
+      currentDueDate.getMinutes(),
+      currentDueDate.getSeconds()
+    ));
 
+    const options: Partial<import('rrule').Options> = {
+      freq: rruleFrequency,
+      dtstart: localAsUtc,
+      count: 2, // Get current + next occurrence
+    };
+
+    // Handle intervals for expanded frequencies
+    if (frequency === 'biweekly') options.interval = 2;
+    if (frequency === 'bimonthly') options.interval = 2;
+    if (frequency === 'quarterly') options.interval = 3;
+
+    // Handle twice-monthly logic
+    if (frequency === 'twicemonthly') {
+      const day = currentDueDate.getDate();
+      // Logic: If current is 1st or 15th, use [1, 15].
+      // Otherwise, use current day and (current day + 14) % 31
+      if (day === 1 || day === 15) {
+        options.bymonthday = [1, 15];
+      } else {
+        const secondDay = (day + 14) % 31 || 1;
+        options.bymonthday = [day, secondDay].sort((a, b) => a - b);
+      }
+    }
+
+    const rule = new RRule(options);
     const occurrences = rule.all();
 
-    // Return the second occurrence (next after current)
-    return occurrences[1] ?? null;
+    const nextUtc = occurrences[1];
+    if (!nextUtc) return null;
+
+    // Convert back from UTC components to local date
+    return new Date(
+      nextUtc.getUTCFullYear(),
+      nextUtc.getUTCMonth(),
+      nextUtc.getUTCDate(),
+      nextUtc.getUTCHours(),
+      nextUtc.getUTCMinutes(),
+      nextUtc.getUTCSeconds()
+    );
   },
 
   /**
