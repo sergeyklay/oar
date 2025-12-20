@@ -78,6 +78,16 @@ export const PaymentService = {
 
     // Partial payment: reduce amount due, keep due date unchanged
     const newAmountDue = Math.max(0, bill.amountDue - paymentAmount);
+
+    // For one-time bills, mark as paid when fully paid off
+    if (bill.frequency === 'once' && newAmountDue === 0) {
+      return {
+        nextDueDate: null,
+        newAmountDue: 0,
+        newStatus: 'paid',
+      };
+    }
+
     const currentStatus = RecurrenceService.deriveStatus(bill.dueDate);
 
     return {
