@@ -1,3 +1,5 @@
+import type { BillFrequency } from '@/lib/types';
+
 export const RANGE_KEYS = ['0', '1', '3', '5', '7', '10', '14', '20', '30'] as const;
 
 export type RangeKey = typeof RANGE_KEYS[number];
@@ -83,3 +85,13 @@ export const DEFAULT_SETTINGS_VALUES = [
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
 ] as const;
+
+/**
+ * Human-readable labels for bill frequency display in table subtitles.
+ * Used in the Overview table Name column subtitle.
+ */
+export const FREQUENCY_DISPLAY_LABELS: Record<BillFrequency, string> = {
+  once: 'One-time',
+  monthly: 'Every month',
+  yearly: 'Every year',
+};

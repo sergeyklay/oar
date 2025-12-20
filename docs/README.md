@@ -16,8 +16,9 @@ Explanations of user-facing functionality and domain logic.
 
 | Document | Description |
 |----------|-------------|
-| [Recurrence Engine](./features/001-recurrence-engine.md) | Handling recurring and one-time payments |
+| [Overview Screen](./features/005-overview-screen.md) | The main dashboard for managing bills |
 | [Logging Payments](./features/002-auto-pay.md) | Logging payments and updating due dates |
+| [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
 | [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
 | [Due This Month View](./features/004-due-this-month.md) | Viewing bills due in the current month |
 

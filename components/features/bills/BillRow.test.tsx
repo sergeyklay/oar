@@ -2,12 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { BillRow } from './BillRow';
 import type { BillWithTags } from '@/lib/types';
 
-jest.mock('./BillStatusBadge', () => ({
-  BillStatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="status-badge">{status}</span>
-  ),
-}));
-
 jest.mock('./BillActionsMenu', () => ({
   BillActionsMenu: () => <button>Actions</button>,
 }));
@@ -119,12 +113,12 @@ describe('BillRow', () => {
       expect(screen.getByText('Electric Bill')).toBeInTheDocument();
     });
 
-    it('displays bill frequency', () => {
+    it('displays bill frequency as human-readable label', () => {
       const bill = createMockBill({ frequency: 'yearly' });
 
       renderBillRow(bill);
 
-      expect(screen.getByText('yearly')).toBeInTheDocument();
+      expect(screen.getByText('Every year')).toBeInTheDocument();
     });
 
     it('does not display tags in row (tags shown in detail panel only)', () => {
