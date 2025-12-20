@@ -86,7 +86,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
 # Copy required node_modules for seed/migration scripts
 # These packages are not included in Next.js standalone output but are needed
-# for database initialization scripts that run at container startup
+# for database initialization scripts that run at container startup.
+# Direct dependencies: better-sqlite3, @paralleldrive/cuid2
+# Transitive deps of better-sqlite3: bindings, prebuild-install
+# Transitive dep of bindings: file-uri-to-path
+# Transitive deps of @paralleldrive/cuid2: @noble, bignumber.js, error-causes
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@paralleldrive ./node_modules/@paralleldrive
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@noble ./node_modules/@noble
