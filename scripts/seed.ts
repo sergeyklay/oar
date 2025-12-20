@@ -7,6 +7,7 @@ import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
 import { SettingsService } from '@/lib/services/SettingsService';
+import type { BillStatus } from '@/lib/types';
 
 type SeedTransaction = SQLiteTransaction<
   'sync',
@@ -291,7 +292,7 @@ function seedBills(
     const categoryId = faker.helpers.arrayElement(categories).id;
 
     // Generate realistic bill states based on frequency
-    let status: 'pending' | 'paid' | 'overdue';
+    let status: BillStatus;
     let dueDate: Date;
     let amountDue: number;
 
