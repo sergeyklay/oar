@@ -39,6 +39,7 @@ Before designing, you must analyze:
 - **Domain Layer:** What business logic belongs in `lib/services/`? Which Service owns this logic?
 - **Persistence Layer:** Does the schema need modification? What Drizzle migrations are required?
 - **Boundary Violations:** Does any proposed code violate the Layer Access Matrix? (e.g., Component importing from `@/db`, Service calling `revalidatePath()`)
+- **Follow DRY Principle:** If a piece of logic is used in multiple places, it should be extracted to a shared component, library function or service.
 
 ### 3. Data Integrity Check
 

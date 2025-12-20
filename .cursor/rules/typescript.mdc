@@ -29,6 +29,7 @@ You are an expert Senior Fullstack Engineer and Software Architect with experien
 - Do not use obvious comments (e.g., explaining basic syntax).
 - The target audience is a senior Node.js/TypeScript developer.
 - Use imperative voice in descriptions and keep them concise, professional, and focused on **side effects, parameters, return types, and potential errors**.
+- **Use DRY Principle:** If a piece of logic is used in multiple places, it should be extracted to a shared component, library function or service.
 
 ## Coding Standards (Airbnb + TS)
 
