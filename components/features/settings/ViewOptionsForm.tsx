@@ -10,12 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { updateViewOptions } from '@/actions/settings';
 import {
   CURRENCY_OPTIONS,
   LOCALE_OPTIONS,
   WEEK_START_OPTIONS,
 } from '@/lib/constants';
+
+type FieldKey = 'currency' | 'locale' | 'weekStart';
 
 interface ViewOptionsFormProps {
   initialCurrency: string;
@@ -36,11 +39,9 @@ export function ViewOptionsForm({
   const [locale, setLocale] = useState(initialLocale);
   const [weekStart, setWeekStart] = useState(String(initialWeekStart));
   const [isPending, startTransition] = useTransition();
+  const [updatingField, setUpdatingField] = useState<FieldKey | null>(null);
 
-  const handleUpdate = (
-    field: 'currency' | 'locale' | 'weekStart',
-    value: string
-  ) => {
+  const handleUpdate = (field: FieldKey, value: string) => {
     const newCurrency = field === 'currency' ? value : currency;
     const newLocale = field === 'locale' ? value : locale;
     const newWeekStart = field === 'weekStart' ? value : weekStart;
@@ -49,12 +50,16 @@ export function ViewOptionsForm({
     if (field === 'locale') setLocale(value);
     if (field === 'weekStart') setWeekStart(value);
 
+    setUpdatingField(field);
+
     startTransition(async () => {
       const result = await updateViewOptions({
         currency: newCurrency,
         locale: newLocale,
         weekStart: parseInt(newWeekStart, 10),
       });
+
+      setUpdatingField(null);
 
       if (!result.success) {
         toast.error('Failed to update setting', {
@@ -67,18 +72,22 @@ export function ViewOptionsForm({
     });
   };
 
+  const isCurrencyUpdating = isPending && updatingField === 'currency';
+  const isLocaleUpdating = isPending && updatingField === 'locale';
+  const isWeekStartUpdating = isPending && updatingField === 'weekStart';
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Default Currency</label>
+        <Label htmlFor="currency-select">Default Currency</Label>
         <Select
           value={currency}
           onValueChange={(value) => handleUpdate('currency', value)}
           disabled={isPending}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger id="currency-select" className="w-[200px]">
             <SelectValue>
-              {isPending ? (
+              {isCurrencyUpdating ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Updating...
@@ -96,21 +105,21 @@ export function ViewOptionsForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">
+        <p id="currency-description" className="text-xs text-muted-foreground">
           Default currency for new bills and reports
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Default Locale</label>
+        <Label htmlFor="locale-select">Default Locale</Label>
         <Select
           value={locale}
           onValueChange={(value) => handleUpdate('locale', value)}
           disabled={isPending}
         >
-          <SelectTrigger className="w-[250px]">
+          <SelectTrigger id="locale-select" className="w-[250px]">
             <SelectValue>
-              {isPending ? (
+              {isLocaleUpdating ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Updating...
@@ -128,21 +137,21 @@ export function ViewOptionsForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">
+        <p id="locale-description" className="text-xs text-muted-foreground">
           Format for dates, numbers, and currency display
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Start of Week</label>
+        <Label htmlFor="weekstart-select">Start of Week</Label>
         <Select
           value={weekStart}
           onValueChange={(value) => handleUpdate('weekStart', value)}
           disabled={isPending}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger id="weekstart-select" className="w-[200px]">
             <SelectValue>
-              {isPending ? (
+              {isWeekStartUpdating ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Updating...
@@ -161,7 +170,7 @@ export function ViewOptionsForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-xs text-muted-foreground">
+        <p id="weekstart-description" className="text-xs text-muted-foreground">
           Sets the first day of the week in the calendar
         </p>
       </div>
