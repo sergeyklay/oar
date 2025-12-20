@@ -1,5 +1,6 @@
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { format } from 'date-fns';
+import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 
 /**
  * Returns current month in YYYY-MM format.
@@ -34,7 +35,7 @@ export const searchParamsCache = createSearchParamsCache(calendarSearchParams);
  * - category: Selected settings category slug (default: "general")
  */
 export const settingsSearchParams = {
-  category: parseAsString.withDefault('general'),
+  category: parseAsString.withDefault(DEFAULT_SETTINGS_CATEGORY),
 };
 
 /**

@@ -34,6 +34,9 @@ export const PAST_RANGE_LABELS: Record<string, string> = {
   '30': 'Last 30 days',
 };
 
+/** Default settings category slug for URL state. */
+export const DEFAULT_SETTINGS_CATEGORY = 'general';
+
 export const DEFAULT_CATEGORIES = [
   { slug: 'general', name: 'General', displayOrder: 1 },
   { slug: 'notification', name: 'Notification', displayOrder: 2 },
