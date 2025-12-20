@@ -131,6 +131,7 @@ export const SettingsService = {
 
   /**
    * Updates multiple view options settings at once.
+   * All settings are updated atomically within a single transaction.
    *
    * @param options - Object containing currency, locale, and weekStart values.
    * @throws {Error} If the "view-options" section does not exist.
@@ -156,19 +157,21 @@ export const SettingsService = {
       { key: 'weekStart', value: String(options.weekStart) },
     ];
 
-    for (const setting of settingsToUpsert) {
-      await db
-        .insert(settings)
-        .values({
-          key: setting.key,
-          value: setting.value,
-          sectionId: viewOptionsSection.id,
-        })
-        .onConflictDoUpdate({
-          target: settings.key,
-          set: { value: setting.value, updatedAt: new Date() },
-        });
-    }
+    db.transaction((tx) => {
+      for (const setting of settingsToUpsert) {
+        tx.insert(settings)
+          .values({
+            key: setting.key,
+            value: setting.value,
+            sectionId: viewOptionsSection.id,
+          })
+          .onConflictDoUpdate({
+            target: settings.key,
+            set: { value: setting.value, updatedAt: new Date() },
+          })
+          .run();
+      }
+    });
   },
 
   /**

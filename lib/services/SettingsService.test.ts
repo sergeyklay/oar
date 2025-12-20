@@ -434,7 +434,7 @@ describe('SettingsService', () => {
       jest.clearAllMocks();
     });
 
-    it('upserts all view options settings', async () => {
+    it('upserts all view options settings within a transaction', async () => {
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -443,11 +443,15 @@ describe('SettingsService', () => {
         }),
       });
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          onConflictDoUpdate: onConflictDoUpdateMock,
-        }),
+      const runMock = jest.fn();
+      const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
+      const valuesMock = jest.fn().mockReturnValue({
+        onConflictDoUpdate: onConflictDoUpdateMock,
+      });
+      const txInsertMock = jest.fn().mockReturnValue({ values: valuesMock });
+
+      (db.transaction as jest.Mock).mockImplementation((callback) => {
+        callback({ insert: txInsertMock });
       });
 
       await SettingsService.setViewOptions({
@@ -456,8 +460,10 @@ describe('SettingsService', () => {
         weekStart: 1,
       });
 
-      expect(db.insert).toHaveBeenCalledTimes(3);
-      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(db.transaction).toHaveBeenCalled();
+      expect(txInsertMock).toHaveBeenCalledTimes(3);
+      expect(txInsertMock).toHaveBeenCalledWith(settings);
+      expect(runMock).toHaveBeenCalledTimes(3);
     });
 
     it('throws error when view-options section not found', async () => {
@@ -487,11 +493,15 @@ describe('SettingsService', () => {
         }),
       });
 
+      const runMock = jest.fn();
+      const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
       const valuesMock = jest.fn().mockReturnValue({
-        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+        onConflictDoUpdate: onConflictDoUpdateMock,
       });
-      (db.insert as jest.Mock).mockReturnValue({
-        values: valuesMock,
+      const txInsertMock = jest.fn().mockReturnValue({ values: valuesMock });
+
+      (db.transaction as jest.Mock).mockImplementation((callback) => {
+        callback({ insert: txInsertMock });
       });
 
       await SettingsService.setViewOptions({
