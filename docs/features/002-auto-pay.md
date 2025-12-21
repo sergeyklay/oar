@@ -65,7 +65,7 @@ Each payment displays the amount, date (formatted like "December 21, 2025"), and
 
 You can delete a payment record from the history dialog by clicking the trash icon. A confirmation dialog appears warning that deletion won't change the bill's current due date or amount due.
 
-This is intentional. Deleting a payment is a record correction, not an "undo" operation. If you logged a payment by mistake and the bill's due date already advanced, you'll need to edit the bill manually to fix it.
+This is intentional. Deleting a payment is a record correction, not an "undo" operation. If you logged a payment accidentally and the bill's due date already advanced, you'll need to edit the bill manually to fix it.
 
 ## Edge cases
 
