@@ -245,8 +245,20 @@ export async function updateBill(
   try {
     const cleanedAmount = parseMoneyInput(amount);
     const amountInMinorUnits = toMinorUnits(cleanedAmount);
-    const status = RecurrenceService.deriveStatus(dueDate);
     const now = new Date();
+
+    // Fetch current bill state to preserve paid status for completed one-time bills
+    const [currentBill] = await db
+      .select({ amountDue: bills.amountDue, status: bills.status })
+      .from(bills)
+      .where(eq(bills.id, id))
+      .limit(1);
+
+    // Determine status: preserve 'paid' for fully-paid one-time bills, otherwise derive from due date
+    const status: 'pending' | 'paid' | 'overdue' =
+      frequency === 'once' && currentBill?.amountDue === 0
+        ? 'paid'
+        : RecurrenceService.deriveStatus(dueDate);
 
     // Update bill (amountDue is not updated here - it only changes via payment logging)
     await db
