@@ -62,7 +62,7 @@ function CalendarHeader({
   const formattedCaption = formatDate(displayMonth, 'LLLL yyyy');
 
   return (
-    <div className="flex justify-between items-center w-[280px] mb-3">
+    <div className="flex justify-between items-center w-full mb-3">
       <span className="text-sm font-medium">{formattedCaption}</span>
       <div className="flex items-center">
         <button
@@ -138,7 +138,7 @@ function Calendar({
   };
 
   return (
-    <div className={cn('p-3', className)}>
+    <div className={cn('p-3 w-fit', className)}>
       <CalendarHeader
         displayMonth={displayMonth}
         onPreviousMonth={handlePreviousMonth}
