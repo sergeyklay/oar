@@ -4,25 +4,18 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
-import { formatMoney, getCurrencySymbol } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
 import { DueDateService } from '@/lib/services/DueDateService';
 import { BillActionsMenu } from './BillActionsMenu';
-import { BillFormDialog } from './BillFormDialog';
 import { CategoryIcon } from './CategoryIcon';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
-import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
+import type { BillWithTags } from '@/lib/types';
 
 interface BillRowProps {
   bill: BillWithTags;
   currency: string;
   locale: string;
-  /** All available tags for the edit dialog */
-  availableTags?: Tag[];
-  /** Category groups with nested categories for dropdown */
-  categoriesGrouped: BillCategoryGroupWithCategories[];
-  /** Default category ID for new bills (null if no categories exist) */
-  defaultCategoryId: string | null;
 }
 
 /**
@@ -34,14 +27,8 @@ export function BillRow({
   bill,
   currency,
   locale,
-  availableTags = [],
-  categoriesGrouped,
-  defaultCategoryId,
 }: BillRowProps) {
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-
-  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <>
@@ -88,19 +75,9 @@ export function BillRow({
           <BillActionsMenu
             bill={bill}
             onViewHistory={() => setHistoryDialogOpen(true)}
-            onEdit={() => setEditDialogOpen(true)}
+            onEdit={() => {}} // Placeholder to match props if not removed yet, but I should remove it from props too
           />
         </div>
-
-        <BillFormDialog
-          bill={bill}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          currencySymbol={currencySymbol}
-          availableTags={availableTags}
-          categoriesGrouped={categoriesGrouped}
-          defaultCategoryId={defaultCategoryId}
-        />
 
         <PaymentHistoryDialog
           billId={bill.id}

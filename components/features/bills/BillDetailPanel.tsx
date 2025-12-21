@@ -4,20 +4,39 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryState, parseAsString } from 'nuqs';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { formatMoney } from '@/lib/money';
 import { DueDateService } from '@/lib/services/DueDateService';
-import { skipPayment } from '@/actions/bills';
+import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { LogPaymentDialog } from './LogPaymentDialog';
+import { BillFormDialog } from './BillFormDialog';
 import { CloseDetailButton } from './CloseDetailButton';
-import type { BillWithTags } from '@/lib/types';
+import type {
+  BillWithTags,
+  Tag,
+  BillCategoryGroupWithCategories,
+} from '@/lib/types';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;
   currency: string;
   locale: string;
+  availableTags?: Tag[];
+  categoriesGrouped?: BillCategoryGroupWithCategories[];
+  defaultCategoryId?: string;
 }
 
 /**
@@ -27,11 +46,30 @@ interface BillDetailPanelProps {
  * @param props.bill - Bill to display (with tags).
  * @param props.currency - ISO 4217 currency code.
  * @param props.locale - BCP 47 locale tag.
+ * @param props.availableTags - All available tags for editing.
+ * @param props.categoriesGrouped - Grouped categories for editing.
+ * @param props.defaultCategoryId - Default category ID.
  * @returns Bill details panel UI.
  */
-export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps) {
+export function BillDetailPanel({
+  bill,
+  currency,
+  locale,
+  availableTags = [],
+  categoriesGrouped = [],
+  defaultCategoryId,
+}: BillDetailPanelProps) {
   const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [, setSelectedBill] = useQueryState(
+    'selectedBill',
+    parseAsString.withOptions({ shallow: false })
+  );
 
   const isPaid = bill.status === 'paid';
   const isOverdue = bill.status === 'overdue';
@@ -50,6 +88,41 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
     }
   };
 
+  const handleArchive = async () => {
+    setIsArchiving(true);
+    const result = await archiveBill(bill.id, true);
+    setIsArchiving(false);
+
+    if (result.success) {
+      toast.success('Bill archived', {
+        description: `"${bill.title}" has been archived.`,
+      });
+      setSelectedBill(null);
+    } else {
+      toast.error('Failed to archive bill', {
+        description: result.error ?? 'Please try again.',
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const result = await deleteBill(bill.id);
+    setIsDeleting(false);
+    setDeleteDialogOpen(false);
+
+    if (result.success) {
+      toast.success('Bill deleted', {
+        description: `"${bill.title}" has been removed.`,
+      });
+      setSelectedBill(null);
+    } else {
+      toast.error('Failed to delete bill', {
+        description: result.error ?? 'Please try again.',
+      });
+    }
+  };
+
   return (
     <aside className="calendar-panel bg-card p-4 flex flex-col h-full">
       {/* Header */}
@@ -57,15 +130,17 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
         className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${DueDateService.getStatusBarColor(bill.dueDate, bill.status)}`}
       >
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold truncate text-white">{bill.title}</h2>
+          <h2 className="text-lg font-semibold truncate text-white">
+            {bill.title}
+          </h2>
         </div>
         <div className="ml-2">
-           <CloseDetailButton />
+          <CloseDetailButton />
         </div>
       </div>
 
       {/* Details */}
-      <div className="flex-1 space-y-6">
+      <div className="flex-1 space-y-6 overflow-y-auto">
         {/* Status / Date / Amount Block */}
         <div className="space-y-1">
           {/* Line 1: Status Header */}
@@ -79,7 +154,9 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
           </p>
 
           {/* Line 3: Amount */}
-          <p className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}>
+          <p
+            className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}
+          >
             {formatMoney(bill.amount, currency, locale)}
           </p>
           {bill.isVariable && (
@@ -119,25 +196,58 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground mb-1">Notes</p>
-              <p className="text-sm whitespace-pre-wrap break-words">{bill.notes}</p>
+              <p className="text-sm whitespace-pre-wrap break-words">
+                {bill.notes}
+              </p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Tags Section - At Bottom */}
-      {bill.tags.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-border">
-          <p className="text-sm text-muted-foreground mb-2">Tags</p>
-          <div className="flex flex-wrap gap-2">
-            {bill.tags.map((tag) => (
-              <Badge key={tag.id} variant="secondary">
-                {tag.name}
-              </Badge>
-            ))}
+      {/* Footer Actions */}
+      <div className="mt-auto pt-4">
+        {/* Tags Section - Moved here */}
+        {bill.tags.length > 0 && (
+          <div className="mt-6 pb-4">
+            <p className="text-sm text-muted-foreground mb-2">Tags</p>
+            <div className="flex flex-wrap gap-2">
+              {bill.tags.map((tag) => (
+                <Badge key={tag.id} variant="secondary">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
           </div>
+        )}
+
+        <div className="flex items-center justify-center gap-3 pt-4 border-t border-border">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleArchive}
+            disabled={isArchiving || isDeleting}
+          >
+            {isArchiving ? 'Archiving...' : 'Archive'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setEditDialogOpen(true)}
+            disabled={isArchiving || isDeleting}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+            disabled={isArchiving || isDeleting}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
         </div>
-      )}
+      </div>
 
       <LogPaymentDialog
         bill={bill}
@@ -145,6 +255,42 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
         onOpenChange={setPayDialogOpen}
         currency={currency}
       />
+
+      <BillFormDialog
+        bill={bill}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        currencySymbol={formatMoney(0, currency, locale).replace(/[\d.,\s]/g, '')}
+        availableTags={availableTags}
+        categoriesGrouped={categoriesGrouped}
+        defaultCategoryId={defaultCategoryId ?? null}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Bill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{bill.title}&quot;? This
+              action cannot be undone and will also delete all payment history
+              for this bill.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </aside>
   );
 }

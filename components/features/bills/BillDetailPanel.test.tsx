@@ -1,11 +1,21 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { useQueryState } from 'nuqs';
 import { BillDetailPanel } from './BillDetailPanel';
 import type { BillWithTags } from '@/lib/types';
-import { skipPayment } from '@/actions/bills';
+import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { toast } from 'sonner';
+
+jest.mock('nuqs', () => ({
+  useQueryState: jest.fn(() => [null, jest.fn()]),
+  parseAsString: {
+    withOptions: jest.fn().mockReturnThis(),
+  },
+}));
 
 jest.mock('@/actions/bills', () => ({
   skipPayment: jest.fn(),
+  archiveBill: jest.fn(),
+  deleteBill: jest.fn(),
 }));
 
 jest.mock('sonner', () => ({
@@ -20,6 +30,16 @@ jest.mock('./LogPaymentDialog', () => ({
     open ? (
       <div role="dialog">
         Mock Log Payment Dialog
+        <button onClick={() => onOpenChange(false)}>Close Dialog</button>
+      </div>
+    ) : null,
+}));
+
+jest.mock('./BillFormDialog', () => ({
+  BillFormDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+    open ? (
+      <div role="dialog">
+        Mock Bill Form Dialog
         <button onClick={() => onOpenChange(false)}>Close Dialog</button>
       </div>
     ) : null,
@@ -144,6 +164,53 @@ describe('BillDetailPanel', () => {
 
       expect(screen.getByRole('button', { name: /log payment/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /^skip$/i })).toBeDisabled();
+    });
+
+    it('calls archiveBill action and clears selection when clicking Archive', async () => {
+      const mockSetSelectedBill = jest.fn();
+      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+
+      const bill = createMockBill({ title: 'Archive Me' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /archive/i }));
+
+      expect(archiveBill).toHaveBeenCalledWith(bill.id, true);
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Bill archived', expect.any(Object));
+        expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it('opens edit dialog when clicking Edit', () => {
+      const bill = createMockBill();
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+
+      expect(screen.getByText('Mock Bill Form Dialog')).toBeInTheDocument();
+    });
+
+    it('calls deleteBill action and clears selection after confirmation', async () => {
+      const mockSetSelectedBill = jest.fn();
+      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (deleteBill as jest.Mock).mockResolvedValue({ success: true });
+
+      const bill = createMockBill({ title: 'Delete Me' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      // Click Delete to open confirmation
+      fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+
+      // Click Delete in confirmation dialog
+      fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+
+      expect(deleteBill).toHaveBeenCalledWith(bill.id);
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Bill deleted', expect.any(Object));
+        expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
+      });
     });
   });
 
