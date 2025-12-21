@@ -73,9 +73,7 @@ export function BillRow({
           onClick={(e) => e.stopPropagation()}
         >
           <BillActionsMenu
-            bill={bill}
             onViewHistory={() => setHistoryDialogOpen(true)}
-            onEdit={() => {}} // Placeholder to match props if not removed yet, but I should remove it from props too
           />
         </div>
 

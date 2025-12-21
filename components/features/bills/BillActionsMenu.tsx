@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { MoreHorizontal, History } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -10,19 +9,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Bill } from '@/lib/types';
 
 interface BillActionsMenuProps {
-  bill: Bill;
   onViewHistory: () => void;
-  onEdit: () => void;
 }
 
+/**
+ * Dropdown menu for bill-specific actions in the table.
+ * Currently only contains "View History" as other management actions
+ * moved to the Bill Detail Panel.
+ *
+ * @param {BillActionsMenuProps} props - Component props.
+ * @returns {JSX.Element} The actions menu.
+ */
 export function BillActionsMenu({
   onViewHistory,
 }: BillActionsMenuProps) {
-  const [isProcessing] = useState(false);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -30,7 +32,6 @@ export function BillActionsMenu({
           variant="ghost"
           size="icon"
           className="h-8 w-8"
-          disabled={isProcessing}
         >
           <MoreHorizontal className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
