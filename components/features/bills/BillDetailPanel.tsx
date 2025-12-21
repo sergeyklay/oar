@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { DueDateService } from '@/lib/services/DueDateService';
 import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { LogPaymentDialog } from './LogPaymentDialog';
@@ -260,7 +260,7 @@ export function BillDetailPanel({
         bill={bill}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        currencySymbol={formatMoney(0, currency, locale).replace(/[\d.,\s]/g, '')}
+        currencySymbol={getCurrencySymbol(currency, locale)}
         availableTags={availableTags}
         categoriesGrouped={categoriesGrouped}
         defaultCategoryId={defaultCategoryId ?? null}
