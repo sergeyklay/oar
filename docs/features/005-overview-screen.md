@@ -1,7 +1,8 @@
 # Overview Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-20
+- **Last Updated:** 2025-12-21
+- **Related:** [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
 
@@ -21,7 +22,15 @@ The table shows your bills with these columns:
 
 **Due date.** Shows when payment is due using human-readable text. A colored vertical bar on the left indicates the bill's urgency.
 
-**Actions.** Contains the Log Payment button and a menu with additional actions like viewing payment history or editing the bill.
+**Actions.** Contains a menu with administrative actions like viewing payment history, editing the bill, or deleting it.
+
+## Bill Detail Panel
+
+Clicking anywhere on a bill row opens the **Bill Detail Panel** on the right side of the screen. This panel provides a focused view of the specific bill and serves as the primary location for taking action.
+
+The detail panel replaces the calendar widget when a bill is selected, ensuring you have enough context to make a payment decision without navigating away from the Overview. From here, you can log a payment or skip the current billing cycle.
+
+See the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) documentation for full details on its behavior and the "Skip" action.
 
 ## Due date display
 
@@ -84,17 +93,18 @@ The estimate label uses muted styling to avoid visual clutter while providing im
 
 ## Logging payments
 
-Click the Log Payment button (banknote icon) on any unpaid bill to record a payment. See the [Logging Payments](./002-auto-pay.md) documentation for details on the payment dialog, partial payments, and how due dates update.
+To record a payment for an unpaid bill, click the bill row to open the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button. This opens the payment dialog where you can enter the amount and date.
 
-The Log Payment button is disabled for bills already marked as paid.
+See the [Logging Payments](./002-auto-pay.md) documentation for details on the payment dialog, partial payments, and how due dates update.
 
 ## Editing bills
 
-Click the three-dot menu on any bill row to access additional actions:
+Click the three-dot menu in the Actions column of any bill row to access additional actions:
 
 - **View history:** Opens a dialog showing all past payments for this bill
 - **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags
-- **Delete:** Removes the bill (requires confirmation)
+- **Archive:** Moves the bill to your archive (removes it from active views)
+- **Delete:** Removes the bill entirely (requires confirmation)
 
 ## Edge cases
 
@@ -121,6 +131,5 @@ To confirm the Overview screen works:
 5. Check that bills due within 30 days show an amber bar.
 6. Check that bills due more than 30 days away show a blue bar.
 7. Find a paid one-time bill. It should show "Paid" with a green bar.
-8. Click the Log Payment button on an unpaid bill. The payment dialog should open.
-9. Click the three-dot menu. You should see View History, Edit, and Delete options.
-
+8. Click on a bill row. The Bill Detail Panel should appear on the right.
+9. Click the three-dot menu. You should see View History, Edit, Archive, and Delete options.

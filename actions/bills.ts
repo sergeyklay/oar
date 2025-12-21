@@ -467,3 +467,70 @@ export async function getBillTags(
     };
   }
 }
+
+const skipPaymentSchema = z.object({
+  billId: z.string().min(1, 'Bill ID is required'),
+});
+
+type SkipPaymentInput = z.infer<typeof skipPaymentSchema>;
+
+/**
+ * Skips the current payment for a bill by advancing it to the next due date.
+ *
+ * @param input - Object containing billId
+ * @returns Action result
+ */
+export async function skipPayment(
+  input: SkipPaymentInput
+): Promise<ActionResult<void>> {
+  const parsed = skipPaymentSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  const { billId } = parsed.data;
+
+  try {
+    const [bill] = await db.select().from(bills).where(eq(bills.id, billId));
+
+    if (!bill) {
+      return { success: false, error: 'Bill not found' };
+    }
+
+    if (bill.frequency === 'once') {
+      return { success: false, error: 'Cannot skip one-time bills' };
+    }
+
+    const nextDueDate = RecurrenceService.calculateNextDueDate(bill.dueDate, bill.frequency);
+
+    if (!nextDueDate) {
+      return { success: false, error: 'Unable to calculate next due date' };
+    }
+
+    const newStatus = RecurrenceService.deriveStatus(nextDueDate);
+
+    await db.update(bills)
+      .set({
+        dueDate: nextDueDate,
+        amountDue: bill.amount,
+        status: newStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(bills.id, billId));
+
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to skip payment:', error);
+    return {
+      success: false,
+      error: 'Failed to skip payment. Please try again.',
+    };
+  }
+}
