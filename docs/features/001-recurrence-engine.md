@@ -1,8 +1,8 @@
 # Recurrence Engine
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-20
-- **Related:** [Logging Payments](./002-auto-pay.md)
+- **Last Updated:** 2025-12-21
+- **Related:** [Logging Payments](./002-auto-pay.md), [Background Jobs](./006-background-jobs.md)
 
 ## Concept
 
@@ -37,9 +37,9 @@ When you log a payment and keep the "Update Due Date" toggle on (the default), t
 - A quarterly bill due January 10 moves to April 10.
 - A bill with "Never" interval due March 1 becomes "paid" with no future due date.
 
-### Trigger: daily status check (background job)
+### Trigger: daily status check
 
-At midnight each day, a background job scans all pending bills. Any bill with a due date before today gets marked "overdue." This happens automatically without user action.
+At midnight each day, a [background job](./006-background-jobs.md) scans all pending bills. Any bill with a due date before today gets marked "overdue." This happens automatically without user action.
 
 **Status determination:**
 - Due date is today or in the future → pending
@@ -66,7 +66,7 @@ When a bill is due on the 31st, months without 31 days get skipped.
 
 **Example:** A bill due January 31 skips February (28/29 days) and moves to March 31.
 
-This behavior comes from strict date matching via the `rrule` library. The engine doesn't "roll back" to February 28; it waits for the next month that has a 31st.
+The engine uses strict date matching. It doesn't "roll back" to February 28; it waits for the next month that has a 31st.
 
 ### Leap year dates
 
@@ -88,22 +88,13 @@ Server functions normalize dates to midnight before comparison. This avoids issu
 
 These bills (formerly called "one-time") transition to "paid" status permanently. They don't advance because there's no next occurrence. The "Amount Due" zeroes out, and the bill stays in history.
 
-### Race conditions in batch updates
+### Concurrent updates
 
-The daily check bills job uses a specific database filter that re-validates the bill's state during the update. If another process changes a bill between the search and the update, no rows are affected. This prevents double-processing or conflicting status changes.
+If you log a payment at the same moment the daily status check runs, the system handles this gracefully. Your payment takes priority, and the bill won't be incorrectly marked as overdue.
 
 ### Variable vs. fixed amounts
 
 The recurrence engine treats variable and fixed bills identically. The "Variable Amount" flag affects UI display (showing "estimate" labels) but doesn't change how due dates advance.
-
-## Future scope
-
-Not included in this version:
-
-- **Custom recurrence rules:** No support for "first Monday" or "every X weeks"
-- **Skip patterns:** No way to skip specific occurrences (holidays, vacation months)
-- **End dates:** Recurring bills continue indefinitely; there's no "ends after X payments"
-- **Weekend adjustment:** No automatic shift to Friday/Monday when due dates land on weekends
 
 ## Verification
 

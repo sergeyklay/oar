@@ -16,11 +16,13 @@ Explanations of user-facing functionality and domain logic.
 
 | Document | Description |
 |----------|-------------|
-| [Overview Screen](./features/005-overview-screen.md) | The main dashboard for managing bills |
-| [Logging Payments](./features/002-auto-pay.md) | Logging payments and updating due dates |
+| [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
+| [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
+| [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
+| [Logging Payments](./features/002-auto-pay.md) | Recording payments and updating due dates |
 | [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
 | [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
-| [Due This Month View](./features/004-due-this-month.md) | Viewing bills due in the current month |
+| [Background Jobs](./features/006-background-jobs.md) | Automated system tasks |
 
 ## 🚀 Development
 

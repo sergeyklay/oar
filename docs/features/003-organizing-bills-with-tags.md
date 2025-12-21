@@ -68,14 +68,3 @@ To confirm tags work as expected:
 5. Click the bill to open its detail
 6. Scroll down; your "Test" tag appears at the bottom
 7. Clear the filter; all bills return
-
-## Future scope
-
-The following features aren't included in this version:
-
-- Tag colors or icons for visual distinction
-- Tag management screen (edit, rename, or delete tags)
-- Multi-tag filtering with AND/OR logic
-- Tag-based reports and analytics
-- Drag-and-drop tag assignment
-
