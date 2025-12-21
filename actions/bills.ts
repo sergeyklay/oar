@@ -77,7 +77,7 @@ export async function createBill(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
@@ -234,7 +234,7 @@ export async function updateBill(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
