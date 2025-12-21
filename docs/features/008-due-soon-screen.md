@@ -64,11 +64,11 @@ The system calculates the range using these rules:
 3. Include all unpaid bills with due dates in this window
 4. Exclude bills marked as paid
 
-**Range of 0 (Today):** Shows only bills due today.
+When range is set to 0 (Today), only bills due today appear.
 
-**Range of 1 (Today or tomorrow):** Shows bills due today or tomorrow.
+Setting it to 1 (Today or tomorrow) shows bills due within the next two days.
 
-**Range of 7 (default):** Shows bills due within the next week, including today and the 7th day.
+At the default of 7 days, bills due within the next week are visible, including both today and the 7th day.
 
 For example, if today is December 21 and your range is 7:
 - A bill due December 21 appears (today)
