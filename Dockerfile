@@ -63,7 +63,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # image with the new --build-arg value and use the same key at runtime.
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 
-RUN apt-get update && apt-get install -y sqlite3
+# Install sqlite3 for debugging, fixing and backup purposes
+RUN apt-get update && apt-get install -y --no-install-recommends sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
