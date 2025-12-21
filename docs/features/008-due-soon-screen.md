@@ -95,7 +95,7 @@ The filter combines both conditions: bills must be unpaid, within the range, AND
 
 **Empty range.** When no unpaid bills fall within your range, the page shows "No bills due soon" and the sidebar shows "No bills."
 
-**Paid Recently interaction.** There's no overlap with the [Paid Recently](./004-due-this-month.md) screen. Due Soon shows unpaid bills; Paid Recently shows logged payments. A bill can appear on both if it's due soon and you've made partial payments.
+**Paid Recently interaction.** Due Soon and Paid Recently are separate views with no overlap. Due Soon shows unpaid bills; Paid Recently shows logged payments. A bill can appear on both if it's due soon and you've made partial payments.
 
 ## Verification
 
