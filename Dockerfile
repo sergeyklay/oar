@@ -63,6 +63,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # image with the new --build-arg value and use the same key at runtime.
 ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 
+RUN apt-get update && apt-get install -y sqlite3
+
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

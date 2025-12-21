@@ -546,6 +546,118 @@ describe('updateBill', () => {
     expect(result.fieldErrors?.notes).toBeDefined();
     expect(db.update).not.toHaveBeenCalled();
   });
+
+  it('preserves paid status when editing a fully-paid one-time bill', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
+        }),
+      }),
+    });
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input: UpdateBillInput = {
+      ...createMockBillInput({
+        title: 'Paid One-Time Bill',
+        amount: '100.00',
+        dueDate: new Date('2024-01-15'),
+        frequency: 'once',
+        notes: 'Updated notes only',
+      }),
+      id: 'bill-1',
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.status).toBe('paid');
+  });
+
+  it('derives status from due date for one-time bill that is not fully paid', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue([{ amountDue: 5000, status: 'pending' }]),
+        }),
+      }),
+    });
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input: UpdateBillInput = {
+      ...createMockBillInput({
+        title: 'Unpaid One-Time Bill',
+        amount: '50.00',
+        dueDate: new Date('2024-01-15'),
+        frequency: 'once',
+      }),
+      id: 'bill-1',
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.status).toBe('overdue');
+  });
+
+  it('derives status from due date for recurring bills even when fully paid', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockReturnValue({
+          limit: jest.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
+        }),
+      }),
+    });
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input: UpdateBillInput = {
+      ...createMockBillInput({
+        title: 'Monthly Bill',
+        amount: '100.00',
+        dueDate: new Date('2026-12-15'),
+        frequency: 'monthly',
+      }),
+      id: 'bill-1',
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.status).toBe('pending');
+  });
 });
 
 describe('getBillTags', () => {
