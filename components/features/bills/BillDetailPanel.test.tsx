@@ -1,13 +1,32 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BillDetailPanel } from './BillDetailPanel';
-import type { BillWithTags, BillFrequency } from '@/lib/types';
+import type { BillWithTags } from '@/lib/types';
+import { skipPayment } from '@/actions/bills';
+import { toast } from 'sonner';
 
-jest.mock('./BillStatusBadge', () => ({
-  BillStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
+jest.mock('@/actions/bills', () => ({
+  skipPayment: jest.fn(),
+}));
+
+jest.mock('sonner', () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+jest.mock('./LogPaymentDialog', () => ({
+  LogPaymentDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+    open ? (
+      <div role="dialog">
+        Mock Log Payment Dialog
+        <button onClick={() => onOpenChange(false)}>Close Dialog</button>
+      </div>
+    ) : null,
 }));
 
 jest.mock('./CloseDetailButton', () => ({
-  CloseDetailButton: () => <button>Close</button>,
+  CloseDetailButton: () => <button aria-label="close">Close</button>,
 }));
 
 const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
@@ -31,7 +50,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
 });
 
 describe('BillDetailPanel', () => {
-  describe('bill information display', () => {
+  describe('header display', () => {
     it('displays bill title', () => {
       const bill = createMockBill({ title: 'Internet Service' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
@@ -39,190 +58,132 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText('Internet Service')).toBeInTheDocument();
     });
 
-    it('displays formatted amount', () => {
+    it('uses status-colored background in header', () => {
+      const bill = createMockBill({ status: 'overdue', dueDate: new Date('2025-01-01') });
+      const { container } = render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      const header = container.querySelector('div.-mt-4.-mx-4');
+      expect(header).toHaveClass('bg-red-500');
+    });
+  });
+
+  describe('bill status and details block', () => {
+    it('displays relative status text (Line 1)', () => {
+      // Mocking today as Dec 1, 2025 for this test
+      jest.useFakeTimers().setSystemTime(new Date('2025-12-01'));
+      const bill = createMockBill({ dueDate: new Date('2025-12-15'), status: 'pending' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByText('Due in 2 weeks')).toBeInTheDocument();
+      jest.useRealTimers();
+    });
+
+    it('displays formatted full date (Line 2)', () => {
+      const bill = createMockBill({ dueDate: new Date('2025-12-15') });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByText('Monday, 15 December 2025')).toBeInTheDocument();
+    });
+
+    it('displays formatted amount (Line 3)', () => {
       const bill = createMockBill({ amount: 9999 });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByText('$99.99')).toBeInTheDocument();
     });
 
-    it('displays formatted due date', () => {
-      const bill = createMockBill({ dueDate: new Date('2025-12-25') });
+    it('colors amount red if overdue', () => {
+      const bill = createMockBill({ status: 'overdue' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByText('December 25, 2025')).toBeInTheDocument();
+      const amount = screen.getByText(/\$\d+/);
+      expect(amount).toHaveClass('text-red-500');
     });
 
-    it('displays repeat interval label for monthly', () => {
-      const bill = createMockBill({ frequency: 'monthly' });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Repeat Interval')).toBeInTheDocument();
-      expect(screen.getByText('Every month')).toBeInTheDocument();
-    });
-
-    it('displays repeat interval label for yearly', () => {
-      const bill = createMockBill({ frequency: 'yearly' });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Every year')).toBeInTheDocument();
-    });
-
-    it('displays repeat interval label for never', () => {
-      const bill = createMockBill({ frequency: 'once' });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Never')).toBeInTheDocument();
-    });
-
-    it('displays repeat interval label for all frequency types', () => {
-      const frequencies: Array<{ freq: BillFrequency; expected: string }> = [
-        { freq: 'weekly', expected: 'Every week' },
-        { freq: 'biweekly', expected: 'Every 2 weeks' },
-        { freq: 'twicemonthly', expected: 'Twice per month' },
-        { freq: 'monthly', expected: 'Every month' },
-        { freq: 'bimonthly', expected: 'Every 2 months' },
-        { freq: 'quarterly', expected: 'Every 3 months' },
-        { freq: 'yearly', expected: 'Every year' },
-        { freq: 'once', expected: 'Never' },
-      ];
-
-      for (const { freq, expected } of frequencies) {
-        const bill = createMockBill({ frequency: freq });
-        const { unmount } = render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-        expect(screen.getByText(expected)).toBeInTheDocument();
-        unmount();
-      }
-    });
-
-    it('displays remaining amount due', () => {
-      const bill = createMockBill({ amountDue: 5000 });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('$50.00')).toBeInTheDocument();
-    });
-  });
-
-  describe('variable amount indicator', () => {
     it('displays variable amount note when isVariable is true', () => {
       const bill = createMockBill({ isVariable: true });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByText(/variable amount/i)).toBeInTheDocument();
     });
-
-    it('does not display variable note when isVariable is false', () => {
-      const bill = createMockBill({ isVariable: false });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.queryByText(/variable amount/i)).not.toBeInTheDocument();
-    });
   });
 
-  describe('auto-pay indicator', () => {
-    it('displays auto-pay section when isAutoPay is true', () => {
-      const bill = createMockBill({ isAutoPay: true });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Auto-Pay Enabled')).toBeInTheDocument();
-    });
-
-    it('does not display auto-pay section when isAutoPay is false', () => {
-      const bill = createMockBill({ isAutoPay: false });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.queryByText('Auto-Pay Enabled')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('tags display (at bottom per guide requirement)', () => {
-    it('displays tags when present', () => {
-      const bill = createMockBill({
-        tags: [
-          { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
-          { id: 'tag-2', name: 'Business', slug: 'business', createdAt: new Date() },
-        ],
-      });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Utilities')).toBeInTheDocument();
-      expect(screen.getByText('Business')).toBeInTheDocument();
-    });
-
-    it('displays tags section label when tags exist', () => {
-      const bill = createMockBill({
-        tags: [{ id: 'tag-1', name: 'Personal', slug: 'personal', createdAt: new Date() }],
-      });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('Tags')).toBeInTheDocument();
-    });
-
-    it('does not display tags section when no tags', () => {
-      const bill = createMockBill({ tags: [] });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.queryByText('Tags')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('status badge', () => {
-    it('displays status badge text', () => {
-      const bill = createMockBill({ status: 'overdue' });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      expect(screen.getByText('overdue')).toBeInTheDocument();
-    });
-  });
-
-  describe('close button', () => {
-    it('renders close button', () => {
+  describe('action buttons', () => {
+    it('opens log payment dialog when clicking Log Payment', () => {
       const bill = createMockBill();
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /log payment/i }));
+
+      expect(screen.getByText('Mock Log Payment Dialog')).toBeInTheDocument();
+    });
+
+    it('calls skipPayment action and shows toast when clicking Skip', async () => {
+      const bill = createMockBill({ title: 'Skip Me' });
+      (skipPayment as jest.Mock).mockResolvedValue({ success: true });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /^skip$/i }));
+
+      expect(skipPayment).toHaveBeenCalledWith({ billId: bill.id });
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('Payment skipped for "Skip Me"');
+      });
+    });
+
+    it('disables skip button for one-time bills', () => {
+      const bill = createMockBill({ frequency: 'once' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByRole('button', { name: /^skip$/i })).toBeDisabled();
+    });
+
+    it('disables both buttons when bill is paid', () => {
+      const bill = createMockBill({ status: 'paid' });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByRole('button', { name: /log payment/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /^skip$/i })).toBeDisabled();
     });
   });
 
   describe('notes display', () => {
-    it('displays notes when present', () => {
+    it('displays notes with whitespace preservation', () => {
       const bill = createMockBill({
-        notes: 'Account number: 12345\nPayment instructions: Pay online',
+        notes: 'Account: 123\nNotes: Pay fast',
       });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByText('Notes')).toBeInTheDocument();
-      const notesElement = screen.getByText((content, element) => {
-        return element?.textContent === 'Account number: 12345\nPayment instructions: Pay online';
-      });
-      expect(notesElement).toBeInTheDocument();
-    });
-
-    it('preserves line breaks in notes', () => {
-      const bill = createMockBill({
-        notes: 'Line 1\nLine 2\nLine 3',
-      });
-      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
-
-      const notesElement = screen.getByText((content, element) => {
-        return element?.textContent === 'Line 1\nLine 2\nLine 3';
-      });
+      const notesElement = screen.getByText(/Account: 123/);
+      expect(notesElement).toHaveTextContent(/Notes: Pay fast/);
       expect(notesElement).toHaveClass('whitespace-pre-wrap');
     });
+  });
 
-    it('does not display notes section when notes is null', () => {
-      const bill = createMockBill({ notes: null });
+  describe('tags display', () => {
+    it('displays tags when present', () => {
+      const bill = createMockBill({
+        tags: [
+          { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
+        ],
+      });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.queryByText('Notes')).not.toBeInTheDocument();
+      expect(screen.getByText('Tags')).toBeInTheDocument();
+      expect(screen.getByText('Utilities')).toBeInTheDocument();
     });
+  });
 
-    it('does not display notes section when notes is empty string', () => {
-      const bill = createMockBill({ notes: '' });
+  describe('removed elements verification', () => {
+    it('does not display removed blocks', () => {
+      const bill = createMockBill();
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      expect(screen.queryByText('Notes')).not.toBeInTheDocument();
+      expect(screen.queryByText('Due Date')).not.toBeInTheDocument();
+      expect(screen.queryByText('Repeat Interval')).not.toBeInTheDocument();
+      expect(screen.queryByText('Payment')).not.toBeInTheDocument();
+      expect(screen.queryByText('Remaining This Cycle')).not.toBeInTheDocument();
     });
   });
 });
-

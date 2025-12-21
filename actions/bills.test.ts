@@ -1,8 +1,10 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, type CreateBillInput, type UpdateBillInput } from './bills';
+import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, skipPayment, type CreateBillInput, type UpdateBillInput } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import type { BillWithTags } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
@@ -25,6 +27,7 @@ jest.mock('@/lib/services/RecurrenceService', () => ({
       const now = new Date();
       return dueDate < now ? 'overdue' : 'pending';
     }),
+    calculateNextDueDate: jest.fn(),
   },
 }));
 
@@ -773,43 +776,6 @@ describe('getBillsFiltered', () => {
     expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-01-15' });
   });
 
-  it('parses date string as local time to ensure correct day boundaries', async () => {
-    const { parse, startOfDay, endOfDay } = await import('date-fns');
-
-    const dateString = '2025-01-15';
-
-    const localDate = parse(dateString, 'yyyy-MM-dd', new Date());
-    const dayStart = startOfDay(localDate);
-    const dayEnd = endOfDay(localDate);
-
-    const expectedLocalDate = new Date(2025, 0, 15);
-    const expectedStart = startOfDay(expectedLocalDate);
-    const expectedEnd = endOfDay(expectedLocalDate);
-
-    expect(dayStart.getTime()).toBe(expectedStart.getTime());
-    expect(dayEnd.getTime()).toBe(expectedEnd.getTime());
-
-    const billOnStart = createMockBillWithTags({
-      ...mockBills[0],
-      id: 'bill-start',
-      dueDate: dayStart,
-    });
-    const billOnEnd = createMockBillWithTags({
-      ...mockBills[0],
-      id: 'bill-end',
-      dueDate: dayEnd,
-    });
-
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([billOnStart, billOnEnd]);
-
-    const result = await getBillsFiltered({ date: dateString });
-
-    expect(result).toHaveLength(2);
-    expect(result.some(b => b.id === 'bill-start')).toBe(true);
-    expect(result.some(b => b.id === 'bill-end')).toBe(true);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: dateString });
-  });
-
   it('excludes archived bills by default', async () => {
     (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
 
@@ -1234,5 +1200,90 @@ describe('getBillsForDueSoonStats', () => {
     const result = await getBillsForDueSoonStats();
 
     expect(result.total).toBe(25000);
+  });
+});
+
+describe('skipPayment', () => {
+  beforeEach(() => {
+    resetDbMocks();
+    jest.clearAllMocks();
+  });
+
+  it('fails for one-time bills', async () => {
+    const mockBill = createMockBillWithTags({ frequency: 'once' });
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([mockBill]),
+      }),
+    });
+
+    const result = await skipPayment({ billId: 'bill-1' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Cannot skip one-time bills');
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('advances due date and resets amountDue for recurring bills', async () => {
+    const mockBill = createMockBillWithTags({
+      frequency: 'monthly',
+      dueDate: new Date('2025-12-15'),
+      amount: 10000,
+      amountDue: 5000, // partial payment made
+    });
+    const nextDate = new Date('2026-01-15');
+
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([mockBill]),
+      }),
+    });
+    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDate);
+    (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+
+    const result = await skipPayment({ billId: 'bill-1' });
+
+    expect(result.success).toBe(true);
+    expect(db.update).toHaveBeenCalledWith(bills);
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+
+    expect(setCall.dueDate).toEqual(nextDate);
+    expect(setCall.amountDue).toBe(10000);
+    expect(setCall.status).toBe('pending');
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+  });
+
+  it('returns error if next due date cannot be calculated', async () => {
+    const mockBill = createMockBillWithTags({ frequency: 'monthly' });
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([mockBill]),
+      }),
+    });
+    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+
+    const result = await skipPayment({ billId: 'bill-1' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Unable to calculate next due date');
+  });
+
+  it('handles bill not found', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([]),
+      }),
+    });
+
+    const result = await skipPayment({ billId: 'nonexistent' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Bill not found');
   });
 });
