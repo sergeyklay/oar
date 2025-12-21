@@ -38,19 +38,6 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   ...overrides,
 });
 
-const mockCategoriesGrouped = [
-  {
-    id: 'group-1',
-    name: 'Housing',
-    slug: 'housing',
-    displayOrder: 1,
-    createdAt: new Date(),
-    categories: [
-      { id: 'category-1', groupId: 'group-1', name: 'Rent', slug: 'rent', icon: 'house', displayOrder: 1, createdAt: new Date() },
-    ],
-  },
-];
-
 const renderBillRow = (bill: BillWithTags) => {
   return render(
     <table>
@@ -60,8 +47,6 @@ const renderBillRow = (bill: BillWithTags) => {
             bill={bill}
             currency="USD"
             locale="en-US"
-            categoriesGrouped={mockCategoriesGrouped}
-            defaultCategoryId="category-1"
           />
         </tr>
       </tbody>

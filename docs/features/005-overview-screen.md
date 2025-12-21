@@ -99,12 +99,13 @@ See the [Logging Payments](./002-auto-pay.md) documentation for details on the p
 
 ## Editing bills
 
-Click the three-dot menu in the Actions column of any bill row to access additional actions:
+Clicking anywhere on a bill row opens the **Bill Detail Panel**. Management actions for the selected bill are located at the bottom of this panel:
 
-- **View history:** Opens a dialog showing all past payments for this bill
-- **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags
-- **Archive:** Moves the bill to your archive (removes it from active views)
-- **Delete:** Removes the bill entirely (requires confirmation)
+- **Archive:** Moves the bill to your archive (removes it from active views).
+- **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags.
+- **Delete:** Removes the bill entirely (requires confirmation).
+
+The three-dot menu in the Actions column of the bill row contains the **View history** action, which opens a dialog showing all past payments for this bill.
 
 ## Edge cases
 
@@ -132,4 +133,5 @@ To confirm the Overview screen works:
 6. Check that bills due more than 30 days away show a blue bar.
 7. Find a paid one-time bill. It should show "Paid" with a green bar.
 8. Click on a bill row. The Bill Detail Panel should appear on the right.
-9. Click the three-dot menu. You should see View History, Edit, Archive, and Delete options.
+9. Look at the bottom of the Bill Detail Panel. You should see Archive, Edit, and Delete buttons.
+10. Click the three-dot menu in the table. You should see only the View History option.

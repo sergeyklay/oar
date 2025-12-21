@@ -1,6 +1,8 @@
 import { BillService } from '@/lib/services/BillService';
 import { CalendarPanel } from './CalendarPanel';
 import { BillDetailPanel } from '@/components/features/bills/BillDetailPanel';
+import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
 import type { WeekStartDay } from '@/lib/services/SettingsService';
 
 interface RightPanelProps {
@@ -22,12 +24,26 @@ export async function RightPanel({ selectedBillId, currency, locale, weekStart }
     return <CalendarPanel weekStartsOn={weekStart} />;
   }
 
-  const bill = await BillService.getWithTags(selectedBillId);
+  const [bill, availableTags, categoriesGrouped, defaultCategoryId] = await Promise.all([
+    BillService.getWithTags(selectedBillId),
+    getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
+  ]);
 
   if (!bill) {
     return <CalendarPanel weekStartsOn={weekStart} />;
   }
 
-  return <BillDetailPanel bill={bill} currency={currency} locale={locale} />;
+  return (
+    <BillDetailPanel
+      bill={bill}
+      currency={currency}
+      locale={locale}
+      availableTags={availableTags}
+      categoriesGrouped={categoriesGrouped}
+      defaultCategoryId={defaultCategoryId ?? undefined}
+    />
+  );
 }
 

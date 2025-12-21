@@ -1,6 +1,4 @@
 import { getBillsFiltered } from '@/actions/bills';
-import { getTags } from '@/actions/tags';
-import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { BillRow } from './BillRow';
 import { BillRowClickable } from './BillRowClickable';
@@ -19,12 +17,9 @@ interface BillListProps {
 }
 
 export async function BillList({ date, month, dateRange, tag, selectedBillId }: BillListProps) {
-  const [bills, settings, availableTags, categoriesGrouped, defaultCategoryId] = await Promise.all([
+  const [bills, settings] = await Promise.all([
     getBillsFiltered({ date, month, dateRange, tag }),
     SettingsService.getAll(),
-    getTags(),
-    getCategoriesGrouped(),
-    getDefaultCategoryId(),
   ]);
 
   if (bills.length === 0) {
@@ -72,9 +67,6 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId }: 
               bill={bill}
               currency={settings.currency}
               locale={settings.locale}
-              availableTags={availableTags}
-              categoriesGrouped={categoriesGrouped}
-              defaultCategoryId={defaultCategoryId}
             />
           </BillRowClickable>
         ))}
