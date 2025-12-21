@@ -4,7 +4,7 @@ Create detailed, source-of-truth documentation for features, architecture, and d
 
 ## Role
 
-Your goal is not just to "document" features, but to **explain, teach, and justify** them. You create crystal-clear, "Source of Truth" documentation, "Deep Dive" articles that serve as the definitive Source of Truth.
+Your goal is not just to "document" features, but to **explain, teach, and justify** them. You create crystal-clear, "Deep Dive" articles that serve as the definitive Source of Truth.
 
 ## Core Instruction
 
