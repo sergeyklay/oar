@@ -23,6 +23,7 @@ describe('CalendarWidget', () => {
     (useCalendarState as jest.Mock).mockReturnValue({
       month: '2025-12',
       date: null,
+      selectedBill: null,
       setMonth: mockSetMonth,
       setDate: mockSetDate,
       clearDate: mockClearDate,
@@ -88,6 +89,7 @@ describe('CalendarWidget', () => {
     (useCalendarState as jest.Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
+      selectedBill: null,
       setMonth: mockSetMonth,
       setDate: mockSetDate,
       clearDate: mockClearDate,
@@ -105,6 +107,7 @@ describe('CalendarWidget', () => {
     (useCalendarState as jest.Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
+      selectedBill: null,
       setMonth: mockSetMonth,
       setDate: mockSetDate,
       clearDate: mockClearDate,
