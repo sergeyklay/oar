@@ -116,6 +116,36 @@ const CATEGORY_SEED_DATA = [
 ];
 
 /**
+ * Realistic bill templates for seeding.
+ */
+const REALISTIC_BILLS = [
+  { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly' },
+  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly' },
+  { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly' },
+  { title: 'Apple iCloud', slug: 'cloud-services', frequency: 'monthly' },
+  { title: 'Coursera', slug: 'subscriptions', frequency: 'monthly' },
+  { title: 'Cursor Subscription', slug: 'subscriptions', frequency: 'monthly' },
+  { title: '1Password', slug: 'subscriptions', frequency: 'yearly' },
+  { title: 'Discord Nitro', slug: 'subscriptions', frequency: 'monthly' },
+  { title: 'Fastmail', slug: 'subscriptions', frequency: 'yearly' },
+  { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly' },
+  { title: 'Spotify', slug: 'music-subscriptions', frequency: 'monthly' },
+  { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly' },
+  { title: 'Gym Membership', slug: 'gym', frequency: 'monthly' },
+  { title: 'Rent Payment', slug: 'home-mortgage-rent', frequency: 'monthly' },
+  { title: 'Electric Bill', slug: 'electric-utilities', frequency: 'monthly' },
+  { title: 'Water Bill', slug: 'water', frequency: 'monthly' },
+  { title: 'Internet Bill', slug: 'internet-broadband', frequency: 'monthly' },
+  { title: 'Car Insurance', slug: 'insurance', frequency: 'monthly' },
+  { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly' },
+  { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly' },
+  { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once' },
+  { title: 'Medical Checkup', slug: 'health-hospital-medicine', frequency: 'once' },
+  { title: 'Birthday Gift', slug: 'gifts-donations', frequency: 'once' },
+] as const;
+
+
+/**
  * Seed bill categories into the database.
  *
  * This function is idempotent: it skips seeding if categories already exist.
@@ -280,7 +310,90 @@ function seedBills(
 
   const now = new Date();
 
-  for (let i = 0; i < 20; i++) {
+  // Create a map for quick category lookup by slug
+  const categoryMap = new Map(categories.map((c) => [c.slug, c]));
+
+  for (let i = 0; i < REALISTIC_BILLS.length; i++) {
+    const template = REALISTIC_BILLS[i];
+    const id = createId();
+
+    const frequency = template.frequency;
+    const isVariable = faker.datatype.boolean(0.2);
+    const amount = faker.number.int({ min: 1000, max: 25000 });
+
+    // Try to get the matching category, fallback to random if not found
+    const category = categoryMap.get(template.slug) ?? faker.helpers.arrayElement(categories);
+    const categoryId = category.id;
+
+    // Generate realistic bill states based on frequency
+    let status: BillStatus;
+    let dueDate: Date;
+    let amountDue: number;
+
+    if (frequency === 'once') {
+      // One-time bills: can be pending, paid, or overdue
+      const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
+      status = faker.helpers.arrayElement(oneTimeStatuses);
+
+      if (status === 'paid') {
+        // Paid one-time: due date in past, amountDue = 0
+        dueDate = faker.date.between({ from: subDays(now, 60), to: subDays(now, 1) });
+        amountDue = 0;
+      } else if (status === 'overdue') {
+        // Overdue one-time: due date in past, full amount still due
+        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
+        amountDue = amount;
+      } else {
+        // Pending one-time: due date in future
+        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
+        amountDue = amount;
+      }
+    } else {
+      // Recurring bills (monthly/yearly): never 'paid' status
+      // After payment, due date advances and status becomes pending/overdue
+      const recurringStatuses = ['pending', 'pending', 'pending', 'pending', 'overdue'] as const;
+      status = faker.helpers.arrayElement(recurringStatuses);
+
+      if (status === 'overdue') {
+        // Overdue recurring: due date in past
+        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
+        amountDue = amount;
+      } else {
+        // Pending recurring: due date in future
+        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
+        amountDue = amount;
+      }
+    }
+
+    const bill: typeof schema.bills.$inferInsert = {
+      id,
+      title: template.title,
+      amount,
+      amountDue,
+      dueDate,
+      frequency,
+      isAutoPay: faker.datatype.boolean(0.2),
+      isVariable,
+      status,
+      categoryId,
+      notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
+      createdAt: subDays(dueDate, 30),
+      updatedAt: now,
+    };
+
+    billsToInsert.push(bill);
+
+    const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
+    selectedTags.forEach((tag) => {
+      billsToTagsToInsert.push({
+        billId: id,
+        tagId: tag.id,
+      });
+    });
+  }
+
+  // Generate a few more random bills to ensure variety
+  for (let i = 0; i < 5; i++) {
     const id = createId();
 
     const frequencies = [
@@ -293,7 +406,7 @@ function seedBills(
       'bimonthly',
       'quarterly',
       'yearly',
-      'once'
+      'once',
     ] as const;
     const frequency = faker.helpers.arrayElement(frequencies);
 
@@ -355,16 +468,16 @@ function seedBills(
       categoryId,
       notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
       createdAt: subDays(dueDate, 30),
-      updatedAt: now
+      updatedAt: now,
     };
 
     billsToInsert.push(bill);
 
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
-    selectedTags.forEach(tag => {
+    selectedTags.forEach((tag) => {
       billsToTagsToInsert.push({
         billId: id,
-        tagId: tag.id
+        tagId: tag.id,
       });
     });
   }
