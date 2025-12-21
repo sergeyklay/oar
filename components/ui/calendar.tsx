@@ -1,68 +1,170 @@
 'use client';
 
 import * as React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
+import { Triangle, Circle } from 'lucide-react';
+import { DayPicker, type DayPickerProps } from 'react-day-picker';
+import { format as formatDate } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = DayPickerProps & {
+  onGoToToday?: () => void;
+};
+
+function formatWeekdayName(date: Date): string {
+  return formatDate(date, 'EEE').toUpperCase();
+}
 
 const navButtonClass = cn(
-  buttonVariants({ variant: 'outline' }),
-  'h-8 w-8 p-0 opacity-50 hover:opacity-100 cursor-pointer bg-accent text-accent-foreground'
+  buttonVariants({ variant: 'ghost' }),
+  'h-4 w-4 p-0 opacity-50 hover:opacity-100 cursor-pointer inline-flex items-center justify-center [&_svg]:size-3'
 );
+
+interface CalendarHeaderProps {
+  displayMonth: Date;
+  onPreviousMonth: () => void;
+  onNextMonth: () => void;
+  onGoToToday: () => void;
+  canGoToPreviousMonth: boolean;
+  canGoToNextMonth: boolean;
+}
+
+function CalendarHeader({
+  displayMonth,
+  onPreviousMonth,
+  onNextMonth,
+  onGoToToday,
+  canGoToPreviousMonth,
+  canGoToNextMonth,
+}: CalendarHeaderProps) {
+  const formattedCaption = formatDate(displayMonth, 'LLLL yyyy');
+
+  return (
+    <div className="flex justify-between items-center w-[280px] mb-3">
+      <span className="text-sm font-medium">{formattedCaption}</span>
+      <div className="flex items-center">
+        <button
+          type="button"
+          className={navButtonClass}
+          disabled={!canGoToPreviousMonth}
+          onClick={onPreviousMonth}
+          aria-label="Previous month"
+        >
+          <Triangle className="h-2.5 w-2.5 fill-current -rotate-90" />
+        </button>
+        <button
+          type="button"
+          className={cn(navButtonClass, 'mx-0.5')}
+          onClick={onGoToToday}
+          aria-label="Go to today"
+        >
+          <Circle className="h-2 w-2 fill-current" />
+        </button>
+        <button
+          type="button"
+          className={navButtonClass}
+          disabled={!canGoToNextMonth}
+          onClick={onNextMonth}
+          aria-label="Next month"
+        >
+          <Triangle className="h-2.5 w-2.5 fill-current rotate-90" />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  onGoToToday,
+  month,
+  onMonthChange,
+  startMonth,
+  endMonth,
   ...props
 }: CalendarProps) {
+  const displayMonth = month ?? new Date();
+
+  const canGoToPreviousMonth = startMonth
+    ? displayMonth > startMonth
+    : true;
+
+  const canGoToNextMonth = endMonth
+    ? displayMonth < endMonth
+    : true;
+
+  const handlePreviousMonth = () => {
+    const prevMonth = new Date(displayMonth);
+    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    onMonthChange?.(prevMonth);
+  };
+
+  const handleNextMonth = () => {
+    const nextMonthDate = new Date(displayMonth);
+    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+    onMonthChange?.(nextMonthDate);
+  };
+
+  const handleGoToToday = () => {
+    if (onGoToToday) {
+      onGoToToday();
+    } else {
+      onMonthChange?.(new Date());
+    }
+  };
+
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn('p-3', className)}
-      classNames={{
-        months: 'relative flex flex-col sm:flex-row gap-4 w-full',
-        month: 'relative flex flex-col gap-4 w-full items-center',
-        month_caption: 'flex justify-center pt-1 items-center h-7',
-        caption_label: 'text-sm font-medium',
-        nav: 'absolute top-0 flex w-full items-center justify-between px-2 z-10',
-        button_previous: navButtonClass,
-        button_next: navButtonClass,
-        month_grid: 'border-collapse mx-auto',
-        weekdays: 'flex justify-center',
-        weekday:
-          'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
-        week: 'flex w-full mt-2 justify-center',
-        day: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].outside)]:bg-accent/50 rounded-md',
-        day_button: cn(
-          buttonVariants({ variant: 'ghost' }),
-          'h-8 w-8 p-0 font-normal aria-selected:opacity-100'
-        ),
-        range_start: 'day-range-start rounded-l-md',
-        range_end: 'day-range-end rounded-r-md',
-        selected:
-          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md',
-        today: 'bg-accent text-accent-foreground',
-        outside: 'outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground',
-        disabled: 'text-muted-foreground opacity-50',
-        range_middle:
-          'aria-selected:bg-accent aria-selected:text-accent-foreground',
-        hidden: 'invisible',
-        ...classNames,
-      }}
-      components={{
-        Chevron: ({ orientation }) =>
-          orientation === 'left' ? (
-            <ChevronLeft className="h-5 w-5" />
-          ) : (
-            <ChevronRight className="h-5 w-5" />
+    <div className={cn('p-3', className)}>
+      <CalendarHeader
+        displayMonth={displayMonth}
+        onPreviousMonth={handlePreviousMonth}
+        onNextMonth={handleNextMonth}
+        onGoToToday={handleGoToToday}
+        canGoToPreviousMonth={canGoToPreviousMonth}
+        canGoToNextMonth={canGoToNextMonth}
+      />
+      <DayPicker
+        showOutsideDays={showOutsideDays}
+        hideNavigation
+        month={month}
+        onMonthChange={onMonthChange}
+        startMonth={startMonth}
+        endMonth={endMonth}
+        classNames={{
+          months: 'flex flex-col w-fit',
+          month: 'flex flex-col',
+          month_caption: 'hidden',
+          caption_label: 'hidden',
+          month_grid: 'border-collapse',
+          weekdays: 'flex',
+          weekday:
+            'text-muted-foreground w-10 font-medium text-[0.7rem] uppercase tracking-wide',
+          week: 'flex mt-1',
+          day: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-transparent rounded-full',
+          day_button: cn(
+            buttonVariants({ variant: 'ghost' }),
+            'h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full cursor-pointer'
           ),
-      }}
-      {...props}
-    />
+          range_start: 'day-range-start rounded-l-full',
+          range_end: 'day-range-end rounded-r-full',
+          selected:
+            'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-full',
+          today: 'bg-accent text-accent-foreground rounded-full',
+          outside: 'outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground',
+          disabled: 'text-muted-foreground opacity-50',
+          range_middle:
+            'aria-selected:bg-accent aria-selected:text-accent-foreground',
+          hidden: 'invisible',
+          ...classNames,
+        }}
+        formatters={{
+          formatWeekdayName,
+        }}
+        {...props}
+      />
+    </div>
   );
 }
 Calendar.displayName = 'Calendar';

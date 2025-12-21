@@ -7,13 +7,8 @@ interface CalendarPanelProps {
 
 export function CalendarPanel({ weekStartsOn = 0 }: CalendarPanelProps) {
   return (
-    <aside className="calendar-panel bg-card p-4">
-      <h2 className="text-sm font-semibold text-muted-foreground mb-4">
-        Calendar
-      </h2>
-      <div className="flex justify-center">
-        <CalendarWidget weekStartsOn={weekStartsOn} />
-      </div>
+    <aside className="calendar-panel bg-card px-4 pt-4">
+      <CalendarWidget weekStartsOn={weekStartsOn} />
     </aside>
   );
 }
