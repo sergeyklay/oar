@@ -17,6 +17,7 @@ Explanations of user-facing functionality and domain logic.
 | Document | Description |
 |----------|-------------|
 | [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
+| [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 | [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
 | [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
 | [Logging Payments](./features/002-auto-pay.md) | Recording payments and updating due dates |

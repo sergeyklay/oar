@@ -1,12 +1,18 @@
+'use client';
+
+import { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarDays, CreditCard, FileText, RefreshCw, Zap } from 'lucide-react';
+import { FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatMoney } from '@/lib/money';
-import { BillStatusBadge } from './BillStatusBadge';
+import { DueDateService } from '@/lib/services/DueDateService';
+import { skipPayment } from '@/actions/bills';
+import { LogPaymentDialog } from './LogPaymentDialog';
 import { CloseDetailButton } from './CloseDetailButton';
 import type { BillWithTags } from '@/lib/types';
-import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;
@@ -24,25 +30,56 @@ interface BillDetailPanelProps {
  * @returns Bill details panel UI.
  */
 export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps) {
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
+
+  const isPaid = bill.status === 'paid';
+  const isOverdue = bill.status === 'overdue';
+
+  const handleSkip = async () => {
+    setIsSkipping(true);
+    const result = await skipPayment({ billId: bill.id });
+    setIsSkipping(false);
+
+    if (result.success) {
+      toast.success(`Payment skipped for "${bill.title}"`);
+    } else {
+      toast.error('Failed to skip payment', {
+        description: result.error ?? 'Please try again.',
+      });
+    }
+  };
+
   return (
     <aside className="calendar-panel bg-card p-4 flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div
+        className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${DueDateService.getStatusBarColor(bill.dueDate, bill.status)}`}
+      >
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold truncate">{bill.title}</h2>
-          <div className="mt-1">
-            <BillStatusBadge status={bill.status} />
-          </div>
+          <h2 className="text-lg font-semibold truncate text-white">{bill.title}</h2>
         </div>
-        <CloseDetailButton />
+        <div className="ml-2">
+           <CloseDetailButton />
+        </div>
       </div>
 
       {/* Details */}
-      <div className="flex-1 space-y-4">
-        {/* Amount */}
-        <div className="bg-muted/50 rounded-lg p-4">
-          <p className="text-sm text-muted-foreground mb-1">Amount Due</p>
-          <p className="text-2xl font-bold font-mono">
+      <div className="flex-1 space-y-6">
+        {/* Status / Date / Amount Block */}
+        <div className="space-y-1">
+          {/* Line 1: Status Header */}
+          <p className="text-xl font-medium text-white">
+            {DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
+          </p>
+
+          {/* Line 2: Date */}
+          <p className="text-sm text-zinc-300">
+            {format(bill.dueDate, 'EEEE, d MMMM yyyy')}
+          </p>
+
+          {/* Line 3: Amount */}
+          <p className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}>
             {formatMoney(bill.amount, currency, locale)}
           </p>
           {bill.isVariable && (
@@ -52,57 +89,31 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
           )}
         </div>
 
-        {/* Due Date */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-            <CalendarDays className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Due Date</p>
-            <p className="font-medium">{format(bill.dueDate, 'MMMM d, yyyy')}</p>
-          </div>
-        </div>
+        {/* Action Buttons */}
+        <div className="space-y-3 pt-4">
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => setPayDialogOpen(true)}
+            disabled={isPaid}
+          >
+            Log Payment
+          </Button>
 
-        {/* Repeat Interval */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-            <RefreshCw className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Repeat Interval</p>
-            <p className="font-medium">{FREQUENCY_DISPLAY_LABELS[bill.frequency]}</p>
-          </div>
-        </div>
-
-        {/* Auto-Pay */}
-        {bill.isAutoPay && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-              <Zap className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Payment</p>
-              <p className="font-medium">Auto-Pay Enabled</p>
-            </div>
-          </div>
-        )}
-
-        {/* Payment Source indicator */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
-            <CreditCard className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Remaining This Cycle</p>
-            <p className="font-medium font-mono">
-              {formatMoney(bill.amountDue, currency, locale)}
-            </p>
-          </div>
+          <Button
+            className="w-full"
+            variant="secondary"
+            size="lg"
+            onClick={handleSkip}
+            disabled={isPaid || bill.frequency === 'once' || isSkipping}
+          >
+            {isSkipping ? 'Skipping...' : 'Skip'}
+          </Button>
         </div>
 
         {/* Notes Section */}
         {bill.notes && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 pt-4 border-t border-border">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <FileText className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -127,7 +138,13 @@ export function BillDetailPanel({ bill, currency, locale }: BillDetailPanelProps
           </div>
         </div>
       )}
+
+      <LogPaymentDialog
+        bill={bill}
+        open={payDialogOpen}
+        onOpenChange={setPayDialogOpen}
+        currency={currency}
+      />
     </aside>
   );
 }
-

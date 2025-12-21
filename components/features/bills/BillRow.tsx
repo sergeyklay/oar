@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Banknote } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
@@ -12,7 +10,6 @@ import { DueDateService } from '@/lib/services/DueDateService';
 import { BillActionsMenu } from './BillActionsMenu';
 import { BillFormDialog } from './BillFormDialog';
 import { CategoryIcon } from './CategoryIcon';
-import { LogPaymentDialog } from './LogPaymentDialog';
 import { PaymentHistoryDialog } from './PaymentHistoryDialog';
 import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
@@ -41,11 +38,9 @@ export function BillRow({
   categoriesGrouped,
   defaultCategoryId,
 }: BillRowProps) {
-  const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const isPaid = bill.status === 'paid';
   const currencySymbol = getCurrencySymbol(currency);
 
   return (
@@ -90,18 +85,6 @@ export function BillRow({
           className="flex items-center gap-1"
           onClick={(e) => e.stopPropagation()}
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => setPayDialogOpen(true)}
-            disabled={isPaid}
-            title={isPaid ? 'Already paid' : 'Log payment'}
-          >
-            <Banknote className="h-4 w-4" />
-            <span className="sr-only">Log payment</span>
-          </Button>
-
           <BillActionsMenu
             bill={bill}
             onViewHistory={() => setHistoryDialogOpen(true)}
@@ -117,13 +100,6 @@ export function BillRow({
           availableTags={availableTags}
           categoriesGrouped={categoriesGrouped}
           defaultCategoryId={defaultCategoryId}
-        />
-
-        <LogPaymentDialog
-          bill={bill}
-          open={payDialogOpen}
-          onOpenChange={setPayDialogOpen}
-          currency={currency}
         />
 
         <PaymentHistoryDialog
