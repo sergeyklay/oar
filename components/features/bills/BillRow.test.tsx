@@ -150,8 +150,8 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-    // Tags should NOT appear in the row - they're displayed in the detail panel
-    expect(screen.queryByText('Utilities')).not.toBeInTheDocument();
+      expect(screen.queryByText('Utilities')).not.toBeInTheDocument();
+    });
   });
 
   describe('paid status display', () => {
@@ -164,9 +164,7 @@ describe('BillRow', () => {
 
       renderBillRow(paidOneTimeBill);
 
-      // "Paid" label should be visible
       expect(screen.getByText('Paid')).toBeInTheDocument();
-      // Secondary date format "Mon, Dec 15" should NOT be visible
       expect(screen.queryByText('Mon, Dec 15')).not.toBeInTheDocument();
     });
 
@@ -179,7 +177,6 @@ describe('BillRow', () => {
 
       renderBillRow(pendingOneTimeBill);
 
-      // Secondary date format "Mon, Dec 15" should be visible
       expect(screen.getByText('Mon, Dec 15')).toBeInTheDocument();
     });
 
@@ -192,10 +189,17 @@ describe('BillRow', () => {
 
       renderBillRow(monthlyBill);
 
-      // Secondary date format "Mon, Dec 15" should be visible
       expect(screen.getByText('Mon, Dec 15')).toBeInTheDocument();
     });
   });
-});
-});
 
+  describe('removed elements', () => {
+    it('does not render Log Payment button directly in the row', () => {
+      const bill = createMockBill({ status: 'pending' });
+
+      renderBillRow(bill);
+
+      expect(screen.queryByRole('button', { name: /log payment/i })).not.toBeInTheDocument();
+    });
+  });
+});
