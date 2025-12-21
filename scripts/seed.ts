@@ -116,9 +116,9 @@ const CATEGORY_SEED_DATA = [
 ];
 
 /**
- * Realistic bill templates for seeding.
+ * Bill templates for seeding.
  */
-const REALISTIC_BILLS = [
+const BILL_TEMPLATES = [
   { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly' },
   { title: 'AWS', slug: 'cloud-services', frequency: 'monthly' },
   { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly' },
@@ -144,6 +144,69 @@ const REALISTIC_BILLS = [
   { title: 'Birthday Gift', slug: 'gifts-donations', frequency: 'once' },
 ] as const;
 
+interface BillState {
+  status: BillStatus;
+  dueDate: Date;
+  amountDue: number;
+}
+
+/**
+ * Generates a realistic bill state based on frequency and amount.
+ *
+ * @param frequency - Bill recurrence frequency
+ * @param amount - Full bill amount
+ * @param now - Reference date for generation
+ * @returns Generated status, due date, and amount due
+ */
+function generateBillState(
+  frequency: string,
+  amount: number,
+  now: Date
+): BillState {
+  if (frequency === 'once') {
+    const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
+    const status = faker.helpers.arrayElement(oneTimeStatuses);
+
+    if (status === 'paid') {
+      return {
+        status,
+        dueDate: faker.date.between({ from: subDays(now, 60), to: subDays(now, 1) }),
+        amountDue: 0,
+      };
+    }
+
+    if (status === 'overdue') {
+      return {
+        status,
+        dueDate: faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) }),
+        amountDue: amount,
+      };
+    }
+
+    return {
+      status,
+      dueDate: faker.date.between({ from: now, to: addDays(now, 60) }),
+      amountDue: amount,
+    };
+  }
+
+  const recurringStatuses = ['pending', 'pending', 'pending', 'pending', 'overdue'] as const;
+  const status = faker.helpers.arrayElement(recurringStatuses);
+
+  if (status === 'overdue') {
+    return {
+      status,
+      dueDate: faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) }),
+      amountDue: amount,
+    };
+  }
+
+  return {
+    status,
+    dueDate: faker.date.between({ from: now, to: addDays(now, 60) }),
+    amountDue: amount,
+  };
+}
 
 /**
  * Seed bill categories into the database.
@@ -313,8 +376,8 @@ function seedBills(
   // Create a map for quick category lookup by slug
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
 
-  for (let i = 0; i < REALISTIC_BILLS.length; i++) {
-    const template = REALISTIC_BILLS[i];
+  for (let i = 0; i < BILL_TEMPLATES.length; i++) {
+    const template = BILL_TEMPLATES[i];
     const id = createId();
 
     const frequency = template.frequency;
@@ -326,44 +389,7 @@ function seedBills(
     const categoryId = category.id;
 
     // Generate realistic bill states based on frequency
-    let status: BillStatus;
-    let dueDate: Date;
-    let amountDue: number;
-
-    if (frequency === 'once') {
-      // One-time bills: can be pending, paid, or overdue
-      const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
-      status = faker.helpers.arrayElement(oneTimeStatuses);
-
-      if (status === 'paid') {
-        // Paid one-time: due date in past, amountDue = 0
-        dueDate = faker.date.between({ from: subDays(now, 60), to: subDays(now, 1) });
-        amountDue = 0;
-      } else if (status === 'overdue') {
-        // Overdue one-time: due date in past, full amount still due
-        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
-        amountDue = amount;
-      } else {
-        // Pending one-time: due date in future
-        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
-        amountDue = amount;
-      }
-    } else {
-      // Recurring bills (monthly/yearly): never 'paid' status
-      // After payment, due date advances and status becomes pending/overdue
-      const recurringStatuses = ['pending', 'pending', 'pending', 'pending', 'overdue'] as const;
-      status = faker.helpers.arrayElement(recurringStatuses);
-
-      if (status === 'overdue') {
-        // Overdue recurring: due date in past
-        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
-        amountDue = amount;
-      } else {
-        // Pending recurring: due date in future
-        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
-        amountDue = amount;
-      }
-    }
+    const { status, dueDate, amountDue } = generateBillState(frequency, amount, now);
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
@@ -384,12 +410,12 @@ function seedBills(
     billsToInsert.push(bill);
 
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
-    selectedTags.forEach((tag) => {
-      billsToTagsToInsert.push({
+    billsToTagsToInsert.push(
+      ...selectedTags.map((tag) => ({
         billId: id,
         tagId: tag.id,
-      });
-    });
+      }))
+    );
   }
 
   // Generate a few more random bills to ensure variety
@@ -416,44 +442,7 @@ function seedBills(
     const categoryId = faker.helpers.arrayElement(categories).id;
 
     // Generate realistic bill states based on frequency
-    let status: BillStatus;
-    let dueDate: Date;
-    let amountDue: number;
-
-    if (frequency === 'once') {
-      // One-time bills: can be pending, paid, or overdue
-      const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
-      status = faker.helpers.arrayElement(oneTimeStatuses);
-
-      if (status === 'paid') {
-        // Paid one-time: due date in past, amountDue = 0
-        dueDate = faker.date.between({ from: subDays(now, 60), to: subDays(now, 1) });
-        amountDue = 0;
-      } else if (status === 'overdue') {
-        // Overdue one-time: due date in past, full amount still due
-        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
-        amountDue = amount;
-      } else {
-        // Pending one-time: due date in future
-        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
-        amountDue = amount;
-      }
-    } else {
-      // Recurring bills (monthly/yearly): never 'paid' status
-      // After payment, due date advances and status becomes pending/overdue
-      const recurringStatuses = ['pending', 'pending', 'pending', 'pending', 'overdue'] as const;
-      status = faker.helpers.arrayElement(recurringStatuses);
-
-      if (status === 'overdue') {
-        // Overdue recurring: due date in past
-        dueDate = faker.date.between({ from: subDays(now, 30), to: subDays(now, 1) });
-        amountDue = amount;
-      } else {
-        // Pending recurring: due date in future
-        dueDate = faker.date.between({ from: now, to: addDays(now, 60) });
-        amountDue = amount;
-      }
-    }
+    const { status, dueDate, amountDue } = generateBillState(frequency, amount, now);
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
@@ -474,12 +463,12 @@ function seedBills(
     billsToInsert.push(bill);
 
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
-    selectedTags.forEach((tag) => {
-      billsToTagsToInsert.push({
+    billsToTagsToInsert.push(
+      ...selectedTags.map((tag) => ({
         billId: id,
         tagId: tag.id,
-      });
-    });
+      }))
+    );
   }
 
   tx.insert(schema.bills).values(billsToInsert).run();
@@ -488,6 +477,7 @@ function seedBills(
   console.log(`Seeded ${billsToInsert.length} bills.`);
   return billsToInsert;
 }
+
 
 /**
  * Seed historical transactions for bills.
