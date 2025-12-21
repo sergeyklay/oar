@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Calendar } from './calendar';
 
 // Mock lucide-react icons
@@ -27,45 +28,44 @@ describe('Calendar UI Component', () => {
     expect(screen.getByRole('button', { name: /next month/i })).toBeInTheDocument();
   });
 
-  it('calls onMonthChange when previous month button is clicked', () => {
+  it('calls onMonthChange when previous month button is clicked', async () => {
     const onMonthChange = jest.fn();
     render(<Calendar month={currentMonth} onMonthChange={onMonthChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /previous month/i }));
+    await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
 
     const expectedDate = new Date(currentMonth);
     expectedDate.setMonth(expectedDate.getMonth() - 1);
     expect(onMonthChange).toHaveBeenCalledWith(expectedDate);
   });
 
-  it('calls onMonthChange when next month button is clicked', () => {
+  it('calls onMonthChange when next month button is clicked', async () => {
     const onMonthChange = jest.fn();
     render(<Calendar month={currentMonth} onMonthChange={onMonthChange} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /next month/i }));
+    await userEvent.click(screen.getByRole('button', { name: /next month/i }));
 
     const expectedDate = new Date(currentMonth);
     expectedDate.setMonth(expectedDate.getMonth() + 1);
     expect(onMonthChange).toHaveBeenCalledWith(expectedDate);
   });
 
-  it('calls onGoToToday when today button is clicked', () => {
+  it('calls onGoToToday when today button is clicked', async () => {
     const onGoToToday = jest.fn();
     render(<Calendar month={currentMonth} onGoToToday={onGoToToday} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /go to today/i }));
+    await userEvent.click(screen.getByRole('button', { name: /go to today/i }));
 
     expect(onGoToToday).toHaveBeenCalled();
   });
 
-  it('uses 3-letter uppercase weekday labels', () => {
-    render(<Calendar month={currentMonth} />);
-
-    const expectedWeekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    expectedWeekdays.forEach(day => {
+  it.each(['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'])(
+    'renders %s weekday label',
+    (day) => {
+      render(<Calendar month={currentMonth} />);
       expect(screen.getByText(day)).toBeInTheDocument();
-    });
-  });
+    }
+  );
 
   it('renders outside days by default', () => {
     render(<Calendar month={currentMonth} />);
