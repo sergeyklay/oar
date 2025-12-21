@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import type { DayButtonProps } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
 import { getBillDatesForMonth, type DateStatusMap } from '@/actions/calendar';
 import { useCalendarState } from './useCalendarState';
@@ -16,7 +17,6 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
   const [dateStatuses, setDateStatuses] = useState<DateStatusMap>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch bill dates when month changes
   useEffect(() => {
     let cancelled = false;
 
@@ -40,13 +40,9 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
     };
   }, [month]);
 
-  // Parse month string to Date for calendar
   const monthDate = parse(month, 'yyyy-MM', new Date());
-
-  // Parse selected date if present
   const selectedDate = date ? parse(date, 'yyyy-MM-dd', new Date()) : undefined;
 
-  // Handle date selection (toggle behavior)
   const handleSelect = useCallback(
     (newDate: Date | undefined) => {
       if (!newDate) {
@@ -54,7 +50,6 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
         return;
       }
 
-      // Toggle: if clicking same date, deselect
       const newDateStr = format(newDate, 'yyyy-MM-dd');
       if (date === newDateStr) {
         clearDate();
@@ -65,7 +60,6 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
     [date, setDate, clearDate]
   );
 
-  // Handle month navigation
   const handleMonthChange = useCallback(
     (newMonth: Date) => {
       setMonth(newMonth);
@@ -73,8 +67,13 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
     [setMonth]
   );
 
+  const handleGoToToday = useCallback(() => {
+    const today = new Date();
+    setMonth(today);
+  }, [setMonth]);
+
   return (
-    <div className="calendar-widget w-full max-w-[340px] mx-auto">
+    <div className="calendar-widget w-full border-b border-border pb-4">
       <Calendar
         mode="single"
         month={monthDate}
@@ -82,12 +81,13 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
         selected={selectedDate}
         onSelect={handleSelect}
         weekStartsOn={weekStartsOn}
-        className="rounded-md border-0 w-full"
+        onGoToToday={handleGoToToday}
+        className="rounded-md border-0"
         classNames={{
           day: 'relative',
         }}
         components={{
-          DayButton: (props) => (
+          DayButton: (props: DayButtonProps) => (
             <DayWithDots
               {...props}
               dateStatuses={dateStatuses}
@@ -102,6 +102,7 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
           <p className="text-sm text-muted-foreground">Showing bills for</p>
           <p className="font-medium">{format(selectedDate, 'MMMM d, yyyy')}</p>
           <button
+            type="button"
             onClick={clearDate}
             className="mt-2 text-xs text-primary hover:underline"
           >
