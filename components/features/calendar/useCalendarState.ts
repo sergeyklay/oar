@@ -26,6 +26,7 @@ export function useCalendarState() {
     {
       month: parseAsString.withDefault(getCurrentMonth()),
       date: parseAsString,
+      selectedBill: parseAsString,
     },
     {
       shallow: false, // Trigger server re-render
@@ -37,6 +38,7 @@ export function useCalendarState() {
       setParams({
         month: format(newMonth, 'yyyy-MM'),
         date: null, // Clear date when changing months
+        selectedBill: null, // Clear selection when navigating
       });
     },
     [setParams]
@@ -45,24 +47,26 @@ export function useCalendarState() {
   const setDate = useCallback(
     (newDate: Date | null) => {
       if (!newDate) {
-        setParams({ date: null });
+        setParams({ date: null, selectedBill: null });
         return;
       }
       setParams({
         date: format(newDate, 'yyyy-MM-dd'),
         month: format(startOfMonth(newDate), 'yyyy-MM'),
+        selectedBill: null, // Clear selection when selecting a day
       });
     },
     [setParams]
   );
 
   const clearDate = useCallback(() => {
-    setParams({ date: null });
+    setParams({ date: null, selectedBill: null });
   }, [setParams]);
 
   return {
     month: params.month,
     date: params.date,
+    selectedBill: params.selectedBill,
     setMonth,
     setDate,
     clearDate,
