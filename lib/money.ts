@@ -9,15 +9,19 @@ export const DEFAULT_LOCALE = 'en-US';
  * Uses Intl.NumberFormat to resolve the currency's fraction digits.
  *
  * @param currencyCode - ISO 4217 currency code
+ * @param locale - BCP 47 locale identifier
  * @returns Number of decimal places (e.g., 2 for USD, 0 for JPY)
  *
  * @example
- * getMinorUnits('USD') // 2
- * getMinorUnits('JPY') // 0
+ * getMinorUnits('USD', 'en-US') // 2
+ * getMinorUnits('JPY', 'ja-JP') // 0
  */
-export function getMinorUnits(currencyCode: string): number {
+export function getMinorUnits(
+  currencyCode: string,
+  locale: string = DEFAULT_LOCALE
+): number {
   try {
-    const formatter = new Intl.NumberFormat('en-US', {
+    const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currencyCode,
     });
@@ -91,7 +95,7 @@ export function formatMoney(
   locale: string = DEFAULT_LOCALE
 ): string {
   const majorAmount = toMajorUnits(minorAmount, currencyCode);
-  const minorUnits = getMinorUnits(currencyCode);
+  const minorUnits = getMinorUnits(currencyCode, locale);
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
