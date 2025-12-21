@@ -1,4 +1,4 @@
-# Overview screen
+# Overview Screen
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-20
@@ -123,14 +123,4 @@ To confirm the Overview screen works:
 7. Find a paid one-time bill. It should show "Paid" with a green bar.
 8. Click the Log Payment button on an unpaid bill. The payment dialog should open.
 9. Click the three-dot menu. You should see View History, Edit, and Delete options.
-
-## Future scope
-
-The following features are not included in this version:
-
-- Sorting bills by different columns (amount, due date, name)
-- Bulk actions (mark multiple bills as paid)
-- Inline editing of bill amounts
-- Customizable column visibility
-- Export to CSV or PDF
 
