@@ -164,9 +164,14 @@ describe('parseMoneyInput', () => {
 
 describe('getMinorUnits', () => {
   it('returns correct minor units for common currencies', () => {
+    expect(getMinorUnits('USD', 'en-US')).toBe(2);
+    expect(getMinorUnits('EUR', 'de-DE')).toBe(2);
+    expect(getMinorUnits('PLN', 'pl-PL')).toBe(2);
+    expect(getMinorUnits('JPY', 'ja-JP')).toBe(0);
+  });
+
+  it('works with default locale', () => {
     expect(getMinorUnits('USD')).toBe(2);
-    expect(getMinorUnits('EUR')).toBe(2);
-    expect(getMinorUnits('PLN')).toBe(2);
     expect(getMinorUnits('JPY')).toBe(0);
   });
 
