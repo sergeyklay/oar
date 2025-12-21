@@ -82,5 +82,54 @@ describe('Calendar UI Component', () => {
     const outsideDay = screen.queryByLabelText(/Sunday, November 30th, 2025/i);
     expect(outsideDay).not.toBeInTheDocument();
   });
+
+  describe('Month Boundary Navigation', () => {
+    const startMonth = new Date(2025, 0); // January 2025
+    const endMonth = new Date(2025, 11); // December 2025
+
+    it('disables the previous button when month equals startMonth', () => {
+      render(<Calendar month={startMonth} startMonth={startMonth} />);
+
+      expect(screen.getByRole('button', { name: /previous month/i })).toBeDisabled();
+    });
+
+    it('disables the next button when month equals endMonth', () => {
+      render(<Calendar month={endMonth} endMonth={endMonth} />);
+
+      expect(screen.getByRole('button', { name: /next month/i })).toBeDisabled();
+    });
+
+    it('enables the previous button when month is after startMonth', () => {
+      const month = new Date(2025, 1); // February 2025
+      render(<Calendar month={month} startMonth={startMonth} />);
+
+      expect(screen.getByRole('button', { name: /previous month/i })).toBeEnabled();
+    });
+
+    it('enables the next button when month is before endMonth', () => {
+      const month = new Date(2025, 10); // November 2025
+      render(<Calendar month={month} endMonth={endMonth} />);
+
+      expect(screen.getByRole('button', { name: /next month/i })).toBeEnabled();
+    });
+
+    it('disables previous button even if on the first day of startMonth with timestamp difference', () => {
+      // displayMonth is 2025-01-01 12:00:00, startMonth is 2025-01-01 00:00:00
+      const displayMonth = new Date(2025, 0, 1, 12);
+      const limitMonth = new Date(2025, 0, 1, 0);
+      render(<Calendar month={displayMonth} startMonth={limitMonth} />);
+
+      expect(screen.getByRole('button', { name: /previous month/i })).toBeDisabled();
+    });
+
+    it('disables next button even if on the last day of endMonth with timestamp difference', () => {
+      // displayMonth is 2025-11-30 00:00:00, endMonth is 2025-11-01 00:00:00
+      const displayMonth = new Date(2025, 11, 30);
+      const limitMonth = new Date(2025, 11, 1);
+      render(<Calendar month={displayMonth} endMonth={limitMonth} />);
+
+      expect(screen.getByRole('button', { name: /next month/i })).toBeDisabled();
+    });
+  });
 });
 

@@ -11,6 +11,28 @@ export type CalendarProps = DayPickerProps & {
   onGoToToday?: () => void;
 };
 
+/**
+ * Compares two dates at month granularity.
+ * @returns true if date `a` is after date `b` at the month level.
+ */
+function isAfterMonth(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() > b.getFullYear() ||
+    (a.getFullYear() === b.getFullYear() && a.getMonth() > b.getMonth())
+  );
+}
+
+/**
+ * Compares two dates at month granularity.
+ * @returns true if date `a` is before date `b` at the month level.
+ */
+function isBeforeMonth(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() < b.getFullYear() ||
+    (a.getFullYear() === b.getFullYear() && a.getMonth() < b.getMonth())
+  );
+}
+
 function formatWeekdayName(date: Date): string {
   return formatDate(date, 'EEE').toUpperCase();
 }
@@ -88,11 +110,11 @@ function Calendar({
   const displayMonth = month ?? new Date();
 
   const canGoToPreviousMonth = startMonth
-    ? displayMonth > startMonth
+    ? isAfterMonth(displayMonth, startMonth)
     : true;
 
   const canGoToNextMonth = endMonth
-    ? displayMonth < endMonth
+    ? isBeforeMonth(displayMonth, endMonth)
     : true;
 
   const handlePreviousMonth = () => {
