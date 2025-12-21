@@ -106,20 +106,21 @@ export function formatMoney(
  * Uses Intl.NumberFormat to extract the symbol dynamically.
  *
  * @param currencyCode - ISO 4217 currency code
+ * @param locale - BCP 47 locale identifier
  * @returns Currency symbol or code as fallback
  *
  * @example
- * getCurrencySymbol('USD') // "$"
- * getCurrencySymbol('PLN') // "zł"
+ * getCurrencySymbol('USD', 'en-US') // "$"
+ * getCurrencySymbol('PLN', 'pl-PL') // "zł"
  */
 export function getCurrencySymbol(
-  currencyCode: string = DEFAULT_CURRENCY
+  currencyCode: string = DEFAULT_CURRENCY,
+  locale: string = DEFAULT_LOCALE
 ): string {
   try {
-    const formatter = new Intl.NumberFormat('en-US', {
+    const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currencyCode,
-      currencyDisplay: 'narrowSymbol',
     });
     const parts = formatter.formatToParts(0);
     const symbolPart = parts.find((part) => part.type === 'currency');

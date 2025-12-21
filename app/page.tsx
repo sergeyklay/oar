@@ -21,7 +21,7 @@ async function DashboardHeader() {
     getCategoriesGrouped(),
     getDefaultCategoryId(),
   ]);
-  const currencySymbol = getCurrencySymbol(settings.currency);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   return (
     <div className="flex items-center justify-between">

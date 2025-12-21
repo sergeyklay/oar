@@ -90,11 +90,19 @@ describe('formatMoney', () => {
 
 describe('getCurrencySymbol', () => {
   it('returns correct symbols for known currencies', () => {
-    expect(getCurrencySymbol('PLN')).toBe('zł');
-    expect(getCurrencySymbol('USD')).toBe('$');
-    expect(getCurrencySymbol('EUR')).toBe('€');
-    expect(getCurrencySymbol('GBP')).toBe('£');
-    expect(getCurrencySymbol('JPY')).toBe('¥');
+    expect(getCurrencySymbol('PLN', 'pl-PL')).toBe('zł');
+    expect(getCurrencySymbol('USD', 'en-US')).toBe('$');
+    expect(getCurrencySymbol('EUR', 'de-DE')).toBe('€');
+    expect(getCurrencySymbol('GBP', 'en-GB')).toBe('£');
+    expect(getCurrencySymbol('JPY', 'ja-JP')).toMatch(/¥|￥/);
+  });
+
+  it('handles locale-specific symbols', () => {
+    // Some locales might use different symbols for the same currency
+    // For example, USD in en-CA might be "US$" or just "$"
+    expect(typeof getCurrencySymbol('USD', 'en-CA')).toBe('string');
+    expect(getCurrencySymbol('CAD', 'en-CA')).toBe('$');
+    expect(getCurrencySymbol('CAD', 'en-US')).toMatch(/CA\$|CAD/);
   });
 
   it('returns currency code as fallback for unknown currencies', () => {
