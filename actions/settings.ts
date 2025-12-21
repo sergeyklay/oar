@@ -51,7 +51,7 @@ export async function updateDueSoonRange(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
@@ -85,7 +85,7 @@ export async function updatePaidRecentlyRange(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
@@ -125,7 +125,7 @@ export async function updateViewOptions(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 

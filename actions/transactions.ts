@@ -61,7 +61,7 @@ export async function logPayment(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
