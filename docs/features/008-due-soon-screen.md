@@ -79,7 +79,7 @@ For example, if today is December 21 and your range is 7:
 
 You can filter the Due Soon view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within your configured range.
 
-The filter combines both conditions: bills must be unpaid, within the range, AND have the selected tag.
+The filter combines both conditions: bills must be unpaid, within the range, and have the selected tag.
 
 ## Edge cases
 
@@ -95,7 +95,7 @@ The filter combines both conditions: bills must be unpaid, within the range, AND
 
 **Empty range.** When no unpaid bills fall within your range, the page shows "No bills due soon" and the sidebar shows "No bills."
 
-**Paid Recently interaction.** Due Soon and Paid Recently are separate views with no overlap. Due Soon shows unpaid bills; Paid Recently shows logged payments. A bill can appear on both if it's due soon and you've made partial payments.
+**Paid Recently interaction.** The Paid Recently view in the sidebar shows your logged payments from the past few days. Due Soon shows unpaid bills. These views don't overlap, but a bill can appear on Due Soon while its past payments appear in Paid Recently if you've made partial payments.
 
 ## Verification
 
