@@ -45,15 +45,16 @@ interface ActionResult<T = void> {
  *
  * Side effects:
  * 1. Creates a transaction record
- * 2. If updateDueDate=true: advances bill.dueDate, resets amountDue
- * 3. If updateDueDate=false: reduces amountDue by payment amount
- * 4. Updates bill.status based on due date
+ * 2. If historical payment: bill state unchanged (record only)
+ * 3. If updateDueDate=true: advances bill.dueDate, resets amountDue
+ * 4. If updateDueDate=false: reduces amountDue by payment amount
+ * 5. Updates bill.status based on due date
  *
  * Uses Drizzle transaction for atomicity.
  */
 export async function logPayment(
   input: LogPaymentInput
-): Promise<ActionResult<{ transactionId: string }>> {
+): Promise<ActionResult<{ transactionId: string; isHistorical: boolean }>> {
   // 1. Validate input
   const parsed = logPaymentSchema.safeParse(input);
 
@@ -83,6 +84,7 @@ export async function logPayment(
     const paymentResult = PaymentService.processPayment(
       bill,
       amount,
+      paidAt,
       updateDueDate
     );
 
@@ -90,7 +92,7 @@ export async function logPayment(
     // NOTE: better-sqlite3 requires SYNCHRONOUS transactions (no async/await)
     // NOTE: .returning() returns a query builder; must call .get() or .all() to execute
     const result = db.transaction((tx) => {
-      // Create transaction record
+      // Create transaction record (always, for historical payments too)
       const newTransaction = tx
         .insert(transactions)
         .values({
@@ -103,15 +105,18 @@ export async function logPayment(
         .get();
 
       // Update bill with computed state from PaymentService
-      tx.update(bills)
-        .set({
-          dueDate: paymentResult.nextDueDate ?? bill.dueDate,
-          amountDue: paymentResult.newAmountDue,
-          status: paymentResult.newStatus,
-          updatedAt: new Date(),
-        })
-        .where(eq(bills.id, billId))
-        .run();
+      // Skip bill update for historical payments (record only)
+      if (!paymentResult.isHistorical) {
+        tx.update(bills)
+          .set({
+            dueDate: paymentResult.nextDueDate ?? bill.dueDate,
+            amountDue: paymentResult.newAmountDue,
+            status: paymentResult.newStatus,
+            updatedAt: new Date(),
+          })
+          .where(eq(bills.id, billId))
+          .run();
+      }
 
       return newTransaction;
     });
@@ -121,7 +126,10 @@ export async function logPayment(
 
     return {
       success: true,
-      data: { transactionId: result.id },
+      data: {
+        transactionId: result.id,
+        isHistorical: paymentResult.isHistorical,
+      },
     };
   } catch (error) {
     console.error('Failed to log payment:', error);

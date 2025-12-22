@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useMemo } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Clock } from 'lucide-react';
+import { isPaymentHistorical } from '@/lib/billing-cycle';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,17 @@ export function LogPaymentDialog({
     },
   });
 
+  // Watch paidAt and derive historical status
+  const watchedPaidAt = useWatch({ control: form.control, name: 'paidAt' });
+
+  const isHistorical = useMemo(() => {
+    if (!watchedPaidAt) return false;
+    return isPaymentHistorical(
+      { dueDate: bill.dueDate, frequency: bill.frequency },
+      watchedPaidAt
+    );
+  }, [watchedPaidAt, bill.dueDate, bill.frequency]);
+
   // Reset form when dialog opens with fresh bill data
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
@@ -104,9 +116,15 @@ export function LogPaymentDialog({
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Payment logged', {
-        description: `Payment for "${bill.title}" has been recorded.`,
-      });
+      if (result.data?.isHistorical) {
+        toast.success('Historical payment logged', {
+          description: `Payment for "${bill.title}" has been recorded without changing the due date.`,
+        });
+      } else {
+        toast.success('Payment logged', {
+          description: `Payment for "${bill.title}" has been recorded.`,
+        });
+      }
       handleOpenChange(false);
     } else {
       toast.error('Failed to log payment', {
@@ -217,28 +235,45 @@ export function LogPaymentDialog({
               )}
             />
 
-            {/* Update Due Date Toggle */}
-            <FormField
-              control={form.control}
-              name="updateDueDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel>Update Due Date</FormLabel>
-                    <FormDescription>
-                      Turn off to log a partial payment without advancing the
-                      billing cycle.
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {/* Historical Payment Banner */}
+            {isHistorical && (
+              <div className="flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
+                <Clock className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-amber-500">
+                    Historical payment
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    This payment will be recorded without changing the due date.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Update Due Date Toggle - Hidden for historical payments */}
+            {!isHistorical && (
+              <FormField
+                control={form.control}
+                name="updateDueDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel>Update Due Date</FormLabel>
+                      <FormDescription>
+                        Turn off to log a partial payment without advancing the
+                        billing cycle.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter>
               <Button

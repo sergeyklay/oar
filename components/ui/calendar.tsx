@@ -101,13 +101,27 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   onGoToToday,
-  month,
+  month: controlledMonth,
   onMonthChange,
   startMonth,
   endMonth,
   ...props
 }: CalendarProps) {
-  const displayMonth = month ?? new Date();
+  // Support uncontrolled mode with internal state
+  const [internalMonth, setInternalMonth] = React.useState(new Date());
+
+  const isControlled = controlledMonth !== undefined;
+  const displayMonth = isControlled ? controlledMonth : internalMonth;
+
+  const handleMonthChange = React.useCallback(
+    (newMonth: Date) => {
+      if (!isControlled) {
+        setInternalMonth(newMonth);
+      }
+      onMonthChange?.(newMonth);
+    },
+    [isControlled, onMonthChange]
+  );
 
   const canGoToPreviousMonth = startMonth
     ? isAfterMonth(displayMonth, startMonth)
@@ -120,20 +134,20 @@ function Calendar({
   const handlePreviousMonth = () => {
     const prevMonth = new Date(displayMonth);
     prevMonth.setMonth(prevMonth.getMonth() - 1);
-    onMonthChange?.(prevMonth);
+    handleMonthChange(prevMonth);
   };
 
   const handleNextMonth = () => {
     const nextMonthDate = new Date(displayMonth);
     nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
-    onMonthChange?.(nextMonthDate);
+    handleMonthChange(nextMonthDate);
   };
 
   const handleGoToToday = () => {
     if (onGoToToday) {
       onGoToToday();
     } else {
-      onMonthChange?.(new Date());
+      handleMonthChange(new Date());
     }
   };
 
@@ -150,8 +164,8 @@ function Calendar({
       <DayPicker
         showOutsideDays={showOutsideDays}
         hideNavigation
-        month={month}
-        onMonthChange={onMonthChange}
+        month={displayMonth}
+        onMonthChange={handleMonthChange}
         startMonth={startMonth}
         endMonth={endMonth}
         classNames={{

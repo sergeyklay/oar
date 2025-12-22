@@ -51,6 +51,39 @@ Bills with a "Never" repeat interval behave differently. After you log a full pa
 
 You can still log partial payments against one-time bills. When the cumulative payments equal or exceed the bill amount, the bill is marked paid.
 
+## Historical payments
+
+When you're onboarding a bill with existing payment history, you need to record past payments without affecting the current billing cycle. Oar detects this automatically.
+
+If you select a payment date before the current billing cycle started, the system recognizes it as a "historical payment." You'll see an amber banner in the dialog:
+
+> Historical payment: this will be recorded without changing the due date.
+
+The "Update Due Date" toggle disappears for historical payments since it doesn't apply. Your payment is recorded in the transaction history with the date you selected, but the bill's due date, amount due, and status remain untouched.
+
+**How the system calculates billing cycle boundaries:**
+
+| Repeat interval | Current cycle starts |
+|-----------------|---------------------|
+| Weekly | 7 days before due date |
+| Biweekly | 14 days before due date |
+| Twice monthly | 14 days before due date |
+| Monthly | 1 month before due date |
+| Bimonthly | 2 months before due date |
+| Quarterly | 3 months before due date |
+| Yearly | 1 year before due date |
+| One-time | Any date before due date |
+
+**Example scenario:**
+
+You have a monthly electric bill due December 22. The current billing cycle runs from November 22 through December 22.
+
+- Log a payment dated December 20 → Current cycle payment. Toggle appears. Bill advances if toggle is on.
+- Log a payment dated November 15 → Historical payment. No toggle. Bill state unchanged.
+- Log a payment dated March 10 → Historical payment. No toggle. Bill state unchanged.
+
+This lets you build a complete payment history when adding existing bills to Oar without scrambling your current obligations.
+
 ## Payment history
 
 Every payment you log is recorded with its amount, date, and notes. To view a bill's payment history:
@@ -71,7 +104,7 @@ Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes 
 
 **Variable amount bills.** The Log Payment dialog pre-fills with the current amount due, which matches your estimate for variable bills. Change the amount to reflect what you paid.
 
-**Backdated payments.** You can pick any past date for the payment. This is useful when recording payments made outside of Oar. The date you select is stored; it doesn't affect how the due date advances.
+**Backdated payments.** You can pick any past date for the payment. If the date falls within the current billing cycle, the payment behaves normally. If the date falls before the current cycle, Oar treats it as a historical payment and won't modify the bill's state. See the "Historical payments" section above.
 
 **Bill already paid.** For one-time bills marked as paid, the Log Payment button is disabled.
 
@@ -87,3 +120,12 @@ To confirm payment logging works:
 4. Log a payment with "Update Due Date" on. The bill's due date should advance to the next cycle.
 5. Create another bill and log a partial payment with the toggle off. The amount due should decrease while the due date stays the same.
 6. Click "View Payment History" in the Bill Detail Panel. Your logged payments should appear.
+
+To confirm historical payment detection works:
+
+1. Find a recurring bill (monthly works best for testing).
+2. Click Log Payment and change the date to several months in the past.
+3. An amber banner should appear saying "Historical payment."
+4. The "Update Due Date" toggle should disappear.
+5. Log the payment. The bill's due date and amount due should remain unchanged.
+6. Check the payment history; your historical payment should appear with the backdated date.

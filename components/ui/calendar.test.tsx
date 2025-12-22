@@ -131,5 +131,49 @@ describe('Calendar UI Component', () => {
       expect(screen.getByRole('button', { name: /next month/i })).toBeDisabled();
     });
   });
+
+  describe('Uncontrolled Mode', () => {
+    it('navigates to previous month without month prop', async () => {
+      render(<Calendar />);
+
+      const currentMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+      expect(currentMonthLabel).toBeTruthy();
+
+      await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
+
+      // After clicking, the month should change (internal state is updated)
+      const newMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+      expect(newMonthLabel).not.toBe(currentMonthLabel);
+    });
+
+    it('navigates to next month without month prop', async () => {
+      render(<Calendar />);
+
+      const currentMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+      expect(currentMonthLabel).toBeTruthy();
+
+      await userEvent.click(screen.getByRole('button', { name: /next month/i }));
+
+      // After clicking, the month should change (internal state is updated)
+      const newMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+      expect(newMonthLabel).not.toBe(currentMonthLabel);
+    });
+
+    it('returns to today when clicking go to today without month prop', async () => {
+      render(<Calendar />);
+
+      // First, navigate away from the current month
+      await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
+      await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
+
+      const awayMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+
+      // Click "go to today"
+      await userEvent.click(screen.getByRole('button', { name: /go to today/i }));
+
+      const todayMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
+      expect(todayMonthLabel).not.toBe(awayMonthLabel);
+    });
+  });
 });
 
