@@ -1,9 +1,6 @@
 import { isValid, isFuture, startOfDay } from 'date-fns';
 import { RecurrenceService } from './RecurrenceService';
-import {
-  getCycleStartDate as getCycleStartDateUtil,
-  isPaymentHistorical as isPaymentHistoricalUtil,
-} from '@/lib/billing-cycle';
+import { isPaymentHistorical } from '@/lib/billing-cycle';
 import type { Bill, BillStatus } from '@/db/schema';
 
 /**
@@ -53,12 +50,6 @@ function validatePaymentDate(paidAt: Date): void {
  * floating-point precision issues.
  */
 export const PaymentService = {
-  /** @see getCycleStartDate in lib/billing-cycle.ts */
-  getCycleStartDate: getCycleStartDateUtil,
-
-  /** @see isPaymentHistorical in lib/billing-cycle.ts */
-  isPaymentHistorical: isPaymentHistoricalUtil,
-
   /**
    * Calculates bill state changes after logging a payment.
    *
@@ -94,7 +85,7 @@ export const PaymentService = {
     validatePaymentDate(paidAt);
 
     // Check for historical payment first
-    const isHistorical = isPaymentHistoricalUtil(bill, paidAt);
+    const isHistorical = isPaymentHistorical(bill, paidAt);
 
     if (isHistorical) {
       return {
