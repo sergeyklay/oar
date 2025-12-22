@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -75,9 +75,11 @@ export function LogPaymentDialog({
     },
   });
 
-  // Reset form when dialog opens with fresh bill data
+  const prevOpenRef = useRef(open);
+
+  // Reset form only when the dialog transitions from closed to open
   useEffect(() => {
-    if (open) {
+    if (open && !prevOpenRef.current) {
       form.reset({
         amount: toMajorUnits(bill.amountDue, currency).toString(),
         paidAt: new Date(),
@@ -85,7 +87,9 @@ export function LogPaymentDialog({
         updateDueDate: true,
       });
     }
-  }, [open, bill, currency, form]);
+    prevOpenRef.current = open;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, bill, currency]);
 
   // Watch paidAt and derive historical status
   const watchedPaidAt = useWatch({ control: form.control, name: 'paidAt' });
