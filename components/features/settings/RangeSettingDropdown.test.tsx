@@ -20,12 +20,6 @@ const mockLabels = {
   '30': 'In next 30 days',
 };
 
-global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
 Element.prototype.scrollIntoView = jest.fn();
 Element.prototype.hasPointerCapture = jest.fn();
 Element.prototype.setPointerCapture = jest.fn();
