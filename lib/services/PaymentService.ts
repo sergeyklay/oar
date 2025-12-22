@@ -1,3 +1,4 @@
+import { isValid, isFuture, startOfDay } from 'date-fns';
 import { RecurrenceService } from './RecurrenceService';
 import {
   getCycleStartDate as getCycleStartDateUtil,
@@ -19,6 +20,26 @@ export interface PaymentResult {
   newStatus: BillStatus;
   /** True if payment is for a past billing cycle (record only, no bill changes) */
   isHistorical: boolean;
+}
+
+/**
+ * Validates that a payment date is acceptable.
+ *
+ * @param paidAt - The payment date to validate
+ * @throws Error if date is invalid or in the future
+ */
+function validatePaymentDate(paidAt: Date): void {
+  if (!isValid(paidAt)) {
+    throw new Error('Invalid payment date: paidAt must be a valid Date object');
+  }
+
+  // Compare at day level to allow payments made "today" regardless of time
+  const paidAtDay = startOfDay(paidAt);
+  const todayDay = startOfDay(new Date());
+
+  if (isFuture(paidAtDay) && paidAtDay.getTime() !== todayDay.getTime()) {
+    throw new Error('Invalid payment date: cannot log payments for future dates');
+  }
 }
 
 /**
@@ -69,6 +90,9 @@ export const PaymentService = {
     paidAt: Date,
     updateDueDate: boolean
   ): PaymentResult {
+    // Validate paidAt before processing
+    validatePaymentDate(paidAt);
+
     // Check for historical payment first
     const isHistorical = isPaymentHistoricalUtil(bill, paidAt);
 
