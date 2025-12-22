@@ -147,7 +147,7 @@ export function BillDetailPanel({
       </div>
 
       {/* Details */}
-      <div className="flex-1 space-y-6 overflow-y-auto overflow-x-hidden">
+      <div className={`flex-1 space-y-6 ${isHistoryExpanded ? 'overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden'}`}>
         {/* Status / Date / Amount Block - Hidden when history expanded */}
         {!isHistoryExpanded && (
           <div className="space-y-1">

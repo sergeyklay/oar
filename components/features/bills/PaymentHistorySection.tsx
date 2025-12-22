@@ -93,17 +93,17 @@ export function PaymentHistorySection({
   }
 
   return (
-    <div className="pt-4 border-t border-border -mx-4 px-4 overflow-x-hidden">
+    <div className="pt-4 border-t border-border -mx-4 px-4 overflow-x-hidden flex-1 flex flex-col min-h-0">
       <button
         type="button"
         onClick={() => onExpandChange(false)}
-        className="flex items-center gap-1 mb-4 text-sm font-medium hover:text-muted-foreground transition-colors cursor-pointer"
+        className="flex items-center gap-1 mb-4 text-sm font-medium hover:text-muted-foreground transition-colors cursor-pointer shrink-0"
       >
         <ChevronLeft className="h-4 w-4" />
         Payment History
       </button>
 
-      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+      <div className="space-y-2 flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
