@@ -48,8 +48,8 @@ const mockBill: Bill = {
 };
 
 describe('LogPaymentDialog', () => {
-  const setup = (props = {}) => {
-    const user = userEvent.setup();
+  const setup = (props = {}, userEventOptions = {}) => {
+    const user = userEvent.setup(userEventOptions);
     const onOpenChange = jest.fn();
     const utils = render(
       <LogPaymentDialog
@@ -73,7 +73,8 @@ describe('LogPaymentDialog', () => {
   });
 
   it('resets form values when reopened', async () => {
-    const { user, rerender } = setup();
+    jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+    const { user, rerender } = setup({}, { advanceTimers: jest.advanceTimersByTime });
 
     // 1. Change some values
     const amountInput = screen.getByLabelText(/amount/i);
@@ -96,7 +97,8 @@ describe('LogPaymentDialog', () => {
       />
     );
 
-    // 3. Simulate reopening the dialog
+    // 3. Move time forward and reopen
+    jest.advanceTimersByTime(1000 * 60 * 60); // 1 hour later
     rerender(
       <LogPaymentDialog
         bill={mockBill}
@@ -110,10 +112,22 @@ describe('LogPaymentDialog', () => {
     expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
     expect(screen.getByLabelText(/notes/i)).toHaveValue('');
     expect(screen.getByLabelText(/update due date/i)).toBeChecked();
+    // Verify date is displayed correctly
+    expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
+
+    jest.useRealTimers();
   });
 
-  it('updates defaults when bill prop changes while open', () => {
-    const { rerender } = setup();
+  it('does not update defaults when bill prop changes while already open', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+    const { user, rerender } = setup({}, { advanceTimers: jest.advanceTimersByTime });
+
+    // Change input to show it persists
+    const notesInput = screen.getByLabelText(/notes/i);
+    await user.type(notesInput, 'User typing...');
+
+    // Move time forward
+    jest.advanceTimersByTime(1000 * 60 * 60); // 1 hour later
 
     const differentBill: Bill = {
       ...mockBill,
@@ -130,7 +144,13 @@ describe('LogPaymentDialog', () => {
       />
     );
 
-    expect(screen.getByLabelText(/amount/i)).toHaveValue('120');
+    // Should still have the initial bill's amount and user's typing
+    expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
+    expect(notesInput).toHaveValue('User typing...');
+    // Should still have the OLD date
+    expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
+
+    jest.useRealTimers();
   });
 });
 
