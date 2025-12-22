@@ -136,7 +136,9 @@ db.insert(bills).values({ amount: amount * 100 });  // Floating point errors!
 
 - **No Tests:** Do not implement tests. Tests will be created by a specialized agent.
 - **No Docs:** Don't generate markdown documentation unless explicitly asked.
-- **No Plan References:** Don't add comments like `@see .plans/` or `// Step 2 from plan`.
+- **No Specs/Plans References:** Don't reference specs/plans in your code, e.g. `@see .specs/` or `@see .plans/`.
+- **No Phases Mentioning:** Don't mention phases in your code, e.g. "TODO: Implement in Phase 2".
+- **No Reinventing:** Use `shadcn/ui` components for UI. Use `date-fns` for dates.
 - **No Over-Engineering:** Only make changes directly requested. Don't add features, refactor adjacent code, or create abstractions for single-use operations.
 - **Use Context7:** When you need library documentation or API references, use Context7 MCP tools to fetch up-to-date docs.
 
@@ -159,7 +161,7 @@ IF the task involves fixing a documented BUG:
    Propose the exact command for the QA Agent:
    > Bug {short name} was fixed.
    > **Next Step:** Lock this fix with a regression test.
-   > ```
+   > ```plaintext
    > /test @[affected files] ...
    > Bug description: [desc]
    > Changes made: [list]
