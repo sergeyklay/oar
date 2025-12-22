@@ -1,5 +1,4 @@
 export { AddBillButton } from './AddBillButton';
-export { BillActionsMenu } from './BillActionsMenu';
 export { BillDetailPanel } from './BillDetailPanel';
 export { BillFormDialog } from './BillFormDialog';
 export { BillList } from './BillList';
@@ -10,6 +9,6 @@ export { CategoryIcon } from './CategoryIcon';
 export { CategorySelect } from './CategorySelect';
 export { CloseDetailButton } from './CloseDetailButton';
 export { LogPaymentDialog } from './LogPaymentDialog';
-export { PaymentHistoryDialog } from './PaymentHistoryDialog';
+export { PaymentHistorySection } from './PaymentHistorySection';
 export { TagCombobox } from './TagCombobox';
 export { TagFilter } from './TagFilter';

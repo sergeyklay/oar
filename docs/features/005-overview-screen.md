@@ -1,12 +1,12 @@
 # Overview Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
+- **Last Updated:** 2025-12-22
 - **Related:** [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
 
-The Overview screen is your command center for managing bills. It displays all your bills in a table with five columns: category icon, name, amount, due date, and actions. Each bill shows when payment is due using plain language like "Due in 3 days" or "Overdue by 5 days" so you can prioritize at a glance.
+The Overview screen is your command center for managing bills. It displays all your bills in a table with four columns: category icon, name, amount, and due date. Each bill shows when payment is due using plain language like "Due in 3 days" or "Overdue by 5 days" so you can prioritize at a glance.
 
 A colored status bar on the left edge of the due date cell gives you instant visual feedback about each bill's urgency. Red means overdue, amber means due soon, blue means you have time, and green means paid.
 
@@ -21,8 +21,6 @@ The table shows your bills with these columns:
 **Amount.** The payment amount in your currency. Variable bills show "(estimate)" below the amount.
 
 **Due date.** Shows when payment is due using human-readable text. A colored vertical bar on the left indicates the bill's urgency.
-
-**Actions.** Contains a menu with administrative actions like viewing payment history, editing the bill, or deleting it.
 
 ## Bill Detail Panel
 
@@ -105,7 +103,7 @@ Clicking anywhere on a bill row opens the **Bill Detail Panel**. Management acti
 - **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags.
 - **Delete:** Removes the bill entirely (requires confirmation).
 
-The three-dot menu in the Actions column of the bill row contains the **View history** action, which opens a dialog showing all past payments for this bill.
+Payment history is available directly within the Bill Detail Panel through the collapsible "View Payment History" section. See [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) for details.
 
 ## Edge cases
 
@@ -125,7 +123,7 @@ The three-dot menu in the Actions column of the bill row contains the **View his
 
 To confirm the Overview screen works:
 
-1. Navigate to the Overview page. You should see a table with five columns.
+1. Navigate to the Overview page. You should see a table with four columns.
 2. Check that bill names show repeat interval subtitles like "Every month" below them.
 3. Look for any variable bills. They should show "(estimate)" below the amount.
 4. Verify overdue bills show "Overdue by X days" with a red status bar.
@@ -134,4 +132,4 @@ To confirm the Overview screen works:
 7. Find a paid one-time bill. It should show "Paid" with a green bar.
 8. Click on a bill row. The Bill Detail Panel should appear on the right.
 9. Look at the bottom of the Bill Detail Panel. You should see Archive, Edit, and Delete buttons.
-10. Click the three-dot menu in the table. You should see only the View History option.
+10. Look for the "View Payment History" section in the panel to access past payments.

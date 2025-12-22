@@ -2,22 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { BillRow } from './BillRow';
 import type { BillWithTags, BillFrequency } from '@/lib/types';
 
-jest.mock('./BillActionsMenu', () => ({
-  BillActionsMenu: () => <button>Actions</button>,
-}));
-
-jest.mock('./BillFormDialog', () => ({
-  BillFormDialog: () => null,
-}));
-
-jest.mock('./LogPaymentDialog', () => ({
-  LogPaymentDialog: () => null,
-}));
-
-jest.mock('./PaymentHistoryDialog', () => ({
-  PaymentHistoryDialog: () => null,
-}));
-
 const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
   id: 'bill-1',
   title: 'Test Bill',
