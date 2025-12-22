@@ -19,6 +19,8 @@ interface PaymentHistorySectionProps {
   isExpanded: boolean;
   /** Callback when expand state changes */
   onExpandChange: (expanded: boolean) => void;
+  /** Key to trigger refetch; increment to force refresh */
+  refreshKey?: number;
 }
 
 /**
@@ -31,6 +33,7 @@ export function PaymentHistorySection({
   locale,
   isExpanded,
   onExpandChange,
+  refreshKey,
 }: PaymentHistorySectionProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +60,7 @@ export function PaymentHistorySection({
     return () => {
       cancelled = true;
     };
-  }, [billId]);
+  }, [billId, refreshKey]);
 
   const lastPayment = transactions[0];
 

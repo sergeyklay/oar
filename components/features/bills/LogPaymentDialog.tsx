@@ -55,6 +55,8 @@ interface LogPaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currency: string;
+  /** Callback invoked after successful payment logging */
+  onPaymentLogged?: () => void;
 }
 
 export function LogPaymentDialog({
@@ -62,6 +64,7 @@ export function LogPaymentDialog({
   open,
   onOpenChange,
   currency,
+  onPaymentLogged,
 }: LogPaymentDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,6 +127,7 @@ export function LogPaymentDialog({
     setIsSubmitting(false);
 
     if (result.success) {
+      onPaymentLogged?.();
       if (result.data?.isHistorical) {
         toast.success('Historical payment logged', {
           description: `Payment for "${bill.title}" has been recorded without changing the due date.`,

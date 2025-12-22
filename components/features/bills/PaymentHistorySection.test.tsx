@@ -195,5 +195,25 @@ describe('PaymentHistorySection', () => {
         expect(screen.getByText('No Payments')).toBeInTheDocument();
       });
     });
+
+    it('refetches when refreshKey changes', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      const { rerender } = render(<PaymentHistorySection {...defaultProps} refreshKey={0} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+      expect(getTransactionsByBillId).toHaveBeenCalledTimes(1);
+
+      const newTransaction = createMockTransaction({ amount: 5000, paidAt: new Date('2025-07-15') });
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([newTransaction]);
+
+      rerender(<PaymentHistorySection {...defaultProps} refreshKey={1} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Last Paid \$50\.00 on Tue, Jul 15/)).toBeInTheDocument();
+      });
+      expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
+    });
   });
 });
