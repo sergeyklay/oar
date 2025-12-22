@@ -141,7 +141,6 @@ describe('Calendar UI Component', () => {
 
       await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
 
-      // After clicking, the month should change (internal state is updated)
       const newMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
       expect(newMonthLabel).not.toBe(currentMonthLabel);
     });
@@ -154,7 +153,6 @@ describe('Calendar UI Component', () => {
 
       await userEvent.click(screen.getByRole('button', { name: /next month/i }));
 
-      // After clicking, the month should change (internal state is updated)
       const newMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
       expect(newMonthLabel).not.toBe(currentMonthLabel);
     });
@@ -162,13 +160,11 @@ describe('Calendar UI Component', () => {
     it('returns to today when clicking go to today without month prop', async () => {
       render(<Calendar />);
 
-      // First, navigate away from the current month
       await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
       await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
 
       const awayMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
 
-      // Click "go to today"
       await userEvent.click(screen.getByRole('button', { name: /go to today/i }));
 
       const todayMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;

@@ -1,5 +1,6 @@
 import { PaymentService } from './PaymentService';
 import { RecurrenceService } from './RecurrenceService';
+import { getCycleStartDate, isPaymentHistorical } from '@/lib/billing-cycle';
 
 jest.mock('./RecurrenceService', () => ({
   RecurrenceService: {
@@ -426,31 +427,31 @@ describe('PaymentService', () => {
   describe('getCycleStartDate', () => {
     it('returns null for one-time bills', () => {
       const dueDate = new Date('2025-03-15');
-      const result = PaymentService.getCycleStartDate(dueDate, 'once');
+      const result = getCycleStartDate(dueDate, 'once');
       expect(result).toBeNull();
     });
 
     it('calculates correct cycle start for weekly bills', () => {
       const dueDate = new Date('2025-03-15');
-      const result = PaymentService.getCycleStartDate(dueDate, 'weekly');
+      const result = getCycleStartDate(dueDate, 'weekly');
       expect(result).toEqual(new Date('2025-03-08'));
     });
 
     it('calculates correct cycle start for monthly bills', () => {
       const dueDate = new Date('2025-03-15');
-      const result = PaymentService.getCycleStartDate(dueDate, 'monthly');
+      const result = getCycleStartDate(dueDate, 'monthly');
       expect(result).toEqual(new Date('2025-02-15'));
     });
 
     it('calculates correct cycle start for quarterly bills', () => {
       const dueDate = new Date('2025-03-15');
-      const result = PaymentService.getCycleStartDate(dueDate, 'quarterly');
+      const result = getCycleStartDate(dueDate, 'quarterly');
       expect(result).toEqual(new Date('2024-12-15'));
     });
 
     it('calculates correct cycle start for yearly bills', () => {
       const dueDate = new Date('2025-03-15');
-      const result = PaymentService.getCycleStartDate(dueDate, 'yearly');
+      const result = getCycleStartDate(dueDate, 'yearly');
       expect(result).toEqual(new Date('2024-03-15'));
     });
   });
@@ -463,7 +464,7 @@ describe('PaymentService', () => {
       };
       const paidAt = new Date('2025-02-01'); // Before cycle start (Feb 15)
 
-      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(true);
+      expect(isPaymentHistorical(bill, paidAt)).toBe(true);
     });
 
     it('returns false when paidAt is within cycle for monthly bill', () => {
@@ -473,7 +474,7 @@ describe('PaymentService', () => {
       };
       const paidAt = new Date('2025-02-20'); // After cycle start (Feb 15)
 
-      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
+      expect(isPaymentHistorical(bill, paidAt)).toBe(false);
     });
 
     it('returns false for one-time bills regardless of payment date', () => {
@@ -483,13 +484,13 @@ describe('PaymentService', () => {
       };
 
       // Early payment - not historical
-      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-10'))).toBe(false);
+      expect(isPaymentHistorical(bill, new Date('2025-03-10'))).toBe(false);
 
       // On due date - not historical
-      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-15'))).toBe(false);
+      expect(isPaymentHistorical(bill, new Date('2025-03-15'))).toBe(false);
 
       // Late payment - not historical
-      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-20'))).toBe(false);
+      expect(isPaymentHistorical(bill, new Date('2025-03-20'))).toBe(false);
     });
   });
 });
