@@ -1,7 +1,7 @@
 # Logging Payments
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
+- **Last Updated:** 2025-12-22
 - **Related:** [Recurrence Engine](./001-recurrence-engine.md), [Background Jobs](./006-background-jobs.md), [Overview Screen](./005-overview-screen.md)
 
 ## Overview
@@ -55,17 +55,11 @@ You can still log partial payments against one-time bills. When the cumulative p
 
 Every payment you log is recorded with its amount, date, and notes. To view a bill's payment history:
 
-1. Click the three-dot menu on the bill row
-2. Select "View history"
-3. A dialog shows all payments, newest first
+1. Click a bill row to open the Bill Detail Panel
+2. Find the "View Payment History" section above the notes
+3. Click to expand and see all payments, newest first
 
-Each payment displays the amount, date (formatted like "December 21, 2025"), and any notes you added.
-
-## Deleting payments
-
-You can delete a payment record from the history dialog by clicking the trash icon. A confirmation dialog appears warning that deletion won't change the bill's current due date or amount due.
-
-This is intentional. Deleting a payment is a record correction, not an "undo" operation. If you logged a payment accidentally and the bill's due date already advanced, you'll need to edit the bill manually to fix it.
+Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes you added. Long notes truncate to a single line; hover to see the full text.
 
 ## Edge cases
 
@@ -92,5 +86,4 @@ To confirm payment logging works:
 3. The dialog should show the amount pre-filled and today's date selected.
 4. Log a payment with "Update Due Date" on. The bill's due date should advance to the next cycle.
 5. Create another bill and log a partial payment with the toggle off. The amount due should decrease while the due date stays the same.
-6. Open the bill's payment history from the three-dot menu. Your logged payments should appear.
-7. Delete a payment from history. Confirm the bill's due date didn't change.
+6. Click "View Payment History" in the Bill Detail Panel. Your logged payments should appear.

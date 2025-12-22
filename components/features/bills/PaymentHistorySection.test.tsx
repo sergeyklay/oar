@@ -1,0 +1,196 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { PaymentHistorySection } from './PaymentHistorySection';
+import { getTransactionsByBillId } from '@/actions/transactions';
+import type { Transaction } from '@/lib/types';
+
+jest.mock('@/actions/transactions', () => ({
+  getTransactionsByBillId: jest.fn(),
+}));
+
+const createMockTransaction = (overrides: Partial<Transaction> = {}): Transaction => ({
+  id: 'tx-1',
+  billId: 'bill-1',
+  amount: 16420,
+  paidAt: new Date('2025-06-20'),
+  notes: null,
+  createdAt: new Date(),
+  ...overrides,
+});
+
+describe('PaymentHistorySection', () => {
+  const defaultProps = {
+    billId: 'bill-1',
+    currency: 'USD',
+    locale: 'en-US',
+    isExpanded: false,
+    onExpandChange: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('collapsed state', () => {
+    it('displays "View Payment History" title', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...defaultProps} />);
+
+      expect(screen.getByText('View Payment History')).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+    });
+
+    it('displays "Loading..." subtitle while fetching', async () => {
+      let resolvePromise: (value: Transaction[]) => void;
+      const pendingPromise = new Promise<Transaction[]>((resolve) => {
+        resolvePromise = resolve;
+      });
+      (getTransactionsByBillId as jest.Mock).mockReturnValue(pendingPromise);
+
+      render(<PaymentHistorySection {...defaultProps} />);
+
+      expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+      resolvePromise!([]);
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+    });
+
+    it('displays "No Payments" when no transactions exist', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+    });
+
+    it('displays last payment info when transactions exist', async () => {
+      const transactions = [createMockTransaction({ amount: 16420, paidAt: new Date('2025-06-20') })];
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      render(<PaymentHistorySection {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Last Paid \$164\.20 on Fri, Jun 20/)).toBeInTheDocument();
+      });
+    });
+
+    it('calls onExpandChange(true) when clicked', async () => {
+      const onExpandChange = jest.fn();
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...defaultProps} onExpandChange={onExpandChange} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button'));
+
+      expect(onExpandChange).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('expanded state', () => {
+    const expandedProps = { ...defaultProps, isExpanded: true };
+
+    it('displays "Payment History" header with back arrow', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      expect(screen.getByText('Payment History')).toBeInTheDocument();
+
+      await waitFor(() => {
+        expect(screen.getByText('No payments recorded yet.')).toBeInTheDocument();
+      });
+    });
+
+    it('calls onExpandChange(false) when back button clicked', async () => {
+      const onExpandChange = jest.fn();
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...expandedProps} onExpandChange={onExpandChange} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('No payments recorded yet.')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button'));
+
+      expect(onExpandChange).toHaveBeenCalledWith(false);
+    });
+
+    it('displays "No payments recorded yet." when no transactions', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('No payments recorded yet.')).toBeInTheDocument();
+      });
+    });
+
+    it('displays transaction list with formatted data', async () => {
+      const transactions = [
+        createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
+        createMockTransaction({ id: 'tx-2', amount: 15845, paidAt: new Date('2025-05-26'), notes: 'May payment' }),
+      ];
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('26/06/2025')).toBeInTheDocument();
+        expect(screen.getByText('$164.20')).toBeInTheDocument();
+        expect(screen.getByText('26/05/2025')).toBeInTheDocument();
+        expect(screen.getByText('$158.45')).toBeInTheDocument();
+        expect(screen.getByText('May payment')).toBeInTheDocument();
+      });
+    });
+
+    it('displays empty string for transactions without notes', async () => {
+      const transactions = [createMockTransaction({ notes: null })];
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText('$164.20')).toBeInTheDocument();
+      });
+
+      const noteElements = screen.getAllByText('');
+      expect(noteElements.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('data fetching', () => {
+    it('fetches transactions on mount with correct billId', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      render(<PaymentHistorySection {...defaultProps} billId="test-bill-123" />);
+
+      expect(getTransactionsByBillId).toHaveBeenCalledWith('test-bill-123');
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+    });
+
+    it('refetches when billId changes', async () => {
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      const { rerender } = render(<PaymentHistorySection {...defaultProps} billId="bill-1" />);
+
+      expect(getTransactionsByBillId).toHaveBeenCalledWith('bill-1');
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+
+      rerender(<PaymentHistorySection {...defaultProps} billId="bill-2" />);
+
+      expect(getTransactionsByBillId).toHaveBeenCalledWith('bill-2');
+      expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
+
+      await waitFor(() => {
+        expect(screen.getByText('No Payments')).toBeInTheDocument();
+      });
+    });
+  });
+});

@@ -24,6 +24,7 @@ import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { BillFormDialog } from './BillFormDialog';
 import { CloseDetailButton } from './CloseDetailButton';
+import { PaymentHistorySection } from './PaymentHistorySection';
 import type {
   BillWithTags,
   Tag,
@@ -65,6 +66,7 @@ export function BillDetailPanel({
   const [isSkipping, setIsSkipping] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
 
   const [, setSelectedBill] = useQueryState(
     'selectedBill',
@@ -140,56 +142,64 @@ export function BillDetailPanel({
       </div>
 
       {/* Details */}
-      <div className="flex-1 space-y-6 overflow-y-auto">
-        {/* Status / Date / Amount Block */}
-        <div className="space-y-1">
-          {/* Line 1: Status Header */}
-          <p className="text-xl font-medium text-white">
-            {DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
-          </p>
-
-          {/* Line 2: Date */}
-          <p className="text-sm text-zinc-300">
-            {format(bill.dueDate, 'EEEE, d MMMM yyyy')}
-          </p>
-
-          {/* Line 3: Amount */}
-          <p
-            className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}
-          >
-            {formatMoney(bill.amount, currency, locale)}
-          </p>
-          {bill.isVariable && (
-            <p className="text-xs text-muted-foreground mt-1">
-              (Variable amount - estimate)
+      <div className="flex-1 space-y-6 overflow-y-auto overflow-x-hidden">
+        {/* Status / Date / Amount Block - Hidden when history expanded */}
+        {!isHistoryExpanded && (
+          <div className="space-y-1">
+            <p className="text-xl font-medium text-white">
+              {DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
             </p>
-          )}
-        </div>
+            <p className="text-sm text-zinc-300">
+              {format(bill.dueDate, 'EEEE, d MMMM yyyy')}
+            </p>
+            <p
+              className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}
+            >
+              {formatMoney(bill.amount, currency, locale)}
+            </p>
+            {bill.isVariable && (
+              <p className="text-xs text-muted-foreground mt-1">
+                (Variable amount - estimate)
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3 pt-4">
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => setPayDialogOpen(true)}
-            disabled={isPaid}
-          >
-            Log Payment
-          </Button>
+        {/* Action Buttons - Hidden when history expanded */}
+        {!isHistoryExpanded && (
+          <div className="space-y-3 pt-4">
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => setPayDialogOpen(true)}
+              disabled={isPaid}
+            >
+              Log Payment
+            </Button>
 
-          <Button
-            className="w-full"
-            variant="secondary"
-            size="lg"
-            onClick={handleSkip}
-            disabled={isPaid || bill.frequency === 'once' || isSkipping}
-          >
-            {isSkipping ? 'Skipping...' : 'Skip'}
-          </Button>
-        </div>
+            <Button
+              className="w-full"
+              variant="secondary"
+              size="lg"
+              onClick={handleSkip}
+              disabled={isPaid || bill.frequency === 'once' || isSkipping}
+            >
+              {isSkipping ? 'Skipping...' : 'Skip'}
+            </Button>
+          </div>
+        )}
 
-        {/* Notes Section */}
-        {bill.notes && (
+        {/* Payment History Section */}
+        <PaymentHistorySection
+          billId={bill.id}
+          currency={currency}
+          locale={locale}
+          isExpanded={isHistoryExpanded}
+          onExpandChange={setIsHistoryExpanded}
+        />
+
+        {/* Notes Section - Hidden when history expanded */}
+        {!isHistoryExpanded && bill.notes && (
           <div className="flex items-start gap-3 pt-4 border-t border-border">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted">
               <FileText className="h-5 w-5 text-muted-foreground" />
@@ -206,8 +216,8 @@ export function BillDetailPanel({
 
       {/* Footer Actions */}
       <div className="mt-auto pt-4">
-        {/* Tags Section - Moved here */}
-        {bill.tags.length > 0 && (
+        {/* Tags Section - Hidden when history expanded */}
+        {!isHistoryExpanded && bill.tags.length > 0 && (
           <div className="mt-6 pb-4">
             <p className="text-sm text-muted-foreground mb-2">Tags</p>
             <div className="flex flex-wrap gap-2">

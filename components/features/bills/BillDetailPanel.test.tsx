@@ -49,6 +49,12 @@ jest.mock('./CloseDetailButton', () => ({
   CloseDetailButton: () => <button aria-label="close">Close</button>,
 }));
 
+jest.mock('./PaymentHistorySection', () => ({
+  PaymentHistorySection: () => (
+    <div data-testid="payment-history-section">Payment History Section</div>
+  ),
+}));
+
 const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
   id: 'bill-1',
   title: 'Electric Bill',

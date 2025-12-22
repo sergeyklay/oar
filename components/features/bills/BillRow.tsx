@@ -1,15 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
 import { DueDateService } from '@/lib/services/DueDateService';
-import { BillActionsMenu } from './BillActionsMenu';
 import { CategoryIcon } from './CategoryIcon';
-import { PaymentHistoryDialog } from './PaymentHistoryDialog';
 import type { BillWithTags } from '@/lib/types';
 
 interface BillRowProps {
@@ -28,8 +25,6 @@ export function BillRow({
   currency,
   locale,
 }: BillRowProps) {
-  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-
   return (
     <>
       <td className="w-10 text-center">
@@ -66,25 +61,6 @@ export function BillRow({
             )}
           </div>
         </div>
-      </td>
-      <td>
-        <div
-          className="flex items-center gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <BillActionsMenu
-            onViewHistory={() => setHistoryDialogOpen(true)}
-          />
-        </div>
-
-        <PaymentHistoryDialog
-          billId={bill.id}
-          billTitle={bill.title}
-          open={historyDialogOpen}
-          onOpenChange={setHistoryDialogOpen}
-          currency={currency}
-          locale={locale}
-        />
       </td>
     </>
   );
