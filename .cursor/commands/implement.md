@@ -162,10 +162,19 @@ IF the task involves fixing a documented BUG:
    > Bug {short name} was fixed.
    > **Next Step:** Lock this fix with a regression test.
    > ```plaintext
-   > /test @[affected files] ...
-   > Bug description: [desc]
-   > Changes made: [list]
-   > Create a regression test ensuring [condition].
+   > /test @[affected filename], @[affected filename], ...
+   >
+   > Bug {short name of the bug} was fixed.
+   > The bug was: [specific bug description].
+   >
+   > **Changes Made:**
+   > 1. [specific change description]
+   > 2. [specific change description]
+   > 3. [specific change description]
+   > ...
+   >
+   > Create a regression test ensuring that [specific logic condition] works as expected.
+   > Strictly follow testing rules: @.cursor/rules/testing.mdc
    > ```
 
    **Scenario B: Fix is NOT Testable (e.g., CSS)**
@@ -177,6 +186,8 @@ IF the task involves fixing a documented BUG:
    > **Changes Made:**
    > 1. [specific change description]
    > 2. [specific change description]
+   > 3. [specific change description]
+   > ...
    >
    > **Note:** This is a visual/CSS fix and cannot be reliably verified using Jest/RTL.
    > **Next Step:** Please manually verify that [specific visual element] is now correct in the browser.
