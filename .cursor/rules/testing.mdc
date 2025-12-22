@@ -44,6 +44,21 @@ When testing Server Actions, NEVER import the real `db` instance.
 - Eliminate duplication across test files without over-centralizing
 - Refactor repetitive test setup into fixture composition
 
+## Commands
+
+```bash
+npm run test                       # Run tests
+npm run test:watch                 # Run tests in watch mode
+npm run test:coverage              # Run tests with coverage
+
+# Run tests for a specific path pattern.
+# Note: Option "testPathPattern" was replaced by "testPathPatterns" in Jest 30+.
+npm run test -- --testPathPatterns="PaymentHistorySection" --no-coverage 2>&1
+
+# Run tests for a specific file.
+npm run test -- components/features/bills/PaymentHistorySection.test.tsx 2>&1
+```
+
 ## Forbidden
 
 - ❌ **Snapshot Testing** for complex UI (too brittle). Use specific assertions instead.

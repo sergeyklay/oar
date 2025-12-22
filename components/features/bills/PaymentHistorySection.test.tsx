@@ -1,4 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { PaymentHistorySection } from './PaymentHistorySection';
 import { getTransactionsByBillId } from '@/actions/transactions';
 import type { Transaction } from '@/lib/types';
@@ -79,6 +80,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('calls onExpandChange(true) when clicked', async () => {
+      const user = userEvent.setup();
       const onExpandChange = jest.fn();
       (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...defaultProps} onExpandChange={onExpandChange} />);
@@ -87,7 +89,7 @@ describe('PaymentHistorySection', () => {
         expect(screen.getByText('No Payments')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button'));
+      await user.click(screen.getByRole('button'));
 
       expect(onExpandChange).toHaveBeenCalledWith(true);
     });
@@ -108,6 +110,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('calls onExpandChange(false) when back button clicked', async () => {
+      const user = userEvent.setup();
       const onExpandChange = jest.fn();
       (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...expandedProps} onExpandChange={onExpandChange} />);
@@ -116,7 +119,7 @@ describe('PaymentHistorySection', () => {
         expect(screen.getByText('No payments recorded yet.')).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole('button'));
+      await user.click(screen.getByRole('button'));
 
       expect(onExpandChange).toHaveBeenCalledWith(false);
     });
