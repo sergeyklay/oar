@@ -254,13 +254,13 @@ describe('PaymentService', () => {
       const bill = {
         amount: 31126,
         amountDue: 31126,
-        dueDate: new Date('2026-05-23'),
+        dueDate: new Date('2024-05-23'),
         frequency: 'once' as const,
         status: 'pending' as const,
       };
 
       // paidAt is on the due date (current payment for once bills)
-      const paidAt = new Date('2026-05-23');
+      const paidAt = new Date('2024-05-23');
       const result = PaymentService.processPayment(bill, 31126, paidAt, false);
 
       expect(result.nextDueDate).toBeNull();
@@ -367,7 +367,9 @@ describe('PaymentService', () => {
       expect(result.nextDueDate).toEqual(new Date('2025-04-01'));
     });
 
-    it('detects historical payment for one-time bill when paidAt is before dueDate', () => {
+    it('treats early payment on one-time bill as current and marks as paid', () => {
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+
       const bill = {
         amount: 5000,
         amountDue: 5000,
@@ -376,13 +378,13 @@ describe('PaymentService', () => {
         status: 'pending' as const,
       };
 
-      // paidAt is before dueDate
+      // paidAt is before dueDate - early payment should still mark as paid
       const paidAt = new Date('2025-03-10');
       const result = PaymentService.processPayment(bill, 5000, paidAt, true);
 
-      expect(result.isHistorical).toBe(true);
-      expect(result.newAmountDue).toBe(5000); // Unchanged
-      expect(result.newStatus).toBe('pending'); // Unchanged
+      expect(result.isHistorical).toBe(false);
+      expect(result.newAmountDue).toBe(0);
+      expect(result.newStatus).toBe('paid');
     });
 
     it('treats payment on dueDate as current for one-time bill', () => {
@@ -474,34 +476,20 @@ describe('PaymentService', () => {
       expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
     });
 
-    it('returns true when paidAt is before dueDate for one-time bill', () => {
+    it('returns false for one-time bills regardless of payment date', () => {
       const bill = {
         dueDate: new Date('2025-03-15'),
         frequency: 'once' as const,
       };
-      const paidAt = new Date('2025-03-10');
 
-      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(true);
-    });
+      // Early payment - not historical
+      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-10'))).toBe(false);
 
-    it('returns false when paidAt is on dueDate for one-time bill', () => {
-      const bill = {
-        dueDate: new Date('2025-03-15'),
-        frequency: 'once' as const,
-      };
-      const paidAt = new Date('2025-03-15');
+      // On due date - not historical
+      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-15'))).toBe(false);
 
-      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
-    });
-
-    it('returns false when paidAt is after dueDate for one-time bill', () => {
-      const bill = {
-        dueDate: new Date('2025-03-15'),
-        frequency: 'once' as const,
-      };
-      const paidAt = new Date('2025-03-20');
-
-      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
+      // Late payment - not historical
+      expect(PaymentService.isPaymentHistorical(bill, new Date('2025-03-20'))).toBe(false);
     });
   });
 });
