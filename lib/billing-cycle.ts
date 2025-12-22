@@ -46,6 +46,10 @@ export function getCycleStartDate(
  *
  * Uses day-level comparison to avoid timezone edge cases.
  *
+ * For one-time bills, there's no billing cycle concept, so payments are
+ * never considered historical. Early payment on a pending one-time bill
+ * is a valid current payment.
+ *
  * @param bill - Bill with dueDate and frequency
  * @param paidAt - The payment date
  * @returns True if paidAt is before the current billing cycle started
@@ -54,11 +58,9 @@ export function isPaymentHistorical(
   bill: { dueDate: Date; frequency: BillFrequency },
   paidAt: Date
 ): boolean {
-  const paidAtDay = startOfDay(paidAt);
-
+  // One-time bills have no billing cycles, so payments are never historical
   if (bill.frequency === 'once') {
-    const dueDateDay = startOfDay(bill.dueDate);
-    return isBefore(paidAtDay, dueDateDay);
+    return false;
   }
 
   const cycleStart = getCycleStartDate(bill.dueDate, bill.frequency);
@@ -66,6 +68,7 @@ export function isPaymentHistorical(
     return false;
   }
 
+  const paidAtDay = startOfDay(paidAt);
   const cycleStartDay = startOfDay(cycleStart);
   return isBefore(paidAtDay, cycleStartDay);
 }

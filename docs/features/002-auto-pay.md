@@ -72,7 +72,9 @@ The "Update Due Date" toggle disappears for historical payments since it doesn't
 | Bimonthly | 2 months before due date |
 | Quarterly | 3 months before due date |
 | Yearly | 1 year before due date |
-| One-time | Any date before due date |
+| One-time | N/A (no historical detection) |
+
+One-time bills don't have billing cycles, so early payments are always treated as current payments. If you pay a one-time bill before its due date, the payment marks the bill as paid.
 
 **Example scenario:**
 
