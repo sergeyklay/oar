@@ -2,13 +2,6 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TagCombobox } from './TagCombobox';
 
-// Mock browser APIs used by cmdk/radix
-global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
 Element.prototype.scrollIntoView = jest.fn();
 
 // Mock the createTag action

@@ -3,22 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import type { Bill } from '@/lib/types';
 
-// Mock ResizeObserver for Radix UI components
-global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
-// Mock PointerEvent for Radix UI components
-if (!global.PointerEvent) {
-  (global as unknown as Record<string, unknown>).PointerEvent = class PointerEvent extends Event {
-    constructor(type: string, params: Record<string, unknown> = {}) {
-      super(type, params);
-    }
-  };
-}
-
 jest.mock('@/actions/transactions', () => ({
   logPayment: jest.fn(),
 }));
@@ -47,10 +31,16 @@ const mockBill: Bill = {
   updatedAt: new Date(),
 };
 
+interface SetupOptions {
+  props?: Partial<React.ComponentProps<typeof LogPaymentDialog>>;
+  userEventOptions?: Parameters<typeof userEvent.setup>[0];
+}
+
 describe('LogPaymentDialog', () => {
-  const setup = (props = {}, userEventOptions = {}) => {
+  const setup = ({ props = {}, userEventOptions = {} }: SetupOptions = {}) => {
     const user = userEvent.setup(userEventOptions);
     const onOpenChange = jest.fn();
+
     const utils = render(
       <LogPaymentDialog
         bill={mockBill}
@@ -60,97 +50,97 @@ describe('LogPaymentDialog', () => {
         {...props}
       />
     );
-    return { ...utils, user, onOpenChange };
+
+    return { ...utils, user, onOpenChange } as const;
   };
 
-  it('initializes with default values from bill', () => {
-    setup();
+  describe('initialization', () => {
+    it('initializes with default values from bill', () => {
+      setup();
 
-    // amount: 5000 cents -> 50
-    expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
-    expect(screen.getByLabelText(/notes/i)).toHaveValue('');
-    expect(screen.getByLabelText(/update due date/i)).toBeChecked();
+      expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
+      expect(screen.getByLabelText(/notes/i)).toHaveValue('');
+      expect(screen.getByLabelText(/update due date/i)).toBeChecked();
+    });
   });
 
-  it('resets form values when reopened', async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
-    const { user, rerender } = setup({}, { advanceTimers: jest.advanceTimersByTime });
+  describe('form reset logic', () => {
+    it('resets form values when reopened', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+      const { user, rerender } = setup({
+        userEventOptions: { advanceTimers: jest.advanceTimersByTime },
+      });
 
-    // 1. Change some values
-    const amountInput = screen.getByLabelText(/amount/i);
-    const notesInput = screen.getByLabelText(/notes/i);
+      const amountInput = screen.getByLabelText(/amount/i);
+      const notesInput = screen.getByLabelText(/notes/i);
 
-    await user.clear(amountInput);
-    await user.type(amountInput, '75.00');
-    await user.type(notesInput, 'Custom note');
+      await user.clear(amountInput);
+      await user.type(amountInput, '75.00');
+      await user.type(notesInput, 'Custom note');
 
-    expect(amountInput).toHaveValue('75.00');
-    expect(notesInput).toHaveValue('Custom note');
+      rerender(
+        <LogPaymentDialog
+          bill={mockBill}
+          open={false}
+          onOpenChange={jest.fn()}
+          currency="USD"
+        />
+      );
 
-    // 2. Simulate closing the dialog
-    rerender(
-      <LogPaymentDialog
-        bill={mockBill}
-        open={false}
-        onOpenChange={jest.fn()}
-        currency="USD"
-      />
-    );
+      jest.advanceTimersByTime(1000 * 60 * 60);
 
-    // 3. Move time forward and reopen
-    jest.advanceTimersByTime(1000 * 60 * 60); // 1 hour later
-    rerender(
-      <LogPaymentDialog
-        bill={mockBill}
-        open={true}
-        onOpenChange={jest.fn()}
-        currency="USD"
-      />
-    );
+      rerender(
+        <LogPaymentDialog
+          bill={mockBill}
+          open={true}
+          onOpenChange={jest.fn()}
+          currency="USD"
+        />
+      );
 
-    // 4. Verify values are reset to defaults
-    expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
-    expect(screen.getByLabelText(/notes/i)).toHaveValue('');
-    expect(screen.getByLabelText(/update due date/i)).toBeChecked();
-    // Verify date is displayed correctly
-    expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
+      expect(screen.getByLabelText(/notes/i)).toHaveValue('');
+      expect(screen.getByLabelText(/update due date/i)).toBeChecked();
+      expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
 
-    jest.useRealTimers();
-  });
+      jest.useRealTimers();
+    });
 
-  it('does not update defaults when bill prop changes while already open', async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
-    const { user, rerender } = setup({}, { advanceTimers: jest.advanceTimersByTime });
+    it('does not update defaults when bill prop changes while already open', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+      const { user, rerender } = setup({
+        userEventOptions: { advanceTimers: jest.advanceTimersByTime },
+      });
 
-    // Change input to show it persists
-    const notesInput = screen.getByLabelText(/notes/i);
-    await user.type(notesInput, 'User typing...');
+      const notesInput = screen.getByLabelText(/notes/i);
+      await user.type(notesInput, 'User typing...');
 
-    // Move time forward
-    jest.advanceTimersByTime(1000 * 60 * 60); // 1 hour later
+      jest.advanceTimersByTime(1000 * 60 * 60);
 
-    const differentBill: Bill = {
-      ...mockBill,
-      id: 'bill-2',
-      amountDue: 12000,
-    };
+      const differentBill: Bill = {
+        ...mockBill,
+        id: 'bill-2',
+        amountDue: 12000,
+      };
 
-    rerender(
-      <LogPaymentDialog
-        bill={differentBill}
-        open={true}
-        onOpenChange={jest.fn()}
-        currency="USD"
-      />
-    );
+      rerender(
+        <LogPaymentDialog
+          bill={differentBill}
+          open={true}
+          onOpenChange={jest.fn()}
+          currency="USD"
+        />
+      );
 
-    // Should still have the initial bill's amount and user's typing
-    expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
-    expect(notesInput).toHaveValue('User typing...');
-    // Should still have the OLD date
-    expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
+      expect(notesInput).toHaveValue('User typing...');
+      expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
 
-    jest.useRealTimers();
+      jest.useRealTimers();
+    });
   });
 });
+
+
+
 
