@@ -44,10 +44,12 @@ describe('logPayment', () => {
     nextDueDate: Date | null;
     newAmountDue: number;
     newStatus: 'pending' | 'paid' | 'overdue';
+    isHistorical: boolean;
   } = {
     nextDueDate: new Date('2026-01-15'),
     newAmountDue: 20000,
     newStatus: 'pending',
+    isHistorical: false,
   }) => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
@@ -121,6 +123,7 @@ describe('logPayment', () => {
       nextDueDate: new Date('2026-01-15'),
       newAmountDue: 20000,
       newStatus: 'pending',
+      isHistorical: false,
     });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
@@ -155,16 +158,18 @@ describe('logPayment', () => {
   it('calls PaymentService.processPayment with correct arguments', async () => {
     setupMocks();
 
+    const paidAt = new Date('2025-12-15');
     await logPayment({
       billId: 'bill-1',
       amount: 10000, // 100.00 in minor units
-      paidAt: new Date('2025-12-15'),
+      paidAt,
       updateDueDate: true,
     });
 
     expect(PaymentService.processPayment).toHaveBeenCalledWith(
       mockBill,
       10000,
+      paidAt,
       true
     );
   });
@@ -182,6 +187,7 @@ describe('logPayment', () => {
     expect(PaymentService.processPayment).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
+      expect.any(Date),
       true
     );
   });
@@ -191,18 +197,21 @@ describe('logPayment', () => {
       nextDueDate: null,
       newAmountDue: 15000,
       newStatus: 'pending',
+      isHistorical: false,
     });
 
+    const paidAt = new Date('2025-12-15');
     await logPayment({
       billId: 'bill-1',
       amount: 5000, // 50.00 in minor units
-      paidAt: new Date('2025-12-15'),
+      paidAt,
       updateDueDate: false,
     });
 
     expect(PaymentService.processPayment).toHaveBeenCalledWith(
       mockBill,
       5000,
+      paidAt,
       false
     );
   });
@@ -220,6 +229,7 @@ describe('logPayment', () => {
       nextDueDate: null,
       newAmountDue: 5000,
       newStatus: 'pending',
+      isHistorical: false,
     });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
@@ -264,6 +274,7 @@ describe('logPayment', () => {
       nextDueDate: null,
       newAmountDue: 5000,
       newStatus: 'pending',
+      isHistorical: false,
     });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
@@ -309,6 +320,7 @@ describe('logPayment', () => {
       nextDueDate: newDueDate,
       newAmountDue: 20000,
       newStatus: 'pending',
+      isHistorical: false,
     });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {
@@ -356,6 +368,7 @@ describe('logPayment', () => {
       nextDueDate: null,
       newAmountDue: 0,
       newStatus: 'paid',
+      isHistorical: false,
     });
 
     (db.transaction as jest.Mock).mockImplementation((callback) => {

@@ -53,10 +53,10 @@ npm run test:coverage              # Run tests with coverage
 
 # Run tests for a specific path pattern.
 # Note: Option "testPathPattern" was replaced by "testPathPatterns" in Jest 30+.
-npm run test -- --testPathPatterns="PaymentHistorySection" --no-coverage 2>&1
+npm run test -- --testPathPatterns="ComponentName" --no-coverage 2>&1
 
 # Run tests for a specific file.
-npm run test -- components/features/bills/PaymentHistorySection.test.tsx 2>&1
+npm run test -- path/to/Component.test.tsx 2>&1
 ```
 
 ## Forbidden

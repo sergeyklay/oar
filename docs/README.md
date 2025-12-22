@@ -20,7 +20,7 @@ Explanations of user-facing functionality and domain logic.
 | [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 | [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
 | [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
-| [Logging Payments](./features/002-auto-pay.md) | Recording payments and updating due dates |
+| [Logging Payments](./features/002-auto-pay.md) | Recording payments, partial payments, and historical payment detection |
 | [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
 | [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
 | [Background Jobs](./features/006-background-jobs.md) | Automated system tasks |

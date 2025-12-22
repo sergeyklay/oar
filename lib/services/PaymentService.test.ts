@@ -24,13 +24,17 @@ describe('PaymentService', () => {
         amountDue: 20000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 20000, true);
+      // paidAt is within current cycle (Feb 15 - Mar 1)
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 20000, paidAt, true);
 
       expect(result.nextDueDate).toEqual(nextMonth);
       expect(result.newAmountDue).toBe(20000);
       expect(result.newStatus).toBe('pending');
+      expect(result.isHistorical).toBe(false);
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         bill.dueDate,
         'monthly'
@@ -47,13 +51,17 @@ describe('PaymentService', () => {
         amountDue: 120000,
         dueDate: new Date('2025-01-15'),
         frequency: 'yearly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 120000, true);
+      // paidAt is within current cycle
+      const paidAt = new Date('2025-01-10');
+      const result = PaymentService.processPayment(bill, 120000, paidAt, true);
 
       expect(result.nextDueDate).toEqual(nextYear);
       expect(result.newAmountDue).toBe(120000);
       expect(result.newStatus).toBe('pending');
+      expect(result.isHistorical).toBe(false);
     });
 
     it('marks one-time bill as paid with zero amountDue', () => {
@@ -64,13 +72,17 @@ describe('PaymentService', () => {
         amountDue: 5000,
         dueDate: new Date('2025-03-15'),
         frequency: 'once' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 5000, true);
+      // paidAt is on or after dueDate (current payment)
+      const paidAt = new Date('2025-03-15');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
 
       expect(result.nextDueDate).toBeNull();
       expect(result.newAmountDue).toBe(0);
       expect(result.newStatus).toBe('paid');
+      expect(result.isHistorical).toBe(false);
     });
 
     it('resets amountDue to base amount even after partial payment', () => {
@@ -83,11 +95,14 @@ describe('PaymentService', () => {
         amountDue: 5000, // Remaining after partial payment
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 5000, true);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
 
       expect(result.newAmountDue).toBe(20000); // Reset to base amount
+      expect(result.isHistorical).toBe(false);
     });
 
     it('derives status as overdue when next due date is past', () => {
@@ -100,11 +115,15 @@ describe('PaymentService', () => {
         amountDue: 10000,
         dueDate: new Date('2024-12-01'),
         frequency: 'monthly' as const,
+        status: 'overdue' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 10000, true);
+      // paidAt is within current cycle
+      const paidAt = new Date('2024-11-25');
+      const result = PaymentService.processPayment(bill, 10000, paidAt, true);
 
       expect(result.newStatus).toBe('overdue');
+      expect(result.isHistorical).toBe(false);
       expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(pastDate);
     });
   });
@@ -118,12 +137,15 @@ describe('PaymentService', () => {
         amountDue: 20000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 15000, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 15000, paidAt, false);
 
       expect(result.nextDueDate).toBeNull();
       expect(result.newAmountDue).toBe(5000);
+      expect(result.isHistorical).toBe(false);
       expect(RecurrenceService.calculateNextDueDate).not.toHaveBeenCalled();
     });
 
@@ -135,11 +157,14 @@ describe('PaymentService', () => {
         amountDue: 5000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 10000, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 10000, paidAt, false);
 
       expect(result.newAmountDue).toBe(0);
+      expect(result.isHistorical).toBe(false);
     });
 
     it('preserves current status based on original due date', () => {
@@ -150,11 +175,15 @@ describe('PaymentService', () => {
         amountDue: 20000,
         dueDate: new Date('2024-01-01'), // Past date
         frequency: 'monthly' as const,
+        status: 'overdue' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 5000, false);
+      // paidAt is within current cycle (Dec 1 - Jan 1)
+      const paidAt = new Date('2023-12-15');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, false);
 
       expect(result.newStatus).toBe('overdue');
+      expect(result.isHistorical).toBe(false);
       expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(bill.dueDate);
     });
 
@@ -166,11 +195,14 @@ describe('PaymentService', () => {
         amountDue: 15000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 15000, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 15000, paidAt, false);
 
       expect(result.newAmountDue).toBe(0);
+      expect(result.isHistorical).toBe(false);
     });
 
     it('allows multiple partial payments in sequence', () => {
@@ -181,17 +213,19 @@ describe('PaymentService', () => {
         amountDue: 20000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result1 = PaymentService.processPayment(bill1, 5000, false);
+      const paidAt = new Date('2025-02-28');
+      const result1 = PaymentService.processPayment(bill1, 5000, paidAt, false);
       expect(result1.newAmountDue).toBe(15000);
 
       const bill2 = { ...bill1, amountDue: result1.newAmountDue };
-      const result2 = PaymentService.processPayment(bill2, 5000, false);
+      const result2 = PaymentService.processPayment(bill2, 5000, paidAt, false);
       expect(result2.newAmountDue).toBe(10000);
 
       const bill3 = { ...bill1, amountDue: result2.newAmountDue };
-      const result3 = PaymentService.processPayment(bill3, 10000, false);
+      const result3 = PaymentService.processPayment(bill3, 10000, paidAt, false);
       expect(result3.newAmountDue).toBe(0);
     });
 
@@ -203,13 +237,17 @@ describe('PaymentService', () => {
         amountDue: 10000,
         dueDate: new Date('2025-03-01'),
         frequency: 'once' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 3000, false);
+      // paidAt is on the due date (current payment for once bills)
+      const paidAt = new Date('2025-03-01');
+      const result = PaymentService.processPayment(bill, 3000, paidAt, false);
 
       expect(result.nextDueDate).toBeNull();
       expect(result.newAmountDue).toBe(7000);
       expect(result.newStatus).toBe('pending');
+      expect(result.isHistorical).toBe(false);
     });
 
     it('marks one-time bill as paid when fully paid via partial payment mode', () => {
@@ -218,13 +256,17 @@ describe('PaymentService', () => {
         amountDue: 31126,
         dueDate: new Date('2026-05-23'),
         frequency: 'once' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 31126, false);
+      // paidAt is on the due date (current payment for once bills)
+      const paidAt = new Date('2026-05-23');
+      const result = PaymentService.processPayment(bill, 31126, paidAt, false);
 
       expect(result.nextDueDate).toBeNull();
       expect(result.newAmountDue).toBe(0);
       expect(result.newStatus).toBe('paid');
+      expect(result.isHistorical).toBe(false);
       expect(RecurrenceService.deriveStatus).not.toHaveBeenCalled();
     });
   });
@@ -238,11 +280,14 @@ describe('PaymentService', () => {
         amountDue: 20000,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 0, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 0, paidAt, false);
 
       expect(result.newAmountDue).toBe(20000);
+      expect(result.isHistorical).toBe(false);
     });
 
     it('handles zero amountDue with new payment', () => {
@@ -253,11 +298,14 @@ describe('PaymentService', () => {
         amountDue: 0,
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 5000, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, false);
 
       expect(result.newAmountDue).toBe(0); // Clamped to 0
+      expect(result.isHistorical).toBe(false);
     });
 
     it('handles large payment amounts (integer overflow protection)', () => {
@@ -268,11 +316,192 @@ describe('PaymentService', () => {
         amountDue: 500000000, // 5 million
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
+        status: 'pending' as const,
       };
 
-      const result = PaymentService.processPayment(bill, 600000000, false);
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 600000000, paidAt, false);
 
       expect(result.newAmountDue).toBe(0);
+      expect(result.isHistorical).toBe(false);
+    });
+  });
+
+  describe('historical payment detection', () => {
+    it('detects historical payment for monthly bill when paidAt is before cycle start', () => {
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      // paidAt is 3 months before dueDate (clearly before cycle start of Feb 1)
+      const paidAt = new Date('2024-12-01');
+      const result = PaymentService.processPayment(bill, 20000, paidAt, true);
+
+      expect(result.isHistorical).toBe(true);
+      expect(result.newAmountDue).toBe(20000); // Unchanged
+      expect(result.newStatus).toBe('pending'); // Unchanged
+      expect(result.nextDueDate).toBeNull(); // No change
+    });
+
+    it('treats payment within cycle as current for monthly bill', () => {
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(new Date('2025-04-01'));
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      // paidAt is within current cycle (Feb 1 - Mar 1)
+      const paidAt = new Date('2025-02-15');
+      const result = PaymentService.processPayment(bill, 20000, paidAt, true);
+
+      expect(result.isHistorical).toBe(false);
+      expect(result.nextDueDate).toEqual(new Date('2025-04-01'));
+    });
+
+    it('detects historical payment for one-time bill when paidAt is before dueDate', () => {
+      const bill = {
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+        status: 'pending' as const,
+      };
+
+      // paidAt is before dueDate
+      const paidAt = new Date('2025-03-10');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
+
+      expect(result.isHistorical).toBe(true);
+      expect(result.newAmountDue).toBe(5000); // Unchanged
+      expect(result.newStatus).toBe('pending'); // Unchanged
+    });
+
+    it('treats payment on dueDate as current for one-time bill', () => {
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+
+      const bill = {
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+        status: 'pending' as const,
+      };
+
+      // paidAt is on dueDate
+      const paidAt = new Date('2025-03-15');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
+
+      expect(result.isHistorical).toBe(false);
+      expect(result.newStatus).toBe('paid');
+    });
+
+    it('detects historical payment for weekly bill', () => {
+      const bill = {
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-03-15'),
+        frequency: 'weekly' as const,
+        status: 'pending' as const,
+      };
+
+      // paidAt is 2 weeks before dueDate (before cycle start of Mar 8)
+      const paidAt = new Date('2025-03-01');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
+
+      expect(result.isHistorical).toBe(true);
+    });
+  });
+
+  describe('getCycleStartDate', () => {
+    it('returns null for one-time bills', () => {
+      const dueDate = new Date('2025-03-15');
+      const result = PaymentService.getCycleStartDate(dueDate, 'once');
+      expect(result).toBeNull();
+    });
+
+    it('calculates correct cycle start for weekly bills', () => {
+      const dueDate = new Date('2025-03-15');
+      const result = PaymentService.getCycleStartDate(dueDate, 'weekly');
+      expect(result).toEqual(new Date('2025-03-08'));
+    });
+
+    it('calculates correct cycle start for monthly bills', () => {
+      const dueDate = new Date('2025-03-15');
+      const result = PaymentService.getCycleStartDate(dueDate, 'monthly');
+      expect(result).toEqual(new Date('2025-02-15'));
+    });
+
+    it('calculates correct cycle start for quarterly bills', () => {
+      const dueDate = new Date('2025-03-15');
+      const result = PaymentService.getCycleStartDate(dueDate, 'quarterly');
+      expect(result).toEqual(new Date('2024-12-15'));
+    });
+
+    it('calculates correct cycle start for yearly bills', () => {
+      const dueDate = new Date('2025-03-15');
+      const result = PaymentService.getCycleStartDate(dueDate, 'yearly');
+      expect(result).toEqual(new Date('2024-03-15'));
+    });
+  });
+
+  describe('isPaymentHistorical', () => {
+    it('returns true when paidAt is before cycle start for monthly bill', () => {
+      const bill = {
+        dueDate: new Date('2025-03-15'),
+        frequency: 'monthly' as const,
+      };
+      const paidAt = new Date('2025-02-01'); // Before cycle start (Feb 15)
+
+      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(true);
+    });
+
+    it('returns false when paidAt is within cycle for monthly bill', () => {
+      const bill = {
+        dueDate: new Date('2025-03-15'),
+        frequency: 'monthly' as const,
+      };
+      const paidAt = new Date('2025-02-20'); // After cycle start (Feb 15)
+
+      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
+    });
+
+    it('returns true when paidAt is before dueDate for one-time bill', () => {
+      const bill = {
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+      };
+      const paidAt = new Date('2025-03-10');
+
+      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(true);
+    });
+
+    it('returns false when paidAt is on dueDate for one-time bill', () => {
+      const bill = {
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+      };
+      const paidAt = new Date('2025-03-15');
+
+      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
+    });
+
+    it('returns false when paidAt is after dueDate for one-time bill', () => {
+      const bill = {
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+      };
+      const paidAt = new Date('2025-03-20');
+
+      expect(PaymentService.isPaymentHistorical(bill, paidAt)).toBe(false);
     });
   });
 });

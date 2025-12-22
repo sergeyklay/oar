@@ -1,4 +1,8 @@
 import { RecurrenceService } from './RecurrenceService';
+import {
+  getCycleStartDate as getCycleStartDateUtil,
+  isPaymentHistorical as isPaymentHistoricalUtil,
+} from '@/lib/billing-cycle';
 import type { Bill, BillStatus } from '@/db/schema';
 
 /**
@@ -13,6 +17,8 @@ export interface PaymentResult {
   newAmountDue: number;
   /** New bill status based on payment and due date */
   newStatus: BillStatus;
+  /** True if payment is for a past billing cycle (record only, no bill changes) */
+  isHistorical: boolean;
 }
 
 /**
@@ -26,31 +32,55 @@ export interface PaymentResult {
  * floating-point precision issues.
  */
 export const PaymentService = {
+  /** @see getCycleStartDate in lib/billing-cycle.ts */
+  getCycleStartDate: getCycleStartDateUtil,
+
+  /** @see isPaymentHistorical in lib/billing-cycle.ts */
+  isPaymentHistorical: isPaymentHistoricalUtil,
+
   /**
    * Calculates bill state changes after logging a payment.
    *
    * Business Rules:
    *
-   * 1. When updateDueDate=true (Full Payment):
+   * 1. When paidAt is before the current billing cycle (Historical Payment):
+   *    - Return unchanged bill state
+   *    - Only transaction record is created
+   *
+   * 2. When updateDueDate=true (Full Payment):
    *    - Advance dueDate to next cycle via RecurrenceService
    *    - Reset amountDue to base amount
    *    - For one-time bills: mark as 'paid', amountDue=0
    *
-   * 2. When updateDueDate=false (Partial Payment):
+   * 3. When updateDueDate=false (Partial Payment):
    *    - Keep dueDate unchanged (return null)
    *    - Reduce amountDue by payment amount
    *    - Clamp amountDue to minimum 0 (overpayment protection)
    *
-   * @param bill - Current bill state (amount, amountDue, dueDate, frequency)
+   * @param bill - Current bill state
    * @param paymentAmount - Amount paid in minor units
-   * @param updateDueDate - Whether to advance the billing cycle
+   * @param paidAt - Date of payment
+   * @param updateDueDate - Whether to advance the billing cycle (ignored if historical)
    * @returns PaymentResult with new bill state values
    */
   processPayment(
-    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency'>,
+    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status'>,
     paymentAmount: number,
+    paidAt: Date,
     updateDueDate: boolean
   ): PaymentResult {
+    // Check for historical payment first
+    const isHistorical = isPaymentHistoricalUtil(bill, paidAt);
+
+    if (isHistorical) {
+      return {
+        nextDueDate: null,
+        newAmountDue: bill.amountDue,
+        newStatus: bill.status,
+        isHistorical: true,
+      };
+    }
+
     if (updateDueDate) {
       // Full payment: advance to next billing cycle
       const nextDueDate = RecurrenceService.calculateNextDueDate(
@@ -64,6 +94,7 @@ export const PaymentService = {
           nextDueDate: null,
           newAmountDue: 0,
           newStatus: 'paid',
+          isHistorical: false,
         };
       }
 
@@ -73,6 +104,7 @@ export const PaymentService = {
         nextDueDate,
         newAmountDue: bill.amount,
         newStatus,
+        isHistorical: false,
       };
     }
 
@@ -85,6 +117,7 @@ export const PaymentService = {
         nextDueDate: null,
         newAmountDue: 0,
         newStatus: 'paid',
+        isHistorical: false,
       };
     }
 
@@ -94,6 +127,7 @@ export const PaymentService = {
       nextDueDate: null,
       newAmountDue,
       newStatus: currentStatus,
+      isHistorical: false,
     };
   },
 };
