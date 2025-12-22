@@ -67,6 +67,7 @@ export function BillDetailPanel({
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
   const [, setSelectedBill] = useQueryState(
     'selectedBill',
@@ -75,6 +76,10 @@ export function BillDetailPanel({
 
   const isPaid = bill.status === 'paid';
   const isOverdue = bill.status === 'overdue';
+
+  const handlePaymentLogged = () => {
+    setHistoryRefreshKey((prev) => prev + 1);
+  };
 
   const handleSkip = async () => {
     setIsSkipping(true);
@@ -196,6 +201,7 @@ export function BillDetailPanel({
           locale={locale}
           isExpanded={isHistoryExpanded}
           onExpandChange={setIsHistoryExpanded}
+          refreshKey={historyRefreshKey}
         />
 
         {/* Notes Section - Hidden when history expanded */}
@@ -264,6 +270,7 @@ export function BillDetailPanel({
         open={payDialogOpen}
         onOpenChange={setPayDialogOpen}
         currency={currency}
+        onPaymentLogged={handlePaymentLogged}
       />
 
       <BillFormDialog

@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LogPaymentDialog } from './LogPaymentDialog';
+import { logPayment } from '@/actions/transactions';
 import type { Bill } from '@/lib/types';
 
 jest.mock('@/actions/transactions', () => ({
@@ -54,6 +55,10 @@ describe('LogPaymentDialog', () => {
     return { ...utils, user, onOpenChange } as const;
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('initialization', () => {
     it('initializes with default values from bill', () => {
       setup();
@@ -61,6 +66,44 @@ describe('LogPaymentDialog', () => {
       expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
       expect(screen.getByLabelText(/notes/i)).toHaveValue('');
       expect(screen.getByLabelText(/update due date/i)).toBeChecked();
+    });
+  });
+
+  describe('payment submission', () => {
+    it('calls onPaymentLogged callback after successful payment', async () => {
+      (logPayment as jest.Mock).mockResolvedValue({
+        success: true,
+        data: { transactionId: 'tx-1', isHistorical: false },
+      });
+      const onPaymentLogged = jest.fn();
+      setup({ props: { onPaymentLogged } });
+
+      const form = screen.getByRole('dialog').querySelector('form')!;
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(logPayment).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(onPaymentLogged).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('does not call onPaymentLogged callback when payment fails', async () => {
+      (logPayment as jest.Mock).mockResolvedValue({
+        success: false,
+        error: 'Payment failed',
+      });
+      const onPaymentLogged = jest.fn();
+      setup({ props: { onPaymentLogged } });
+
+      const form = screen.getByRole('dialog').querySelector('form')!;
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(logPayment).toHaveBeenCalled();
+      });
+      expect(onPaymentLogged).not.toHaveBeenCalled();
     });
   });
 
