@@ -183,7 +183,3 @@ describe('LogPaymentDialog', () => {
     });
   });
 });
-
-
-
-
