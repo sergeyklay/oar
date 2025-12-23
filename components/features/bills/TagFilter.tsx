@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { calendarSearchParams } from '@/lib/search-params';
 import type { Tag } from '@/lib/types';
 
 interface TagFilterProps {
@@ -36,7 +37,10 @@ interface TagFilterProps {
  * - Interactive dropdown
  */
 export function TagFilter({ tags }: TagFilterProps) {
-  const [selectedTag, setSelectedTag] = useQueryState('tag');
+  const [selectedTag, setSelectedTag] = useQueryState(
+    'tag',
+    calendarSearchParams.tag.withOptions({ shallow: false })
+  );
 
   const activeTag = tags.find((t) => t.slug === selectedTag);
 
