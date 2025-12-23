@@ -24,6 +24,7 @@ Explanations of user-facing functionality and domain logic.
 | [Due This Month Screen](./features/004-due-this-month.md) | Bills due in the current calendar month |
 | [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 | [Logging Payments](./features/002-auto-pay.md) | Recording payments, partial payments, and historical payment detection |
+| [Editing Payment History](./features/011-editing-payment-history.md) | Correcting payment mistakes and managing payment records |
 | [Background Jobs](./features/006-background-jobs.md) | Automated system tasks |
 
 ## 🚀 Development

@@ -96,6 +96,8 @@ Every payment you log is recorded with its amount, date, and notes. To view a bi
 
 Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes you added. Long notes truncate to a single line; hover to see the full text.
 
+If you need to correct a payment mistake, click any payment row to view its details and edit or delete it. See [Editing Payment History](./011-editing-payment-history.md) for details.
+
 ## Edge cases
 
 **Zero amount.** The system requires a positive payment amount. You can't log a $0 payment.
