@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
+import type { Transaction } from '@/db/schema';
 import { PaymentService } from '@/lib/services/PaymentService';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -178,6 +179,23 @@ export async function getBillById(billId: string) {
   return bill ?? null;
 }
 
+/** Validation schema for updating a transaction. */
+const updateTransactionSchema = z.object({
+  id: z.string().min(1, 'Transaction ID is required'),
+  /** Amount in minor units (integer). */
+  amount: z.coerce
+    .number()
+    .int('Amount must be an integer (minor units)')
+    .positive('Amount must be greater than zero')
+    .max(Number.MAX_SAFE_INTEGER, 'Amount is too large'),
+  paidAt: z.coerce.date({
+    message: 'Please select a valid date',
+  }),
+  notes: z.string().max(500, 'Notes must be 500 characters or less').optional(),
+});
+
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
+
 /** Validation schema for deleting a transaction. */
 const deleteTransactionSchema = z.object({
   id: z.string().min(1, 'Transaction ID is required'),
@@ -186,15 +204,137 @@ const deleteTransactionSchema = z.object({
 export type DeleteTransactionInput = z.infer<typeof deleteTransactionSchema>;
 
 /**
+ * Updates an existing payment transaction record.
+ *
+ * Side effects:
+ * 1. Updates transaction record in database
+ * 2. If payment affects current billing cycle, recalculates bill state
+ * 3. Revalidates UI paths
+ *
+ * Business Logic:
+ * - If updated payment date/amount affects current cycle, recalculates bill state
+ * - Uses PaymentService to determine if payment is historical
+ * - If not historical, recalculates amountDue and status
+ */
+export async function updateTransaction(
+  input: UpdateTransactionInput
+): Promise<ActionResult<{ transactionId: string }>> {
+  // 1. Validate input
+  const parsed = updateTransactionSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  const { id, amount, paidAt, notes } = parsed.data;
+
+  try {
+    // 2. Fetch existing transaction
+    const [existingTransaction] = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, id));
+
+    if (!existingTransaction) {
+      return {
+        success: false,
+        error: 'Transaction not found',
+      };
+    }
+
+    // 3. Fetch associated bill
+    const [bill] = await db.select().from(bills).where(eq(bills.id, existingTransaction.billId));
+
+    if (!bill) {
+      return {
+        success: false,
+        error: 'Bill not found',
+      };
+    }
+
+    // 4. Check if old transaction affected current cycle
+    const oldAffectedCycle = PaymentService.doesPaymentAffectCurrentCycle(
+      bill,
+      existingTransaction
+    );
+
+    // 5. Update transaction record
+    const updatedTransaction: Transaction = {
+      ...existingTransaction,
+      amount,
+      paidAt,
+      notes: notes || null,
+    };
+
+    db.update(transactions)
+      .set({
+        amount,
+        paidAt,
+        notes: notes || null,
+      })
+      .where(eq(transactions.id, id))
+      .run();
+
+    // 6. Check if new transaction affects current cycle
+    const newAffectsCycle = PaymentService.doesPaymentAffectCurrentCycle(bill, updatedTransaction);
+
+    // 7. Recalculate if cycle state changed
+    if (oldAffectedCycle || newAffectsCycle) {
+      const allTransactions = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.billId, bill.id))
+        .orderBy(desc(transactions.paidAt));
+
+      const newBillState = PaymentService.recalculateBillFromPayments(bill, allTransactions);
+
+      db.update(bills)
+        .set({
+          amountDue: newBillState.amountDue,
+          status: newBillState.status,
+          dueDate: newBillState.nextDueDate ?? bill.dueDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(bills.id, bill.id))
+        .run();
+    }
+
+    // 8. Revalidate UI
+    revalidatePath('/');
+
+    return {
+      success: true,
+      data: {
+        transactionId: id,
+      },
+    };
+  } catch (error) {
+    console.error('Failed to update transaction:', error);
+    return {
+      success: false,
+      error: 'Failed to update payment record. Please try again.',
+    };
+  }
+}
+
+/**
  * Deletes a payment transaction record.
  *
- * IMPORTANT: This is a "detached" deletion - it does NOT modify
- * the associated bill's dueDate or status. The bill's state must
- * be corrected manually by the user if needed.
+ * Recalculates billing cycle if deleted payment affected current cycle.
  *
  * Side effects:
  * 1. Removes transaction from database
- * 2. Revalidates dashboard to update any aggregations
+ * 2. If deleted payment affected current cycle, recalculates bill state
+ * 3. Revalidates UI paths
+ *
+ * Business Logic:
+ * - Check if deleted payment was part of current billing cycle
+ * - If yes, recalculate bill state based on remaining payments
+ * - If no, bill state remains unchanged
  */
 export async function deleteTransaction(
   input: DeleteTransactionInput
@@ -212,23 +352,57 @@ export async function deleteTransaction(
   const { id } = parsed.data;
 
   try {
-    // 2. Verify transaction exists
-    const [existing] = await db
-      .select({ id: transactions.id })
+    // 2. Verify transaction exists and fetch it
+    const [transaction] = await db
+      .select()
       .from(transactions)
       .where(eq(transactions.id, id));
 
-    if (!existing) {
+    if (!transaction) {
       return {
         success: false,
         error: 'Transaction not found',
       };
     }
 
-    // 3. Delete the transaction
+    // 3. Fetch associated bill
+    const [bill] = await db.select().from(bills).where(eq(bills.id, transaction.billId));
+
+    if (!bill) {
+      return {
+        success: false,
+        error: 'Bill not found',
+      };
+    }
+
+    // 4. Check if deleted transaction affected current cycle
+    const affectedCycle = PaymentService.doesPaymentAffectCurrentCycle(bill, transaction);
+
+    // 5. Delete the transaction
     db.delete(transactions).where(eq(transactions.id, id)).run();
 
-    // 4. Revalidate UI
+    // 6. Recalculate if it affected current cycle
+    if (affectedCycle) {
+      const allTransactions = await db
+        .select()
+        .from(transactions)
+        .where(eq(transactions.billId, bill.id))
+        .orderBy(desc(transactions.paidAt));
+
+      const newBillState = PaymentService.recalculateBillFromPayments(bill, allTransactions);
+
+      db.update(bills)
+        .set({
+          amountDue: newBillState.amountDue,
+          status: newBillState.status,
+          dueDate: newBillState.nextDueDate ?? bill.dueDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(bills.id, bill.id))
+        .run();
+    }
+
+    // 7. Revalidate UI
     revalidatePath('/');
 
     return {

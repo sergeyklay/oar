@@ -1,5 +1,16 @@
 import { PaymentService } from './PaymentService';
 import { RecurrenceService } from './RecurrenceService';
+import type { Transaction } from '@/db/schema';
+
+const createTransaction = (overrides: Partial<Transaction> = {}): Transaction => ({
+  id: 'tx-1',
+  billId: 'bill-1',
+  amount: 10000,
+  paidAt: new Date('2025-01-15'),
+  notes: null,
+  createdAt: new Date(),
+  ...overrides,
+});
 
 jest.mock('./RecurrenceService', () => ({
   RecurrenceService: {
@@ -420,6 +431,352 @@ describe('PaymentService', () => {
       const result = PaymentService.processPayment(bill, 5000, paidAt, true);
 
       expect(result.isHistorical).toBe(true);
+    });
+  });
+
+  describe('recalculateBillFromPayments', () => {
+    it('returns base state for one-time bill with no payments', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 10000,
+        amountDue: 10000,
+        dueDate: new Date('2025-12-23'),
+        frequency: 'once' as const,
+        status: 'pending' as const,
+      };
+
+      const txns: Transaction[] = [];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns);
+
+      expect(result.amountDue).toBe(10000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toBeNull();
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(bill.dueDate);
+    });
+
+    it('reverts to previous cycle when no current payments but cycle was advanced', () => {
+      const previousDueDate = new Date('2026-12-23');
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 10000,
+        amountDue: 10000,
+        dueDate: new Date('2027-12-23'),
+        frequency: 'yearly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns: Transaction[] = [];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns);
+
+      expect(result.amountDue).toBe(10000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toEqual(previousDueDate);
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(previousDueDate);
+    });
+
+    it('keeps current cycle when previous cycle was fully paid', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 10000,
+        amountDue: 10000,
+        dueDate: new Date('2027-12-23'),
+        frequency: 'yearly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns: Transaction[] = [
+        createTransaction({ amount: 10000, paidAt: new Date('2026-12-20') }),
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns);
+
+      expect(result.amountDue).toBe(10000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toBeNull();
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(bill.dueDate);
+    });
+
+    it('reverts to previous cycle with partial payment when previous cycle had partial payment', () => {
+      const previousDueDate = new Date('2026-12-23');
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 10000,
+        amountDue: 10000,
+        dueDate: new Date('2027-12-23'),
+        frequency: 'yearly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns: Transaction[] = [
+        createTransaction({ amount: 5000, paidAt: new Date('2026-12-20') }),
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns);
+
+      expect(result.amountDue).toBe(5000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toEqual(previousDueDate);
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(previousDueDate);
+    });
+
+    it('advances cycle when total paid in current cycle >= amountDue', () => {
+      const nextDueDate = new Date('2025-04-01');
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 20000,
+          paidAt: new Date('2025-02-28'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(20000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toEqual(nextDueDate);
+      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
+        bill.dueDate,
+        'monthly'
+      );
+    });
+
+    it('marks one-time bill as paid when total paid >= amountDue', () => {
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+
+      const bill = {
+        amount: 5000,
+        amountDue: 5000,
+        dueDate: new Date('2025-03-15'),
+        frequency: 'once' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 5000,
+          paidAt: new Date('2025-03-15'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(0);
+      expect(result.status).toBe('paid');
+      expect(result.nextDueDate).toBeNull();
+    });
+
+    it('reduces amountDue for partial payment in current cycle', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 5000,
+          paidAt: new Date('2025-02-28'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(15000);
+      expect(result.status).toBe('pending');
+      expect(result.nextDueDate).toBeNull();
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(bill.dueDate);
+    });
+
+    it('sums multiple payments in current cycle', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 5000,
+          paidAt: new Date('2025-02-28'),
+        },
+        {
+          id: 'tx-2',
+          amount: 3000,
+          paidAt: new Date('2025-02-25'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(12000);
+    });
+
+    it('excludes historical payments from calculation', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 5000,
+          paidAt: new Date('2025-02-28'),
+        },
+        {
+          id: 'tx-2',
+          amount: 10000,
+          paidAt: new Date('2024-12-01'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(15000);
+    });
+
+    it('clamps amountDue to zero when overpayment occurs', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 25000,
+          paidAt: new Date('2025-02-28'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(0);
+    });
+  });
+
+  describe('doesPaymentAffectCurrentCycle', () => {
+    it('returns true when payment is in current cycle', () => {
+      const bill = {
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+      };
+
+      const tx = {
+        id: 'tx-1',
+        amount: 10000,
+        paidAt: new Date('2025-02-28'),
+      };
+
+      const result = PaymentService.doesPaymentAffectCurrentCycle(bill, tx as Transaction);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when payment is historical and not in previous cycle', () => {
+      const bill = {
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+      };
+
+      const tx = {
+        id: 'tx-1',
+        amount: 10000,
+        paidAt: new Date('2024-12-01'),
+      };
+
+      const result = PaymentService.doesPaymentAffectCurrentCycle(bill, tx as Transaction);
+
+      expect(result).toBe(false);
+    });
+
+    it('returns true when payment is in previous cycle (caused advancement)', () => {
+      const bill = {
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+      };
+
+      const tx = {
+        id: 'tx-1',
+        amount: 10000,
+        paidAt: new Date('2025-01-15'),
+      };
+
+      const result = PaymentService.doesPaymentAffectCurrentCycle(bill, tx as Transaction);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns true for one-time bills regardless of payment date', () => {
+      const bill = {
+        dueDate: new Date('2025-03-01'),
+        frequency: 'once' as const,
+      };
+
+      const tx = {
+        id: 'tx-1',
+        amount: 10000,
+        paidAt: new Date('2024-12-01'),
+      };
+
+      const result = PaymentService.doesPaymentAffectCurrentCycle(bill, tx as Transaction);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns true for yearly bills when payment is in previous cycle', () => {
+      const bill = {
+        dueDate: new Date('2027-12-23'),
+        frequency: 'yearly' as const,
+      };
+
+      const tx = {
+        id: 'tx-1',
+        amount: 10000,
+        paidAt: new Date('2026-12-25'),
+      };
+
+      const result = PaymentService.doesPaymentAffectCurrentCycle(bill, tx as Transaction);
+
+      expect(result).toBe(true);
     });
   });
 });

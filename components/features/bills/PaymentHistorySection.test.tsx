@@ -4,6 +4,14 @@ import { PaymentHistorySection } from './PaymentHistorySection';
 import { getTransactionsByBillId } from '@/actions/transactions';
 import type { Transaction } from '@/lib/types';
 
+const mockRefresh = jest.fn();
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    refresh: mockRefresh,
+  }),
+}));
+
 jest.mock('@/actions/transactions', () => ({
   getTransactionsByBillId: jest.fn(),
 }));

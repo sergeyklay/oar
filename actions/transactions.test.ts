@@ -1,4 +1,9 @@
-import { logPayment, deleteTransaction, getRecentPaymentsStats } from './transactions';
+import {
+  logPayment,
+  deleteTransaction,
+  updateTransaction,
+  getRecentPaymentsStats,
+} from './transactions';
 import { db, bills, transactions, resetDbMocks } from '@/db';
 import { revalidatePath } from 'next/cache';
 
@@ -9,6 +14,12 @@ jest.mock('next/cache', () => ({
 jest.mock('@/lib/services/PaymentService', () => ({
   PaymentService: {
     processPayment: jest.fn(),
+    doesPaymentAffectCurrentCycle: jest.fn().mockReturnValue(true),
+    recalculateBillFromPayments: jest.fn().mockReturnValue({
+      amountDue: 10000,
+      status: 'pending',
+      nextDueDate: null,
+    }),
   },
 }));
 jest.mock('@/lib/services/SettingsService', () => ({
@@ -460,7 +471,71 @@ describe('logPayment', () => {
   });
 });
 
+describe('updateTransaction', () => {
+  beforeEach(() => {
+    resetDbMocks();
+    jest.clearAllMocks();
+  });
+
+  it('returns validation error when id is empty', async () => {
+    const result = await updateTransaction({
+      id: '',
+      amount: 10000,
+      paidAt: new Date('2025-12-21'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error when amount is negative', async () => {
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: -100,
+      paidAt: new Date('2025-12-21'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error when amount is zero', async () => {
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 0,
+      paidAt: new Date('2025-12-21'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+  });
+});
+
 describe('deleteTransaction', () => {
+  const mockTransaction = {
+    id: 'tx-1',
+    billId: 'bill-1',
+    amount: 10000,
+    paidAt: new Date('2025-12-20'),
+    notes: null,
+    createdAt: new Date(),
+  };
+
+  const mockBill = {
+    id: 'bill-1',
+    title: 'Test Bill',
+    amount: 10000,
+    amountDue: 10000,
+    dueDate: new Date('2025-12-25'),
+    frequency: 'monthly',
+    status: 'pending',
+    isArchived: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   beforeEach(() => {
     resetDbMocks();
     jest.clearAllMocks();
@@ -468,16 +543,37 @@ describe('deleteTransaction', () => {
 
   it('deletes transaction when it exists', async () => {
     const runMock = jest.fn();
-    const whereMock = jest.fn().mockReturnValue({ run: runMock });
+    const deleteMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateRunMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: updateRunMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
-      }),
-    });
+    // First call: fetch transaction, Second call: fetch bill, Third call: fetch all transactions
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
 
     (db.delete as jest.Mock).mockReturnValue({
-      where: whereMock,
+      where: deleteMock,
+    });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
     });
 
     const result = await deleteTransaction({ id: 'tx-1' });
@@ -509,23 +605,51 @@ describe('deleteTransaction', () => {
     expect(db.select).not.toHaveBeenCalled();
   });
 
-  it('does not modify associated bill (detached deletion)', async () => {
+  it('recalculates bill when payment affected current cycle', async () => {
     const runMock = jest.fn();
-    const whereMock = jest.fn().mockReturnValue({ run: runMock });
+    const deleteMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateRunMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: updateRunMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
-      }),
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 10000,
+      status: 'pending',
+      nextDueDate: new Date('2025-11-25'),
     });
 
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
     (db.delete as jest.Mock).mockReturnValue({
-      where: whereMock,
+      where: deleteMock,
+    });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
     });
 
     await deleteTransaction({ id: 'tx-1' });
 
-    expect(db.update).not.toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledWith(bills);
+    expect(updateSetMock).toHaveBeenCalled();
   });
 });
 

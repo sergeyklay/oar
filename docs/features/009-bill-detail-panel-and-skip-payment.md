@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-22
-- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md)
+- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md), [Editing Payment History](./011-editing-payment-history.md)
 
 ## Overview
 
@@ -75,6 +75,8 @@ Each payment entry shows:
 - **Notes:** Any notes you added when logging the payment (truncated to a single line if long)
 
 Hover over a transaction to see the full note text in a tooltip. The list scrolls vertically when you have many payments, keeping the panel height manageable.
+
+Click any payment row to view its details and edit or delete it. See [Editing Payment History](./011-editing-payment-history.md) for details on correcting payment mistakes.
 
 ## Edge cases and constraints
 

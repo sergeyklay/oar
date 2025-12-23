@@ -1,7 +1,7 @@
 import { isValid, isFuture, startOfDay } from 'date-fns';
 import { RecurrenceService } from './RecurrenceService';
-import { isPaymentHistorical } from '@/lib/billing-cycle';
-import type { Bill, BillStatus } from '@/db/schema';
+import { isPaymentHistorical, getCycleStartDate } from '@/lib/billing-cycle';
+import type { Bill, BillStatus, Transaction } from '@/db/schema';
 
 /**
  * Result of processing a payment against a bill.
@@ -17,6 +17,20 @@ export interface PaymentResult {
   newStatus: BillStatus;
   /** True if payment is for a past billing cycle (record only, no bill changes) */
   isHistorical: boolean;
+}
+
+/**
+ * Result of recalculating bill state from all transactions.
+ *
+ * Used when payments are updated or deleted to maintain cycle integrity.
+ */
+export interface BillState {
+  /** New amount due in minor units */
+  amountDue: number;
+  /** New bill status */
+  status: BillStatus;
+  /** New due date if cycle advances, null if unchanged */
+  nextDueDate: Date | null;
 }
 
 /**
@@ -144,6 +158,161 @@ export const PaymentService = {
       newStatus: currentStatus,
       isHistorical: false,
     };
+  },
+
+  /**
+   * Recalculates bill state from all transactions.
+   *
+   * Used when payments are updated or deleted to maintain cycle integrity.
+   * Handles both current cycle payments and cycle reversal when payments are deleted.
+   *
+   * Business Rules:
+   * 1. Filter transactions to current cycle only (exclude historical)
+   * 2. If no current cycle payments: check if we need to REVERT to previous cycle
+   * 3. If reverting: check previous cycle for payments and recalculate accordingly
+   * 4. Calculate total paid in current cycle
+   * 5. If total paid >= amountDue: advance cycle (or mark one-time as paid)
+   * 6. If total paid < amountDue: reduce amount due by total paid
+   *
+   * @param bill - Current bill state
+   * @param transactions - All transactions for the bill (ordered by paidAt DESC)
+   * @returns BillState with recalculated amountDue, status, and nextDueDate
+   */
+  recalculateBillFromPayments(
+    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status'>,
+    transactions: Transaction[]
+  ): BillState {
+    // Filter transactions to current cycle only
+    const currentCycleTransactions = transactions.filter(
+      (tx) => !isPaymentHistorical(bill, tx.paidAt)
+    );
+
+    // If no payments in current cycle, check if we need to revert to previous cycle
+    if (currentCycleTransactions.length === 0) {
+      // For recurring bills, check if we should revert to previous cycle
+      const previousDueDate = getCycleStartDate(bill.dueDate, bill.frequency);
+
+      if (previousDueDate) {
+        // Check if there are payments in the previous cycle
+        const previousBill = { dueDate: previousDueDate, frequency: bill.frequency };
+        const previousCycleTransactions = transactions.filter(
+          (tx) => !isPaymentHistorical(previousBill, tx.paidAt)
+        );
+
+        if (previousCycleTransactions.length === 0) {
+          // No payments in previous cycle either, revert to previous due date
+          return {
+            amountDue: bill.amount,
+            status: RecurrenceService.deriveStatus(previousDueDate),
+            nextDueDate: previousDueDate,
+          };
+        }
+
+        // There are payments in previous cycle, calculate based on those
+        const totalPaid = previousCycleTransactions.reduce(
+          (sum, tx) => sum + tx.amount,
+          0
+        );
+
+        if (totalPaid >= bill.amount) {
+          // Previous cycle was fully paid, keep current cycle
+          return {
+            amountDue: bill.amount,
+            status: RecurrenceService.deriveStatus(bill.dueDate),
+            nextDueDate: null,
+          };
+        }
+
+        // Partial payment in previous cycle, revert to previous due date
+        return {
+          amountDue: Math.max(0, bill.amount - totalPaid),
+          status: RecurrenceService.deriveStatus(previousDueDate),
+          nextDueDate: previousDueDate,
+        };
+      }
+
+      // No previous cycle (one-time bill or first cycle), reset to base state
+      return {
+        amountDue: bill.amount,
+        status: RecurrenceService.deriveStatus(bill.dueDate),
+        nextDueDate: null,
+      };
+    }
+
+    // Calculate total paid in current cycle
+    const totalPaid = currentCycleTransactions.reduce(
+      (sum, tx) => sum + tx.amount,
+      0
+    );
+
+    // Determine if cycle should advance
+    // If total paid >= amountDue, advance cycle
+    if (totalPaid >= bill.amountDue) {
+      const nextDueDate = RecurrenceService.calculateNextDueDate(
+        bill.dueDate,
+        bill.frequency
+      );
+
+      if (nextDueDate === null) {
+        // One-time bill fully paid
+        return {
+          amountDue: 0,
+          status: 'paid',
+          nextDueDate: null,
+        };
+      }
+
+      // Recurring bill, advance cycle
+      return {
+        amountDue: bill.amount,
+        status: RecurrenceService.deriveStatus(nextDueDate),
+        nextDueDate,
+      };
+    }
+
+    // Partial payment, reduce amount due
+    const newAmountDue = Math.max(0, bill.amountDue - totalPaid);
+
+    return {
+      amountDue: newAmountDue,
+      status: RecurrenceService.deriveStatus(bill.dueDate),
+      nextDueDate: null,
+    };
+  },
+
+  /**
+   * Determines if a transaction affects the current billing cycle.
+   *
+   * This also checks if the payment might have CAUSED the current cycle advancement
+   * by checking against the previous cycle. This is necessary because after a payment
+   * advances the cycle, deleting that payment would make it appear "historical" when
+   * checked against the new (advanced) due date.
+   *
+   * @param bill - Bill with dueDate and frequency
+   * @param transaction - Transaction to check
+   * @returns True if transaction affects current cycle or caused cycle advancement
+   */
+  doesPaymentAffectCurrentCycle(
+    bill: Pick<Bill, 'dueDate' | 'frequency'>,
+    transaction: Transaction
+  ): boolean {
+    // Check if payment is in current cycle (not historical)
+    if (!isPaymentHistorical(bill, transaction.paidAt)) {
+      return true;
+    }
+
+    // If payment appears historical, check if it might have caused cycle advancement
+    // by checking against the PREVIOUS cycle
+    const previousDueDate = getCycleStartDate(bill.dueDate, bill.frequency);
+    if (!previousDueDate) {
+      // One-time bills don't have previous cycles
+      return false;
+    }
+
+    // Check if payment was in the previous cycle
+    // (which would mean it caused the current cycle advancement)
+    const previousCycleBill = { dueDate: previousDueDate, frequency: bill.frequency };
+    return !isPaymentHistorical(previousCycleBill, transaction.paidAt);
   },
 };
 
