@@ -103,32 +103,9 @@ export const DueDateService = {
       return 'Due in about 1 month';
     }
 
-    if (months <= 5) {
-      return `Due in ${months} months`;
-    }
-
-    if (months === 6) {
-      return 'Due in over 6 months';
-    }
-
-    if (months === 7) {
-      return 'Due in over 7 months';
-    }
-
-    if (months === 8) {
-      return 'Due in over 8 months';
-    }
-
-    if (months === 9) {
-      return 'Due in over 9 months';
-    }
-
-    if (months === 10) {
-      return 'Due in over 10 months';
-    }
-
-    if (months === 11) {
-      return 'Due in over 11 months';
+    if (months <= 11) {
+      const prefix = months >= 6 ? 'over ' : '';
+      return `Due in ${prefix}${months} months`;
     }
 
     if (months === 12) {
