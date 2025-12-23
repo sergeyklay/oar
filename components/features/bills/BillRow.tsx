@@ -34,7 +34,7 @@ export function BillRow({
         <div className="flex flex-col">
           <span className="font-medium">{bill.title}</span>
           <span className="text-xs text-muted-foreground">
-            {FREQUENCY_DISPLAY_LABELS[bill.frequency]}
+            {FREQUENCY_DISPLAY_LABELS[bill.frequency]} • {bill.isAutoPay ? 'Auto' : 'Manual'}
           </span>
         </div>
       </td>

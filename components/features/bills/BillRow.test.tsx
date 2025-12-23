@@ -82,28 +82,36 @@ describe('BillRow', () => {
       expect(screen.getByText('Electric Bill')).toBeInTheDocument();
     });
 
-    it('displays bill frequency as human-readable label', () => {
-      const bill = createMockBill({ frequency: 'yearly' });
+    it('displays bill frequency as human-readable label with manual indicator', () => {
+      const bill = createMockBill({ frequency: 'yearly', isAutoPay: false });
 
       renderBillRow(bill);
 
-      expect(screen.getByText('Every year')).toBeInTheDocument();
+      expect(screen.getByText('Every year • Manual')).toBeInTheDocument();
+    });
+
+    it('displays bill frequency as human-readable label with auto indicator', () => {
+      const bill = createMockBill({ frequency: 'yearly', isAutoPay: true });
+
+      renderBillRow(bill);
+
+      expect(screen.getByText('Every year • Auto')).toBeInTheDocument();
     });
 
     it('displays correct human-readable label for all frequency types', () => {
       const frequencies: Array<{ freq: BillFrequency; expected: string }> = [
-        { freq: 'weekly', expected: 'Every week' },
-        { freq: 'biweekly', expected: 'Every 2 weeks' },
-        { freq: 'twicemonthly', expected: 'Twice per month' },
-        { freq: 'monthly', expected: 'Every month' },
-        { freq: 'bimonthly', expected: 'Every 2 months' },
-        { freq: 'quarterly', expected: 'Every 3 months' },
-        { freq: 'yearly', expected: 'Every year' },
-        { freq: 'once', expected: 'Never' },
+        { freq: 'weekly', expected: 'Every week • Manual' },
+        { freq: 'biweekly', expected: 'Every 2 weeks • Manual' },
+        { freq: 'twicemonthly', expected: 'Twice per month • Manual' },
+        { freq: 'monthly', expected: 'Every month • Manual' },
+        { freq: 'bimonthly', expected: 'Every 2 months • Manual' },
+        { freq: 'quarterly', expected: 'Every 3 months • Manual' },
+        { freq: 'yearly', expected: 'Every year • Manual' },
+        { freq: 'once', expected: 'Never • Manual' },
       ];
 
       for (const { freq, expected } of frequencies) {
-        const bill = createMockBill({ frequency: freq });
+        const bill = createMockBill({ frequency: freq, isAutoPay: false });
         const { unmount } = renderBillRow(bill);
         expect(screen.getByText(expected)).toBeInTheDocument();
         unmount();

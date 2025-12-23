@@ -16,6 +16,7 @@ Explanations of user-facing functionality and domain logic.
 
 | Document | Description |
 |----------|-------------|
+| [Active Payer Signals](./features/010-active-payer-signals.md) | Philosophical signals (Auto/Manual) that maintain financial awareness |
 | [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
 | [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 | [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
