@@ -18,7 +18,7 @@ It is the "Constitution" for all AI agents working on this project.
 - SQLite + Drizzle ORM (local-first persistence)
 - Tailwind CSS 4 + Shadcn/UI primitives
 - Zod (validation), nuqs (URL state), react-hook-form (forms)
-- Node.js Cron for background jobs (cron, node-cron fork)
+- Node.js Cron for background jobs (`cron`, a fork of `node-cron`) initialized via `instrumentation.ts`
 - Docker for containerization
 
 **Philosophy — "The Active Payer":**
@@ -74,8 +74,13 @@ It is the "Constitution" for all AI agents working on this project.
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │                 Services (lib/services/)                 │   │
 │  │   • RecurrenceService: Next due date calculations        │   │
+│  │   • DueDateService: Due date filtering and queries       │   │
+│  │   • PaymentService: Payment logging & partial payments   │   │
+│  │   • BillService: Bill CRUD operations                    │   │
+│  │   • TransactionService: Transaction queries              │   │
+│  │   • AutoPayService: Auto-pay bill processing             │   │
+│  │   • SchedulerService: Background cron jobs               │   │
 │  │   • SettingsService: User preferences                    │   │
-│  │   • [Future] ForecastingService: Liquidity predictions   │   │
 │  └─────────────────────────┬────────────────────────────────┘   │
 │                            │                                    │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -253,18 +258,34 @@ oar/
 ├── app/                         ← Next.js App Router
 │   ├── layout.tsx               ← SACRED (root providers, fonts)
 │   ├── globals.css              ← SACRED (design tokens)
-│   └── page.tsx                 ← Home route
+│   ├── page.tsx                 ← Home route (Overview)
+│   ├── due-soon/                ← Bills due within range
+│   ├── due-this-month/          ← Monthly due bills
+│   ├── paid-recently/           ← Recent payments view
+│   └── settings/                ← User preferences
 │
 ├── actions/                     ← Server Actions (Orchestration)
 │   ├── bills.ts                 ← Bill CRUD operations
+│   ├── calendar.ts              ← Calendar data queries
+│   ├── categories.ts            ← Bill category management
+│   ├── settings.ts              ← User settings operations
 │   ├── tags.ts                  ← Tag management
 │   └── transactions.ts          ← Payment history
 │
 ├── lib/                         ← Domain Layer
 │   ├── services/                ← Business Logic (THE LAW)
+│   │   ├── AutoPayService.ts    ← Auto-pay processing
+│   │   ├── BillService.ts       ← Bill domain operations
+│   │   ├── DueDateService.ts    ← Due date queries
+│   │   ├── PaymentService.ts    ← Payment handling
 │   │   ├── RecurrenceService.ts ← Due date calculations
-│   │   └── SettingsService.ts   ← User preferences
+│   │   ├── SchedulerService.ts  ← Background cron jobs
+│   │   ├── SettingsService.ts   ← User preferences
+│   │   └── TransactionService.ts← Transaction queries
+│   ├── billing-cycle.ts         ← Cycle advancement logic
+│   ├── constants.ts             ← App-wide constants
 │   ├── money.ts                 ← Currency conversion (integers!)
+│   ├── types.ts                 ← Shared types (ActionResult<T>)
 │   └── utils.ts                 ← Pure utilities
 │
 ├── db/                          ← Persistence Layer
@@ -275,12 +296,15 @@ oar/
 │
 ├── components/
 │   ├── ui/                      ← Shadcn primitives (DO NOT EDIT)
-│   ├── layout/                  ← SACRED (AppShell, Sidebar)
+│   ├── layout/                  ← SACRED (AppShell, Sidebar, Panels)
 │   └── features/                ← Feature-specific components
-│       ├── bills/
-│       └── calendar/
+│       ├── bills/               ← Bill list, forms, detail panel
+│       ├── calendar/            ← Calendar widget
+│       ├── payments/            ← Payment history views
+│       └── settings/            ← Settings page components
 │
 ├── drizzle/                     ← Generated migrations
+├── instrumentation.ts           ← Next.js entry (initializes SchedulerService)
 ├── components.json              ← SACRED (Shadcn config)
 ├── tailwind.config.ts           ← SACRED (theme extensions)
 └── package.json                 ← Dependencies & scripts
@@ -313,6 +337,6 @@ When encountering legacy or inconsistent code:
 
 ---
 
-Last Updated: 2025-12-10
+Last Updated: 2025-12-23
 
 Maintained by: AI Agents under human supervision
