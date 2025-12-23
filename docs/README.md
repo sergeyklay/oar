@@ -16,7 +16,7 @@ Explanations of user-facing functionality and domain logic.
 
 | Document | Description |
 |----------|-------------|
-| [Active Payer Signals](./features/010-active-payer-signals.md) | Philosophical signals (Auto/Manual) that maintain financial awareness |
+| [Active Payer Signals](./features/010-active-payer-signals.md) | Explicit payment mode indicators (Auto/Manual) for each bill |
 | [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
 | [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
 | [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
