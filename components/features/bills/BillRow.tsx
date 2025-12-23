@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
+import { FREQUENCY_DISPLAY_LABELS, PAYMENT_MODE_LABELS } from '@/lib/constants';
 import { DueDateService } from '@/lib/services/DueDateService';
 import { CategoryIcon } from './CategoryIcon';
 import type { BillWithTags } from '@/lib/types';
@@ -34,7 +34,7 @@ export function BillRow({
         <div className="flex flex-col">
           <span className="font-medium">{bill.title}</span>
           <span className="text-xs text-muted-foreground">
-            {FREQUENCY_DISPLAY_LABELS[bill.frequency]} • {bill.isAutoPay ? 'Auto' : 'Manual'}
+            {FREQUENCY_DISPLAY_LABELS[bill.frequency]} • {bill.isAutoPay ? PAYMENT_MODE_LABELS.auto : PAYMENT_MODE_LABELS.manual}
           </span>
         </div>
       </td>

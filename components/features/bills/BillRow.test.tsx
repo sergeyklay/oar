@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { BillRow } from './BillRow';
 import type { BillWithTags, BillFrequency } from '@/lib/types';
+import { FREQUENCY_DISPLAY_LABELS, PAYMENT_MODE_LABELS } from '@/lib/constants';
 
 const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
   id: 'bill-1',
@@ -87,7 +88,7 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      expect(screen.getByText('Every year • Manual')).toBeInTheDocument();
+      expect(screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}`)).toBeInTheDocument();
     });
 
     it('displays bill frequency as human-readable label with auto indicator', () => {
@@ -95,19 +96,19 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      expect(screen.getByText('Every year • Auto')).toBeInTheDocument();
+      expect(screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.auto}`)).toBeInTheDocument();
     });
 
     it('displays correct human-readable label for all frequency types', () => {
       const frequencies: Array<{ freq: BillFrequency; expected: string }> = [
-        { freq: 'weekly', expected: 'Every week • Manual' },
-        { freq: 'biweekly', expected: 'Every 2 weeks • Manual' },
-        { freq: 'twicemonthly', expected: 'Twice per month • Manual' },
-        { freq: 'monthly', expected: 'Every month • Manual' },
-        { freq: 'bimonthly', expected: 'Every 2 months • Manual' },
-        { freq: 'quarterly', expected: 'Every 3 months • Manual' },
-        { freq: 'yearly', expected: 'Every year • Manual' },
-        { freq: 'once', expected: 'Never • Manual' },
+        { freq: 'weekly', expected: `${FREQUENCY_DISPLAY_LABELS.weekly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'biweekly', expected: `${FREQUENCY_DISPLAY_LABELS.biweekly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'twicemonthly', expected: `${FREQUENCY_DISPLAY_LABELS.twicemonthly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'monthly', expected: `${FREQUENCY_DISPLAY_LABELS.monthly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'bimonthly', expected: `${FREQUENCY_DISPLAY_LABELS.bimonthly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'quarterly', expected: `${FREQUENCY_DISPLAY_LABELS.quarterly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'yearly', expected: `${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}` },
+        { freq: 'once', expected: `${FREQUENCY_DISPLAY_LABELS.once} • ${PAYMENT_MODE_LABELS.manual}` },
       ];
 
       for (const { freq, expected } of frequencies) {

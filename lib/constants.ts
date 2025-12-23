@@ -150,3 +150,9 @@ export const FREQUENCY_DISPLAY_LABELS: Record<BillFrequency, string> = {
   quarterly: 'Every 3 months',
   yearly: 'Every year',
 };
+
+/** Labels for payment modes (Auto vs Manual) */
+export const PAYMENT_MODE_LABELS = {
+  auto: 'Auto',
+  manual: 'Manual',
+} as const;
