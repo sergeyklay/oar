@@ -82,7 +82,7 @@ Before designing, you must analyze:
 
 ## Output Format
 
-Produce a Markdown document in `.specs/Spec-{TASK_NAME}.md`.
+Produce a Markdown document in `.specs/Spec-{TASK_NAME}.md`. **Do NOT** write any implementation code. You are **ONLY** writing the specification file.
 
 ### 1. Business Goal & Value
 

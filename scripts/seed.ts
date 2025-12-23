@@ -2,7 +2,7 @@ import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { faker } from '@faker-js/faker';
-import { addDays, subDays, subMonths } from 'date-fns';
+import { addDays, subDays, subMonths, addMonths } from 'date-fns';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
@@ -185,7 +185,14 @@ function generateBillState(
 
     return {
       status,
-      dueDate: faker.date.between({ from: now, to: addDays(now, 60) }),
+      dueDate: faker.date.between({
+        from: now,
+        to: faker.helpers.arrayElement([
+          addDays(now, 60),
+          addMonths(now, 8),
+          addMonths(now, 15),
+        ]),
+      }),
       amountDue: amount,
     };
   }
@@ -203,7 +210,14 @@ function generateBillState(
 
   return {
     status,
-    dueDate: faker.date.between({ from: now, to: addDays(now, 60) }),
+    dueDate: faker.date.between({
+      from: now,
+      to: faker.helpers.arrayElement([
+        addDays(now, 60),
+        addMonths(now, 10),
+        addMonths(now, 24),
+      ]),
+    }),
     amountDue: amount,
   };
 }
