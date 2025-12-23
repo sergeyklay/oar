@@ -1,7 +1,7 @@
 # Editing Payment History
 
 - **Status:** Draft
-- **Last Updated:** 2025-01-23
+- **Last Updated:** 2025-12-23
 - **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md)
 
 ## Overview
