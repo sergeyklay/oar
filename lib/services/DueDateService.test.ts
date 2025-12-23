@@ -126,52 +126,19 @@ describe('DueDateService', () => {
         expect(result).toBe('Due in 3 months');
       });
 
-      it('returns "Due in over 6 months" for exactly 6 months', () => {
-        const sixMonths = addMonths(today, 6);
+      it.each([
+        ['Due in over 6 months', 6],
+        ['Due in over 7 months', 7],
+        ['Due in over 8 months', 8],
+        ['Due in over 9 months', 9],
+        ['Due in over 10 months', 10],
+        ['Due in over 11 months', 11],
+      ])('returns "%s" for %d months', (expected, months) => {
+        const date = addMonths(today, months);
 
-        const result = DueDateService.formatRelativeDueDate(sixMonths, 'pending');
+        const result = DueDateService.formatRelativeDueDate(date, 'pending');
 
-        expect(result).toBe('Due in over 6 months');
-      });
-
-      it('returns "Due in over 7 months" for 7 months', () => {
-        const sevenMonths = addMonths(today, 7);
-
-        const result = DueDateService.formatRelativeDueDate(sevenMonths, 'pending');
-
-        expect(result).toBe('Due in over 7 months');
-      });
-
-      it('returns "Due in over 8 months" for 8 months', () => {
-        const eightMonths = addMonths(today, 8);
-
-        const result = DueDateService.formatRelativeDueDate(eightMonths, 'pending');
-
-        expect(result).toBe('Due in over 8 months');
-      });
-
-      it('returns "Due in over 9 months" for 9 months', () => {
-        const nineMonths = addMonths(today, 9);
-
-        const result = DueDateService.formatRelativeDueDate(nineMonths, 'pending');
-
-        expect(result).toBe('Due in over 9 months');
-      });
-
-      it('returns "Due in over 10 months" for 10 months', () => {
-        const tenMonths = addMonths(today, 10);
-
-        const result = DueDateService.formatRelativeDueDate(tenMonths, 'pending');
-
-        expect(result).toBe('Due in over 10 months');
-      });
-
-      it('returns "Due in over 11 months" for 11 months', () => {
-        const elevenMonths = addMonths(today, 11);
-
-        const result = DueDateService.formatRelativeDueDate(elevenMonths, 'pending');
-
-        expect(result).toBe('Due in over 11 months');
+        expect(result).toBe(expected);
       });
 
       it('returns "Due in about a year" for 12 months', () => {
