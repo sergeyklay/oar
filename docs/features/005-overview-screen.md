@@ -88,7 +88,7 @@ The combined label appears as `Every month • Auto` or `Every month • Manual`
 
 ### The logic of "Auto" vs "Manual"
 
-Even when a bill is marked "Auto", the Active Payer philosophy suggests you shift the type of control. Autopay is not an excuse to relax, but a signal to shift from "remembering to pay" to "remembering to verify the charge". The "Auto" label serves as a reminder that while Oar will advance the due date automatically, you should still check that the expected amount was charged.
+Even when a bill is marked "Auto", the Active Payer philosophy suggests you shift the type of control. Auto-pay is not an excuse to relax, but a signal to shift from "remembering to pay" to "remembering to verify the charge". The "Auto" label serves as a reminder that while Oar will advance the due date automatically, you should still check that the expected amount was charged.
 
 ## Variable amounts
 
