@@ -112,17 +112,26 @@ describe('BillDetailPanel', () => {
     });
 
     it('displays formatted amount (Line 3)', () => {
-      const bill = createMockBill({ amount: 9999 });
+      const bill = createMockBill({ amount: 9999, amountDue: 9999 });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByText('$99.99')).toBeInTheDocument();
     });
 
-    it('colors amount red if overdue', () => {
-      const bill = createMockBill({ status: 'overdue' });
+    it('displays partial payment format when amountDue < amount', () => {
+      const bill = createMockBill({ amount: 15000, amountDue: 10000 });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      const amount = screen.getByText(/\$\d+/);
+      expect(screen.getByText(/\$100\.00/)).toBeInTheDocument();
+      expect(screen.getByText(/\$150\.00/)).toBeInTheDocument();
+      expect(screen.getByText(/\(\$150\.00\)/)).toBeInTheDocument();
+    });
+
+    it('colors amount red if overdue', () => {
+      const bill = createMockBill({ status: 'overdue', amount: 10000, amountDue: 10000 });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      const amount = screen.getByText('$100.00');
       expect(amount).toHaveClass('text-red-500');
     });
 

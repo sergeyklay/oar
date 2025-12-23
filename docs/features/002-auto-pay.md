@@ -14,7 +14,7 @@ The Log Payment dialog captures what you paid, when you paid it, and optionally 
 
 ## The Log Payment dialog
 
-Click the Log Payment button (the banknote icon) on any unpaid bill to open the dialog. You'll see four fields:
+You open the Log Payment dialog through the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md). Click any bill row in the Overview to open the panel, then click the **Log Payment** button. You'll see four fields:
 
 **Amount.** Pre-filled with the bill's current amount due. Change this if you paid a different amount, like when splitting a payment or paying extra.
 
@@ -40,7 +40,7 @@ For example: a $150 monthly bill due March 1. You log a payment with the toggle 
 - The amount due decreases by what you paid
 - The bill remains in your current obligations
 
-For example: a $200 bill due March 15. You log $75 with the toggle off. The due date stays March 15, but the amount due drops to $125. Log the remaining $125 later with the toggle on, and the cycle advances.
+For example: a $200 bill due March 15. You log $75 with the toggle off. The due date stays March 15, but the amount due drops to $125. The [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) now displays your remaining commitment as "$125.00 ($200.00)" so you can see exactly how much is left. Log the remaining $125 later with the toggle on, and the cycle advances.
 
 ## One-time bills
 
@@ -117,10 +117,10 @@ Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes 
 To confirm payment logging works:
 
 1. Navigate to the Overview and find an unpaid bill.
-2. Click the Log Payment button (banknote icon).
+2. Click the bill row to open the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button.
 3. The dialog should show the amount pre-filled and today's date selected.
 4. Log a payment with "Update Due Date" on. The bill's due date should advance to the next cycle.
-5. Create another bill and log a partial payment with the toggle off. The amount due should decrease while the due date stays the same.
+5. Create another bill and log a partial payment with the toggle off. Verify the Bill Detail Panel displays the remaining balance followed by the total amount in parentheses.
 6. Click "View Payment History" in the Bill Detail Panel. Your logged payments should appear.
 
 To confirm historical payment detection works:

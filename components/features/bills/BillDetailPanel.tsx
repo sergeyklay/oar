@@ -160,7 +160,16 @@ export function BillDetailPanel({
             <p
               className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}
             >
-              {formatMoney(bill.amount, currency, locale)}
+              {bill.amountDue < bill.amount && bill.status !== 'paid' ? (
+                <>
+                  {formatMoney(bill.amountDue, currency, locale)}
+                  <span className="ml-1 opacity-70 font-normal text-xs">
+                    ({formatMoney(bill.amount, currency, locale)})
+                  </span>
+                </>
+              ) : (
+                formatMoney(bill.amount, currency, locale)
+              )}
             </p>
             {bill.isVariable && (
               <p className="text-xs text-muted-foreground mt-1">
