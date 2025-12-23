@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-21
-- **Related:** [Recurrence Engine](./001-recurrence-engine.md), [Logging Payments](./002-auto-pay.md)
+- **Related:** [Recurrence Engine](./001-recurrence-engine.md), [Logging Payments](./002-auto-pay.md), [Active Payer Signals](./010-active-payer-signals.md)
 
 ## Overview
 

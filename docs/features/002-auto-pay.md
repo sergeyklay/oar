@@ -110,7 +110,7 @@ Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes 
 
 **Bill already paid.** For one-time bills marked as paid, the Log Payment button is disabled.
 
-**Auto-pay bills.** If you've marked a bill as auto-pay, Oar logs payments automatically when the due date arrives. You'll still see these payments in the bill's history. See [Background Jobs](./006-background-jobs.md) for details.
+**Auto-pay bills.** If you've marked a bill as auto-pay, Oar logs payments automatically when the due date arrives. You'll still see these payments in the bill's history. See [Background Jobs](./006-background-jobs.md) and [Active Payer Signals](./010-active-payer-signals.md) for details.
 
 ## Verification
 

@@ -66,9 +66,12 @@ The vertical bar on the left edge of the due date cell indicates urgency:
 
 The bar spans the full height of the cell, making it easy to scan down the column and spot bills needing attention.
 
-## Repeat interval subtitle
+## Repeat interval and payment mode
 
-The interval appears below the bill name using friendly labels:
+The subtitle below the bill name combines the repeat interval with the payment mode (Auto or Manual). This reinforces the "Active Payer" philosophy by explicitly signaling how each bill is handled.
+
+* **Repeat interval.** Shows how often the bill recurs (e.g., "Every month").
+* **Payment mode.** Indicates if the bill is paid automatically by your bank ("Auto") or if you must execute the payment yourself ("Manual").
 
 | Internal value | Display label |
 |----------------|---------------|
@@ -81,7 +84,11 @@ The interval appears below the bill name using friendly labels:
 | yearly | Every year |
 | once | Never |
 
-This makes the table readable without requiring you to understand database terminology.
+The combined label appears as `Every month • Auto` or `Every month • Manual`.
+
+### The logic of "Auto" vs "Manual"
+
+Even when a bill is marked "Auto", the Active Payer philosophy suggests you shift the type of control. Autopay is not an excuse to relax, but a signal to shift from "remembering to pay" to "remembering to verify the charge". The "Auto" label serves as a reminder that while Oar will advance the due date automatically, you should still check that the expected amount was charged.
 
 ## Variable amounts
 
@@ -124,7 +131,7 @@ Payment history is available directly within the Bill Detail Panel through the c
 To confirm the Overview screen works:
 
 1. Navigate to the Overview page. You should see a table with four columns.
-2. Check that bill names show repeat interval subtitles like "Every month" below them.
+2. Check that bill names show combined subtitles like "Every month • Manual" or "Every month • Auto" below them. Verify the bullet point separates the interval from the payment mode.
 3. Look for any variable bills. They should show "(estimate)" below the amount.
 4. Verify overdue bills show "Overdue by X days" with a red status bar.
 5. Check that bills due within 30 days show an amber bar.
