@@ -41,7 +41,7 @@ You are an expert Senior Fullstack Engineer and Software Architect with experien
   - ALWAYS document public classes, methods, and interfaces using **JSDoc**.
   - Focus JSDoc on *why* and *what* (input/output), not the obvious *how*.
 
-## Examples & Patterns
+## Use JSDoc for public APIs/Data Models
 
 ```typescript
 // ✅ Always Use This. Clear JSDoc, strict typing, Airbnb-compliant
@@ -78,6 +78,85 @@ function fix(data: any) {
   return {id: data.id} // Missing semicolon and JSDoc
 }
 ```
+
+## Event Handler Type Extraction
+
+When extracting event handlers from inline functions to separate functions, use the `Prop` utility type from `@/lib/types` to maintain automatic type inference. This ensures type safety and prevents manual type annotations that can become outdated.
+
+**Rule:** Always use `Prop<Component, 'onClick'>` (or other event prop) when extracting event handlers. Never manually type event parameters or use `any`.
+
+```typescript
+// ✅ CORRECT: Use Prop utility type for automatic type inference
+import { Button } from '@/components/ui/button';
+import { type Prop } from '@/lib/types';
+
+function MyComponent() {
+  const handleClick: Prop<typeof Button, 'onClick'> = (event) => {
+    // ✅ `event` is automatically inferred with correct type
+    event.preventDefault();
+    doSomething();
+  };
+
+  return <Button onClick={handleClick}>Click me</Button>;
+}
+```
+
+```typescript
+// ✅ CORRECT: Works with native HTML elements
+import { type Prop } from '@/lib/types';
+
+function TableRow() {
+  const handleClick: Prop<'tr', 'onClick'> = (event) => {
+    // ✅ `event` is React.MouseEvent<HTMLTableRowElement>
+    event.stopPropagation();
+  };
+
+  return <tr onClick={handleClick}>...</tr>;
+}
+```
+
+```typescript
+// ❌ WRONG: Manual type annotation (error-prone, can become outdated)
+function MyComponent() {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // ❌ Manual typing - must be updated if component types change
+    event.preventDefault();
+  };
+
+  return <Button onClick={handleClick}>Click me</Button>;
+}
+```
+
+```typescript
+// ❌ WRONG: No type annotation (event is `any`, loses type safety)
+function MyComponent() {
+  const handleClick = (event) => {
+    // ❌ `event` is of type `any` - no type safety
+    event.preventDefault();
+  };
+
+  return <Button onClick={handleClick}>Click me</Button>;
+}
+```
+
+```typescript
+// ❌ WRONG: Using `any` explicitly
+function MyComponent() {
+  const handleClick = (event: any) => {
+    // ❌ Explicit `any` violates strict typing rules
+    event.preventDefault();
+  };
+
+  return <Button onClick={handleClick}>Click me</Button>;
+}
+```
+
+**Key Points:**
+- The `Prop` utility automatically infers the correct event type from the component's prop definition
+- Types stay in sync if component prop types change
+- Works with both custom components (`typeof ComponentName`) and native HTML elements (string literals like `'tr'`, `'button'`)
+- Enforces correct return types automatically
+- Supports multiple arguments if the handler accepts them
 
 ## Error Handling
 

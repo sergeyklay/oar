@@ -86,3 +86,37 @@ export interface PaymentWithBill {
   notes: string | null;
   categoryIcon: string;
 }
+
+/**
+ * Utility type for extracting prop types from React components.
+ *
+ * Allows type-safe extraction of event handler types from components,
+ * enabling automatic type inference when extracting event handlers to separate functions.
+ *
+ * Based on: https://www.guisehn.com/react-extract-event-handler-typescript/
+ *
+ * @template Component - The React component type (use `typeof ComponentName`)
+ * @template PropKey - The name of the prop to extract (e.g., "onClick", "onSubmit")
+ *
+ * @example
+ * ```tsx
+ * import { Button } from "@/components/ui/button";
+ * import { type Prop } from "@/lib/types";
+ *
+ * function MyComponent() {
+ *   const handleClick: Prop<typeof Button, "onClick"> = (event) => {
+ *     // `event` is automatically inferred with correct type
+ *     event.preventDefault();
+ *   };
+ *
+ *   return <Button onClick={handleClick}>Click me</Button>;
+ * }
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentType = any extends React.ComponentProps<infer R> ? R : never;
+
+export type Prop<
+  Component extends ComponentType,
+  PropKey extends keyof React.ComponentProps<Component>
+> = React.ComponentProps<Component>[PropKey];

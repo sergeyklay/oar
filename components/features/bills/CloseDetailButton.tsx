@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { useQueryState, parseAsString } from 'nuqs';
 
 import { Button } from '@/components/ui/button';
+import { type Prop } from '@/lib/types';
 
 /**
  * Client component for closing the bill detail panel.
@@ -16,9 +17,9 @@ export function CloseDetailButton() {
     parseAsString.withOptions({ shallow: false })
   );
 
-  function handleClose() {
+  const handleClose: Prop<typeof Button, 'onClick'> = () => {
     setSelectedBill(null);
-  }
+  };
 
   return (
     <Button
