@@ -262,7 +262,7 @@ export async function updateTransaction(
       existingTransaction
     );
 
-    // 5. Update transaction record
+    // 5. Prepare updated transaction object
     const updatedTransaction: Transaction = {
       ...existingTransaction,
       amount,
@@ -270,19 +270,11 @@ export async function updateTransaction(
       notes: notes || null,
     };
 
-    db.update(transactions)
-      .set({
-        amount,
-        paidAt,
-        notes: notes || null,
-      })
-      .where(eq(transactions.id, id))
-      .run();
-
     // 6. Check if new transaction affects current cycle
     const newAffectsCycle = PaymentService.doesPaymentAffectCurrentCycle(bill, updatedTransaction);
 
-    // 7. Recalculate if cycle state changed
+    // 7. Pre-fetch all transactions and calculate new bill state if needed
+    let newBillState: ReturnType<typeof PaymentService.recalculateBillFromPayments> | null = null;
     if (oldAffectedCycle || newAffectsCycle) {
       const allTransactions = await db
         .select()
@@ -290,18 +282,39 @@ export async function updateTransaction(
         .where(eq(transactions.billId, bill.id))
         .orderBy(desc(transactions.paidAt));
 
-      const newBillState = PaymentService.recalculateBillFromPayments(bill, allTransactions);
+      // Replace the old transaction with the updated one in the array
+      const updatedTransactions = allTransactions.map((tx) =>
+        tx.id === id ? updatedTransaction : tx
+      );
 
-      db.update(bills)
-        .set({
-          amountDue: newBillState.amountDue,
-          status: newBillState.status,
-          dueDate: newBillState.nextDueDate ?? bill.dueDate,
-          updatedAt: new Date(),
-        })
-        .where(eq(bills.id, bill.id))
-        .run();
+      newBillState = PaymentService.recalculateBillFromPayments(bill, updatedTransactions);
     }
+
+    // 8. Atomic transaction: update transaction and bill together
+    db.transaction((tx) => {
+      // Update transaction record
+      tx.update(transactions)
+        .set({
+          amount,
+          paidAt,
+          notes: notes || null,
+        })
+        .where(eq(transactions.id, id))
+        .run();
+
+      // Update bill if recalculation was needed
+      if (newBillState) {
+        tx.update(bills)
+          .set({
+            amountDue: newBillState.amountDue,
+            status: newBillState.status,
+            dueDate: newBillState.nextDueDate ?? bill.dueDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(bills.id, bill.id))
+          .run();
+      }
+    });
 
     // 8. Revalidate UI
     revalidatePath('/');
@@ -378,10 +391,8 @@ export async function deleteTransaction(
     // 4. Check if deleted transaction affected current cycle
     const affectedCycle = PaymentService.doesPaymentAffectCurrentCycle(bill, transaction);
 
-    // 5. Delete the transaction
-    db.delete(transactions).where(eq(transactions.id, id)).run();
-
-    // 6. Recalculate if it affected current cycle
+    // 5. Pre-fetch all transactions and calculate new bill state if needed
+    let newBillState: ReturnType<typeof PaymentService.recalculateBillFromPayments> | null = null;
     if (affectedCycle) {
       const allTransactions = await db
         .select()
@@ -389,18 +400,30 @@ export async function deleteTransaction(
         .where(eq(transactions.billId, bill.id))
         .orderBy(desc(transactions.paidAt));
 
-      const newBillState = PaymentService.recalculateBillFromPayments(bill, allTransactions);
+      // Filter out the transaction being deleted
+      const remainingTransactions = allTransactions.filter((tx) => tx.id !== id);
 
-      db.update(bills)
-        .set({
-          amountDue: newBillState.amountDue,
-          status: newBillState.status,
-          dueDate: newBillState.nextDueDate ?? bill.dueDate,
-          updatedAt: new Date(),
-        })
-        .where(eq(bills.id, bill.id))
-        .run();
+      newBillState = PaymentService.recalculateBillFromPayments(bill, remainingTransactions);
     }
+
+    // 6. Atomic transaction: delete transaction and update bill together
+    db.transaction((tx) => {
+      // Delete the transaction
+      tx.delete(transactions).where(eq(transactions.id, id)).run();
+
+      // Update bill if recalculation was needed
+      if (newBillState) {
+        tx.update(bills)
+          .set({
+            amountDue: newBillState.amountDue,
+            status: newBillState.status,
+            dueDate: newBillState.nextDueDate ?? bill.dueDate,
+            updatedAt: new Date(),
+          })
+          .where(eq(bills.id, bill.id))
+          .run();
+      }
+    });
 
     // 7. Revalidate UI
     revalidatePath('/');
