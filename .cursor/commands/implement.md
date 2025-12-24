@@ -126,7 +126,7 @@ db.insert(bills).values({ amount: amount * 100 });  // Floating point errors!
 ### Rule Files to Follow
 
 - **CRITICAL:** Strictly follow @AGENTS.md
-- **TypeScript:** Follow @.cursor/rules/typescript.mdc
+- **TypeScript/React:** Follow @.cursor/rules/typescript.mdc
 - **Testing:** Follow @.cursor/rules/testing.mdc
 - **Preservation:** Follow @.cursor/rules/preservation.mdc
 
