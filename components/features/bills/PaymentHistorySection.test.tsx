@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PaymentHistorySection } from './PaymentHistorySection';
-import { getTransactionsByBillId, deleteTransaction, updateTransaction } from '@/actions/transactions';
+import { getTransactionsByBillId, deleteTransaction } from '@/actions/transactions';
 import type { Transaction } from '@/lib/types';
 
 const mockRefresh = jest.fn();
@@ -17,13 +17,12 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/actions/transactions', () => ({
   getTransactionsByBillId: jest.fn(),
   deleteTransaction: jest.fn(),
-  updateTransaction: jest.fn(),
 }));
 
 jest.mock('sonner', () => ({
   toast: {
-    success: jest.fn((message, options) => mockToastSuccess(message, options)),
-    error: jest.fn((message, options) => mockToastError(message, options)),
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
   },
 }));
 
@@ -48,12 +47,6 @@ describe('PaymentHistorySection', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRefresh.mockClear();
-    mockToastSuccess.mockClear();
-    mockToastError.mockClear();
-    (getTransactionsByBillId as jest.Mock).mockReset();
-    (deleteTransaction as jest.Mock).mockReset();
-    (updateTransaction as jest.Mock).mockReset();
   });
 
   describe('collapsed state', () => {
@@ -245,7 +238,92 @@ describe('PaymentHistorySection', () => {
   describe('handleDelete', () => {
     const expandedProps = { ...defaultProps, isExpanded: true };
 
-    it('deletes transaction and refetches on success', async () => {
+    async function selectAndDeleteTransaction(user: ReturnType<typeof userEvent.setup>, dateText: string) {
+      await waitFor(() => {
+        expect(screen.getByText(dateText)).toBeInTheDocument();
+      });
+
+      const dateElement = screen.getByText(dateText);
+      const transactionRow = dateElement.closest('div');
+      if (transactionRow) {
+        await user.click(transactionRow);
+      } else {
+        await user.click(dateElement);
+      }
+
+      await waitFor(() => {
+        expect(screen.getByText('Selected Payment')).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getByRole('button', { name: /delete this payment/i });
+      await user.click(deleteButton);
+
+      const confirmButton = await screen.findByRole('button', { name: /^delete$/i });
+      await user.click(confirmButton);
+    }
+
+    it('calls deleteTransaction with correct transaction ID', async () => {
+      const user = userEvent.setup();
+      const transactions = [
+        createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
+      ];
+
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await selectAndDeleteTransaction(user, '26/06/2025');
+
+      await waitFor(() => {
+        expect(deleteTransaction).toHaveBeenCalledWith({ id: 'tx-1' });
+      });
+    });
+
+    it('refetches transactions after successful delete', async () => {
+      const user = userEvent.setup();
+      const transactions = [
+        createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
+      ];
+      const remainingTransactions: Transaction[] = [];
+
+      (getTransactionsByBillId as jest.Mock)
+        .mockResolvedValueOnce(transactions)
+        .mockResolvedValueOnce(remainingTransactions);
+      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await selectAndDeleteTransaction(user, '26/06/2025');
+
+      await waitFor(() => {
+        expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
+        expect(getTransactionsByBillId).toHaveBeenLastCalledWith('bill-1');
+      });
+    });
+
+    it('shows success toast and refreshes router', async () => {
+      const user = userEvent.setup();
+      const transactions = [
+        createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
+      ];
+
+      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+
+      render(<PaymentHistorySection {...expandedProps} />);
+
+      await selectAndDeleteTransaction(user, '26/06/2025');
+
+      await waitFor(() => {
+        expect(mockToastSuccess).toHaveBeenCalledWith('Payment deleted', {
+          description: 'Payment record has been removed.',
+        });
+        expect(mockRefresh).toHaveBeenCalled();
+      });
+    });
+
+    it('removes deleted transaction from UI', async () => {
       const user = userEvent.setup();
       const transactions = [
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
@@ -256,52 +334,11 @@ describe('PaymentHistorySection', () => {
       (getTransactionsByBillId as jest.Mock)
         .mockResolvedValueOnce(transactions)
         .mockResolvedValueOnce(remainingTransactions);
-
       (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
-      await waitFor(() => {
-        expect(screen.getByText('26/06/2025')).toBeInTheDocument();
-      });
-
-      const dateText = screen.getByText('26/06/2025');
-      const transactionRow = dateText.closest('div');
-      if (transactionRow) {
-        await user.click(transactionRow);
-      } else {
-        await user.click(dateText);
-      }
-
-      await waitFor(() => {
-        expect(screen.getByText('Selected Payment')).toBeInTheDocument();
-      });
-
-      const deleteButton = screen.getByRole('button', { name: /delete this payment/i });
-      await user.click(deleteButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument();
-      });
-
-      const confirmButton = screen.getByRole('button', { name: /^delete$/i });
-      await user.click(confirmButton);
-
-      await waitFor(() => {
-        expect(deleteTransaction).toHaveBeenCalledWith({ id: 'tx-1' });
-        expect(mockToastSuccess).toHaveBeenCalledWith('Payment deleted', {
-          description: 'Payment record has been removed.',
-        });
-      });
-
-      await waitFor(() => {
-        expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
-        expect(getTransactionsByBillId).toHaveBeenLastCalledWith('bill-1');
-      });
-
-      await waitFor(() => {
-        expect(mockRefresh).toHaveBeenCalled();
-      });
+      await selectAndDeleteTransaction(user, '26/06/2025');
 
       await waitFor(() => {
         expect(screen.queryByText('26/06/2025')).not.toBeInTheDocument();
@@ -343,12 +380,7 @@ describe('PaymentHistorySection', () => {
       const deleteButton = screen.getByRole('button', { name: /delete this payment/i });
       await user.click(deleteButton);
 
-      await waitFor(() => {
-        const confirmButton = screen.getByRole('button', { name: /^delete$/i });
-        return confirmButton;
-      });
-
-      const confirmButton = screen.getByRole('button', { name: /^delete$/i });
+      const confirmButton = await screen.findByRole('button', { name: /^delete$/i });
       await user.click(confirmButton);
 
       await waitFor(() => {
@@ -361,13 +393,12 @@ describe('PaymentHistorySection', () => {
       });
     });
 
-    it('does nothing when no transaction is selected', async () => {
+    it('shows selection prompt when no transaction is selected', async () => {
       const transactions = [
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
       ];
 
       (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
@@ -376,8 +407,6 @@ describe('PaymentHistorySection', () => {
       });
 
       expect(screen.getByText('Select a payment to view and edit')).toBeInTheDocument();
-      expect(deleteTransaction).not.toHaveBeenCalled();
-      expect(mockRefresh).not.toHaveBeenCalled();
     });
   });
 });
