@@ -151,8 +151,12 @@ describe('PaymentDetailForm', () => {
   });
 
   describe('transaction changes', () => {
-    it('resets to read-only mode when transaction changes', () => {
+    it('resets to read-only mode when transaction changes', async () => {
+      const user = userEvent.setup();
       const { rerender } = render(<PaymentDetailForm {...defaultProps} />);
+
+      await user.click(screen.getByRole('button', { name: /edit/i }));
+      expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();
 
       const newTransaction = createMockTransaction({
         id: 'tx-2',
@@ -162,6 +166,11 @@ describe('PaymentDetailForm', () => {
 
       rerender(<PaymentDetailForm {...defaultProps} transaction={newTransaction} />);
 
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
+      });
+
+      expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument();
       expect(screen.getByText('$200.00')).toBeInTheDocument();
       expect(screen.getByText('New note')).toBeInTheDocument();
     });
