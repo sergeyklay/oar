@@ -47,9 +47,11 @@ For example: a $200 bill due March 15. You log $75 with the toggle off. The due 
 Bills with a "Never" repeat interval behave differently. After you log a full payment:
 - The amount due zeroes out
 - The status changes to "paid"
-- The bill remains in your history but no longer appears in active views
+- The bill ends its lifecycle
 
-You can still log partial payments against one-time bills. When the cumulative payments equal or exceed the bill amount, the bill is marked paid.
+What happens next depends on your "After a Bill Ends" setting. By default, the bill stays visible in your bill list but won't appear in time-based filters like "Due Soon." If you've configured the setting to "Move to the Archive," the bill is archived and disappears from active views. See [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) for details.
+
+You can still log partial payments against one-time bills. When the cumulative payments equal or exceed the bill amount, the bill is marked paid and ends according to your setting.
 
 ## Historical payments
 
