@@ -1,6 +1,9 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { MainContent } from '@/components/layout/MainContent';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('SettingsPage');
 import { SettingsHeader } from '@/components/features/settings/SettingsHeader';
 import { SettingsLayout } from '@/components/features/settings/SettingsLayout';
 import { SettingsNavigation } from '@/components/features/settings/SettingsNavigation';
@@ -22,7 +25,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   try {
     structure = await SettingsService.getStructure();
   } catch (error) {
-    console.error('Failed to load settings:', error);
+    logger.error(error, 'Failed to load settings');
     return (
       <AppShell rightPanel={null}>
         <MainContent header={<SettingsHeader />}>

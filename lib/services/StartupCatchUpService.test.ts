@@ -1,6 +1,9 @@
 import { StartupCatchUpService } from './StartupCatchUpService';
 import { RecurrenceService } from './RecurrenceService';
 import { AutoPayService } from './AutoPayService';
+import { getLogger } from '@/lib/logger';
+
+jest.mock('@/lib/logger');
 
 jest.mock('./RecurrenceService', () => ({
   RecurrenceService: {
@@ -18,12 +21,9 @@ describe('StartupCatchUpService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     delete (globalThis as { __oar_catchup_executed?: boolean }).__oar_catchup_executed;
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
     delete (globalThis as { __oar_catchup_executed?: boolean }).__oar_catchup_executed;
   });
 
@@ -69,9 +69,10 @@ describe('StartupCatchUpService', () => {
       expect(AutoPayService.processAutoPay).toHaveBeenCalledTimes(1);
       expect(result.overdueCheck).toEqual({ checked: 0, updated: 0 });
       expect(result.autoPay).toEqual(autoPayResult);
-      expect(console.error).toHaveBeenCalledWith(
-        '[StartupCatchUpService] Failed to check overdue bills:',
-        expect.any(Error)
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.any(Error),
+        'Failed to check overdue bills'
       );
       expect(globalThis.__oar_catchup_executed).toBe(true);
     });
@@ -96,9 +97,10 @@ describe('StartupCatchUpService', () => {
         failed: 0,
         failedIds: [],
       });
-      expect(console.error).toHaveBeenCalledWith(
-        '[StartupCatchUpService] Failed to process auto-pay bills:',
-        expect.any(Error)
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.any(Error),
+        'Failed to process auto-pay bills'
       );
       expect(globalThis.__oar_catchup_executed).toBe(true);
     });
@@ -122,7 +124,8 @@ describe('StartupCatchUpService', () => {
         failedIds: [],
       });
       expect(result.completedAt).toBeInstanceOf(Date);
-      expect(console.error).toHaveBeenCalledTimes(2);
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledTimes(2);
       expect(globalThis.__oar_catchup_executed).toBe(true);
     });
 
@@ -140,8 +143,9 @@ describe('StartupCatchUpService', () => {
         failedIds: [],
       });
       expect(result.completedAt).toBeInstanceOf(Date);
-      expect(console.log).toHaveBeenCalledWith(
-        '[StartupCatchUpService] Already executed, skipping'
+      const logger = getLogger('test');
+      expect(logger.info).toHaveBeenCalledWith(
+        'Already executed, skipping'
       );
     });
 
@@ -200,17 +204,26 @@ describe('StartupCatchUpService', () => {
 
       await StartupCatchUpService.runCatchUp();
 
-      expect(console.log).toHaveBeenCalledWith(
-        '[StartupCatchUpService] Starting catch-up logic...'
+      const logger = getLogger('test');
+      expect(logger.info).toHaveBeenCalledWith(
+        'Starting catch-up logic...'
       );
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('[StartupCatchUpService] Overdue check complete:')
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          checked: 5,
+          updated: 2,
+        },
+        'Overdue check complete'
       );
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('[StartupCatchUpService] Auto-pay processing complete:')
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          processed: 1,
+          failed: 0,
+        },
+        'Auto-pay processing complete'
       );
-      expect(console.log).toHaveBeenCalledWith(
-        '[StartupCatchUpService] Catch-up logic complete'
+      expect(logger.info).toHaveBeenCalledWith(
+        'Catch-up logic complete'
       );
     });
   });

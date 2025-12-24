@@ -8,6 +8,9 @@ import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
 import { SettingsService } from '@/lib/services/SettingsService';
 import type { BillStatus } from '@/lib/types';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('SeedScript');
 
 type SeedTransaction = SQLiteTransaction<
   'sync',
@@ -238,11 +241,11 @@ function seedCategories(): boolean {
     .length;
 
   if (existingCount > 0) {
-    console.log(`Found ${existingCount} existing category groups. Skipping category seed.`);
+    logger.info({ existingCount }, 'Found existing category groups, skipping category seed');
     return false;
   }
 
-  console.log('Seeding bill categories...');
+  logger.info('Seeding bill categories...');
 
   const now = new Date();
   let totalCategories = 0;
@@ -274,7 +277,10 @@ function seedCategories(): boolean {
     }
   });
 
-  console.log(`Seeded ${totalCategories} categories across ${CATEGORY_SEED_DATA.length} groups.`);
+  logger.info(
+    { totalCategories, groupCount: CATEGORY_SEED_DATA.length },
+    'Seeded categories'
+  );
   return true;
 }
 
@@ -287,7 +293,7 @@ function seedCategories(): boolean {
  * @param tx - Database transaction instance
  */
 function wipeData(tx: SeedTransaction): void {
-  console.log('Wiping existing data...');
+  logger.info('Wiping existing data...');
 
   tx.delete(schema.billsToTags).run();
   tx.delete(schema.transactions).run();
@@ -297,7 +303,7 @@ function wipeData(tx: SeedTransaction): void {
   tx.delete(schema.settingsSections).run();
   tx.delete(schema.settingsCategories).run();
 
-  console.log('Database wiped clean.');
+  logger.info('Database wiped clean.');
 }
 
 /**
@@ -307,7 +313,7 @@ function wipeData(tx: SeedTransaction): void {
  * @returns Array of inserted tag records
  */
 function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
-  console.log('Seeding tags...');
+  logger.info('Seeding tags...');
 
   const tagNames = [
     'Utilities',
@@ -331,7 +337,7 @@ function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
 
   tx.insert(schema.tags).values(tags).run();
 
-  console.log(`Seeded ${tags.length} tags.`);
+  logger.info({ tagCount: tags.length }, 'Seeded tags');
   return tags;
 }
 
@@ -339,9 +345,9 @@ function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
  * Seed default settings hierarchy.
  */
 async function seedSettings(): Promise<void> {
-  console.log('Seeding settings...');
+  logger.info('Seeding settings...');
   await SettingsService.initializeDefaults();
-  console.log('Seeded settings hierarchy.');
+  logger.info('Seeded settings hierarchy.');
 }
 
 /**
@@ -376,7 +382,7 @@ function seedBills(
   tags: typeof schema.tags.$inferSelect[],
   categories: typeof schema.billCategories.$inferSelect[]
 ): typeof schema.bills.$inferInsert[] {
-  console.log('Seeding bills...');
+  logger.info('Seeding bills...');
 
   if (categories.length === 0) {
     throw new Error('No categories found. Categories must be seeded first.');
@@ -508,7 +514,7 @@ function seedBills(
   tx.insert(schema.bills).values(billsToInsert).run();
   tx.insert(schema.billsToTags).values(billsToTagsToInsert).run();
 
-  console.log(`Seeded ${billsToInsert.length} bills.`);
+  logger.info({ billCount: billsToInsert.length }, 'Seeded bills');
   return billsToInsert;
 }
 
@@ -520,7 +526,7 @@ function seedBills(
  * @param bills - Array of bill records to generate transactions for
  */
 function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$inferInsert[]): void {
-  console.log('Seeding transactions...');
+  logger.info('Seeding transactions...');
 
   const transactionsToInsert: typeof schema.transactions.$inferInsert[] = [];
 
@@ -566,7 +572,10 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     tx.insert(schema.transactions).values(transactionsToInsert).run();
   }
 
-  console.log(`Seeded ${transactionsToInsert.length} transactions.`);
+  logger.info(
+    { transactionCount: transactionsToInsert.length },
+    'Seeded transactions'
+  );
 }
 
 /**
@@ -579,12 +588,12 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
  */
 async function main(): Promise<void> {
   try {
-    console.log('Starting database seed...');
+    logger.info('Starting database seed...');
 
     seedCategories();
 
     const categories = getCategories();
-    console.log(`Found ${categories.length} bill categories.`);
+    logger.info({ categoryCount: categories.length }, 'Found bill categories');
 
     db.transaction((tx) => {
       wipeData(tx);
@@ -598,10 +607,10 @@ async function main(): Promise<void> {
       seedTransactions(tx, bills);
     });
 
-    console.log('Seeding complete!');
+    logger.info('Seeding complete!');
     process.exit(0);
   } catch (error) {
-    console.error('Seeding failed:', error);
+    logger.error(error, 'Seeding failed');
     process.exit(1);
   }
 }

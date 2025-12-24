@@ -1,6 +1,19 @@
 import '@testing-library/jest-dom';
 
 /**
+ * Suppress console output during tests for cleaner test output.
+ * Only error and fatal logs are shown to catch actual errors.
+ */
+global.console = {
+  ...console,
+  log: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  trace: jest.fn(),
+};
+
+/**
  * Mock ResizeObserver for Radix UI components and other UI libraries.
  */
 global.ResizeObserver = class ResizeObserver {

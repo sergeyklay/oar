@@ -2,11 +2,12 @@ import { AutoPayService } from './AutoPayService';
 import { db, resetDbMocks } from '@/db';
 import { RecurrenceService } from './RecurrenceService';
 import type { Bill } from '@/db/schema';
+import { getLogger } from '@/lib/logger';
 
-// Mock the database module
+jest.mock('@/lib/logger');
+
 jest.mock('@/db');
 
-// Mock RecurrenceService
 jest.mock('./RecurrenceService', () => ({
   RecurrenceService: {
     calculateNextDueDate: jest.fn(),
@@ -18,13 +19,6 @@ describe('AutoPayService', () => {
   beforeEach(() => {
     resetDbMocks();
     jest.clearAllMocks();
-    // Suppress console.log/error in tests
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
   });
 
   /**
@@ -480,13 +474,12 @@ describe('AutoPayService', () => {
         throw new Error('Database connection failed');
       });
 
-      const errorSpy = jest.spyOn(console, 'error');
-
       await AutoPayService.processAutoPay();
 
-      expect(errorSpy).toHaveBeenCalledWith(
-        '[AutoPayService] Failed to process bill bill-error:',
-        expect.any(Error)
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.any(Error),
+        'Failed to process bill bill-error'
       );
     });
 

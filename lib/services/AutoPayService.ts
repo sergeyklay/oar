@@ -2,6 +2,9 @@ import { db, bills, transactions } from '@/db';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import { eq, and, lte, ne } from 'drizzle-orm';
 import { endOfDay } from 'date-fns';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('AutoPayService');
 
 /**
  * Result of auto-pay processing batch.
@@ -119,15 +122,19 @@ export const AutoPayService = {
 
         processed++;
       } catch (error) {
-        console.error(`[AutoPayService] Failed to process bill ${bill.id}:`, error);
+        logger.error(error, `Failed to process bill ${bill.id}`);
         failed++;
         failedIds.push(bill.id);
         // Continue processing other bills (don't abort entire batch)
       }
     }
 
-    console.log(
-      `[AutoPayService] Processing complete: ${processed} processed, ${failed} failed`
+    logger.info(
+      {
+        processed,
+        failed,
+      },
+      'Processing complete'
     );
 
     return { processed, failed, failedIds };

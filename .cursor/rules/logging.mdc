@@ -1,0 +1,57 @@
+---
+description: Standards for logging, error handling, and debugging in Next.js
+alwaysApply: false
+globs: **/*.ts, **/*.tsx
+---
+
+# Logging & Observability Standards
+
+## 1. Core Principle: No Console Logs
+- **FORBIDDEN:** Direct use of `console.log`, `console.error`, `console.warn`.
+- **REQUIRED:** Use the unified logger exported from `@/lib/logger`.
+
+## 2. Logger Implementation (Pino)
+The project uses `pino` with `pino-pretty` for development.
+
+### Usage Pattern
+Always initialize a child logger with the current module/component context/name at the top of the file:
+
+```typescript
+import { getLogger } from "@/lib/logger";
+
+const logger = getLogger("StartupCatchUpService"); // Context name is mandatory
+
+export async function catchUp() {
+  logger.info("Starting catch-up process...");
+
+  try {
+    // ... logic
+    logger.debug({ count: 5 }, "Processed items"); // Pass data object first!
+  } catch (err) {
+    logger.error(err, "Failed to process items"); // Pass Error object first!
+  }
+}
+```
+
+## 3. Log Levels
+
+- *fatal*: System is unusable. App crash imminent.
+- *error*: Operation failed, but app continues. (Must include Error object).
+- *warn*: Something unexpected happened, but handled.
+- *info*: Significant lifecycle events (Startup, Job Complete).
+- *debug*: Granular details for development (SQL queries, state changes).
+- *trace*: Extremely verbose (loop iterations).
+
+## 4. Environment Safety
+
+- **Server:** Logs to stdout (JSON in prod, Pretty in dev).
+- **Client:**
+  - In development: Logs to browser console.
+  - In production: Only error and fatal are logged to browser console. NO sensitive data (PII, financial amounts) in client logs.
+
+## 5. Structured Logging
+
+Always prefer passing an object as the first argument over string interpolation.
+
+* ❌ **Bad:** `logger.info("User " + userId + " logged in")`
+* ✅ **Good:** `logger.info({ userId }, "User logged in")`

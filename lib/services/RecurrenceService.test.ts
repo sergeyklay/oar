@@ -9,17 +9,13 @@ jest.mock('@/db', () => ({
   },
 }));
 
+jest.mock('@/lib/logger');
+
 import { RecurrenceService } from './RecurrenceService';
 import { db } from '@/db';
+import { getLogger } from '@/lib/logger';
 
 describe('RecurrenceService', () => {
-  beforeAll(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -464,8 +460,14 @@ describe('RecurrenceService', () => {
 
       await RecurrenceService.checkDailyBills();
 
-      expect(console.log).toHaveBeenCalledWith(
-        expect.stringContaining('[RecurrenceService] Bill "Rent Payment" marked overdue')
+      const logger = getLogger('test');
+      expect(logger.info).toHaveBeenCalledWith(
+        {
+          billId: 'bill-1',
+          billTitle: 'Rent Payment',
+          dueDate: expect.any(String),
+        },
+        'Bill marked overdue'
       );
     });
 

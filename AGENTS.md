@@ -19,6 +19,7 @@ It is the "Constitution" for all AI agents working on this project.
 - Tailwind CSS 4 + Shadcn/UI primitives
 - Zod (validation), nuqs (URL state), react-hook-form (forms)
 - Node.js Cron for background jobs (`cron`, a fork of `node-cron`) initialized via `instrumentation.ts`
+- Pino (with `pino-pretty`) for logging
 - Docker for containerization
 
 **Philosophy — "The Active Payer":**

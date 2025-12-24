@@ -10,6 +10,9 @@ import { format } from 'date-fns';
 import { BillService, type GetBillsOptions } from '@/lib/services/BillService';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Actions:Bills');
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
@@ -122,7 +125,7 @@ export async function createBill(
       data: { id: newBill.id },
     };
   } catch (error) {
-    console.error('Failed to create bill:', error);
+    logger.error(error, 'Failed to create bill');
     return {
       success: false,
       error: 'Failed to create bill. Please try again.',
@@ -298,7 +301,7 @@ export async function updateBill(
       data: { id },
     };
   } catch (error) {
-    console.error('Failed to update bill:', error);
+    logger.error(error, 'Failed to update bill');
     return {
       success: false,
       error: 'Failed to update bill. Please try again.',
@@ -326,7 +329,7 @@ export async function archiveBill(
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to archive bill:', error);
+    logger.error(error, 'Failed to archive bill:', error);
     return {
       success: false,
       error: 'Failed to archive bill.',
@@ -354,7 +357,7 @@ export async function updateBillStatus(
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to update bill status:', error);
+    logger.error(error, 'Failed to update bill status:', error);
     return {
       success: false,
       error: 'Failed to update bill status.',
@@ -375,7 +378,7 @@ export async function deleteBill(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to delete bill:', error);
+    logger.error(error, 'Failed to delete bill:', error);
     return {
       success: false,
       error: 'Failed to delete bill.',
@@ -417,7 +420,7 @@ export async function getBillCategory(
       data: bill?.categoryId ?? null,
     };
   } catch (error) {
-    console.error('Failed to fetch bill category:', error);
+    logger.error(error, 'Failed to fetch bill category:', error);
     return {
       success: false,
       error: 'Failed to fetch bill category.',
@@ -459,7 +462,7 @@ export async function getBillTags(
       data: billTags,
     };
   } catch (error) {
-    console.error('Failed to fetch bill tags:', error);
+    logger.error(error, 'Failed to fetch bill tags:', error);
     return {
       success: false,
       error: 'Failed to fetch bill tags.',
@@ -531,7 +534,7 @@ export async function skipPayment(
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to skip payment:', error);
+    logger.error(error, 'Failed to skip payment:', error);
     return {
       success: false,
       error: 'Failed to skip payment. Please try again.',

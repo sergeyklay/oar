@@ -7,6 +7,7 @@ import {
 } from './settings';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
+import { getLogger } from '@/lib/logger';
 
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
@@ -18,6 +19,8 @@ jest.mock('@/db', () => ({
   settingsCategories: {},
   settingsSections: {},
 }));
+
+jest.mock('@/lib/logger');
 
 describe('getSettingsStructure', () => {
   beforeEach(() => {
@@ -47,7 +50,6 @@ describe('getSettingsStructure', () => {
   });
 
   it('returns error when service throws', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Database error');
 
     (SettingsService.getStructure as jest.Mock).mockRejectedValue(error);
@@ -56,9 +58,9 @@ describe('getSettingsStructure', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to load settings structure');
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch settings structure:', error);
 
-    consoleSpy.mockRestore();
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to fetch settings structure');
   });
 });
 
@@ -105,7 +107,6 @@ describe('updateDueSoonRange', () => {
   });
 
   it('returns error when service throws', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Database error');
     (SettingsService.setDueSoonRange as jest.Mock).mockRejectedValue(error);
 
@@ -113,9 +114,9 @@ describe('updateDueSoonRange', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to update setting');
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to update due soon range:', error);
 
-    consoleSpy.mockRestore();
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update due soon range');
   });
 
   it('accepts all valid range values', async () => {
@@ -175,7 +176,6 @@ describe('updatePaidRecentlyRange', () => {
   });
 
   it('returns error when service throws', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Database error');
     (SettingsService.setPaidRecentlyRange as jest.Mock).mockRejectedValue(error);
 
@@ -183,9 +183,9 @@ describe('updatePaidRecentlyRange', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to update setting');
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to update paid recently range:', error);
 
-    consoleSpy.mockRestore();
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update paid recently range');
   });
 
   it('accepts all valid range values', async () => {
@@ -292,7 +292,6 @@ describe('updateViewOptions', () => {
   });
 
   it('returns error when service throws', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Database error');
     (SettingsService.setViewOptions as jest.Mock).mockRejectedValue(error);
 
@@ -304,9 +303,9 @@ describe('updateViewOptions', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to update settings');
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to update view options:', error);
 
-    consoleSpy.mockRestore();
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update view options');
   });
 
   it('accepts all valid weekStart values (0-6)', async () => {
@@ -364,7 +363,6 @@ describe('updateBillEndAction', () => {
   });
 
   it('returns error when service throws', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     const error = new Error('Database error');
     (SettingsService.setBillEndAction as jest.Mock).mockRejectedValue(error);
 
@@ -372,8 +370,8 @@ describe('updateBillEndAction', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to update setting');
-    expect(consoleSpy).toHaveBeenCalledWith('Failed to update bill end action:', error);
 
-    consoleSpy.mockRestore();
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update bill end action');
   });
 });

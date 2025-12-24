@@ -8,6 +8,9 @@ import type { Transaction } from '@/db/schema';
 import { PaymentService } from '@/lib/services/PaymentService';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Actions:Transactions');
 
 /** Validation schema for logging a payment. */
 const logPaymentSchema = z.object({
@@ -158,7 +161,7 @@ export async function logPayment(
       message: toastMessage,
     };
   } catch (error) {
-    console.error('Failed to log payment:', error);
+    logger.error(error, 'Failed to log payment');
     return {
       success: false,
       error: 'Failed to log payment. Please try again.',
@@ -351,7 +354,7 @@ export async function updateTransaction(
       },
     };
   } catch (error) {
-    console.error('Failed to update transaction:', error);
+    logger.error(error, 'Failed to update transaction');
     return {
       success: false,
       error: 'Failed to update payment record. Please try again.',
@@ -457,7 +460,7 @@ export async function deleteTransaction(
       success: true,
     };
   } catch (error) {
-    console.error('Failed to delete transaction:', error);
+    logger.error(error, 'Failed to delete transaction');
     return {
       success: false,
       error: 'Failed to delete payment record. Please try again.',
