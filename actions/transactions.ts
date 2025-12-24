@@ -102,8 +102,6 @@ export async function logPayment(
     }
 
     // 5. Use Drizzle transaction for atomicity
-    // NOTE: better-sqlite3 requires SYNCHRONOUS transactions (no async/await)
-    // NOTE: .returning() returns a query builder; must call .get() or .all() to execute
     const result = db.transaction((tx) => {
       // Create transaction record (always, for historical payments too)
       const newTransaction = tx
@@ -129,19 +127,8 @@ export async function logPayment(
             })
             .where(eq(bills.id, billId))
             .run();
-        } else if (paymentResult.billEnded) {
-          // Bill ended but user wants to keep it visible
-          tx.update(bills)
-            .set({
-              dueDate: paymentResult.nextDueDate ?? bill.dueDate,
-              amountDue: paymentResult.newAmountDue,
-              status: paymentResult.newStatus,
-              updatedAt: new Date(),
-            })
-            .where(eq(bills.id, billId))
-            .run();
         } else {
-          // Normal payment, bill continues
+          // Update bill state (normal payment or bill ended but not archived)
           tx.update(bills)
             .set({
               dueDate: paymentResult.nextDueDate ?? bill.dueDate,

@@ -48,7 +48,6 @@ export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
   // In Next.js 15+, searchParams is a Promise that must be awaited
-  // Note: month is parsed but not used for filtering (calendar navigation only)
   const { date, tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
   // Fetch settings for right panel
