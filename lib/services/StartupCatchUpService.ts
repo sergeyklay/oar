@@ -77,7 +77,8 @@ export const StartupCatchUpService = {
     try {
       overdueCheckResult = await RecurrenceService.checkDailyBills();
       console.log(
-        `[StartupCatchUpService] Overdue check complete: ${overdueCheckResult.checked} checked, ${overdueCheckResult.updated} updated`
+        `[StartupCatchUpService] Overdue check complete: ` +
+          `${overdueCheckResult.checked} checked, ${overdueCheckResult.updated} updated`
       );
     } catch (error) {
       console.error('[StartupCatchUpService] Failed to check overdue bills:', error);
@@ -88,7 +89,8 @@ export const StartupCatchUpService = {
     try {
       autoPayResult = await AutoPayService.processAutoPay();
       console.log(
-        `[StartupCatchUpService] Auto-pay processing complete: ${autoPayResult.processed} processed, ${autoPayResult.failed} failed`
+        `[StartupCatchUpService] Auto-pay processing complete: ` +
+          `${autoPayResult.processed} processed, ${autoPayResult.failed} failed`
       );
     } catch (error) {
       console.error('[StartupCatchUpService] Failed to process auto-pay bills:', error);
