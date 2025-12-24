@@ -576,7 +576,9 @@ describe('updateTransaction', () => {
     expect(result.success).toBe(true);
     expect(result.data?.transactionId).toBe('tx-1');
     expect(db.transaction).toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledTimes(1);
     expect(db.update).toHaveBeenCalledWith(transactions);
+    expect(db.update).not.toHaveBeenCalledWith(bills);
     expect(revalidatePath).toHaveBeenCalledWith('/');
   });
 
@@ -802,6 +804,8 @@ describe('deleteTransaction', () => {
 
     expect(result.success).toBe(true);
     expect(db.transaction).toHaveBeenCalled();
+    expect(db.delete).toHaveBeenCalledWith(transactions);
+    expect(db.update).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith('/');
   });
 
