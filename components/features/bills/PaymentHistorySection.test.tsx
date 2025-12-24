@@ -324,16 +324,17 @@ describe('PaymentHistorySection', () => {
 
       render(<PaymentHistorySection {...expandedProps} />);
 
-      await waitFor(
-        () => {
-          expect(screen.getByText('26/06/2025')).toBeInTheDocument();
-        },
-        { timeout: 3000 }
-      );
+      await waitFor(() => {
+        expect(screen.getByText('26/06/2025')).toBeInTheDocument();
+      });
 
       const dateText = screen.getByText('26/06/2025');
       const transactionRow = dateText.closest('div');
-      await user.click(transactionRow || dateText);
+      if (transactionRow) {
+        await user.click(transactionRow);
+      } else {
+        await user.click(dateText);
+      }
 
       await waitFor(() => {
         expect(screen.getByText('Selected Payment')).toBeInTheDocument();
