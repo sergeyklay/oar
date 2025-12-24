@@ -472,6 +472,28 @@ describe('logPayment', () => {
 });
 
 describe('updateTransaction', () => {
+  const mockTransaction = {
+    id: 'tx-1',
+    billId: 'bill-1',
+    amount: 10000,
+    paidAt: new Date('2025-12-20'),
+    notes: 'Original note',
+    createdAt: new Date(),
+  };
+
+  const mockBill = {
+    id: 'bill-1',
+    title: 'Test Bill',
+    amount: 10000,
+    amountDue: 10000,
+    dueDate: new Date('2025-12-25'),
+    frequency: 'monthly' as const,
+    status: 'pending' as const,
+    isArchived: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   beforeEach(() => {
     resetDbMocks();
     jest.clearAllMocks();
@@ -510,6 +532,211 @@ describe('updateTransaction', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Validation failed');
+  });
+
+  it('updates transaction successfully when it does not affect cycle', async () => {
+    const runMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(false);
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 15000,
+      paidAt: new Date('2025-12-21'),
+      notes: 'Updated note',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.transactionId).toBe('tx-1');
+    expect(db.transaction).toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledWith(transactions);
+    expect(revalidatePath).toHaveBeenCalledWith('/');
+  });
+
+  it('recalculates bill when payment affects current cycle', async () => {
+    const runMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(false);
+
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 5000,
+      status: 'pending' as const,
+      nextDueDate: new Date('2025-11-25'),
+    });
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+          }),
+        }),
+      });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 15000,
+      paidAt: new Date('2025-12-21'),
+      notes: 'Updated note',
+    });
+
+    expect(result.success).toBe(true);
+    expect(db.transaction).toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledWith(transactions);
+    expect(db.update).toHaveBeenCalledWith(bills);
+    expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
+  });
+
+  it('recalculates bill when updated payment affects current cycle', async () => {
+    const runMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 8000,
+      status: 'pending' as const,
+      nextDueDate: null,
+    });
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+          }),
+        }),
+      });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 20000,
+      paidAt: new Date('2025-12-22'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(db.transaction).toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledWith(transactions);
+    expect(db.update).toHaveBeenCalledWith(bills);
+    expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
+  });
+
+  it('returns error when transaction not found', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue([]),
+      }),
+    });
+
+    const result = await updateTransaction({
+      id: 'nonexistent',
+      amount: 10000,
+      paidAt: new Date('2025-12-21'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Transaction not found');
+    expect(db.transaction).not.toHaveBeenCalled();
+  });
+
+  it('returns error when bill not found', async () => {
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 10000,
+      paidAt: new Date('2025-12-21'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Bill not found');
+    expect(db.transaction).not.toHaveBeenCalled();
   });
 });
 
