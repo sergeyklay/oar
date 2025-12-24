@@ -1,10 +1,10 @@
 ---
-description: Rules for writing TypeScript code.
+description: Rules for writing TypeScript and React code.
 alwaysApply: false
 globs: **/*.ts, **/*.tsx
 ---
 
-# TypeScript Rules
+# TypeScript and React Rules
 
 ## Role
 
