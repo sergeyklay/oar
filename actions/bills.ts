@@ -329,7 +329,7 @@ export async function archiveBill(
 
     return { success: true };
   } catch (error) {
-    logger.error(error, 'Failed to archive bill:', error);
+    logger.error(error, 'Failed to archive bill');
     return {
       success: false,
       error: 'Failed to archive bill.',
@@ -357,7 +357,7 @@ export async function updateBillStatus(
 
     return { success: true };
   } catch (error) {
-    logger.error(error, 'Failed to update bill status:', error);
+    logger.error(error, 'Failed to update bill status');
     return {
       success: false,
       error: 'Failed to update bill status.',
@@ -378,7 +378,7 @@ export async function deleteBill(id: string): Promise<ActionResult> {
 
     return { success: true };
   } catch (error) {
-    logger.error(error, 'Failed to delete bill:', error);
+    logger.error(error, 'Failed to delete bill');
     return {
       success: false,
       error: 'Failed to delete bill.',
@@ -420,7 +420,7 @@ export async function getBillCategory(
       data: bill?.categoryId ?? null,
     };
   } catch (error) {
-    logger.error(error, 'Failed to fetch bill category:', error);
+    logger.error(error, 'Failed to fetch bill category');
     return {
       success: false,
       error: 'Failed to fetch bill category.',
@@ -462,7 +462,7 @@ export async function getBillTags(
       data: billTags,
     };
   } catch (error) {
-    logger.error(error, 'Failed to fetch bill tags:', error);
+    logger.error(error, 'Failed to fetch bill tags');
     return {
       success: false,
       error: 'Failed to fetch bill tags.',
@@ -534,7 +534,7 @@ export async function skipPayment(
 
     return { success: true };
   } catch (error) {
-    logger.error(error, 'Failed to skip payment:', error);
+    logger.error(error, 'Failed to skip payment');
     return {
       success: false,
       error: 'Failed to skip payment. Please try again.',
