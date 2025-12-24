@@ -2,6 +2,7 @@
 
 import { useQueryState } from 'nuqs';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
+import { type Prop } from '@/lib/types';
 import type { SettingsNavLinkProps } from './types';
 
 /**
@@ -22,9 +23,9 @@ export function SettingsNavLink({ slug, name }: SettingsNavLinkProps) {
   const activeClasses = 'bg-accent text-foreground border-l-2 border-primary';
   const inactiveClasses = 'text-muted-foreground hover:text-foreground hover:bg-accent';
 
-  function handleClick() {
+  const handleClick: Prop<'button', 'onClick'> = () => {
     setCategory(slug);
-  }
+  };
 
   return (
     <button

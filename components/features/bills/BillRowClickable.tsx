@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryState, parseAsString } from 'nuqs';
+import { type Prop } from '@/lib/types';
 
 interface BillRowClickableProps {
   billId: string;
@@ -45,7 +46,7 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
     parseAsString.withOptions({ shallow: false })
   );
 
-  function handleClick(e: React.MouseEvent<HTMLTableRowElement>) {
+  const handleClick: Prop<'tr', 'onClick'> = (e) => {
     // Don't handle clicks if any dialog or popover is currently open
     const hasOpenDialog = document.querySelector('[role="dialog"][data-state="open"]') !== null;
     const hasOpenPopover = document.querySelector('[data-radix-popper-content-wrapper]') !== null;
@@ -63,7 +64,7 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
 
     // Toggle: if already selected, deselect; otherwise select
     setSelectedBill(isSelected ? null : billId);
-  }
+  };
 
   return (
     <tr
