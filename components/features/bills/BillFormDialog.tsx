@@ -190,8 +190,9 @@ export function BillFormDialog({
           }
         });
       }
-    } catch (error) {
-      console.error(`Failed to ${isEditMode ? 'update' : 'create'} bill:`, error);
+    } catch {
+      // Error handling is done via toast in the form submission
+      // Logger is for server-side only, client errors are handled by UI feedback
     } finally {
       setIsSubmitting(false);
     }

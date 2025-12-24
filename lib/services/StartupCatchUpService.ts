@@ -1,5 +1,8 @@
+import { getLogger } from '@/lib/logger';
 import { RecurrenceService } from './RecurrenceService';
 import { AutoPayService } from './AutoPayService';
+
+const logger = getLogger('StartupCatchUpService');
 
 /**
  * Result of startup catch-up execution.
@@ -59,7 +62,7 @@ export const StartupCatchUpService = {
   async runCatchUp(): Promise<CatchUpResult> {
     // Idempotency guard: prevent duplicate runs during HMR
     if (globalThis.__oar_catchup_executed) {
-      console.log('[StartupCatchUpService] Already executed, skipping');
+      logger.info('Already executed, skipping');
       // Return a default result since we're skipping
       return {
         overdueCheck: { checked: 0, updated: 0 },
@@ -68,7 +71,7 @@ export const StartupCatchUpService = {
       };
     }
 
-    console.log('[StartupCatchUpService] Starting catch-up logic...');
+    logger.info('Starting catch-up logic...');
 
     let overdueCheckResult = { checked: 0, updated: 0 };
     let autoPayResult = { processed: 0, failed: 0, failedIds: [] as string[] };
@@ -76,24 +79,30 @@ export const StartupCatchUpService = {
     // Step 1: Mark overdue bills
     try {
       overdueCheckResult = await RecurrenceService.checkDailyBills();
-      console.log(
-        `[StartupCatchUpService] Overdue check complete: ` +
-          `${overdueCheckResult.checked} checked, ${overdueCheckResult.updated} updated`
+      logger.info(
+        {
+          checked: overdueCheckResult.checked,
+          updated: overdueCheckResult.updated,
+        },
+        'Overdue check complete'
       );
     } catch (error) {
-      console.error('[StartupCatchUpService] Failed to check overdue bills:', error);
+      logger.error(error, 'Failed to check overdue bills');
       // Continue to auto-pay processing even if overdue check fails
     }
 
     // Step 2: Process missed auto-pay bills
     try {
       autoPayResult = await AutoPayService.processAutoPay();
-      console.log(
-        `[StartupCatchUpService] Auto-pay processing complete: ` +
-          `${autoPayResult.processed} processed, ${autoPayResult.failed} failed`
+      logger.info(
+        {
+          processed: autoPayResult.processed,
+          failed: autoPayResult.failed,
+        },
+        'Auto-pay processing complete'
       );
     } catch (error) {
-      console.error('[StartupCatchUpService] Failed to process auto-pay bills:', error);
+      logger.error(error, 'Failed to process auto-pay bills');
       // Continue even if auto-pay processing fails
     }
 
@@ -106,7 +115,7 @@ export const StartupCatchUpService = {
       completedAt: new Date(),
     };
 
-    console.log('[StartupCatchUpService] Catch-up logic complete');
+    logger.info('Catch-up logic complete');
 
     return result;
   },

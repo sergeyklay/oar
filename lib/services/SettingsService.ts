@@ -10,6 +10,9 @@ import {
 } from '@/lib/constants';
 import type { StructuredSettings, SettingsSection } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('SettingsService');
 
 type EnrichedSection = StructuredSettings['categories'][number]['sections'][number];
 
@@ -284,7 +287,12 @@ export const SettingsService = {
     const parsedValue = parseInt(row.value, 10);
 
     if (isNaN(parsedValue) || !(ALLOWED_RANGE_VALUES as readonly number[]).includes(parsedValue)) {
-      console.error(`Invalid dueSoonRange value: ${row.value}. Defaulting to 7.`);
+      logger.error(
+        {
+          invalidValue: row.value,
+        },
+        'Invalid dueSoonRange value, defaulting to 7'
+      );
       return 7;
     }
 
@@ -346,7 +354,12 @@ export const SettingsService = {
     const parsedValue = parseInt(row.value, 10);
 
     if (isNaN(parsedValue) || !(ALLOWED_RANGE_VALUES as readonly number[]).includes(parsedValue)) {
-      console.error(`Invalid paidRecentlyRange value: ${row.value}. Defaulting to 7.`);
+      logger.error(
+        {
+          invalidValue: row.value,
+        },
+        'Invalid paidRecentlyRange value, defaulting to 7'
+      );
       return 7;
     }
 
@@ -538,7 +551,13 @@ export const SettingsService = {
     for (const setting of DEFAULT_SETTINGS_VALUES) {
       const sectionId = sectionMap.get(setting.sectionSlug);
       if (!sectionId) {
-        console.warn(`Section not found for slug: ${setting.sectionSlug}. Skipping setting: ${setting.key}`);
+        logger.warn(
+          {
+            sectionSlug: setting.sectionSlug,
+            settingKey: setting.key,
+          },
+          'Section not found, skipping setting'
+        );
         continue;
       }
 

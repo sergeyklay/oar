@@ -1,4 +1,7 @@
 import { CronJob } from 'cron';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Scheduler');
 
 /**
  * SchedulerService - Manages background cron jobs for Oar.
@@ -45,8 +48,12 @@ const JOB_DEFINITIONS: JobDefinition[] = [
       const { RecurrenceService } = await import('./RecurrenceService');
       const result = await RecurrenceService.checkDailyBills();
 
-      console.log(
-        `[Scheduler] Daily bill check complete: ${result.checked} checked, ${result.updated} updated`
+      logger.info(
+        {
+          checked: result.checked,
+          updated: result.updated,
+        },
+        'Daily bill check complete'
       );
     },
     runOnInit: false,
@@ -61,12 +68,21 @@ const JOB_DEFINITIONS: JobDefinition[] = [
       const { AutoPayService } = await import('./AutoPayService');
       const result = await AutoPayService.processAutoPay();
 
-      console.log(
-        `[Scheduler] Auto-pay complete: ${result.processed} processed, ${result.failed} failed`
+      logger.info(
+        {
+          processed: result.processed,
+          failed: result.failed,
+        },
+        'Auto-pay complete'
       );
 
       if (result.failed > 0) {
-        console.warn(`[Scheduler] Failed bill IDs: ${result.failedIds.join(', ')}`);
+        logger.warn(
+          {
+            failedIds: result.failedIds,
+          },
+          'Failed bill IDs'
+        );
       }
     },
     runOnInit: false,
@@ -80,12 +96,12 @@ function createJob(definition: JobDefinition): CronJob {
   return CronJob.from({
     cronTime: definition.cronTime,
     onTick: async function () {
-      console.log(`[Scheduler] Job "${definition.name}" started at ${new Date().toISOString()}`);
+      logger.info({ jobName: definition.name }, 'Job started');
       try {
         await definition.handler();
-        console.log(`[Scheduler] Job "${definition.name}" completed successfully`);
+        logger.info({ jobName: definition.name }, 'Job completed successfully');
       } catch (error) {
-        console.error(`[Scheduler] Job "${definition.name}" failed:`, error);
+        logger.error(error, `Job "${definition.name}" failed`);
       }
     },
     start: true,
@@ -114,11 +130,11 @@ export const SchedulerService = {
   init(): void {
     // Check if already initialized (survives HMR via globalThis)
     if (globalThis.__oar_scheduler) {
-      console.log('[Scheduler] Already initialized, skipping');
+      logger.info('Already initialized, skipping');
       return;
     }
 
-    console.log('[Scheduler] Initializing...');
+    logger.info('Initializing...');
 
     // Create and register all jobs
     const jobs: CronJob[] = [];
@@ -126,15 +142,19 @@ export const SchedulerService = {
     for (const definition of JOB_DEFINITIONS) {
       const job = createJob(definition);
       jobs.push(job);
-      console.log(
-        `[Scheduler] Registered job "${definition.name}" with schedule "${definition.cronTime}"`
+      logger.info(
+        {
+          jobName: definition.name,
+          cronTime: definition.cronTime,
+        },
+        'Registered job'
       );
     }
 
     // Store in globalThis to survive HMR
     globalThis.__oar_scheduler = jobs;
 
-    console.log(`[Scheduler] Started with ${jobs.length} job(s)`);
+    logger.info({ jobCount: jobs.length }, 'Started scheduler');
   },
 
   /**
@@ -145,18 +165,18 @@ export const SchedulerService = {
     const jobs = globalThis.__oar_scheduler;
 
     if (!jobs) {
-      console.log('[Scheduler] Not running, nothing to shut down');
+      logger.info('Not running, nothing to shut down');
       return;
     }
 
-    console.log('[Scheduler] Shutting down...');
+    logger.info('Shutting down...');
 
     for (const job of jobs) {
       job.stop();
     }
 
     globalThis.__oar_scheduler = undefined;
-    console.log('[Scheduler] Shutdown complete');
+    logger.info('Shutdown complete');
   },
 
   /**

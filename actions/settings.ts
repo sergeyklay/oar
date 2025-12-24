@@ -6,6 +6,9 @@ import { SettingsService } from '@/lib/services/SettingsService';
 import { RANGE_KEYS, type AllowedRangeValue } from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
 import type { ActionResult as BaseActionResult } from '@/lib/types';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Actions:Settings');
 
 interface ActionResult<T = void> extends BaseActionResult<T> {
   fieldErrors?: Record<string, string[]>;
@@ -24,7 +27,7 @@ export async function getSettingsStructure(): Promise<ActionResult<StructuredSet
       data: structure,
     };
   } catch (error) {
-    console.error('Failed to fetch settings structure:', error);
+    logger.error(error, 'Failed to fetch settings structure');
     return {
       success: false,
       error: 'Failed to load settings structure',
@@ -62,7 +65,7 @@ export async function updateDueSoonRange(
     revalidatePath('/');
     return { success: true };
   } catch (error) {
-    console.error('Failed to update due soon range:', error);
+    logger.error(error, 'Failed to update due soon range');
     return {
       success: false,
       error: 'Failed to update setting',
@@ -96,7 +99,7 @@ export async function updatePaidRecentlyRange(
     revalidatePath('/');
     return { success: true };
   } catch (error) {
-    console.error('Failed to update paid recently range:', error);
+    logger.error(error, 'Failed to update paid recently range');
     return {
       success: false,
       error: 'Failed to update setting',
@@ -141,7 +144,7 @@ export async function updateViewOptions(
     revalidatePath('/settings');
     return { success: true };
   } catch (error) {
-    console.error('Failed to update view options:', error);
+    logger.error(error, 'Failed to update view options');
     return {
       success: false,
       error: 'Failed to update settings',
@@ -174,7 +177,7 @@ export async function updateBillEndAction(
     revalidatePath('/settings');
     return { success: true };
   } catch (error) {
-    console.error('Failed to update bill end action:', error);
+    logger.error(error, 'Failed to update bill end action');
     return {
       success: false,
       error: 'Failed to update setting',

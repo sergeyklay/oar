@@ -2,6 +2,9 @@ import { RRule, Frequency } from 'rrule';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('RecurrenceService');
 
 /**
  * Maps simple frequency enum to rrule Frequency.
@@ -162,14 +165,19 @@ export const RecurrenceService = {
           if (result.length > 0) {
             updated++;
 
-            console.log(
-              `[RecurrenceService] Bill "${bill.title}" marked overdue (was due ${bill.dueDate.toISOString()})`
+            logger.info(
+              {
+                billId: bill.id,
+                billTitle: bill.title,
+                dueDate: bill.dueDate.toISOString(),
+              },
+              'Bill marked overdue'
             );
           }
         } catch (error) {
-          console.error(
-            `[RecurrenceService] Failed to update bill "${bill.title}" (${bill.id}):`,
-            error
+          logger.error(
+            error,
+            `Failed to update bill "${bill.title}" (${bill.id})`
           );
         }
       }

@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { db, tags } from '@/db';
 import { eq } from 'drizzle-orm';
 import { generateSlug } from '@/lib/utils';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Actions:Tags');
 
 /** Validation schema for tag creation */
 const createTagSchema = z.object({
@@ -76,7 +79,7 @@ export async function createTag(
       data: newTag,
     };
   } catch (error) {
-    console.error('Failed to create tag:', error);
+    logger.error(error, 'Failed to create tag');
     return {
       success: false,
       error: 'Failed to create tag. Please try again.',

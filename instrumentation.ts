@@ -1,3 +1,7 @@
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Instrumentation');
+
 /**
  * Next.js Instrumentation Entry Point
  *
@@ -13,7 +17,7 @@ export async function register() {
   // runtime. The register() function runs in both Node.js and Edge runtimes.
   // We must guard against Edge runtime to prevent crashes.
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('[Instrumentation] Initializing scheduler (nodejs runtime)');
+    logger.info('Initializing scheduler (nodejs runtime)');
 
     // Dynamic import is required here:
     // 1. Prevents Edge runtime from bundling Node.js-only code
@@ -32,18 +36,20 @@ export async function register() {
 
       const result = await StartupCatchUpService.runCatchUp();
 
-      console.log(
-        `[Instrumentation] Startup catch-up complete: ` +
-          `${result.overdueCheck.updated} bills marked overdue, ` +
-          `${result.autoPay.processed} auto-pay bills processed`
+      logger.info(
+        {
+          overdueUpdated: result.overdueCheck.updated,
+          autoPayProcessed: result.autoPay.processed,
+        },
+        'Startup catch-up complete'
       );
     } catch (error) {
       // Log error but don't prevent startup - data will be corrected at next scheduled cron run
-      console.error('[Instrumentation] Startup catch-up failed:', error);
+      logger.error(error, 'Startup catch-up failed');
     }
   } else {
     // Edge runtime - skip scheduler initialization
-    console.log('[Instrumentation] Skipping scheduler (edge runtime)');
+    logger.info('Skipping scheduler (edge runtime)');
   }
 }
 
