@@ -19,6 +19,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { createTag } from '@/actions/tags';
 import type { Tag } from '@/lib/types';
 
@@ -110,10 +111,15 @@ export function TagCombobox({
 
         // Clear search
         setSearch('');
+      } else {
+        toast.error('Failed to create tag', {
+          description: result.error ?? 'Please try again.',
+        });
       }
-    } catch {
-      // Error handling is done via toast in the form submission
-      // Logger is for server-side only, client errors are handled by UI feedback
+    } catch (error) {
+      toast.error('Failed to create tag', {
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
+      });
     } finally {
       setIsCreating(false);
     }
