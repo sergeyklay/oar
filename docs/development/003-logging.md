@@ -74,7 +74,7 @@ logger.info('User ' + userId + ' logged in');
 logger.info({ userId }, 'User logged in');
 ```
 
-For errors, pass the Error object first, then the message:
+For errors, you can pass the Error object first, then the message:
 
 ```typescript
 try {
@@ -84,7 +84,17 @@ try {
 }
 ```
 
-The logger handles Error objects specially, preserving stack traces and error properties.
+When you need additional context, include the error in the structured data object using the `err` key:
+
+```typescript
+try {
+  await saveBill(billData);
+} catch (error) {
+  logger.error({ err: error, billId: billData.id }, 'Failed to save bill');
+}
+```
+
+Both patterns preserve stack traces and error properties. Use the structured approach when you need to include additional context data.
 
 ## 7. Usage Patterns by Context
 
@@ -248,18 +258,20 @@ In production, these logs are suppressed, avoiding performance overhead.
 
 ### Error Context
 
-When logging errors, include relevant context that helps diagnose the issue:
+When logging errors, include relevant context in the structured data object, not in the message string. Put the error object in the data using the `err` key:
 
 ```typescript
 try {
   await processPayment(billId, amount);
 } catch (error) {
   logger.error(
-    error,
-    `Failed to process payment for bill ${billId}`
+    { err: error, billId, amount },
+    'Failed to process payment'
   );
 }
 ```
+
+This keeps all context together in the structured data, making it easier for log aggregation tools to parse and filter. The error object preserves the stack trace and error properties for debugging.
 
 ## 11. Edge Cases and Constraints
 
