@@ -303,9 +303,8 @@ describe('PaymentService', () => {
     });
 
     it('detects bill end when next due date exceeds endDate', () => {
-      const nextDueDate = new Date('2025-04-15');
       const endDate = new Date('2025-03-20');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
 
       const bill = {
         amount: 20000,

@@ -121,18 +121,7 @@ export const PaymentService = {
         bill.endDate ?? null
       );
 
-      // Check Scenario 1: End Date Reached
-      if (bill.endDate && nextDueDate && nextDueDate > bill.endDate) {
-        return {
-          nextDueDate: null,
-          newAmountDue: 0,
-          newStatus: 'paid',
-          isHistorical: false,
-          billEnded: true,
-        };
-      }
-
-      // Scenario 2: One-time bill or end date reached (nextDueDate is null)
+      // One-time bill or end date reached (nextDueDate is null)
       if (nextDueDate === null) {
         return {
           nextDueDate: null,
@@ -157,7 +146,7 @@ export const PaymentService = {
     // Partial payment: reduce amount due, keep due date unchanged
     const newAmountDue = Math.max(0, bill.amountDue - paymentAmount);
 
-    // Scenario 3: Interval changed to 'once' + fully paid
+    // Interval changed to 'once' + fully paid
     if (bill.frequency === 'once' && newAmountDue === 0) {
       return {
         nextDueDate: null,
