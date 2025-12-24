@@ -161,10 +161,11 @@ export async function updateBillEndAction(
   const parsed = billEndActionSchema.safeParse(action);
 
   if (!parsed.success) {
+    const flattened = z.flattenError(parsed.error);
+    const errorMessage = flattened.formErrors[0] || parsed.error.issues[0]?.message || 'Invalid bill end action';
     return {
       success: false,
-      error: 'Validation failed',
-      fieldErrors: z.flattenError(parsed.error).fieldErrors as unknown as Record<string, string[]>,
+      error: errorMessage,
     };
   }
 
