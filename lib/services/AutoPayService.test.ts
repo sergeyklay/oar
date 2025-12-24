@@ -87,7 +87,8 @@ describe('AutoPayService', () => {
       expect(db.transaction).toHaveBeenCalled();
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
-        'monthly'
+        'monthly',
+        null
       );
     });
 
@@ -155,7 +156,8 @@ describe('AutoPayService', () => {
       expect(db.transaction).toHaveBeenCalled();
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
-        'once'
+        'once',
+        null
       );
       // deriveStatus should NOT be called for one-time bills
       expect(RecurrenceService.deriveStatus).not.toHaveBeenCalled();
@@ -187,7 +189,8 @@ describe('AutoPayService', () => {
       // Verify the original due date (3 days ago) was used
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         threeDaysAgo,
-        'monthly'
+        'monthly',
+        null
       );
     });
 
@@ -356,7 +359,8 @@ describe('AutoPayService', () => {
       });
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
-        'yearly'
+        'yearly',
+        null
       );
     });
 

@@ -26,11 +26,13 @@ export const RecurrenceService = {
    *
    * @param currentDueDate - The bill's current due date
    * @param frequency - Bill frequency enum
-   * @returns Next due date, or null if bill is one-time
+   * @param endDate - Optional end date. If next due date exceeds this, returns null.
+   * @returns Next due date, or null if bill is one-time or end date reached
    */
   calculateNextDueDate(
     currentDueDate: Date,
-    frequency: BillFrequency
+    frequency: BillFrequency,
+    endDate?: Date | null
   ): Date | null {
     const rruleFrequency = FREQUENCY_MAP[frequency];
 
@@ -75,7 +77,7 @@ export const RecurrenceService = {
     if (!nextUtc) return null;
 
     // Convert back from UTC components to local date
-    return new Date(
+    const nextDueDate = new Date(
       nextUtc.getUTCFullYear(),
       nextUtc.getUTCMonth(),
       nextUtc.getUTCDate(),
@@ -83,6 +85,13 @@ export const RecurrenceService = {
       nextUtc.getUTCMinutes(),
       nextUtc.getUTCSeconds()
     );
+
+    // Check if next due date exceeds end date
+    if (endDate && nextDueDate > endDate) {
+      return null;
+    }
+
+    return nextDueDate;
   },
 
   /**

@@ -405,12 +405,22 @@ function seedBills(
     // Generate realistic bill states based on frequency
     const { status, dueDate, amountDue } = generateBillState(frequency, amount, now);
 
+    // Add endDate to ~25% of recurring bills to demonstrate bill end feature
+    const hasEndDate = frequency !== 'once' && faker.datatype.boolean(0.25);
+    const endDate = hasEndDate
+      ? faker.date.between({
+          from: addMonths(now, 3),
+          to: addMonths(now, 12),
+        })
+      : null;
+
     const bill: typeof schema.bills.$inferInsert = {
       id,
       title: template.title,
       amount,
       amountDue,
       dueDate,
+      endDate,
       frequency,
       isAutoPay: faker.datatype.boolean(0.2),
       isVariable,
@@ -458,12 +468,22 @@ function seedBills(
     // Generate realistic bill states based on frequency
     const { status, dueDate, amountDue } = generateBillState(frequency, amount, now);
 
+    // Add endDate to ~25% of recurring bills to demonstrate bill end feature
+    const hasEndDate = frequency !== 'once' && faker.datatype.boolean(0.25);
+    const endDate = hasEndDate
+      ? faker.date.between({
+          from: addMonths(now, 3),
+          to: addMonths(now, 12),
+        })
+      : null;
+
     const bill: typeof schema.bills.$inferInsert = {
       id,
       title: `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`,
       amount,
       amountDue,
       dueDate,
+      endDate,
       frequency,
       isAutoPay: faker.datatype.boolean(0.2),
       isVariable,

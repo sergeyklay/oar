@@ -506,7 +506,11 @@ export async function skipPayment(
       return { success: false, error: 'Cannot skip one-time bills' };
     }
 
-    const nextDueDate = RecurrenceService.calculateNextDueDate(bill.dueDate, bill.frequency);
+    const nextDueDate = RecurrenceService.calculateNextDueDate(
+      bill.dueDate,
+      bill.frequency,
+      bill.endDate ?? null
+    );
 
     if (!nextDueDate) {
       return { success: false, error: 'Unable to calculate next due date' };

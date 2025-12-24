@@ -3,7 +3,8 @@ import { eq } from 'drizzle-orm';
 import type { StructuredSettings } from '@/db/schema';
 import { RangeSettingDropdown } from './RangeSettingDropdown';
 import { ViewOptionsForm } from './ViewOptionsForm';
-import { updateDueSoonRange, updatePaidRecentlyRange } from '@/actions/settings';
+import { BillEndActionDropdown } from './BillEndActionDropdown';
+import { updateDueSoonRange, updatePaidRecentlyRange, updateBillEndAction } from '@/actions/settings';
 import { FUTURE_RANGE_LABELS, PAST_RANGE_LABELS } from '@/lib/constants';
 import { SettingsService } from '@/lib/services/SettingsService';
 
@@ -77,6 +78,21 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
                   />
                   <p className="text-xs text-muted-foreground">
                     Configure the time range for the &quot;Paid Recently&quot; view
+                  </p>
+                </div>
+              );
+            }
+            if (setting.key === 'billEndAction') {
+              return (
+                <div key={setting.key} className="space-y-2">
+                  <label className="text-sm font-medium">After a Bill Ends</label>
+                  <BillEndActionDropdown
+                    currentValue={setting.value as 'mark_as_paid' | 'archive'}
+                    onUpdate={updateBillEndAction}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    A bill ends when you change its repeat interval to &quot;Never&quot; and then log a payment that fully pays it,
+                    or when the next due date would exceed the End Date set in the bill.
                   </p>
                 </div>
               );

@@ -64,6 +64,7 @@ export const BillService = {
 
     return {
       ...result.bill,
+      endDate: result.bill.endDate ?? null,
       tags: billTags,
       categoryIcon: result.categoryIcon,
     };
@@ -246,6 +247,7 @@ export const BillService = {
 
     return billsWithCategories.map(({ bill, categoryIcon }) => ({
       ...bill,
+      endDate: bill.endDate ?? null,
       tags: tagsByBillId.get(bill.id) ?? [],
       categoryIcon,
     }));

@@ -85,6 +85,13 @@
       "when": 1766218802509,
       "tag": "0011_nifty_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1766575205585,
+      "tag": "0012_loving_banshee",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import {
   updateDueSoonRange,
   updatePaidRecentlyRange,
   updateViewOptions,
+  updateBillEndAction,
 } from './settings';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
@@ -325,6 +326,56 @@ describe('updateViewOptions', () => {
         expect.objectContaining({ weekStart: day })
       );
     }
+  });
+
+  describe('updateBillEndAction', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('updates bill end action setting successfully', async () => {
+      (SettingsService.setBillEndAction as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await updateBillEndAction('archive');
+
+      expect(result.success).toBe(true);
+      expect(SettingsService.setBillEndAction).toHaveBeenCalledWith('archive');
+      expect(revalidatePath).toHaveBeenCalledWith('/settings');
+    });
+
+    it('accepts mark_as_paid value', async () => {
+      (SettingsService.setBillEndAction as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await updateBillEndAction('mark_as_paid');
+
+      expect(result.success).toBe(true);
+      expect(SettingsService.setBillEndAction).toHaveBeenCalledWith('mark_as_paid');
+    });
+
+    it('returns validation error for invalid action value', async () => {
+      // @ts-expect-error Testing invalid input
+      const result = await updateBillEndAction('invalid');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Validation failed');
+      expect(result.fieldErrors).toBeDefined();
+      expect(SettingsService.setBillEndAction).not.toHaveBeenCalled();
+      expect(revalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('returns error when service throws', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const error = new Error('Database error');
+      (SettingsService.setBillEndAction as jest.Mock).mockRejectedValue(error);
+
+      const result = await updateBillEndAction('archive');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update setting');
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to update bill end action:', error);
+
+      consoleSpy.mockRestore();
+    });
   });
 });
 

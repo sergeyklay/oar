@@ -104,6 +104,12 @@ export async function updatePaidRecentlyRange(
   }
 }
 
+const billEndActionSchema = z.enum(['mark_as_paid', 'archive'], {
+  errorMap: () => ({ message: 'Invalid bill end action' }),
+});
+
+export type BillEndAction = z.infer<typeof billEndActionSchema>;
+
 const updateViewOptionsSchema = z.object({
   currency: z.string().length(3),
   locale: z.string().min(2),
@@ -139,6 +145,38 @@ export async function updateViewOptions(
     return {
       success: false,
       error: 'Failed to update settings',
+    };
+  }
+}
+
+/**
+ * Updates the "after bill ends" action setting.
+ *
+ * @param action - The action to take when a bill ends ('mark_as_paid' or 'archive')
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateBillEndAction(
+  action: BillEndAction
+): Promise<ActionResult<void>> {
+  const parsed = billEndActionSchema.safeParse(action);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  try {
+    await SettingsService.setBillEndAction(parsed.data);
+    revalidatePath('/settings');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update bill end action:', error);
+    return {
+      success: false,
+      error: 'Failed to update setting',
     };
   }
 }

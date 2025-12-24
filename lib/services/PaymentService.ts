@@ -17,6 +17,8 @@ export interface PaymentResult {
   newStatus: BillStatus;
   /** True if payment is for a past billing cycle (record only, no bill changes) */
   isHistorical: boolean;
+  /** True if bill ended during this payment (end date reached or one-time bill fully paid) */
+  billEnded?: boolean;
 }
 
 /**
@@ -90,7 +92,7 @@ export const PaymentService = {
    * @returns PaymentResult with new bill state values
    */
   processPayment(
-    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status'>,
+    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'endDate'>,
     paymentAmount: number,
     paidAt: Date,
     updateDueDate: boolean
@@ -107,6 +109,7 @@ export const PaymentService = {
         newAmountDue: bill.amountDue,
         newStatus: bill.status,
         isHistorical: true,
+        billEnded: false,
       };
     }
 
@@ -114,16 +117,29 @@ export const PaymentService = {
       // Full payment: advance to next billing cycle
       const nextDueDate = RecurrenceService.calculateNextDueDate(
         bill.dueDate,
-        bill.frequency
+        bill.frequency,
+        bill.endDate ?? null
       );
 
-      if (nextDueDate === null) {
-        // One-time bill: mark as paid, zero out amount due
+      // Check Scenario 1: End Date Reached
+      if (bill.endDate && nextDueDate && nextDueDate > bill.endDate) {
         return {
           nextDueDate: null,
           newAmountDue: 0,
           newStatus: 'paid',
           isHistorical: false,
+          billEnded: true,
+        };
+      }
+
+      // Scenario 2: One-time bill or end date reached (nextDueDate is null)
+      if (nextDueDate === null) {
+        return {
+          nextDueDate: null,
+          newAmountDue: 0,
+          newStatus: 'paid',
+          isHistorical: false,
+          billEnded: true,
         };
       }
 
@@ -134,19 +150,21 @@ export const PaymentService = {
         newAmountDue: bill.amount,
         newStatus,
         isHistorical: false,
+        billEnded: false,
       };
     }
 
     // Partial payment: reduce amount due, keep due date unchanged
     const newAmountDue = Math.max(0, bill.amountDue - paymentAmount);
 
-    // For one-time bills, mark as paid when fully paid off
+    // Scenario 3: Interval changed to 'once' + fully paid
     if (bill.frequency === 'once' && newAmountDue === 0) {
       return {
         nextDueDate: null,
         newAmountDue: 0,
         newStatus: 'paid',
         isHistorical: false,
+        billEnded: true,
       };
     }
 
@@ -157,6 +175,7 @@ export const PaymentService = {
       newAmountDue,
       newStatus: currentStatus,
       isHistorical: false,
+      billEnded: false,
     };
   },
 

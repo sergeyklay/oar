@@ -389,6 +389,64 @@ export const SettingsService = {
   },
 
   /**
+   * Retrieves the configured "after bill ends" action.
+   *
+   * @returns {Promise<'mark_as_paid' | 'archive'>} The action to take when a bill ends.
+   * Defaults to 'mark_as_paid' if not set.
+   */
+  async getBillEndAction(): Promise<'mark_as_paid' | 'archive'> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'billEndAction'))
+      .limit(1);
+
+    if (!row) {
+      return 'mark_as_paid';
+    }
+
+    if (row.value === 'archive') {
+      return 'archive';
+    }
+
+    return 'mark_as_paid';
+  },
+
+  /**
+   * Persists the "after bill ends" action setting to the database.
+   *
+   * @param {BillEndAction} action - The action to take ('mark_as_paid' or 'archive').
+   * @throws {Error} If the "behavior-options" section does not exist.
+   */
+  async setBillEndAction(action: 'mark_as_paid' | 'archive'): Promise<void> {
+    if (action !== 'mark_as_paid' && action !== 'archive') {
+      throw new Error(`Invalid action value: ${action}. Must be 'mark_as_paid' or 'archive'`);
+    }
+
+    const [behaviorOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'behavior-options'))
+      .limit(1);
+
+    if (!behaviorOptionsSection) {
+      throw new Error('Behavior Options section not found');
+    }
+
+    await db
+      .insert(settings)
+      .values({
+        key: 'billEndAction',
+        value: action,
+        sectionId: behaviorOptionsSection.id,
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: action, updatedAt: new Date() },
+      });
+  },
+
+  /**
    * Seeds default categories, sections, and settings if they don't exist.
    *
    * Creates: General, Notification, Logging categories with their sections

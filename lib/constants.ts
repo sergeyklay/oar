@@ -84,6 +84,7 @@ export const DEFAULT_SECTIONS = [
 export const DEFAULT_SETTINGS_VALUES = [
   { key: 'dueSoonRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'paidRecentlyRange', value: '7', sectionSlug: 'behavior-options' },
+  { key: 'billEndAction', value: 'mark_as_paid', sectionSlug: 'behavior-options' },
   { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
   { key: 'locale', value: 'en-US', sectionSlug: 'view-options' },
   { key: 'weekStart', value: '0', sectionSlug: 'view-options' },
