@@ -1,7 +1,7 @@
 # Logging in Oar
 
 - **Status:** Draft
-- **Last Updated:** 2025-01-23
+- **Last Updated:** 2025-12-24
 
 ## 1. Goal
 
