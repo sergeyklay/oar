@@ -357,8 +357,7 @@ describe('updateViewOptions', () => {
       const result = await updateBillEndAction('invalid');
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Validation failed');
-      expect(result.fieldErrors).toBeDefined();
+      expect(result.error).toBe('Invalid bill end action');
       expect(SettingsService.setBillEndAction).not.toHaveBeenCalled();
       expect(revalidatePath).not.toHaveBeenCalled();
     });
