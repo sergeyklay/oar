@@ -311,9 +311,10 @@ export type NewTag = typeof tags.$inferInsert;
 export type BillToTag = typeof billsToTags.$inferSelect;
 
 /** Bill with tags and category icon for display */
-export interface BillWithTags extends Bill {
+export interface BillWithTags extends Omit<Bill, 'endDate'> {
   tags: Tag[];
   categoryIcon: string;
+  endDate: Date | null;
 }
 
 export type BillFrequency = 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';

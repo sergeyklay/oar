@@ -448,6 +448,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -466,6 +467,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -484,6 +486,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -502,6 +505,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       // paidAt is 3 months before dueDate (clearly before cycle start of Feb 1)
@@ -524,6 +528,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       // paidAt is within current cycle (Feb 1 - Mar 1)
@@ -543,6 +548,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-15'),
         frequency: 'once' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       // paidAt is before dueDate - early payment should still mark as paid
@@ -563,6 +569,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-15'),
         frequency: 'once' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       // paidAt is on dueDate
@@ -580,6 +587,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-15'),
         frequency: 'weekly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       // paidAt is 2 weeks before dueDate (before cycle start of Mar 8)
@@ -600,6 +608,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-12-23'),
         frequency: 'once' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns: Transaction[] = [];
@@ -622,6 +631,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2027-12-23'),
         frequency: 'yearly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns: Transaction[] = [];
@@ -692,6 +702,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [
@@ -722,6 +733,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-15'),
         frequency: 'once' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [
@@ -748,6 +760,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [
@@ -775,6 +788,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [
@@ -804,6 +818,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [
@@ -833,6 +848,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
       };
 
       const txns = [

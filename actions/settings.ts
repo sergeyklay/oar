@@ -105,7 +105,7 @@ export async function updatePaidRecentlyRange(
 }
 
 const billEndActionSchema = z.enum(['mark_as_paid', 'archive'], {
-  errorMap: () => ({ message: 'Invalid bill end action' }),
+  message: 'Invalid bill end action',
 });
 
 export type BillEndAction = z.infer<typeof billEndActionSchema>;
@@ -164,7 +164,7 @@ export async function updateBillEndAction(
     return {
       success: false,
       error: 'Validation failed',
-      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors as unknown as Record<string, string[]>,
     };
   }
 

@@ -21,6 +21,7 @@ const mockBill: Bill = {
   amount: 5000,
   amountDue: 5000,
   dueDate: new Date('2025-12-01'),
+  endDate: null,
   frequency: 'monthly',
   isAutoPay: false,
   isVariable: false,

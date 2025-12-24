@@ -9,6 +9,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   amount: 15000,
   amountDue: 15000,
   dueDate: new Date('2025-12-15'),
+  endDate: null,
   frequency: 'monthly',
   isAutoPay: false,
   isVariable: false,

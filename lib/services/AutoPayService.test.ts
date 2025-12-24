@@ -30,23 +30,27 @@ describe('AutoPayService', () => {
   /**
    * Helper to create a mock bill with default values.
    */
-  const createMockBill = (overrides: Partial<Bill> = {}): Bill => ({
-    id: 'bill-1',
-    title: 'Test Bill',
-    amount: 9999, // $99.99 in minor units
-    amountDue: 9999,
-    dueDate: new Date(),
-    frequency: 'monthly',
-    isAutoPay: true,
-    isVariable: false,
-    status: 'pending',
-    isArchived: false,
-    notes: null,
-    categoryId: 'category-1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  });
+  const createMockBill = (overrides: Partial<Bill> = {}): Bill => {
+    const { endDate, ...restOverrides } = overrides;
+    return {
+      id: 'bill-1',
+      title: 'Test Bill',
+      amount: 9999, // $99.99 in minor units
+      amountDue: 9999,
+      dueDate: new Date(),
+      endDate: endDate ?? null,
+      frequency: 'monthly',
+      isAutoPay: true,
+      isVariable: false,
+      status: 'pending',
+      isArchived: false,
+      notes: null,
+      categoryId: 'category-1',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...restOverrides,
+    };
+  };
 
   /**
    * Helper to set up db.select mock to return specific bills.

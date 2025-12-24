@@ -50,6 +50,7 @@ const createMockBillWithTags = (overrides: Partial<BillWithTags> = {}): BillWith
   amount: 10000,
   amountDue: 10000,
   dueDate: new Date('2025-12-15'),
+  endDate: null,
   frequency: 'monthly' as const,
   isAutoPay: false,
   isVariable: false,
