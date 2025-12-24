@@ -15,6 +15,9 @@ import Database from 'better-sqlite3';
 import { dirname, resolve, isAbsolute, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createId } from '@paralleldrive/cuid2';
+import { getLogger } from './logger.mjs';
+
+const logger = getLogger('SeedScript');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
@@ -23,7 +26,7 @@ const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
 let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
 
 if (dbPath === ':memory:') {
-  console.error('[seed] In-memory database not supported for seeding');
+  logger.fatal('In-memory database not supported for seeding');
   process.exit(1);
 }
 
@@ -31,15 +34,15 @@ if (!isAbsolute(dbPath)) {
   dbPath = resolve(ROOT_DIR, dbPath);
 }
 
-console.log(`[seed] Database path: ${dbPath}`);
+logger.info({ dbPath }, 'Database path');
 
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 
 const existingGroups = db.prepare('SELECT COUNT(*) as count FROM bill_category_groups').get();
 
-if (existingGroups.count > 0) {
-  console.log(`[seed] Found ${existingGroups.count} existing category groups. Skipping seed.`);
+if (existingGroups && existingGroups.count > 0) {
+  logger.info({ count: existingGroups.count }, 'Found existing category groups. Skipping seed.');
   db.close();
   process.exit(0);
 }
@@ -137,7 +140,7 @@ const CATEGORY_SEED_DATA = [
   },
 ];
 
-console.log('[seed] Seeding bill categories...');
+logger.info('Seeding bill categories');
 
 const insertGroup = db.prepare(`
   INSERT INTO bill_category_groups (id, name, slug, display_order, created_at)
@@ -157,22 +160,26 @@ const seedTransaction = db.transaction(() => {
     const groupId = createId();
 
     insertGroup.run(groupId, group.name, group.slug, group.displayOrder, now);
-    console.log(`[seed] Created group: ${group.name}`);
+    logger.debug({ groupName: group.name, groupId }, 'Created category group');
 
     for (const category of categories) {
       insertCategory.run(createId(), groupId, category.name, category.slug, category.icon, category.displayOrder, now);
       totalCategories++;
     }
 
-    console.log(`[seed]   Added ${categories.length} categories`);
+    logger.debug({ groupName: group.name, categoryCount: categories.length }, 'Added categories to group');
   }
 });
 
 try {
   seedTransaction();
-  console.log(`[seed] Successfully seeded ${totalCategories} categories across ${CATEGORY_SEED_DATA.length} groups.`);
+  logger.info(
+    { totalCategories, groupCount: CATEGORY_SEED_DATA.length },
+    'Successfully seeded categories'
+  );
 } catch (err) {
-  console.error('[seed] Failed to seed categories:', err.message);
+  const error = err instanceof Error ? err : new Error(String(err));
+  logger.error({ err: error }, 'Failed to seed categories');
   process.exit(1);
 }
 
