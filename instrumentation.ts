@@ -21,6 +21,26 @@ export async function register() {
     const { SchedulerService } = await import('@/lib/services/SchedulerService');
 
     SchedulerService.init();
+
+    // Run startup catch-up to maintain accurate bill state after downtime
+    // This ensures bills that became overdue or auto-pay bills that became due
+    // during downtime are processed immediately on startup.
+    try {
+      const { StartupCatchUpService } = await import(
+        '@/lib/services/StartupCatchUpService'
+      );
+
+      const result = await StartupCatchUpService.runCatchUp();
+
+      console.log(
+        `[Instrumentation] Startup catch-up complete: ` +
+          `${result.overdueCheck.updated} bills marked overdue, ` +
+          `${result.autoPay.processed} auto-pay bills processed`
+      );
+    } catch (error) {
+      // Log error but don't prevent startup - data will be corrected at next scheduled cron run
+      console.error('[Instrumentation] Startup catch-up failed:', error);
+    }
   } else {
     // Edge runtime - skip scheduler initialization
     console.log('[Instrumentation] Skipping scheduler (edge runtime)');
