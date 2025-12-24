@@ -68,3 +68,4 @@ Guides for contributors and local development.
 |----------|-------------|
 | [Getting Started](./development/001-getting-started.md) | Getting started with Oar |
 | [Local Docker Deployment](./development/002-local-docker.md) | Running Oar locally with Docker |
+| [Logging](./development/003-logging.md) | Logging in Oar |
