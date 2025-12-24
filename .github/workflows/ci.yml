@@ -73,7 +73,7 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Run unit tests
-        run: npm run test:coverage
+        run: npm run test:coverage -- --verbose
 
       - name: Upload code coverage
         uses: codecov/codecov-action@v5
