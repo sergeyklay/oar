@@ -1,7 +1,7 @@
 # After a Bill Ends Setting
 
 - **Status:** Draft
-- **Last Updated:** 2025-01-27
+- **Last Updated:** 2025-12-24
 - **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Recurrence Engine](./001-recurrence-engine.md)
 
 ## Overview
