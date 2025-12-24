@@ -544,11 +544,9 @@ describe('deleteTransaction', () => {
   it('deletes transaction when it exists', async () => {
     const runMock = jest.fn();
     const deleteMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateRunMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: updateRunMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
 
-    // First call: fetch transaction, Second call: fetch bill, Third call: fetch all transactions
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(false);
+
     (db.select as jest.Mock)
       .mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
@@ -559,27 +557,24 @@ describe('deleteTransaction', () => {
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockResolvedValue([mockBill]),
         }),
-      })
-      .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([]),
-          }),
-        }),
       });
 
     (db.delete as jest.Mock).mockReturnValue({
       where: deleteMock,
     });
 
-    (db.update as jest.Mock).mockReturnValue({
-      set: updateSetMock,
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        delete: db.delete,
+        update: db.update,
+      };
+      return callback(tx);
     });
 
     const result = await deleteTransaction({ id: 'tx-1' });
 
     expect(result.success).toBe(true);
-    expect(db.delete).toHaveBeenCalledWith(transactions);
+    expect(db.transaction).toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith('/');
   });
 
@@ -646,10 +641,19 @@ describe('deleteTransaction', () => {
       set: updateSetMock,
     });
 
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        delete: db.delete,
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
     await deleteTransaction({ id: 'tx-1' });
 
+    expect(db.transaction).toHaveBeenCalled();
+    expect(db.delete).toHaveBeenCalledWith(transactions);
     expect(db.update).toHaveBeenCalledWith(bills);
-    expect(updateSetMock).toHaveBeenCalled();
   });
 });
 
