@@ -12,6 +12,9 @@ import Database from 'better-sqlite3';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve, isAbsolute } from 'path';
 import { fileURLToPath } from 'url';
+import { getLogger } from './logger.mjs';
+
+const logger = getLogger('MigrationScript');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
@@ -23,7 +26,7 @@ let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
 
 // Handle in-memory database (should not happen in production, but handle gracefully)
 if (dbPath === ':memory:') {
-  console.error('[migrate] In-memory database not supported for migrations');
+  logger.fatal('In-memory database not supported for migrations');
   process.exit(1);
 }
 
@@ -35,11 +38,11 @@ if (!isAbsolute(dbPath)) {
 // Ensure the directory exists before creating the database
 const dbDir = dirname(dbPath);
 if (!existsSync(dbDir)) {
-  console.log(`[migrate] Creating database directory: ${dbDir}`);
+  logger.info({ dbDir }, 'Creating database directory');
   mkdirSync(dbDir, { recursive: true });
 }
 
-console.log(`[migrate] Database path: ${dbPath}`);
+logger.info({ dbPath }, 'Database path');
 
 // Initialize database
 const db = new Database(dbPath);
@@ -58,7 +61,7 @@ db.exec(`
 const journalPath = join(ROOT_DIR, 'drizzle', 'meta', '_journal.json');
 
 if (!existsSync(journalPath)) {
-  console.log('[migrate] No migrations found. Skipping.');
+  logger.info('No migrations found. Skipping.');
   process.exit(0);
 }
 
@@ -76,14 +79,14 @@ for (const entry of entries) {
   const hash = entry.tag;
 
   if (applied.has(hash)) {
-    console.log(`[migrate] Already applied: ${hash}`);
+    logger.debug({ hash }, 'Migration already applied');
     continue;
   }
 
   const sqlPath = join(ROOT_DIR, 'drizzle', `${hash}.sql`);
 
   if (!existsSync(sqlPath)) {
-    console.error(`[migrate] Migration file not found: ${sqlPath}`);
+    logger.error({ sqlPath }, 'Migration file not found');
     process.exit(1);
   }
 
@@ -95,7 +98,7 @@ for (const entry of entries) {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  console.log(`[migrate] Applying: ${hash} (${statements.length} statements)`);
+  logger.info({ hash, statementCount: statements.length }, 'Applying migration');
 
   const transaction = db.transaction(() => {
     for (const stmt of statements) {
@@ -110,9 +113,10 @@ for (const entry of entries) {
   try {
     transaction();
     appliedCount++;
-    console.log(`[migrate] Applied: ${hash}`);
+    logger.info({ hash }, 'Migration applied successfully');
   } catch (err) {
-    console.error(`[migrate] Failed to apply ${hash}:`, err.message);
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error({ err: error, hash }, 'Failed to apply migration');
     process.exit(1);
   }
 }
@@ -120,8 +124,8 @@ for (const entry of entries) {
 db.close();
 
 if (appliedCount === 0) {
-  console.log('[migrate] Database is up to date.');
+  logger.info('Database is up to date');
 } else {
-  console.log(`[migrate] Successfully applied ${appliedCount} migration(s).`);
+  logger.info({ appliedCount }, 'Successfully applied migrations');
 }
 

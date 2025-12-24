@@ -9,11 +9,7 @@ if [ -z "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" ]; then
   exit 1
 fi
 
-echo "Running database migrations..."
 node scripts/migrate.mjs
-
-echo "Seeding database..."
 node scripts/seed-production.mjs
 
-echo "Starting Next.js server..."
 exec node server.js
