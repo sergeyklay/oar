@@ -14,12 +14,8 @@ jest.mock('next/cache', () => ({
 jest.mock('@/lib/services/PaymentService', () => ({
   PaymentService: {
     processPayment: jest.fn(),
-    doesPaymentAffectCurrentCycle: jest.fn().mockReturnValue(true),
-    recalculateBillFromPayments: jest.fn().mockReturnValue({
-      amountDue: 10000,
-      status: 'pending',
-      nextDueDate: null,
-    }),
+    doesPaymentAffectCurrentCycle: jest.fn(),
+    recalculateBillFromPayments: jest.fn(),
   },
 }));
 jest.mock('@/lib/services/SettingsService', () => ({
