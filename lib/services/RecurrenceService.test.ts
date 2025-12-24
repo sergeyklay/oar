@@ -116,6 +116,47 @@ describe('RecurrenceService', () => {
         expect(result!.getMonth()).toBe(1); // February
       });
 
+      it('calculates 14 days later when starting on custom day (day 5)', () => {
+        const currentDate = new Date('2025-01-05');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(19);
+      });
+
+      it('calculates 14 days earlier for mid-month (day 17)', () => {
+        const currentDate = new Date('2025-01-17');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(3);
+        expect(result!.getMonth()).toBe(1); // February 3rd
+      });
+
+      it('calculates 14 days earlier for mid-month (day 20)', () => {
+        const currentDate = new Date('2025-01-20');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(6);
+        expect(result!.getMonth()).toBe(1); // February 6th
+      });
+
+      it('calculates 14 days earlier for end of month (day 28)', () => {
+        const currentDate = new Date('2025-01-28');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getDate()).toBe(14);
+        expect(result!.getMonth()).toBe(1); // February 14th
+      });
+    });
+
+    describe('endDate boundary conditions', () => {
       it('returns null when next due date exceeds endDate', () => {
         const currentDate = new Date('2025-01-15');
         const endDate = new Date('2025-02-10');
@@ -164,45 +205,6 @@ describe('RecurrenceService', () => {
 
         expect(result).not.toBeNull();
         expect(result!.getTime()).toBe(endDate.getTime());
-      });
-
-      it('calculates 14 days later when starting on custom day (day 5)', () => {
-        const currentDate = new Date('2025-01-05');
-
-        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
-
-        expect(result).not.toBeNull();
-        expect(result!.getDate()).toBe(19);
-      });
-
-      it('calculates 14 days earlier for mid-month (day 17)', () => {
-        const currentDate = new Date('2025-01-17');
-
-        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
-
-        expect(result).not.toBeNull();
-        expect(result!.getDate()).toBe(3);
-        expect(result!.getMonth()).toBe(1); // February 3rd
-      });
-
-      it('calculates 14 days earlier for mid-month (day 20)', () => {
-        const currentDate = new Date('2025-01-20');
-
-        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
-
-        expect(result).not.toBeNull();
-        expect(result!.getDate()).toBe(6);
-        expect(result!.getMonth()).toBe(1); // February 6th
-      });
-
-      it('calculates 14 days earlier for end of month (day 28)', () => {
-        const currentDate = new Date('2025-01-28');
-
-        const result = RecurrenceService.calculateNextDueDate(currentDate, 'twicemonthly');
-
-        expect(result).not.toBeNull();
-        expect(result!.getDate()).toBe(14);
-        expect(result!.getMonth()).toBe(1); // February 14th
       });
     });
 
