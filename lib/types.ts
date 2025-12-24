@@ -113,8 +113,7 @@ export interface PaymentWithBill {
  * }
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ComponentType = any extends React.ComponentProps<infer R> ? R : never;
+type ComponentType = React.ElementType;
 
 export type Prop<
   Component extends ComponentType,
