@@ -8,7 +8,7 @@
 
 Mistakes happen. You might log a payment with the wrong date, enter an incorrect amount, or realize you recorded a payment that never occurred. The payment history view in the Bill Detail Panel shows your transactions, but until now, you couldn't correct errors once they were recorded.
 
-Editing payment history lets you fix mistakes while maintaining the integrity of your financial records. When you modify or delete a payment that affected your current billing cycle, Oar automatically recalculates the bill's state to keep everything consistent. This preserves the "Active Payer" principle: you're in control, but the system ensures your data remains accurate.
+Editing payment history lets you correct mistakes while maintaining the integrity of your financial records. When you modify or delete a payment that affected your current billing cycle, Oar automatically recalculates the bill's state to keep everything consistent. This preserves the "Active Payer" principle: you're in control, but the system ensures your data remains accurate.
 
 ## User flow
 
@@ -55,7 +55,7 @@ For example: You have a $200 monthly bill with $50 remaining. You realize you lo
 
 ### Deleting a payment
 
-Sometimes you need to remove a payment entirely. Perhaps you logged a payment by mistake, or you recorded a transaction that was later canceled.
+Sometimes you need to remove a payment entirely. Perhaps you mistakenly logged a payment, or you recorded a transaction that was later canceled.
 
 To delete a payment:
 
@@ -113,11 +113,11 @@ If no payment is selected, the bottom of the payment history section displays a 
 
 This feature reinforces the "Active Payer" philosophy in several ways:
 
-**Conscious correction.** Unlike systems that auto-import and never let you fix mistakes, Oar gives you full control over your payment records. Every edit and deletion requires explicit action: selecting a payment, clicking Edit or Delete, and confirming your changes.
+**Conscious correction.** Unlike systems that auto-import and never allow you to correct mistakes, Oar gives you full control over your payment records. Every edit and deletion requires explicit action: selecting a payment, clicking Edit or Delete, and confirming your changes.
 
 **Awareness through recalculation.** When you modify a payment that affected your current cycle, Oar immediately shows you the consequences by recalculating the bill's state. You see exactly how your correction impacts your obligations, building awareness of the relationship between payments and billing cycles.
 
-**No silent automation.** The system doesn't automatically "fix" payments or merge duplicates. You decide what needs correction and when. The recalculation happens transparently, but the decision to edit or delete remains yours.
+**No silent automation.** The system doesn't automatically correct payments or merge duplicates. You decide what needs correction and when. The recalculation happens transparently, but the decision to edit or delete remains yours.
 
 **Data sovereignty.** All payment editing happens locally in your database. No external services are involved. Your corrections are immediate and permanent, stored on your machine.
 
