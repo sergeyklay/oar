@@ -99,7 +99,7 @@ If no payment is selected, the bottom of the payment history section displays a 
 
 **Overpayment corrections.** If you edit a payment amount downward and the new total is less than what was previously paid, the amount due increases accordingly. The system never allows negative amounts due, so if your corrections result in overpayment, the amount due becomes zero.
 
-**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. Editing such a payment works the same way as recurring bills, but since one-time bills don't have cycles, the recalculation focuses on whether the bill should be marked as paid based on the total payments.
+**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. Editing such a payment works the same way as recurring bills, but since one-time bills don't have cycles, the recalculation focuses on whether the bill should be marked as paid based on the total payments. If a one-time bill has ended (fully paid), deleting the final payment will reactivate it. The bill's final state (archived or marked as "Never Due") depends on your [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md).
 
 **Concurrent edits.** Oar is designed for single-user use. If you're editing a payment in one browser tab and delete it in another, the system will reflect the most recent change. For best results, complete one operation before starting another.
 
