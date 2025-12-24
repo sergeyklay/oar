@@ -39,6 +39,7 @@ interface ActionResult<T = void> {
   data?: T;
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  message?: string;
 }
 
 /**
@@ -55,7 +56,7 @@ interface ActionResult<T = void> {
  */
 export async function logPayment(
   input: LogPaymentInput
-): Promise<ActionResult<{ transactionId: string; isHistorical: boolean }>> {
+): Promise<ActionResult<{ transactionId: string; isHistorical: boolean; billArchived?: boolean }>> {
   // 1. Validate input
   const parsed = logPaymentSchema.safeParse(input);
 
