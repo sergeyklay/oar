@@ -166,7 +166,7 @@ export function PaymentHistorySection({
               key={tx.id}
               onClick={() => handleTransactionClick(tx.id)}
               className={cn(
-                'flex items-center gap-2 text-sm py-1 min-w-0 cursor-pointer rounded-md px-2 py-2 hover:bg-muted/50 transition-colors',
+                'flex items-center gap-2 text-sm min-w-0 cursor-pointer rounded-md px-2 py-2 hover:bg-muted/50 transition-colors',
                 selectedTransactionId === tx.id && 'bg-muted'
               )}
               title={tx.notes ?? undefined}
