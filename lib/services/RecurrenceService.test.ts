@@ -116,6 +116,56 @@ describe('RecurrenceService', () => {
         expect(result!.getMonth()).toBe(1); // February
       });
 
+      it('returns null when next due date exceeds endDate', () => {
+        const currentDate = new Date('2025-01-15');
+        const endDate = new Date('2025-02-10');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly', endDate);
+
+        expect(result).toBeNull();
+      });
+
+      it('returns next due date when it does not exceed endDate', () => {
+        const currentDate = new Date('2025-01-15');
+        const endDate = new Date('2025-03-20');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly', endDate);
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(1);
+        expect(result!.getDate()).toBe(15);
+      });
+
+      it('returns next due date when endDate is null', () => {
+        const currentDate = new Date('2025-01-15');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly', null);
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(1);
+        expect(result!.getDate()).toBe(15);
+      });
+
+      it('returns next due date when endDate is undefined', () => {
+        const currentDate = new Date('2025-01-15');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly', undefined);
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(1);
+        expect(result!.getDate()).toBe(15);
+      });
+
+      it('returns next due date when it equals endDate', () => {
+        const currentDate = new Date('2025-01-15');
+        const endDate = new Date('2025-02-15');
+
+        const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly', endDate);
+
+        expect(result).not.toBeNull();
+        expect(result!.getTime()).toBe(endDate.getTime());
+      });
+
       it('calculates 14 days later when starting on custom day (day 5)', () => {
         const currentDate = new Date('2025-01-05');
 

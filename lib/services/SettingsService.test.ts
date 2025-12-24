@@ -515,4 +515,133 @@ describe('SettingsService', () => {
       );
     });
   });
+
+  describe('getBillEndAction', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns stored value when set to archive', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'archive' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getBillEndAction();
+      expect(result).toBe('archive');
+    });
+
+    it('returns mark_as_paid when stored value is mark_as_paid', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'mark_as_paid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getBillEndAction();
+      expect(result).toBe('mark_as_paid');
+    });
+
+    it('returns default mark_as_paid when setting missing', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getBillEndAction();
+      expect(result).toBe('mark_as_paid');
+    });
+
+    it('returns mark_as_paid for any value other than archive', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'invalid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getBillEndAction();
+      expect(result).toBe('mark_as_paid');
+    });
+  });
+
+  describe('setBillEndAction', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('updates setting when valid action provided', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setBillEndAction('archive');
+
+      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(onConflictDoUpdateMock).toHaveBeenCalled();
+    });
+
+    it('throws error when action value is invalid', async () => {
+      // @ts-expect-error Testing invalid input
+      await expect(SettingsService.setBillEndAction('invalid')).rejects.toThrow(
+        'Invalid action value'
+      );
+    });
+
+    it('throws error when section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(SettingsService.setBillEndAction('archive')).rejects.toThrow(
+        'Behavior Options section not found'
+      );
+    });
+
+    it('accepts both mark_as_paid and archive values', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setBillEndAction('mark_as_paid');
+      await SettingsService.setBillEndAction('archive');
+
+      expect(db.insert).toHaveBeenCalledTimes(2);
+    });
+  });
 });

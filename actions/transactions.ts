@@ -89,7 +89,18 @@ export async function logPayment(
       updateDueDate
     );
 
-    // 4. Use Drizzle transaction for atomicity
+    // 4. Check if bill ended and determine archiving action
+    let shouldArchive = false;
+    let toastMessage = 'Payment logged successfully.';
+    if (paymentResult.billEnded) {
+      const billEndAction = await SettingsService.getBillEndAction();
+      shouldArchive = billEndAction === 'archive';
+      if (shouldArchive) {
+        toastMessage = 'Payment logged and bill archived.';
+      }
+    }
+
+    // 5. Use Drizzle transaction for atomicity
     // NOTE: better-sqlite3 requires SYNCHRONOUS transactions (no async/await)
     // NOTE: .returning() returns a query builder; must call .get() or .all() to execute
     const result = db.transaction((tx) => {
@@ -108,29 +119,55 @@ export async function logPayment(
       // Update bill with computed state from PaymentService
       // Skip bill update for historical payments (record only)
       if (!paymentResult.isHistorical) {
-        tx.update(bills)
-          .set({
-            dueDate: paymentResult.nextDueDate ?? bill.dueDate,
-            amountDue: paymentResult.newAmountDue,
-            status: paymentResult.newStatus,
-            updatedAt: new Date(),
-          })
-          .where(eq(bills.id, billId))
-          .run();
+        if (shouldArchive) {
+          // Bill ended and user wants to archive
+          tx.update(bills)
+            .set({
+              isArchived: true,
+              updatedAt: new Date(),
+            })
+            .where(eq(bills.id, billId))
+            .run();
+        } else if (paymentResult.billEnded) {
+          // Bill ended but user wants to keep it visible
+          tx.update(bills)
+            .set({
+              dueDate: paymentResult.nextDueDate ?? bill.dueDate,
+              amountDue: paymentResult.newAmountDue,
+              status: paymentResult.newStatus,
+              updatedAt: new Date(),
+            })
+            .where(eq(bills.id, billId))
+            .run();
+        } else {
+          // Normal payment, bill continues
+          tx.update(bills)
+            .set({
+              dueDate: paymentResult.nextDueDate ?? bill.dueDate,
+              amountDue: paymentResult.newAmountDue,
+              status: paymentResult.newStatus,
+              updatedAt: new Date(),
+            })
+            .where(eq(bills.id, billId))
+            .run();
+        }
       }
 
       return newTransaction;
     });
 
-    // 5. Revalidate UI
+    // 6. Revalidate UI
     revalidatePath('/');
+    revalidatePath(`/bills/${billId}`);
 
     return {
       success: true,
       data: {
         transactionId: result.id,
         isHistorical: paymentResult.isHistorical,
+        billArchived: shouldArchive,
       },
+      message: toastMessage,
     };
   } catch (error) {
     console.error('Failed to log payment:', error);

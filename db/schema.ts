@@ -75,6 +75,8 @@ export const bills = sqliteTable('bills', {
    */
   amountDue: integer('amount_due').notNull().default(0),
   dueDate: integer('due_date', { mode: 'timestamp_ms' }).notNull(),
+  /** Optional end date for recurring bills. When next due date exceeds this, bill ends. */
+  endDate: integer('end_date', { mode: 'timestamp_ms' }),
   frequency: text('frequency', {
     enum: [
       'once',

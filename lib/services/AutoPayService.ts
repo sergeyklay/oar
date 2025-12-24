@@ -75,7 +75,8 @@ export const AutoPayService = {
         // Calculate next due date for recurring bills
         const nextDueDate = RecurrenceService.calculateNextDueDate(
           bill.dueDate,
-          bill.frequency
+          bill.frequency,
+          bill.endDate ?? null
         );
 
         // Execute atomic transaction

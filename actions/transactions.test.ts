@@ -21,6 +21,7 @@ jest.mock('@/lib/services/PaymentService', () => ({
 jest.mock('@/lib/services/SettingsService', () => ({
   SettingsService: {
     getPaidRecentlyRange: jest.fn(),
+    getBillEndAction: jest.fn(),
   },
 }));
 jest.mock('@/lib/services/TransactionService', () => ({
@@ -464,6 +465,139 @@ describe('logPayment', () => {
     });
 
     expect(revalidatePath).toHaveBeenCalledWith('/');
+  });
+
+  it('archives bill when bill ended and setting is archive', async () => {
+    const bill = {
+      ...mockBill,
+      endDate: new Date('2025-12-20'),
+    };
+
+    const paymentResult = {
+      nextDueDate: null,
+      newAmountDue: 0,
+      newStatus: 'paid' as const,
+      isHistorical: false,
+      billEnded: true,
+    };
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
+    (SettingsService.getBillEndAction as jest.Mock).mockResolvedValue('archive');
+
+    setupMocks(bill, paymentResult);
+
+    const result = await logPayment({
+      billId: 'bill-1',
+      amount: 20000,
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.billArchived).toBe(true);
+    expect(result.message).toBe('Payment logged and bill archived.');
+    expect(SettingsService.getBillEndAction).toHaveBeenCalled();
+
+    const transactionCall = (db.transaction as jest.Mock).mock.calls[0][0];
+    const mockTx = {
+      insert: jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      }),
+      update: jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+        }),
+      }),
+    };
+    transactionCall(mockTx);
+
+    expect(mockTx.update).toHaveBeenCalled();
+    const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
+    expect(setCall).toHaveBeenCalledWith(
+      expect.objectContaining({ isArchived: true })
+    );
+  });
+
+  it('does not archive bill when bill ended but setting is mark_as_paid', async () => {
+    const bill = {
+      ...mockBill,
+      endDate: new Date('2025-12-20'),
+    };
+
+    const paymentResult = {
+      nextDueDate: null,
+      newAmountDue: 0,
+      newStatus: 'paid' as const,
+      isHistorical: false,
+      billEnded: true,
+    };
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
+    (SettingsService.getBillEndAction as jest.Mock).mockResolvedValue('mark_as_paid');
+
+    setupMocks(bill, paymentResult);
+
+    const result = await logPayment({
+      billId: 'bill-1',
+      amount: 20000,
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.billArchived).toBe(false);
+    expect(result.message).toBe('Payment logged successfully.');
+    expect(SettingsService.getBillEndAction).toHaveBeenCalled();
+
+    const transactionCall = (db.transaction as jest.Mock).mock.calls[0][0];
+    const mockTx = {
+      insert: jest.fn().mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          returning: jest.fn().mockReturnValue({
+            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+          }),
+        }),
+      }),
+      update: jest.fn().mockReturnValue({
+        set: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+        }),
+      }),
+    };
+    transactionCall(mockTx);
+
+    expect(mockTx.update).toHaveBeenCalled();
+    const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
+    expect(setCall).toHaveBeenCalledWith(
+      expect.not.objectContaining({ isArchived: expect.anything() })
+    );
+  });
+
+  it('does not check bill end action when bill did not end', async () => {
+    const paymentResult = {
+      nextDueDate: new Date('2026-01-15'),
+      newAmountDue: 20000,
+      newStatus: 'pending' as const,
+      isHistorical: false,
+      billEnded: false,
+    };
+
+    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
+
+    setupMocks(mockBill, paymentResult);
+
+    await logPayment({
+      billId: 'bill-1',
+      amount: 20000,
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(SettingsService.getBillEndAction).not.toHaveBeenCalled();
   });
 });
 
