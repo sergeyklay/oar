@@ -20,8 +20,11 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { getLogger } from '@/lib/logger';
 import { createTag } from '@/actions/tags';
 import type { Tag } from '@/lib/types';
+
+const logger = getLogger('TagCombobox');
 
 interface TagComboboxProps {
   /** All available tags */
@@ -117,6 +120,7 @@ export function TagCombobox({
         });
       }
     } catch (error) {
+      logger.error(error, 'Failed to create tag');
       toast.error('Failed to create tag', {
         description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
       });
