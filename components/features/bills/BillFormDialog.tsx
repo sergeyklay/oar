@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -181,18 +182,28 @@ export function BillFormDialog({
         : await createBill(baseInput as CreateBillInput);
 
       if (result.success) {
+        toast.success(isEditMode ? 'Bill updated' : 'Bill created', {
+          description: `"${values.title}" has been ${isEditMode ? 'updated' : 'created'}.`,
+        });
         form.reset();
         onOpenChange(false);
-      } else if (result.fieldErrors) {
-        Object.entries(result.fieldErrors).forEach(([field, errors]) => {
-          if (errors?.[0]) {
-            form.setError(field as keyof FormValues, { message: errors[0] });
-          }
+      } else {
+        toast.error(isEditMode ? 'Failed to update bill' : 'Failed to create bill', {
+          description: result.error ?? 'Please try again.',
         });
+
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
+            if (errors?.[0]) {
+              form.setError(field as keyof FormValues, { message: errors[0] });
+            }
+          });
+        }
       }
-    } catch {
-      // Error handling is done via toast in the form submission
-      // Logger is for server-side only, client errors are handled by UI feedback
+    } catch (error) {
+      toast.error(isEditMode ? 'Failed to update bill' : 'Failed to create bill', {
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
+      });
     } finally {
       setIsSubmitting(false);
     }
