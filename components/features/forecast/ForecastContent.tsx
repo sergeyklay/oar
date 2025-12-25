@@ -47,12 +47,12 @@ export async function ForecastContent({
   const bills: ForecastBill[] = forecastResult.data ?? [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6 h-full">
-      <div className="flex flex-col gap-6 overflow-y-auto">
-        <div className="flex-shrink-0">
-          <ForecastGraph />
-        </div>
-        <div className="flex-shrink-0">
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
+        <ForecastGraph />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border">
+        <div className="overflow-y-auto">
           <ForecastList
             bills={bills}
             currency={currency}
@@ -63,15 +63,15 @@ export async function ForecastContent({
             tag={tag}
           />
         </div>
+        <div className="bg-card border-l border-border overflow-y-auto p-6">
+          <ForecastSummary
+            bills={bills}
+            currency={currency}
+            locale={locale}
+            showAmortization={showAmortization}
+          />
+        </div>
       </div>
-      <aside className="bg-card border-l border-border overflow-y-auto p-6">
-        <ForecastSummary
-          bills={bills}
-          currency={currency}
-          locale={locale}
-          showAmortization={showAmortization}
-        />
-      </aside>
     </div>
   );
 }

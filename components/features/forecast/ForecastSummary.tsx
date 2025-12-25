@@ -13,7 +13,7 @@ interface ForecastSummaryProps {
  * ForecastSummary
  *
  * Summary panel with totals for forecast view.
- * Displays in the right sidebar as a persistent panel.
+ * Displays in the right column of the bottom section.
  *
  * Render Mode: Server Component (no hooks, calculates from props)
  */
@@ -24,11 +24,16 @@ export function ForecastSummary({
   showAmortization,
 }: ForecastSummaryProps) {
   const summary = ForecastService.calculateSummary(bills);
+  const billsDueCount = bills.length;
 
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold">Summary</h2>
       <div className="flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground">Bills Due</span>
+          <span className="font-mono font-medium">{billsDueCount}</span>
+        </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Due</span>
           <span className="font-mono font-medium">
