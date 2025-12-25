@@ -66,7 +66,6 @@ If a feature adds automation, explicitly explain *how* it preserves user awarene
 
 - **Status:** Draft
 - **Last Updated:** {YYYY-MM-DD}
-- **Related:** {Links to other docs or Specs (if any)}
 
 ## Overview
 *(The "Why". Concise summary of the user problem and the value proposition. Why does this feature exist? Don't start with "How to ...". Start with the problem.)*
@@ -105,7 +104,6 @@ For example of style documentation for a feature, see `docs/features/002-auto-pa
 
 - **Status:** Draft
 - **Last Updated:** {YYYY-MM-DD}
-- **Related:** {Links to other docs or Specs (if any)}
 
 ## 1. Goal
 *(What will the user achieve by following this guide?)*
