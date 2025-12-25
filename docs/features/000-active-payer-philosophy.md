@@ -79,6 +79,6 @@ Passive systems encourage you to set it and forget it. Active Payer systems enco
 
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 * [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Editing Payment History](./011-editing-payment-history.md) - Correcting payment mistakes and managing payment records
 

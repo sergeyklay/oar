@@ -1,11 +1,11 @@
-# Overview Screen
+# Overview View
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
 
 ## Overview
 
-The Overview screen is your command center for managing bills. It displays all your bills in a table with four columns: category icon, name, amount, and due date. Each bill shows when payment is due using plain language like "Due in 3 days" or "Overdue by 5 days" so you can prioritize at a glance.
+The Overview view is your command center for managing bills. It displays all your bills in a table with four columns: category icon, name, amount, and due date. Each bill shows when payment is due using plain language like "Due in 3 days" or "Overdue by 5 days" so you can prioritize at a glance.
 
 A colored status bar on the left edge of the due date cell gives you instant visual feedback about each bill's urgency. Red means overdue, amber means due soon, blue means you have time, and green means paid.
 
@@ -105,7 +105,7 @@ See the [Logging Payments](./002-auto-pay.md) documentation for details on the p
 
 Clicking anywhere on a bill row opens the **Bill Detail Panel**. Management actions for the selected bill are located at the bottom of this panel:
 
-- **Archive:** Moves the bill to your archive (removes it from active views). Archived bills can be accessed through the [Archive Screen](./013-archive-screen.md).
+- **Archive:** Moves the bill to your archive (removes it from active views). Archived bills can be accessed through the [Archive View](./013-archive-view.md).
 - **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags.
 - **Delete:** Removes the bill entirely (requires confirmation).
 
@@ -127,7 +127,7 @@ Payment history is available directly within the Bill Detail Panel through the c
 
 ## Verification
 
-To confirm the Overview screen works:
+To confirm the Overview view works:
 
 1. Navigate to the Overview page. You should see a table with four columns.
 2. Check that bill names show combined subtitles like "Every month • Manual" or "Every month • Auto" below them. Verify the bullet point separates the interval from the payment mode.
@@ -144,4 +144,4 @@ To confirm the Overview screen works:
 
 * [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Archive Screen](./013-archive-screen.md) - Viewing and managing archived bills
+* [Archive View](./013-archive-view.md) - Viewing and managing archived bills
