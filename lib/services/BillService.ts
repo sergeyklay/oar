@@ -19,8 +19,10 @@ export interface GetBillsOptions {
   dateRange?: number;
   /** Filter by tag slug */
   tag?: string;
-  /** Include archived bills */
+  /** Include archived bills (returns both archived and non-archived) */
   includeArchived?: boolean;
+  /** Return only archived bills (takes precedence over includeArchived) */
+  archivedOnly?: boolean;
 }
 
 /**
@@ -147,11 +149,13 @@ export const BillService = {
    * @returns Array of bills with tags and category icons
    */
   async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
-    const { date, month, dateRange, tag, includeArchived = false } = options;
+    const { date, month, dateRange, tag, includeArchived = false, archivedOnly = false } = options;
 
     const conditions = [];
 
-    if (!includeArchived) {
+    if (archivedOnly) {
+      conditions.push(eq(bills.isArchived, true));
+    } else if (!includeArchived) {
       conditions.push(eq(bills.isArchived, false));
     }
 
