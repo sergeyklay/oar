@@ -526,7 +526,36 @@ function seedBills(
 
 
 /**
+ * Generates a transaction amount for variable bills with realistic variance.
+ *
+ * For variable bills, amounts vary by ±20% to simulate real-world fluctuations.
+ * For fixed bills, returns the base amount.
+ *
+ * @param baseAmount - Base bill amount in minor units
+ * @param isVariable - Whether the bill has variable amounts
+ * @returns Transaction amount in minor units
+ */
+function generateTransactionAmount(baseAmount: number, isVariable: boolean): number {
+  if (!isVariable) {
+    return baseAmount;
+  }
+
+  // Variable bills: vary by ±20% to simulate real-world fluctuations
+  const variance = faker.number.float({ min: 0.8, max: 1.2, fractionDigits: 2 });
+  const variedAmount = Math.round(baseAmount * variance);
+
+  // Ensure minimum of 1 cent
+  return Math.max(1, variedAmount);
+}
+
+/**
  * Seed historical transactions for bills.
+ *
+ * Generates transaction history to support Forecast View testing:
+ * - Variable bills get varying amounts (±20% variance)
+ * - Variable bills get at least 3 transactions for AverageLastThreePaymentsStrategy
+ * - Generates transactions from previous year for HistoricalMonthStrategy testing
+ * - Long-term bills (quarterly, yearly) get sufficient history for amortization testing
  *
  * @param tx - Database transaction instance
  * @param bills - Array of bill records to generate transactions for
@@ -537,40 +566,113 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
   const transactionsToInsert: typeof schema.transactions.$inferInsert[] = [];
 
   for (const bill of bills) {
-    if (bill.id === undefined) continue;
+    if (bill.id === undefined || bill.dueDate === undefined || bill.amount === undefined) {
+      continue;
+    }
 
+    const isVariable = bill.isVariable ?? false;
     let count = 0;
-    if (bill.frequency === 'weekly') count = faker.number.int({ min: 1, max: 12 });
-    else if (bill.frequency === 'biweekly') count = faker.number.int({ min: 1, max: 6 });
-    else if (bill.frequency === 'twicemonthly') count = faker.number.int({ min: 1, max: 6 });
-    else if (bill.frequency === 'monthly') count = faker.number.int({ min: 1, max: 5 });
-    else if (bill.frequency === 'bimonthly') count = faker.number.int({ min: 1, max: 3 });
-    else if (bill.frequency === 'quarterly') count = faker.number.int({ min: 1, max: 2 });
-    else if (bill.frequency === 'yearly') count = faker.number.int({ min: 0, max: 1 });
-    else if (bill.frequency === 'once' && bill.status === 'paid') count = 1;
 
+    // Determine transaction count based on frequency
+    if (bill.frequency === 'weekly') {
+      count = faker.number.int({ min: 4, max: 12 });
+    } else if (bill.frequency === 'biweekly') {
+      count = faker.number.int({ min: 3, max: 6 });
+    } else if (bill.frequency === 'twicemonthly') {
+      count = faker.number.int({ min: 3, max: 6 });
+    } else if (bill.frequency === 'monthly') {
+      // Variable bills need at least 3 for AverageLastThreePaymentsStrategy
+      count = isVariable
+        ? faker.number.int({ min: 3, max: 12 })
+        : faker.number.int({ min: 1, max: 5 });
+    } else if (bill.frequency === 'bimonthly') {
+      count = faker.number.int({ min: 2, max: 4 });
+    } else if (bill.frequency === 'quarterly') {
+      count = faker.number.int({ min: 2, max: 4 });
+    } else if (bill.frequency === 'yearly') {
+      // Yearly bills need at least 2 transactions (current year + previous year) for HistoricalMonthStrategy
+      count = isVariable
+        ? faker.number.int({ min: 2, max: 3 })
+        : faker.number.int({ min: 1, max: 2 });
+    } else if (bill.frequency === 'once' && bill.status === 'paid') {
+      count = 1;
+    }
+
+    // Generate transactions going backwards from due date
     for (let j = 0; j < count; j++) {
-      if (bill.dueDate === undefined || bill.amount === undefined) continue;
-
       let paidAt: Date;
       const offset = j + (bill.status === 'paid' ? 0 : 1);
 
-      if (bill.frequency === 'weekly') paidAt = subDays(bill.dueDate as Date, offset * 7);
-      else if (bill.frequency === 'biweekly') paidAt = subDays(bill.dueDate as Date, offset * 14);
-      else if (bill.frequency === 'twicemonthly') paidAt = subDays(bill.dueDate as Date, offset * 15); // Approximation
-      else if (bill.frequency === 'bimonthly') paidAt = subMonths(bill.dueDate as Date, offset * 2);
-      else if (bill.frequency === 'quarterly') paidAt = subMonths(bill.dueDate as Date, offset * 3);
-      else if (bill.frequency === 'yearly') paidAt = subMonths(bill.dueDate as Date, offset * 12);
-      else paidAt = subMonths(bill.dueDate as Date, offset); // Monthly and default
+      if (bill.frequency === 'weekly') {
+        paidAt = subDays(bill.dueDate as Date, offset * 7);
+      } else if (bill.frequency === 'biweekly') {
+        paidAt = subDays(bill.dueDate as Date, offset * 14);
+      } else if (bill.frequency === 'twicemonthly') {
+        paidAt = subDays(bill.dueDate as Date, offset * 15);
+      } else if (bill.frequency === 'bimonthly') {
+        paidAt = subMonths(bill.dueDate as Date, offset * 2);
+      } else if (bill.frequency === 'quarterly') {
+        paidAt = subMonths(bill.dueDate as Date, offset * 3);
+      } else if (bill.frequency === 'yearly') {
+        paidAt = subMonths(bill.dueDate as Date, offset * 12);
+      } else {
+        paidAt = subMonths(bill.dueDate as Date, offset);
+      }
+
+      const transactionAmount = generateTransactionAmount(bill.amount, isVariable);
 
       transactionsToInsert.push({
         id: createId(),
         billId: bill.id,
-        amount: bill.amount,
+        amount: transactionAmount,
         paidAt,
         notes: faker.datatype.boolean(0.2) ? 'Logged by Oar' : null,
-        createdAt: paidAt
+        createdAt: paidAt,
       });
+    }
+
+    // For variable bills, generate additional transactions from previous year
+    // to support HistoricalMonthStrategy testing
+    if (isVariable && bill.frequency !== 'once') {
+      const dueDate = bill.dueDate as Date;
+      const previousYear = new Date(dueDate);
+      previousYear.setFullYear(previousYear.getFullYear() - 1);
+
+      // Generate 1-2 transactions from the same month in previous year
+      const historicalCount = bill.frequency === 'yearly' ? 1 : faker.number.int({ min: 1, max: 2 });
+
+      for (let k = 0; k < historicalCount; k++) {
+        let historicalPaidAt: Date;
+
+        if (bill.frequency === 'weekly') {
+          historicalPaidAt = subDays(previousYear, k * 7);
+        } else if (bill.frequency === 'biweekly') {
+          historicalPaidAt = subDays(previousYear, k * 14);
+        } else if (bill.frequency === 'twicemonthly') {
+          historicalPaidAt = subDays(previousYear, k * 15);
+        } else if (bill.frequency === 'monthly') {
+          historicalPaidAt = subMonths(previousYear, k);
+        } else if (bill.frequency === 'bimonthly') {
+          historicalPaidAt = subMonths(previousYear, k * 2);
+        } else if (bill.frequency === 'quarterly') {
+          historicalPaidAt = subMonths(previousYear, k * 3);
+        } else if (bill.frequency === 'yearly') {
+          historicalPaidAt = subMonths(previousYear, k * 12);
+        } else {
+          historicalPaidAt = previousYear;
+        }
+
+        const historicalAmount = generateTransactionAmount(bill.amount, true);
+
+        transactionsToInsert.push({
+          id: createId(),
+          billId: bill.id,
+          amount: historicalAmount,
+          paidAt: historicalPaidAt,
+          notes: faker.datatype.boolean(0.2) ? 'Logged by Oar' : null,
+          createdAt: historicalPaidAt,
+        });
+      }
     }
   }
 
