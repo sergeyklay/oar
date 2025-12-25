@@ -39,9 +39,9 @@ Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page op
 
 **Settings Toggle.** Click the settings icon to open a popover with two independent checkboxes. You can control each visibility option separately: "Show Amount to Save" controls whether the amortization column appears, and "Show Estimates" controls whether estimated amounts display with visual distinction. The button shows an active state when either setting is disabled, indicating that some columns are hidden. The calculations still happen regardless of visibility; they're hidden from view when unchecked. This lets you customize the interface to show only the information you need.
 
-**Sidebar Toggle.** Click to hide the left navigation sidebar, giving more space for the forecast table and summary panel.
+**Sidebar Toggle.** Click to hide the left navigation sidebar, giving more space for the forecast chart and content.
 
-The main content area shows a two-column layout. The left column contains a placeholder for a forecast graph (coming soon) and the bills table. The right column shows a persistent summary panel with totals.
+The main content area uses a vertical layout that maximizes the chart display. The forecast chart occupies the full width at the top, with no rounded corners and a flush connection to the section below. Below the chart, a two-column section displays the bills table on the left and the summary panel on the right. This layout gives the chart maximum horizontal space while keeping the summary totals easily accessible alongside the detailed bill list.
 
 ## Understanding estimated amounts
 
@@ -71,7 +71,9 @@ This calculation appears in the "Amount to Save" column for each qualifying bill
 
 ## The summary panel
 
-The right sidebar shows a persistent summary that updates as you change months or filters. It displays three totals:
+The summary panel appears in the right column of the bottom section, positioned alongside the bills table. It shows a persistent summary that updates as you change months or filters. The panel displays four items:
+
+**Bills Due.** The count of projected bills for the selected month. This appears first in the summary and shows the total number of bills that have occurrences in the chosen period. If you're viewing January 2026 and 10 bills are projected for that month, it displays "Bills Due: 10". This count updates automatically when you change months or apply tag filters, giving you immediate context for the totals below.
 
 **Total Due.** The sum of all direct payments due in the selected month. This includes both fixed amounts and estimated amounts for variable bills. If you have 5 bills totaling $500, this shows $500.
 
@@ -79,11 +81,11 @@ The right sidebar shows a persistent summary that updates as you change months o
 
 **Grand Total.** The sum of Total Due and Total to Save. This represents your complete monthly financial burden: what you'll pay directly this month plus what you should be setting aside for future bills.
 
-All amounts display in your configured currency format. The summary updates immediately when you change months, apply tag filters, or toggle visibility settings.
+All amounts display in your configured currency format. The summary updates immediately when you change months, apply tag filters, or toggle visibility settings. The panel's position in the bottom section keeps it visible alongside the detailed bill list, making it easy to compare individual bills with the overall totals.
 
 ## Edge cases
 
-**Empty months.** When no bills have occurrences in the selected month, the table shows an empty state: "No bills due in [Month Year]." The summary panel shows all zeros. This happens when you select a month when none of your recurring bills fall, or when tag filtering excludes all bills.
+**Empty months.** When no bills have occurrences in the selected month, the table shows an empty state: "No bills due in [Month Year]." The summary panel shows "Bills Due: 0" and all monetary totals show zero. This happens when you select a month when none of your recurring bills fall, or when tag filtering excludes all bills.
 
 **Bills with end dates.** If a bill has an end date that falls before the selected month, it won't appear in the forecast. The projection logic checks end dates and skips bills that have already concluded. For example, a bill ending March 31 won't appear in April projections.
 
@@ -120,7 +122,7 @@ To confirm the Forecast View works correctly:
 3. Check that recurring bills appear with projected due dates in that month. A monthly bill should appear on the same day of the month.
 4. Verify variable bills show estimated amounts with visual distinction (muted or italic styling).
 5. Check that long-term bills (quarterly, annual) show "Amount to Save" in the dedicated column.
-6. Review the summary panel. Verify "Total Due" sums all bill amounts, "Total to Save" sums amortization amounts, and "Grand Total" combines both.
+6. Review the summary panel. Verify "Bills Due" shows the correct count of projected bills for the selected month. Verify "Total Due" sums all bill amounts, "Total to Save" sums amortization amounts, and "Grand Total" combines both.
 7. Select a tag from the filter. Verify only bills with that tag appear in the selected month.
 8. Click the settings icon to open the popover. Toggle each checkbox independently. Verify the "Amount to Save" column hides when "Show Amount to Save" is unchecked, and estimate indicators hide when "Show Estimates" is unchecked. Verify the button shows an active state when either setting is disabled.
 9. Select a month when no bills have occurrences. Verify the empty state message appears.

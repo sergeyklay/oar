@@ -8,7 +8,7 @@
  */
 export function ForecastGraph() {
   return (
-    <div className="flex items-center justify-center h-64 bg-card border border-border rounded-lg">
+    <div className="flex items-center justify-center h-64 bg-card border border-border">
       <p className="text-muted-foreground">Coming Soon</p>
     </div>
   );
