@@ -320,12 +320,20 @@ describe('TransactionService', () => {
     ];
 
     const setupDbMock = (returnValue: Transaction[]) => {
-      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const limitMock = jest.fn((limit: number) => {
+        return Promise.resolve(returnValue.slice(0, limit));
+      });
+      const orderByMock = jest.fn().mockReturnValue({
+        limit: limitMock,
+        then: (onResolve: (value: Transaction[]) => unknown) => {
+          return Promise.resolve(returnValue).then(onResolve);
+        },
+      });
       const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
       const fromMock = jest.fn().mockReturnValue({ where: whereMock });
       (db.select as jest.Mock).mockReturnValue({ from: fromMock });
 
-      return { orderByMock, whereMock, fromMock };
+      return { orderByMock, whereMock, fromMock, limitMock };
     };
 
     beforeEach(() => {
@@ -360,12 +368,13 @@ describe('TransactionService', () => {
     });
 
     it('applies limit when specified', async () => {
-      setupDbMock(mockTransactions);
+      const { limitMock } = setupDbMock(mockTransactions);
 
       const result = await TransactionService.getByBillId('bill-1', { limit: 2 });
 
       expect(result).toHaveLength(2);
       expect(result).toEqual(mockTransactions.slice(0, 2));
+      expect(limitMock).toHaveBeenCalledWith(2);
     });
 
     it('returns empty array when no transactions found', async () => {
