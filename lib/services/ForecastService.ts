@@ -305,7 +305,9 @@ export const ForecastService = {
 
     // Project occurrences and enrich with forecast data
     const forecastBills: ForecastBill[] = [];
+    const variableBillsToEstimate: Array<{ billId: string; forecastBillIndex: number }> = [];
 
+    // First pass: Build forecast bills and collect variable bills for parallel estimation
     for (const { bill, categoryIcon } of billsWithCategories) {
       const billWithTags: BillWithTags = {
         ...bill,
@@ -335,14 +337,12 @@ export const ForecastService = {
         amortizationAmount: null,
       };
 
-      // If variable bill, get estimate
+      // If variable bill, collect for parallel estimation
       if (bill.isVariable) {
-        const estimatedAmount = await EstimationService.estimateAmount(
-          bill.id,
-          targetDate
-        );
-        forecastBill.displayAmount = estimatedAmount;
-        forecastBill.isEstimated = true;
+        variableBillsToEstimate.push({
+          billId: bill.id,
+          forecastBillIndex: forecastBills.length,
+        });
       }
 
       // If recurrence > 1 month, calculate amortization
@@ -356,6 +356,23 @@ export const ForecastService = {
       }
 
       forecastBills.push(forecastBill);
+    }
+
+    // Parallel estimation for all variable bills
+    if (variableBillsToEstimate.length > 0) {
+      const estimates = await Promise.all(
+        variableBillsToEstimate.map(({ billId }) =>
+          EstimationService.estimateAmount(billId, targetDate)
+        )
+      );
+
+      // Merge estimates back into forecast bills
+      for (let i = 0; i < variableBillsToEstimate.length; i++) {
+        const { forecastBillIndex } = variableBillsToEstimate[i];
+        const estimatedAmount = estimates[i];
+        forecastBills[forecastBillIndex].displayAmount = estimatedAmount;
+        forecastBills[forecastBillIndex].isEstimated = true;
+      }
     }
 
     // Sort by projected due date

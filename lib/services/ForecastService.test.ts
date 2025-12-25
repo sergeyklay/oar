@@ -310,6 +310,83 @@ describe('ForecastService', () => {
 
       expect(result.length).toBe(0);
     });
+
+    it('estimates multiple variable bills in parallel and applies estimates correctly', async () => {
+      const mockBills: BillWithTags[] = [
+        createMockBill({
+          id: 'bill-1',
+          title: 'Electric Bill',
+          isVariable: true,
+          dueDate: new Date('2025-03-15'),
+        }),
+        createMockBill({
+          id: 'bill-2',
+          title: 'Water Bill',
+          isVariable: true,
+          dueDate: new Date('2025-03-20'),
+        }),
+        createMockBill({
+          id: 'bill-3',
+          title: 'Gas Bill',
+          isVariable: true,
+          dueDate: new Date('2025-03-25'),
+        }),
+      ];
+      createDbMock(mockBills);
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+        new Map([
+          ['bill-1', []],
+          ['bill-2', []],
+          ['bill-3', []],
+        ])
+      );
+
+      const estimateCalls: string[] = [];
+      const estimateResolves: Array<() => void> = [];
+
+      (EstimationService.estimateAmount as jest.Mock).mockImplementation(
+        (billId: string) => {
+          estimateCalls.push(billId);
+
+          return new Promise<number>((resolve) => {
+            const resolveFn = () => {
+              const estimates: Record<string, number> = {
+                'bill-1': 15000,
+                'bill-2': 20000,
+                'bill-3': 18000,
+              };
+              resolve(estimates[billId] || 10000);
+            };
+            estimateResolves.push(resolveFn);
+          });
+        }
+      );
+
+      const resultPromise = ForecastService.getBillsForMonth('2025-03');
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(EstimationService.estimateAmount).toHaveBeenCalledTimes(3);
+      expect(estimateCalls).toEqual(['bill-1', 'bill-2', 'bill-3']);
+
+      estimateResolves.forEach((resolve) => resolve());
+      const result = await resultPromise;
+
+      expect(result).toHaveLength(3);
+      expect(result.find((b) => b.id === 'bill-1')?.displayAmount).toBe(15000);
+      expect(result.find((b) => b.id === 'bill-1')?.isEstimated).toBe(true);
+      expect(result.find((b) => b.id === 'bill-2')?.displayAmount).toBe(20000);
+      expect(result.find((b) => b.id === 'bill-2')?.isEstimated).toBe(true);
+      expect(result.find((b) => b.id === 'bill-3')?.displayAmount).toBe(18000);
+      expect(result.find((b) => b.id === 'bill-3')?.isEstimated).toBe(true);
+
+      expect(result[0].dueDate.getTime()).toBeLessThanOrEqual(
+        result[1].dueDate.getTime()
+      );
+      expect(result[1].dueDate.getTime()).toBeLessThanOrEqual(
+        result[2].dueDate.getTime()
+      );
+    });
   });
 
   describe('calculateSummary', () => {
