@@ -24,7 +24,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   ...overrides,
 });
 
-const renderBillRow = (bill: BillWithTags) => {
+const renderBillRow = (bill: BillWithTags, isArchived?: boolean) => {
   return render(
     <table>
       <tbody>
@@ -33,6 +33,7 @@ const renderBillRow = (bill: BillWithTags) => {
             bill={bill}
             currency="USD"
             locale="en-US"
+            isArchived={isArchived}
           />
         </tr>
       </tbody>
@@ -186,20 +187,7 @@ describe('BillRow', () => {
     it('displays "Never" as main text when isArchived is true', () => {
       const archivedBill = createMockBill({ isArchived: true, dueDate: new Date('2025-12-15') });
 
-      render(
-        <table>
-          <tbody>
-            <tr>
-              <BillRow
-                bill={archivedBill}
-                currency="USD"
-                locale="en-US"
-                isArchived={true}
-              />
-            </tr>
-          </tbody>
-        </table>
-      );
+      renderBillRow(archivedBill, true);
 
       expect(screen.getByText('Never')).toBeInTheDocument();
       expect(screen.queryByText(/due|overdue|paid/i)).not.toBeInTheDocument();
@@ -208,20 +196,7 @@ describe('BillRow', () => {
     it('displays "Archived" as subtitle when isArchived is true', () => {
       const archivedBill = createMockBill({ isArchived: true, dueDate: new Date('2025-12-15') });
 
-      render(
-        <table>
-          <tbody>
-            <tr>
-              <BillRow
-                bill={archivedBill}
-                currency="USD"
-                locale="en-US"
-                isArchived={true}
-              />
-            </tr>
-          </tbody>
-        </table>
-      );
+      renderBillRow(archivedBill, true);
 
       expect(screen.getByText('Archived')).toBeInTheDocument();
       expect(screen.queryByText(/Mon, Dec 15/i)).not.toBeInTheDocument();
@@ -230,20 +205,7 @@ describe('BillRow', () => {
     it('uses muted status bar color when isArchived is true', () => {
       const archivedBill = createMockBill({ isArchived: true, status: 'overdue' });
 
-      const { container } = render(
-        <table>
-          <tbody>
-            <tr>
-              <BillRow
-                bill={archivedBill}
-                currency="USD"
-                locale="en-US"
-                isArchived={true}
-              />
-            </tr>
-          </tbody>
-        </table>
-      );
+      const { container } = renderBillRow(archivedBill, true);
 
       const statusBar = container.querySelector('.bg-muted');
       expect(statusBar).toBeInTheDocument();
@@ -252,20 +214,7 @@ describe('BillRow', () => {
     it('displays normal due date when isArchived is false', () => {
       const activeBill = createMockBill({ isArchived: false, dueDate: new Date('2025-12-15'), status: 'pending' });
 
-      render(
-        <table>
-          <tbody>
-            <tr>
-              <BillRow
-                bill={activeBill}
-                currency="USD"
-                locale="en-US"
-                isArchived={false}
-              />
-            </tr>
-          </tbody>
-        </table>
-      );
+      renderBillRow(activeBill, false);
 
       expect(screen.queryByText('Never')).not.toBeInTheDocument();
       expect(screen.queryByText('Archived')).not.toBeInTheDocument();
@@ -275,19 +224,7 @@ describe('BillRow', () => {
     it('displays normal due date when isArchived prop is undefined', () => {
       const activeBill = createMockBill({ isArchived: false, dueDate: new Date('2025-12-15'), status: 'pending' });
 
-      render(
-        <table>
-          <tbody>
-            <tr>
-              <BillRow
-                bill={activeBill}
-                currency="USD"
-                locale="en-US"
-              />
-            </tr>
-          </tbody>
-        </table>
-      );
+      renderBillRow(activeBill);
 
       expect(screen.queryByText('Never')).not.toBeInTheDocument();
       expect(screen.queryByText('Archived')).not.toBeInTheDocument();
