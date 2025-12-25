@@ -10,6 +10,10 @@ interface RightPanelProps {
   currency: string;
   locale: string;
   weekStart: WeekStartDay;
+  /** Include archived bills when fetching bill details */
+  includeArchived?: boolean;
+  /** Disable date filter feedback in calendar */
+  disableDateFilter?: boolean;
 }
 
 /**
@@ -19,20 +23,20 @@ interface RightPanelProps {
  *
  * Server Component: calls BillService directly for read-only data.
  */
-export async function RightPanel({ selectedBillId, currency, locale, weekStart }: RightPanelProps) {
+export async function RightPanel({ selectedBillId, currency, locale, weekStart, includeArchived = false, disableDateFilter = false }: RightPanelProps) {
   if (!selectedBillId) {
-    return <CalendarPanel weekStartsOn={weekStart} />;
+    return <CalendarPanel weekStartsOn={weekStart} disableDateFilter={disableDateFilter} />;
   }
 
   const [bill, availableTags, categoriesGrouped, defaultCategoryId] = await Promise.all([
-    BillService.getWithTags(selectedBillId),
+    BillService.getWithTags(selectedBillId, includeArchived),
     getTags(),
     getCategoriesGrouped(),
     getDefaultCategoryId(),
   ]);
 
   if (!bill) {
-    return <CalendarPanel weekStartsOn={weekStart} />;
+    return <CalendarPanel weekStartsOn={weekStart} disableDateFilter={disableDateFilter} />;
   }
 
   return (

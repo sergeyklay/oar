@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-22
-- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md), [Editing Payment History](./011-editing-payment-history.md)
+- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md), [Editing Payment History](./011-editing-payment-history.md), [Archive Screen](./013-archive-screen.md)
 
 ## Overview
 
@@ -80,6 +80,7 @@ Click any payment row to view its details and edit or delete it. See [Editing Pa
 
 ## Edge cases and constraints
 
+* **Archived Bills:** When viewing an archived bill (accessed through the [Archive Screen](./013-archive-screen.md)), the panel behavior changes. The "Log Payment" and "Skip" buttons are hidden, the "Archive" button becomes "Unarchive," and the due date displays "Never / Archived" instead of relative dates. The header uses neutral colors rather than urgency-based status colors.
 * **One-time Bills:** The "Skip" button is disabled for bills that repeat "Never." These must either be paid or deleted.
 * **Already Paid:** If a bill is marked as "Paid" (common for one-time bills), both the Log Payment and Skip buttons are disabled.
 * **Partial Payment Visibility:** When you pay only part of a bill and choose not to advance the due date, the panel displays your remaining balance and the total base amount in parentheses. This ensures you never lose sight of the original commitment while celebrating progress.

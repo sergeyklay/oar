@@ -120,5 +120,60 @@ describe('CalendarWidget', () => {
     fireEvent.click(screen.getByRole('button', { name: /clear filter/i }));
     expect(mockClearDate).toHaveBeenCalled();
   });
+
+  it('hides date filter message when disableDateFilter is true', async () => {
+    (useCalendarState as jest.Mock).mockReturnValue({
+      month: '2025-12',
+      date: '2025-12-15',
+      selectedBill: null,
+      setMonth: mockSetMonth,
+      setDate: mockSetDate,
+      clearDate: mockClearDate,
+    });
+
+    await act(async () => {
+      render(<CalendarWidget disableDateFilter={true} />);
+    });
+
+    expect(screen.queryByText(/showing bills for/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('December 15, 2025')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /clear filter/i })).not.toBeInTheDocument();
+  });
+
+  it('shows date filter message when disableDateFilter is false', async () => {
+    (useCalendarState as jest.Mock).mockReturnValue({
+      month: '2025-12',
+      date: '2025-12-15',
+      selectedBill: null,
+      setMonth: mockSetMonth,
+      setDate: mockSetDate,
+      clearDate: mockClearDate,
+    });
+
+    await act(async () => {
+      render(<CalendarWidget disableDateFilter={false} />);
+    });
+
+    expect(screen.getByText(/showing bills for/i)).toBeInTheDocument();
+    expect(screen.getByText('December 15, 2025')).toBeInTheDocument();
+  });
+
+  it('shows date filter message when disableDateFilter is undefined', async () => {
+    (useCalendarState as jest.Mock).mockReturnValue({
+      month: '2025-12',
+      date: '2025-12-15',
+      selectedBill: null,
+      setMonth: mockSetMonth,
+      setDate: mockSetDate,
+      clearDate: mockClearDate,
+    });
+
+    await act(async () => {
+      render(<CalendarWidget />);
+    });
+
+    expect(screen.getByText(/showing bills for/i)).toBeInTheDocument();
+    expect(screen.getByText('December 15, 2025')).toBeInTheDocument();
+  });
 });
 

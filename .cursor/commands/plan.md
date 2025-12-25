@@ -137,7 +137,7 @@ Before finalizing the plan, verify:
 
 For a feature adding "payment reminders":
 
-```
+```markdown
 **Phase 1: Database Schema**
 - [ ] [Schema] Add `reminder_days` column to `bills` table in `db/schema.ts`
 - [ ] [Schema] Generate and apply migration

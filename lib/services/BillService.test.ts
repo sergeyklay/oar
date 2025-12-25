@@ -660,3 +660,135 @@ describe('BillService.getFiltered', () => {
   });
 });
 
+describe('BillService.getWithTags', () => {
+  beforeEach(() => {
+    resetDbMocks();
+    jest.clearAllMocks();
+  });
+
+  const mockBill = {
+    id: 'bill-1',
+    title: 'Test Bill',
+    amount: 10000,
+    amountDue: 10000,
+    dueDate: new Date('2025-12-15'),
+    endDate: null,
+    frequency: 'monthly' as const,
+    isAutoPay: false,
+    isVariable: false,
+    status: 'pending' as const,
+    isArchived: false,
+    notes: null,
+    categoryId: 'category-1',
+    createdAt: new Date('2025-01-01'),
+    updatedAt: new Date('2025-01-01'),
+  };
+
+  const mockCategoryIcon = 'house';
+
+  it('returns bill with tags when found and not archived', async () => {
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([
+              {
+                bill: mockBill,
+                categoryIcon: mockCategoryIcon,
+              },
+            ]),
+          }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              orderBy: jest.fn().mockResolvedValue([
+                {
+                  id: 'tag-1',
+                  name: 'Utilities',
+                  slug: 'utilities',
+                  createdAt: new Date('2025-01-01'),
+                },
+              ]),
+            }),
+          }),
+        }),
+      });
+
+    const result = await BillService.getWithTags('bill-1');
+
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe('bill-1');
+    expect(result?.categoryIcon).toBe('house');
+    expect(result?.tags).toHaveLength(1);
+    expect(result?.tags[0].slug).toBe('utilities');
+  });
+
+  it('returns null when bill is archived and includeArchived is false', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        innerJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      }),
+    });
+
+    const result = await BillService.getWithTags('bill-archived', false);
+
+    expect(result).toBeNull();
+  });
+
+  it('returns archived bill when includeArchived is true', async () => {
+    const archivedBill = {
+      ...mockBill,
+      id: 'bill-archived',
+      isArchived: true,
+    };
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockResolvedValue([
+              {
+                bill: archivedBill,
+                categoryIcon: mockCategoryIcon,
+              },
+            ]),
+          }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              orderBy: jest.fn().mockResolvedValue([]),
+            }),
+          }),
+        }),
+      });
+
+    const result = await BillService.getWithTags('bill-archived', true);
+
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe('bill-archived');
+    expect(result?.isArchived).toBe(true);
+  });
+
+  it('returns null when bill not found', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        innerJoin: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      }),
+    });
+
+    const result = await BillService.getWithTags('nonexistent');
+
+    expect(result).toBeNull();
+  });
+});
+

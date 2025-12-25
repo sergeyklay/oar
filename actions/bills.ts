@@ -223,6 +223,21 @@ export async function getBillsForDueSoonStats(): Promise<{
 }
 
 /**
+ * Fetches summary statistics for archived bills.
+ *
+ * Used by Sidebar to display Archive menu item subtitle.
+ *
+ * @returns Summary stats: count of archived bills
+ */
+export async function getArchivedBillsStats(): Promise<{
+  count: number;
+}> {
+  const allBills = await BillService.getFiltered({ includeArchived: true });
+  const archivedBills = allBills.filter((bill) => bill.isArchived);
+  return { count: archivedBills.length };
+}
+
+/**
  * Updates an existing bill with tag associations.
  *
  * @param input - Bill data with ID for update
@@ -326,6 +341,7 @@ export async function archiveBill(
       .where(eq(bills.id, id));
 
     revalidatePath('/');
+    revalidatePath('/archive');
 
     return { success: true };
   } catch (error) {

@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-22
-- **Related:** [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Logging Payments](./002-auto-pay.md)
+- **Related:** [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Logging Payments](./002-auto-pay.md), [Archive Screen](./013-archive-screen.md)
 
 ## Overview
 
@@ -106,7 +106,7 @@ See the [Logging Payments](./002-auto-pay.md) documentation for details on the p
 
 Clicking anywhere on a bill row opens the **Bill Detail Panel**. Management actions for the selected bill are located at the bottom of this panel:
 
-- **Archive:** Moves the bill to your archive (removes it from active views).
+- **Archive:** Moves the bill to your archive (removes it from active views). Archived bills can be accessed through the [Archive Screen](./013-archive-screen.md).
 - **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags.
 - **Delete:** Removes the bill entirely (requires confirmation).
 

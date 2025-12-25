@@ -27,10 +27,7 @@ interface AutoPayResult {
  * 1. Creating a transaction record (audit trail)
  * 2. Advancing the bill to its next due date
  *
- * This service only marks payments as paid locally - no actual payment is made by the system.
- * This preserves the "Active Payer" philosophy because the user
- * consciously enabled auto-pay—it's a deliberate delegation and reducing manual bookkeeping for
- * externally-automated bills.
+ * Only marks payments as paid locally - no actual payment is made by the system.
  */
 export const AutoPayService = {
   /**

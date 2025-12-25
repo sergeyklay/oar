@@ -39,6 +39,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 |----------|-------------|
 | [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
 | [Due This Month Screen](./features/004-due-this-month.md) | Bills due in the current calendar month |
+| [Archive Screen](./features/013-archive-screen.md) | Viewing and managing archived bills |
 
 ### Actions
 

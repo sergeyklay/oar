@@ -132,9 +132,30 @@
   border-bottom: 1px solid hsl(var(--border));
 }
 
+.bill-table th:nth-child(1),
+.bill-table td:nth-child(1) {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+.bill-table th:nth-child(3),
+.bill-table td:nth-child(3) {
+  width: 140px;
+  min-width: 140px;
+}
+
+.bill-table th:nth-child(4),
+.bill-table td:nth-child(4) {
+  width: 280px;
+  min-width: 280px;
+}
+
 .bill-table td {
   padding: 16px;
   border-bottom: 1px solid hsl(var(--border));
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bill-table tbody tr:hover {
