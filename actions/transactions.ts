@@ -149,7 +149,6 @@ export async function logPayment(
 
     // 6. Revalidate UI
     revalidatePath('/');
-    revalidatePath(`/bills/${billId}`);
 
     return {
       success: true,

@@ -341,7 +341,6 @@ export async function archiveBill(
       .where(eq(bills.id, id));
 
     revalidatePath('/');
-    revalidatePath('/archive');
 
     return { success: true };
   } catch (error) {
