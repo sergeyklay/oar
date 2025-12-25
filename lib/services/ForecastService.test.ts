@@ -36,7 +36,10 @@ describe('ForecastService', () => {
   });
 
   const createDbMock = (billsToReturn: BillWithTags[]) => {
-    const joinedBills = billsToReturn.map((bill) => ({
+    const filteredBills = billsToReturn.filter(
+      (bill) => !bill.isArchived && bill.status !== 'paid'
+    );
+    const joinedBills = filteredBills.map((bill) => ({
       bill: {
         id: bill.id,
         title: bill.title,
@@ -71,7 +74,10 @@ describe('ForecastService', () => {
     tagSlug: string,
     tagId = 'tag-1'
   ) => {
-    const joinedBills = billsToReturn.map((bill) => ({
+    const filteredBills = billsToReturn.filter(
+      (bill) => !bill.isArchived && bill.status !== 'paid'
+    );
+    const joinedBills = filteredBills.map((bill) => ({
       bill: {
         id: bill.id,
         title: bill.title,
@@ -92,7 +98,7 @@ describe('ForecastService', () => {
       categoryIcon: bill.categoryIcon,
     }));
 
-    const billIds = billsToReturn.map((bill) => bill.id);
+    const billIds = filteredBills.map((bill) => bill.id);
 
     (db.select as jest.Mock)
       .mockReturnValueOnce({
@@ -102,9 +108,7 @@ describe('ForecastService', () => {
       })
       .mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue(billIds.map((id) => ({ billId: id }))),
-          }),
+          where: jest.fn().mockResolvedValue(billIds.map((id) => ({ billId: id }))),
         }),
       })
       .mockReturnValueOnce({
