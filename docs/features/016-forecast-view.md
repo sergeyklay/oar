@@ -83,7 +83,7 @@ All amounts display in your configured currency format. The summary updates imme
 
 ## Edge cases
 
-**Empty months.** When no bills have occurrences in the selected month, the table shows an empty state: "No bills due in [Month Year]." The summary panel shows all zeros. This happens when you select a month where none of your recurring bills fall, or when tag filtering excludes all bills.
+**Empty months.** When no bills have occurrences in the selected month, the table shows an empty state: "No bills due in [Month Year]." The summary panel shows all zeros. This happens when you select a month when none of your recurring bills fall, or when tag filtering excludes all bills.
 
 **Bills with end dates.** If a bill has an end date that falls before the selected month, it won't appear in the forecast. The projection logic checks end dates and skips bills that have already concluded. For example, a bill ending March 31 won't appear in April projections.
 
@@ -91,7 +91,7 @@ All amounts display in your configured currency format. The summary updates imme
 
 **Variable bills with no history.** When a variable bill has no payment history, the system uses its base amount as the estimate. The amount still shows as estimated (with visual distinction) so you know it's a projection. As you log payments, future forecasts will use those payments to improve estimates.
 
-**Very small amortization amounts.** For bills with very long recurrence periods or small amounts, the monthly "Amount to Save" may round to zero or a very small value. For example, a $1 bill every 12 months rounds to $0.08 per month. The system always rounds to the nearest cent (minor unit), so very small amounts are preserved.
+**Small amortization amounts.** For bills with long recurrence periods or small amounts, the monthly "Amount to Save" may round to cents. For example, a $1 bill every 12 months rounds to $0.08 per month. The system always rounds to the nearest cent (minor unit), preserving fractional amounts.
 
 **Month boundaries and leap years.** The projection logic handles month boundaries correctly, including leap years. A bill due February 29 in a leap year projects correctly to the next occurrence, even if the next year isn't a leap year (it moves to February 28 or March 1, depending on the recurrence pattern).
 
@@ -123,7 +123,7 @@ To confirm the Forecast View works correctly:
 6. Review the summary panel. Verify "Total Due" sums all bill amounts, "Total to Save" sums amortization amounts, and "Grand Total" combines both.
 7. Select a tag from the filter. Verify only bills with that tag appear in the selected month.
 8. Click the settings icon to open the popover. Toggle each checkbox independently. Verify the "Amount to Save" column hides when "Show Amount to Save" is unchecked, and estimate indicators hide when "Show Estimates" is unchecked. Verify the button shows an active state when either setting is disabled.
-9. Select a month where no bills have occurrences. Verify the empty state message appears.
+9. Select a month when no bills have occurrences. Verify the empty state message appears.
 10. Select a past month. Verify bills that should have been due in that month appear correctly.
 11. Check a bill with an end date. Select a month after the end date. Verify the bill doesn't appear.
 12. Verify one-time bills only appear in their specific due month, not in other months.
