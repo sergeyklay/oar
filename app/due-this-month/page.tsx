@@ -16,7 +16,7 @@ interface DueThisMonthPageProps {
 export default async function DueThisMonthPage({
   searchParams,
 }: DueThisMonthPageProps) {
-  const { tag, selectedBill } = await searchParamsCache.parse(searchParams);
+  const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
   const settings = await SettingsService.getAll();
   const currentMonth = format(new Date(), 'yyyy-MM');
@@ -35,6 +35,7 @@ export default async function DueThisMonthPage({
       <MainContent header={<DueThisMonthHeader />}>
         <BillList
           month={currentMonth}
+          date={date ?? undefined}
           tag={tag ?? undefined}
           selectedBillId={selectedBill}
         />

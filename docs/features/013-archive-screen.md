@@ -1,7 +1,7 @@
 # Archive Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-01-27
+- **Last Updated:** 2025-12-23
 - **Related:** [Overview Screen](./005-overview-screen.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md)
 
 ## Overview
@@ -36,7 +36,9 @@ The Archive page uses the same table structure as other bill views, maintaining 
 
 Archived bills use a muted visual treatment to reinforce their inactive status. The due date column shows "Never" and "Archived" instead of relative dates, and the status bar (the colored vertical indicator) appears in a neutral gray rather than the urgency-based colors used for active bills.
 
-The calendar panel still appears on the right side, but it serves a different purpose here. Payment day indicators (dots) don't appear because archived bills are excluded from calendar calculations. Clicking calendar days has no effect on the Archive view - the page always shows all archived bills regardless of the selected date. The calendar remains functional for month navigation and highlighting the current day, maintaining interface consistency.
+The calendar panel still appears on the right side, but it serves a different purpose here. Payment day indicators (colored dots) are completely disabled on the Archive page. No dots appear below any dates, regardless of whether archived bills were originally due on those dates or whether payments were made on those dates. This visual distinction reinforces that archived bills are inactive and have no active due dates.
+
+Clicking calendar days has no effect on the Archive view - the page always shows all archived bills regardless of the selected date. The calendar remains functional for month navigation and highlighting the current day, maintaining interface consistency. The date filter feedback message (the "Showing bills for..." text) is also hidden on the Archive page, since date filtering doesn't apply to archived bills.
 
 ## Filtering archived bills
 
@@ -86,7 +88,7 @@ Both paths lead to the same Archive view. The Archive doesn't distinguish betwee
 
 **Unarchiving a bill with past due date.** When you unarchive a bill whose due date has passed, it immediately appears in your active views as overdue. The bill's urgency status returns based on its due date, not its archive status.
 
-**Calendar interaction.** The calendar on the Archive page is visible but non-functional for filtering. Clicking dates doesn't change which bills appear - the Archive always shows all archived bills regardless of date selection. This is intentional: archived bills have no active due dates, so date-based filtering doesn't apply.
+**Calendar interaction.** The calendar on the Archive page is visible but non-functional for filtering. Clicking dates doesn't change which bills appear - the Archive always shows all archived bills regardless of date selection. This is intentional: archived bills have no active due dates, so date-based filtering doesn't apply. The calendar displays with no colored dots at all, making it visually distinct from active bill views where dots indicate bill statuses or payment dates.
 
 **Bill detail panel styling.** Archived bills in the detail panel always use neutral colors (muted background, gray text) regardless of their original status. Even if a bill was overdue when archived, it doesn't show red colors in the Archive view because it's inactive.
 

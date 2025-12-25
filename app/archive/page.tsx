@@ -29,6 +29,7 @@ export default async function ArchivePage({
           weekStart={settings.weekStart}
           includeArchived={true}
           disableDateFilter={true}
+          dotMode="none"
         />
       }
     >

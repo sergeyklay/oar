@@ -14,6 +14,16 @@ Foundational decisions about system design and technical direction.
 
 Explanations of user-facing functionality and domain logic. Start with the foundation concepts, then explore the interface, actions, and advanced features.
 
+### Views
+
+| Document | Description |
+|----------|-------------|
+| [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
+| [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
+| [Due This Month Screen](./features/004-due-this-month.md) | Bills due in the current calendar month |
+| [Paid Recently Screen](./features/014-paid-recently-screen.md) | Payments made within a configurable lookback period |
+| [Archive Screen](./features/013-archive-screen.md) | Viewing and managing archived bills |
+
 ### Foundation
 
 | Document | Description |
@@ -24,7 +34,6 @@ Explanations of user-facing functionality and domain logic. Start with the found
 
 | Document | Description |
 |----------|-------------|
-| [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
 | [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 
 ### Organization
@@ -32,14 +41,6 @@ Explanations of user-facing functionality and domain logic. Start with the found
 | Document | Description |
 |----------|-------------|
 | [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
-
-### Views
-
-| Document | Description |
-|----------|-------------|
-| [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
-| [Due This Month Screen](./features/004-due-this-month.md) | Bills due in the current calendar month |
-| [Archive Screen](./features/013-archive-screen.md) | Viewing and managing archived bills |
 
 ### Actions
 
