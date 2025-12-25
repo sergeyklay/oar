@@ -20,6 +20,12 @@ export type {
   BillCategoryGroupWithCategories,
 } from '@/db/schema';
 
+export type {
+  ForecastBill,
+  AmortizationResult,
+  ForecastSummary,
+} from '@/lib/services/ForecastService';
+
 /**
  * Standardized result wrapper for Server Actions and operations.
  *

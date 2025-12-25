@@ -1,6 +1,6 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills } from '@/db';
-import { PaymentWithBill } from '@/lib/types';
+import { PaymentWithBill, Transaction } from '@/lib/types';
 import { startOfDay, endOfDay, subDays, parse } from 'date-fns';
 
 jest.mock('@/db', () => ({
@@ -28,6 +28,7 @@ jest.mock('@/db', () => ({
 const mockGte = jest.fn();
 const mockLte = jest.fn();
 const mockAnd = jest.fn();
+const mockEq = jest.fn();
 
 jest.mock('drizzle-orm', () => ({
   gte: (...args: unknown[]) => {
@@ -43,7 +44,10 @@ jest.mock('drizzle-orm', () => ({
     return { type: 'and', args };
   },
   desc: jest.fn((col) => ({ type: 'desc', col })),
-  eq: jest.fn((a, b) => ({ type: 'eq', a, b })),
+  eq: (...args: unknown[]) => {
+    mockEq(...args);
+    return { type: 'eq', a: args[0], b: args[1] };
+  },
 }));
 
 describe('TransactionService', () => {
@@ -284,6 +288,191 @@ describe('TransactionService', () => {
 
       expect(result).toEqual(mockPayments);
       expect(fromMock).toHaveBeenCalledWith(transactions);
+    });
+  });
+
+  describe('getByBillId', () => {
+    const mockTransactions: Transaction[] = [
+      {
+        id: 'tx-1',
+        billId: 'bill-1',
+        amount: 10000,
+        paidAt: new Date('2025-01-15'),
+        notes: null,
+        createdAt: new Date('2025-01-15'),
+      },
+      {
+        id: 'tx-2',
+        billId: 'bill-1',
+        amount: 12000,
+        paidAt: new Date('2025-02-15'),
+        notes: null,
+        createdAt: new Date('2025-02-15'),
+      },
+      {
+        id: 'tx-3',
+        billId: 'bill-1',
+        amount: 11000,
+        paidAt: new Date('2025-03-15'),
+        notes: null,
+        createdAt: new Date('2025-03-15'),
+      },
+    ];
+
+    const setupDbMock = (returnValue: Transaction[]) => {
+      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
+      const fromMock = jest.fn().mockReturnValue({ where: whereMock });
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return { orderByMock, whereMock, fromMock };
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('fetches all transactions for a bill', async () => {
+      const { fromMock } = setupDbMock(mockTransactions);
+
+      const result = await TransactionService.getByBillId('bill-1');
+
+      expect(result).toEqual(mockTransactions);
+      expect(db.select).toHaveBeenCalled();
+      expect(fromMock).toHaveBeenCalledWith(transactions);
+      expect(mockAnd).not.toHaveBeenCalled();
+    });
+
+    it('orders by paidAt ascending by default', async () => {
+      const { orderByMock } = setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillId('bill-1');
+
+      expect(orderByMock).toHaveBeenCalledWith(transactions.paidAt);
+    });
+
+    it('orders by paidAt descending when specified', async () => {
+      const { orderByMock } = setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillId('bill-1', { orderBy: 'paidAt DESC' });
+
+      expect(orderByMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'desc' }));
+    });
+
+    it('applies limit when specified', async () => {
+      setupDbMock(mockTransactions);
+
+      const result = await TransactionService.getByBillId('bill-1', { limit: 2 });
+
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(mockTransactions.slice(0, 2));
+    });
+
+    it('returns empty array when no transactions found', async () => {
+      setupDbMock([]);
+
+      const result = await TransactionService.getByBillId('bill-1');
+
+      expect(result).toEqual([]);
+    });
+
+    it('filters by billId correctly', async () => {
+      setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillId('bill-1');
+
+      expect(mockEq).toHaveBeenCalledWith(transactions.billId, 'bill-1');
+    });
+  });
+
+  describe('getByBillIdAndMonth', () => {
+    const mockTransactions: Transaction[] = [
+      {
+        id: 'tx-1',
+        billId: 'bill-1',
+        amount: 25000,
+        paidAt: new Date('2024-03-20'),
+        notes: null,
+        createdAt: new Date('2024-03-20'),
+      },
+      {
+        id: 'tx-2',
+        billId: 'bill-1',
+        amount: 24000,
+        paidAt: new Date('2024-03-10'),
+        notes: null,
+        createdAt: new Date('2024-03-10'),
+      },
+    ];
+
+    const setupDbMock = (returnValue: Transaction[]) => {
+      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
+      const fromMock = jest.fn().mockReturnValue({ where: whereMock });
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return { orderByMock, whereMock, fromMock };
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('fetches transactions for specific month and year', async () => {
+      const { fromMock } = setupDbMock(mockTransactions);
+
+      const result = await TransactionService.getByBillIdAndMonth('bill-1', 3, 2024);
+
+      expect(result).toEqual(mockTransactions);
+      expect(db.select).toHaveBeenCalled();
+      expect(fromMock).toHaveBeenCalledWith(transactions);
+    });
+
+    it('filters by billId and month range', async () => {
+      setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillIdAndMonth('bill-1', 3, 2024);
+
+      expect(mockEq).toHaveBeenCalledWith(transactions.billId, 'bill-1');
+      expect(mockGte).toHaveBeenCalled();
+      expect(mockLte).toHaveBeenCalled();
+      expect(mockAnd).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'eq' }),
+        expect.objectContaining({ type: 'gte' }),
+        expect.objectContaining({ type: 'lte' })
+      );
+    });
+
+    it('orders by paidAt descending', async () => {
+      const { orderByMock } = setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillIdAndMonth('bill-1', 3, 2024);
+
+      expect(orderByMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'desc' }));
+    });
+
+    it('returns empty array when no transactions found for month', async () => {
+      setupDbMock([]);
+
+      const result = await TransactionService.getByBillIdAndMonth('bill-1', 3, 2024);
+
+      expect(result).toEqual([]);
+    });
+
+    it('handles January correctly (month 1)', async () => {
+      setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillIdAndMonth('bill-1', 1, 2024);
+
+      expect(mockEq).toHaveBeenCalledWith(transactions.billId, 'bill-1');
+    });
+
+    it('handles December correctly (month 12)', async () => {
+      setupDbMock(mockTransactions);
+
+      await TransactionService.getByBillIdAndMonth('bill-1', 12, 2024);
+
+      expect(mockEq).toHaveBeenCalledWith(transactions.billId, 'bill-1');
     });
   });
 });

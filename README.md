@@ -18,7 +18,7 @@ Sovereignty by default. Your data lives on your machine. No cloud sync, no telem
 ## Features
 
 - **Manual payment logging** - Each payment is a deliberate act, not a background process
-- **Forecasting and liquidity planning** - See your cash flow before it happens (*coming soon, not implemented yet*)
+- **Forecasting and liquidity planning** - See your cash flow before it happens
 - **Sinking funds** - Know exactly how much to save for upcoming obligations
 - **Local-first architecture** - Works offline, stores everything in SQLite
 

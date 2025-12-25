@@ -21,6 +21,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 | [Overview View](./features/005-overview-view.md) | The main view for managing all bills |
 | [Due Soon View](./features/008-due-soon-view.md) | Bills due within a configurable time range |
 | [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
+| [Forecast View](./features/016-forecast-view.md) | Projecting future financial liabilities by month |
 | [Paid Recently View](./features/014-paid-recently-view.md) | Payments made within a configurable lookback period |
 | [Archive View](./features/013-archive-view.md) | Viewing and managing archived bills |
 

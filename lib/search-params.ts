@@ -1,4 +1,4 @@
-import { createSearchParamsCache, parseAsString } from 'nuqs/server';
+import { createSearchParamsCache, parseAsString, parseAsBoolean } from 'nuqs/server';
 import { format } from 'date-fns';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 
@@ -42,3 +42,23 @@ export const settingsSearchParams = {
  * Server-side cache for reading settings page search params in RSC.
  */
 export const settingsSearchParamsCache = createSearchParamsCache(settingsSearchParams);
+
+/**
+ * Forecast view URL search params schema.
+ *
+ * - month: Selected month (YYYY-MM, defaults to current month)
+ * - tag: Filter by tag slug (optional)
+ * - showAmortization: Toggle for "Amount to Save" visibility (default: true)
+ * - showEstimates: Toggle for estimated amounts visibility (default: true)
+ */
+export const forecastSearchParams = {
+  month: parseAsString.withDefault(getCurrentMonth()),
+  tag: parseAsString,
+  showAmortization: parseAsBoolean.withDefault(true),
+  showEstimates: parseAsBoolean.withDefault(true),
+};
+
+/**
+ * Server-side cache for reading forecast page search params in RSC.
+ */
+export const forecastSearchParamsCache = createSearchParamsCache(forecastSearchParams);
