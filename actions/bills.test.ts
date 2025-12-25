@@ -70,6 +70,7 @@ const createMockBillWithTags = (overrides: Partial<BillWithTags> = {}): BillWith
 describe('createBill', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('converts float amount string to integer minor units', async () => {
@@ -155,8 +156,6 @@ describe('createBill', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    const mockLogger = getLogger('Actions:Bills') as unknown as { error: jest.Mock };
-
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
         returning: jest.fn().mockRejectedValue(new Error('DB error')),
@@ -173,7 +172,9 @@ describe('createBill', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to create bill. Please try again.');
-    expect(mockLogger.error).toHaveBeenCalled();
+
+    const logger = getLogger('Actions:Bills');
+    expect(logger.error).toHaveBeenCalled();
   });
 
   it('persists isVariable flag when set to true', async () => {
@@ -293,6 +294,7 @@ describe('createBill', () => {
 describe('updateBill', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('converts float amount string to integer minor units', async () => {
