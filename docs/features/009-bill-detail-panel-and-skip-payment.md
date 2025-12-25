@@ -5,7 +5,7 @@
 
 ## Overview
 
-Oar emphasizes intentionality in financial management. While the Overview screen provides a high-level table view of your obligations, the **Bill Detail Panel** is where you focus on a specific commitment and decide how to handle it.
+Oar emphasizes intentionality in financial management. While the Overview view provides a high-level table view of your obligations, the **Bill Detail Panel** is where you focus on a specific commitment and decide how to handle it.
 
 The panel appears when you click on a bill in any list. It strips away the surrounding noise to present a clear "Active Payer" decision point: do you pay this bill now, or do you skip this specific occurrence?
 
@@ -79,7 +79,7 @@ Click any payment row to view its details and edit or delete it. See [Editing Pa
 
 ## Edge cases and constraints
 
-* **Archived Bills:** When viewing an archived bill (accessed through the [Archive Screen](./013-archive-screen.md)), the panel behavior changes. The "Log Payment" and "Skip" buttons are hidden, the "Archive" button becomes "Unarchive," and the due date displays "Never / Archived" instead of relative dates. The header uses neutral colors rather than urgency-based status colors.
+* **Archived Bills:** When viewing an archived bill (accessed through the [Archive View](./013-archive-view.md)), the panel behavior changes. The "Log Payment" and "Skip" buttons are hidden, the "Archive" button becomes "Unarchive," and the due date displays "Never / Archived" instead of relative dates. The header uses neutral colors rather than urgency-based status colors.
 * **One-time Bills:** The "Skip" button is disabled for bills that repeat "Never." These must either be paid or deleted.
 * **Already Paid:** If a bill is marked as "Paid" (common for one-time bills), both the Log Payment and Skip buttons are disabled.
 * **Partial Payment Visibility:** When you pay only part of a bill and choose not to advance the due date, the panel displays your remaining balance and the total base amount in parentheses. This ensures you never lose sight of the original commitment while celebrating progress.
@@ -91,7 +91,7 @@ Click any payment row to view its details and edit or delete it. See [Editing Pa
 ## Verification
 
 To confirm the Bill Detail Panel works as expected:
-1. Open the Overview screen and click on a recurring bill.
+1. Open the Overview view and click on a recurring bill.
 2. Verify the panel slides in and the header background color matches the bill's urgency.
 3. Check that the amount is red if the bill is overdue.
 4. Log a partial payment (e.g., pay $50 of a $100 bill and disable "Update Due Date"). Verify the panel now displays "$50.00 ($100.00)".
@@ -105,7 +105,7 @@ To confirm the Bill Detail Panel works as expected:
 
 ## Related Documents
 
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 * [Editing Payment History](./011-editing-payment-history.md) - Correcting payment mistakes and managing payment records
-* [Archive Screen](./013-archive-screen.md) - Viewing and managing archived bills
+* [Archive View](./013-archive-view.md) - Viewing and managing archived bills

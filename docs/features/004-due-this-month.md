@@ -1,4 +1,4 @@
-# Due This Month Screen
+# Due This Month View
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
@@ -13,7 +13,7 @@ The sidebar navigation displays a summary below the "Due This Month" menu item s
 
 ## How it differs from Overview
 
-The [Overview screen](./005-overview-screen.md) shows all your bills, optionally filtered by a specific date or tag. The Due This Month view automatically filters to show only unpaid bills due in the current calendar month.
+The [Overview view](./005-overview-view.md) shows all your bills, optionally filtered by a specific date or tag. The Due This Month view automatically filters to show only unpaid bills due in the current calendar month.
 
 **Overview:**
 - Shows all bills by default
@@ -110,5 +110,5 @@ To confirm the Due This Month feature works:
 
 ## Related Documents
 
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection

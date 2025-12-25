@@ -22,7 +22,7 @@ By labeling these bills explicitly in the Overview, we shift the type of control
 
 ## The auto/manual indicator
 
-Every bill in the [Overview Screen](./005-overview-screen.md) displays its payment mode right below the title, alongside its repeat interval.
+Every bill in the [Overview View](./005-overview-view.md) displays its payment mode right below the title, alongside its repeat interval.
 
 ### Visual Representation
 
@@ -60,7 +60,7 @@ To confirm the signals are working as intended:
 
 ## Related Documents
 
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 * [Background Jobs](./006-background-jobs.md) - Automated system tasks
 

@@ -70,5 +70,5 @@ To confirm the sidebar toggle works:
 
 ## Related Documents
 
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) - Categorizing bills with tags

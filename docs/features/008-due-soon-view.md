@@ -1,17 +1,17 @@
-# Due Soon Screen
+# Due Soon View
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
 
 ## Overview
 
-The Due Soon screen answers one question: "What needs my attention right now?" While the [Due This Month](./004-due-this-month.md) view shows your full monthly picture, Due Soon narrows the focus to imminent obligations.
+The Due Soon view answers one question: "What needs my attention right now?" While the [Due This Month](./004-due-this-month.md) view shows your full monthly picture, Due Soon narrows the focus to imminent obligations.
 
 The range is configurable. Set it to 3 days for tight weekly reviews, or stretch it to 30 days for monthly planning sessions. This flexibility lets you tune the view to match your personal financial rhythm.
 
 ## How it differs from Due This Month
 
-Both screens filter for unpaid bills, but they use different time windows:
+Both views filter for unpaid bills, but they use different time windows:
 
 **Due This Month:**
 - Fixed to the current calendar month (1st through last day)
@@ -125,6 +125,6 @@ To confirm the Due Soon feature works:
 
 ## Related Documents
 
-* [Due This Month Screen](./004-due-this-month.md) - Bills due in the current calendar month
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 

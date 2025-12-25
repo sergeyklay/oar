@@ -139,4 +139,4 @@ To confirm historical payment detection works:
 
 * [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
 * [Background Jobs](./006-background-jobs.md) - Automated system tasks
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills

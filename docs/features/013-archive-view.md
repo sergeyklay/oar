@@ -1,4 +1,4 @@
-# Archive Screen
+# Archive View
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
@@ -11,7 +11,7 @@ The Archive maintains the Active Payer philosophy by keeping archived bills acce
 
 ## Why archive exists
 
-Active bill views focus on what needs your attention now. The Overview screen shows all active bills, Due Soon highlights imminent obligations, and Due This Month displays your monthly commitments. Archived bills don't belong in these views because they represent past or paused commitments.
+Active bill views focus on what needs your attention now. The Overview view shows all active bills, Due Soon highlights imminent obligations, and Due This Month displays your monthly commitments. Archived bills don't belong in these views because they represent past or paused commitments.
 
 The Archive serves as a dedicated space for bills that are temporarily or permanently inactive. Whether you manually archived a bill because you paused a subscription, or it was automatically archived when it ended (if you configured the "After a Bill Ends" setting to "Move to the Archive"), the Archive keeps them organized and accessible.
 
@@ -114,7 +114,7 @@ To confirm the Archive feature works as expected:
 
 ## Related Documents
 
-* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
 * [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) - What happens when a bill ends
 

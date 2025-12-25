@@ -1,17 +1,17 @@
-# Paid Recently Screen
+# Paid Recently View
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
 
 ## Overview
 
-The Paid Recently screen shows payments you've logged within a configurable lookback period. Unlike bill views that focus on upcoming obligations, this screen looks backward to show what you've already paid. It helps you track your payment activity and verify that payments were recorded correctly.
+The Paid Recently view shows payments you've logged within a configurable lookback period. Unlike bill views that focus on upcoming obligations, this view looks backward to show what you've already paid. It helps you track your payment activity and verify that payments were recorded correctly.
 
 The range is configurable from 0 to 30 days, letting you adjust how far back you want to see. Set it to 3 days for a tight view of recent activity, or stretch it to 30 days for a broader payment history review.
 
 ## How it differs from bill views
 
-Bill views like Overview, Due Soon, and Due This Month show unpaid bills - what you still need to pay. The Paid Recently screen shows completed payments - what you've already paid. These views complement each other: one shows obligations, the other shows completed transactions.
+Bill views like Overview, Due Soon, and Due This Month show unpaid bills - what you still need to pay. The Paid Recently view shows completed payments - what you've already paid. These views complement each other: one shows obligations, the other shows completed transactions.
 
 **Bill views:**
 - Show unpaid bills with due dates
@@ -128,6 +128,6 @@ To confirm the Paid Recently feature works:
 
 ## Related Documents
 
-* [Due Soon Screen](./008-due-soon-screen.md) - Bills due within a configurable time range
+* [Due Soon View](./008-due-soon-view.md) - Bills due within a configurable time range
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 

@@ -18,11 +18,11 @@ Explanations of user-facing functionality and domain logic. Start with the found
 
 | Document | Description |
 |----------|-------------|
-| [Overview Screen](./features/005-overview-screen.md) | The main screen for managing all bills |
-| [Due Soon Screen](./features/008-due-soon-screen.md) | Bills due within a configurable time range |
-| [Due This Month Screen](./features/004-due-this-month.md) | Bills due in the current calendar month |
-| [Paid Recently Screen](./features/014-paid-recently-screen.md) | Payments made within a configurable lookback period |
-| [Archive Screen](./features/013-archive-screen.md) | Viewing and managing archived bills |
+| [Overview View](./features/005-overview-view.md) | The main view for managing all bills |
+| [Due Soon View](./features/008-due-soon-view.md) | Bills due within a configurable time range |
+| [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
+| [Paid Recently View](./features/014-paid-recently-view.md) | Payments made within a configurable lookback period |
+| [Archive View](./features/013-archive-view.md) | Viewing and managing archived bills |
 
 ### Foundation
 
