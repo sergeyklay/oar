@@ -28,7 +28,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:seed": "tsx scripts/seed-development.ts",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate"
   },
