@@ -66,6 +66,58 @@ describe('ForecastService', () => {
     return { orderByMock, whereMock, innerJoinMock, fromMock };
   };
 
+  const createDbMockWithTagFilter = (
+    billsToReturn: BillWithTags[],
+    tagSlug: string,
+    tagId = 'tag-1'
+  ) => {
+    const joinedBills = billsToReturn.map((bill) => ({
+      bill: {
+        id: bill.id,
+        title: bill.title,
+        amount: bill.amount,
+        amountDue: bill.amountDue,
+        dueDate: bill.dueDate,
+        endDate: bill.endDate,
+        frequency: bill.frequency,
+        isAutoPay: bill.isAutoPay,
+        isVariable: bill.isVariable,
+        status: bill.status,
+        isArchived: bill.isArchived,
+        notes: bill.notes,
+        categoryId: bill.categoryId,
+        createdAt: bill.createdAt,
+        updatedAt: bill.updatedAt,
+      },
+      categoryIcon: bill.categoryIcon,
+    }));
+
+    const billIds = billsToReturn.map((bill) => bill.id);
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([{ id: tagId }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue(
+            billIds.map((billId) => ({ billId }))
+          ),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          innerJoin: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({
+              orderBy: jest.fn().mockResolvedValue(joinedBills),
+            }),
+          }),
+        }),
+      });
+  };
+
   describe('getBillsForMonth', () => {
     it('projects bills with default forecast data for non-variable bills', async () => {
       const mockBills: BillWithTags[] = [createMockBill()];
@@ -85,48 +137,7 @@ describe('ForecastService', () => {
 
     it('applies tag filter when provided', async () => {
       const mockBills: BillWithTags[] = [createMockBill()];
-      createDbMock(mockBills);
-
-      (db.select as jest.Mock)
-        .mockReturnValueOnce({
-          from: jest.fn().mockReturnValue({ where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]) }),
-        })
-        .mockReturnValueOnce({
-          from: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
-          }),
-        })
-        .mockReturnValueOnce({
-          from: jest.fn().mockReturnValue({
-            innerJoin: jest.fn().mockReturnValue({
-              where: jest.fn().mockReturnValue({
-                orderBy: jest.fn().mockResolvedValue([
-                  {
-                    bill: {
-                      id: 'bill-1',
-                      title: 'Test Bill',
-                      amount: 10000,
-                      amountDue: 10000,
-                      dueDate: new Date('2025-03-15'),
-                      endDate: null,
-                      frequency: 'monthly',
-                      isAutoPay: false,
-                      isVariable: false,
-                      status: 'pending',
-                      isArchived: false,
-                      notes: null,
-                      categoryId: 'category-1',
-                      createdAt: new Date('2025-01-01'),
-                      updatedAt: new Date('2025-01-01'),
-                    },
-                    categoryIcon: 'house',
-                  },
-                ]),
-              }),
-            }),
-          }),
-        });
-
+      createDbMockWithTagFilter(mockBills, 'utilities');
       (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
         new Map([['bill-1', []]])
       );
@@ -389,207 +400,79 @@ describe('ForecastService', () => {
     });
 
     describe('twice-monthly edge cases for month-end dates', () => {
-      it('projects twice-monthly bill with dueDate on 29th in same month as dueDate', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-29'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
+      it.each([
+        { dueDate: '2025-01-29', targetMonth: '2025-01', expectedDate: 29 },
+        { dueDate: '2025-01-30', targetMonth: '2025-01', expectedDate: 30 },
+        { dueDate: '2025-01-31', targetMonth: '2025-01', expectedDate: 31 },
+      ])(
+        'projects twice-monthly bill with dueDate on $dueDate in same month as dueDate',
+        async ({ dueDate, targetMonth, expectedDate }) => {
+          const mockBills: BillWithTags[] = [
+            createMockBill({
+              dueDate: new Date(dueDate),
+              frequency: 'twicemonthly' as const,
+            }),
+          ];
+          createDbMock(mockBills);
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+            new Map([['bill-1', []]])
+          );
 
-        const result = await ForecastService.getBillsForMonth('2025-01');
+          const result = await ForecastService.getBillsForMonth(targetMonth);
 
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(29);
-      });
+          expect(result.length).toBeGreaterThan(0);
+          expect(result[0].dueDate.getDate()).toBe(expectedDate);
+        }
+      );
 
-      it('projects twice-monthly bill with dueDate on 29th in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-29'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
+      it.each([
+        { dueDate: '2025-01-29', expectedDate: 15 },
+        { dueDate: '2025-01-30', expectedDate: 16 },
+        { dueDate: '2025-01-31', expectedDate: 17 },
+      ])(
+        'projects twice-monthly bill with dueDate on $dueDate in February (non-leap year), silently dropping invalid dates',
+        async ({ dueDate, expectedDate }) => {
+          const mockBills: BillWithTags[] = [
+            createMockBill({
+              dueDate: new Date(dueDate),
+              frequency: 'twicemonthly' as const,
+            }),
+          ];
+          createDbMock(mockBills);
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+            new Map([['bill-1', []]])
+          );
 
-        const result = await ForecastService.getBillsForMonth('2025-02');
+          const result = await ForecastService.getBillsForMonth('2025-02');
 
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(15);
-      });
+          expect(result.length).toBe(1);
+          expect(result[0].dueDate.getDate()).toBe(expectedDate);
+        }
+      );
 
-      it('projects twice-monthly bill with dueDate on 30th in same month as dueDate', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-30'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
+      it.each([
+        { dueDate: '2025-01-31', targetMonth: '2025-04', expectedDate: 17 },
+        { dueDate: '2025-01-31', targetMonth: '2025-06', expectedDate: 17 },
+      ])(
+        'projects twice-monthly bill with dueDate on $dueDate in months with 30 days, silently dropping 31st',
+        async ({ dueDate, targetMonth, expectedDate }) => {
+          const mockBills: BillWithTags[] = [
+            createMockBill({
+              dueDate: new Date(dueDate),
+              frequency: 'twicemonthly' as const,
+            }),
+          ];
+          createDbMock(mockBills);
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+            new Map([['bill-1', []]])
+          );
 
-        const result = await ForecastService.getBillsForMonth('2025-01');
+          const result = await ForecastService.getBillsForMonth(targetMonth);
 
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(30);
-      });
-
-      it('projects twice-monthly bill with dueDate on 30th in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-30'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-02');
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(16);
-      });
-
-      it('projects twice-monthly bill with dueDate on 31st in same month as dueDate', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-31'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-01');
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(31);
-      });
-
-      it('projects twice-monthly bill with dueDate on 31st in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-31'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-02');
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(17);
-      });
-
-      it('projects twice-monthly bill with dueDate on 31st in months with 30 days', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-31'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-04');
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].dueDate.getDate()).toBe(17);
-      });
-
-      it('verifies that 29th occurrence is silently dropped in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-29'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-02');
-
-        expect(result.length).toBe(1);
-        expect(result[0].dueDate.getDate()).toBe(15);
-        expect(result[0].dueDate.getDate()).not.toBe(29);
-      });
-
-      it('verifies that 30th occurrence is silently dropped in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-30'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-02');
-
-        expect(result.length).toBe(1);
-        expect(result[0].dueDate.getDate()).toBe(16);
-        expect(result[0].dueDate.getDate()).not.toBe(30);
-      });
-
-      it('verifies that 31st occurrence is silently dropped in February (non-leap year)', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-31'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-02');
-
-        expect(result.length).toBe(1);
-        expect(result[0].dueDate.getDate()).toBe(17);
-        expect(result[0].dueDate.getDate()).not.toBe(31);
-      });
-
-      it('verifies that 31st occurrence is silently dropped in months with 30 days', async () => {
-        const mockBills: BillWithTags[] = [
-          createMockBill({
-            dueDate: new Date('2025-01-31'),
-            frequency: 'twicemonthly' as const,
-          }),
-        ];
-        createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-          new Map([['bill-1', []]])
-        );
-
-        const result = await ForecastService.getBillsForMonth('2025-04');
-
-        expect(result.length).toBe(1);
-        expect(result[0].dueDate.getDate()).toBe(17);
-        expect(result[0].dueDate.getDate()).not.toBe(31);
-      });
+          expect(result.length).toBe(1);
+          expect(result[0].dueDate.getDate()).toBe(expectedDate);
+        }
+      );
     });
   });
 
