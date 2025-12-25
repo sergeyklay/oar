@@ -39,9 +39,9 @@ Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page op
 
 **Settings Toggle.** Click the settings icon to open a popover with two independent checkboxes. You can control each visibility option separately: "Show Amount to Save" controls whether the amortization column appears, and "Show Estimates" controls whether estimated amounts display with visual distinction. The button shows an active state when either setting is disabled, indicating that some columns are hidden. The calculations still happen regardless of visibility; they're hidden from view when unchecked. This lets you customize the interface to show only the information you need.
 
-**Sidebar Toggle.** Click to hide the left navigation sidebar, giving more space for the forecast chart and content.
+**Sidebar Toggle.** Click to hide the left navigation sidebar and expand the forecast chart and content.
 
-The main content area uses a vertical layout that maximizes the chart display. The forecast chart occupies the full width at the top, with no rounded corners and a flush connection to the section below. Below the chart, a two-column section displays the bills table on the left and the summary panel on the right. This layout gives the chart maximum horizontal space while keeping the summary totals easily accessible alongside the detailed bill list.
+The main content area uses a vertical layout that maximizes the chart display. The forecast chart occupies the full width at the top, with no rounded corners and a flush connection to the section below. Below the chart, a two-column section displays the bills table on the left and the summary panel on the right. This layout maximizes chart width and positions the summary totals alongside the bill list.
 
 ## Understanding estimated amounts
 
