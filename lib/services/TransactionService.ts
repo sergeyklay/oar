@@ -1,6 +1,6 @@
 import { db, transactions, bills, billCategories } from '@/db';
 import { gte, lte, desc, eq, and } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, isValid } from 'date-fns';
 import type { PaymentWithBill } from '@/lib/types';
 
 /**
@@ -46,9 +46,13 @@ export const TransactionService = {
    *
    * @param date - Date string in YYYY-MM-DD format
    * @returns Payments with bill information and category icons, ordered by paidAt descending
+   * @throws Error if date string is invalid or cannot be parsed
    */
   async getPaymentsByDate(date: string): Promise<PaymentWithBill[]> {
     const dateObj = parse(date, 'yyyy-MM-dd', new Date());
+    if (!isValid(dateObj)) {
+      throw new Error(`Invalid date format: "${date}". Expected YYYY-MM-DD format.`);
+    }
     const startDate = startOfDay(dateObj);
     const endDate = endOfDay(dateObj);
 

@@ -246,5 +246,44 @@ describe('TransactionService', () => {
 
       expect(orderByMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'desc' }));
     });
+
+    it('throws error for invalid date string', async () => {
+      await expect(TransactionService.getPaymentsByDate('not-a-date')).rejects.toThrow(
+        'Invalid date format: "not-a-date". Expected YYYY-MM-DD format.'
+      );
+    });
+
+    it('throws error for invalid month and day', async () => {
+      await expect(TransactionService.getPaymentsByDate('2025-13-45')).rejects.toThrow(
+        'Invalid date format: "2025-13-45". Expected YYYY-MM-DD format.'
+      );
+    });
+
+    it('throws error for invalid day for month', async () => {
+      await expect(TransactionService.getPaymentsByDate('2025-02-30')).rejects.toThrow(
+        'Invalid date format: "2025-02-30". Expected YYYY-MM-DD format.'
+      );
+    });
+
+    it('throws error for empty string', async () => {
+      await expect(TransactionService.getPaymentsByDate('')).rejects.toThrow(
+        'Invalid date format: "". Expected YYYY-MM-DD format.'
+      );
+    });
+
+    it('throws error for incomplete date', async () => {
+      await expect(TransactionService.getPaymentsByDate('2025-12')).rejects.toThrow(
+        'Invalid date format: "2025-12". Expected YYYY-MM-DD format.'
+      );
+    });
+
+    it('still works correctly with valid date', async () => {
+      const { fromMock } = setupDbMock(mockPayments);
+
+      const result = await TransactionService.getPaymentsByDate('2025-12-15');
+
+      expect(result).toEqual(mockPayments);
+      expect(fromMock).toHaveBeenCalledWith(transactions);
+    });
   });
 });
