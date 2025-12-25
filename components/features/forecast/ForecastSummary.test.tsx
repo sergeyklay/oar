@@ -2,28 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { ForecastSummary } from './ForecastSummary';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
-jest.mock('@/lib/services/ForecastService', () => ({
-  ForecastService: {
-    calculateSummary: jest.fn((bills: ForecastBill[]) => {
-      const totalDue = bills.reduce((sum, bill) => sum + bill.displayAmount, 0);
-      const totalToSave = bills.reduce((sum, bill) => {
-        if (bill.amortizationAmount !== null) {
-          return sum + bill.amortizationAmount;
-        }
-        return sum;
-      }, 0);
-      return {
-        totalDue,
-        totalToSave,
-        grandTotal: totalDue + totalToSave,
-      };
-    }),
-  },
-}));
-
+jest.mock('@/lib/services/ForecastService');
 jest.mock('@/lib/money', () => ({
   formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
+
+import { ForecastService } from '@/lib/services/ForecastService';
 
 const createMockBill = (id: string, displayAmount: number, amortizationAmount: number | null = null): ForecastBill => ({
   id,
@@ -49,7 +33,17 @@ const createMockBill = (id: string, displayAmount: number, amortizationAmount: n
 });
 
 describe('ForecastSummary', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('displays summary heading', () => {
+    (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+      totalDue: 0,
+      totalToSave: 0,
+      grandTotal: 0,
+    });
+
     render(
       <ForecastSummary
         bills={[]}
@@ -70,6 +64,12 @@ describe('ForecastSummary', () => {
         createMockBill('3', 15000),
       ];
 
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 45000,
+        totalToSave: 0,
+        grandTotal: 45000,
+      });
+
       render(
         <ForecastSummary
           bills={bills}
@@ -84,6 +84,12 @@ describe('ForecastSummary', () => {
     });
 
     it('displays zero when no bills are provided', () => {
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 0,
+        totalToSave: 0,
+        grandTotal: 0,
+      });
+
       render(
         <ForecastSummary
           bills={[]}
@@ -98,6 +104,12 @@ describe('ForecastSummary', () => {
     });
 
     it('updates count when bills array changes', () => {
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 10000,
+        totalToSave: 0,
+        grandTotal: 10000,
+      });
+
       const { rerender } = render(
         <ForecastSummary
           bills={[createMockBill('1', 10000)]}
@@ -108,6 +120,12 @@ describe('ForecastSummary', () => {
       );
 
       expect(screen.getByText('1')).toBeInTheDocument();
+
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 50000,
+        totalToSave: 0,
+        grandTotal: 50000,
+      });
 
       rerender(
         <ForecastSummary
@@ -134,6 +152,12 @@ describe('ForecastSummary', () => {
         createMockBill('2', 20000),
       ];
 
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 30000,
+        totalToSave: 0,
+        grandTotal: 30000,
+      });
+
       render(
         <ForecastSummary
           bills={bills}
@@ -158,6 +182,12 @@ describe('ForecastSummary', () => {
         createMockBill('2', 20000, 3000),
       ];
 
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 30000,
+        totalToSave: 8000,
+        grandTotal: 38000,
+      });
+
       render(
         <ForecastSummary
           bills={bills}
@@ -175,6 +205,12 @@ describe('ForecastSummary', () => {
       const bills = [
         createMockBill('1', 10000, 5000),
       ];
+
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 10000,
+        totalToSave: 5000,
+        grandTotal: 15000,
+      });
 
       render(
         <ForecastSummary
@@ -196,6 +232,12 @@ describe('ForecastSummary', () => {
         createMockBill('2', 20000, 3000),
       ];
 
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 30000,
+        totalToSave: 8000,
+        grandTotal: 38000,
+      });
+
       render(
         <ForecastSummary
           bills={bills}
@@ -214,6 +256,12 @@ describe('ForecastSummary', () => {
         createMockBill('1', 10000),
         createMockBill('2', 20000),
       ];
+
+      (ForecastService.calculateSummary as jest.Mock).mockReturnValue({
+        totalDue: 30000,
+        totalToSave: 0,
+        grandTotal: 30000,
+      });
 
       render(
         <ForecastSummary
