@@ -97,16 +97,16 @@ export function BillDetailPanel({
 
   const handleArchive = async () => {
     setIsArchiving(true);
-    const result = await archiveBill(bill.id, true);
+    const result = await archiveBill(bill.id, !bill.isArchived);
     setIsArchiving(false);
 
     if (result.success) {
-      toast.success('Bill archived', {
-        description: `"${bill.title}" has been archived.`,
+      toast.success(bill.isArchived ? 'Bill unarchived' : 'Bill archived', {
+        description: `"${bill.title}" has been ${bill.isArchived ? 'unarchived' : 'archived'}.`,
       });
       setSelectedBill(null);
     } else {
-      toast.error('Failed to archive bill', {
+      toast.error(`Failed to ${bill.isArchived ? 'unarchive' : 'archive'} bill`, {
         description: result.error ?? 'Please try again.',
       });
     }
@@ -130,14 +130,25 @@ export function BillDetailPanel({
     }
   };
 
+  const headerBgColor = bill.isArchived
+    ? 'bg-muted'
+    : DueDateService.getStatusBarColor(bill.dueDate, bill.status);
+  const headerTextColor = bill.isArchived ? 'text-foreground' : 'text-white';
+  const amountTextColor = bill.isArchived
+    ? 'text-foreground'
+    : isOverdue
+      ? 'text-red-500'
+      : 'text-white';
+  const dateTextColor = bill.isArchived ? 'text-muted-foreground' : 'text-zinc-300';
+
   return (
     <aside className="calendar-panel bg-card p-4 flex flex-col h-full">
       {/* Header */}
       <div
-        className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${DueDateService.getStatusBarColor(bill.dueDate, bill.status)}`}
+        className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${headerBgColor}`}
       >
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold truncate text-white">
+          <h2 className={`text-lg font-semibold truncate ${headerTextColor}`}>
             {bill.title}
           </h2>
         </div>
@@ -151,14 +162,14 @@ export function BillDetailPanel({
         {/* Status / Date / Amount Block - Hidden when history expanded */}
         {!isHistoryExpanded && (
           <div className="space-y-1">
-            <p className="text-xl font-medium text-white">
-              {DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
+            <p className={`text-xl font-medium ${headerTextColor}`}>
+              {bill.isArchived ? 'Never' : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
             </p>
-            <p className="text-sm text-zinc-300">
-              {format(bill.dueDate, 'EEEE, d MMMM yyyy')}
+            <p className={`text-sm ${dateTextColor}`}>
+              {bill.isArchived ? 'Archived' : format(bill.dueDate, 'EEEE, d MMMM yyyy')}
             </p>
             <p
-              className={`text-sm font-bold font-mono ${isOverdue ? 'text-red-500' : 'text-white'}`}
+              className={`text-sm font-bold font-mono ${amountTextColor}`}
             >
               {bill.amountDue < bill.amount && bill.status !== 'paid' ? (
                 <>
@@ -180,7 +191,7 @@ export function BillDetailPanel({
         )}
 
         {/* Action Buttons - Hidden when history expanded */}
-        {!isHistoryExpanded && (
+        {!isHistoryExpanded && !bill.isArchived && (
           <div className="space-y-3 pt-4">
             <Button
               className="w-full"
@@ -252,7 +263,7 @@ export function BillDetailPanel({
             onClick={handleArchive}
             disabled={isArchiving || isDeleting}
           >
-            {isArchiving ? 'Archiving...' : 'Archive'}
+            {isArchiving ? (bill.isArchived ? 'Unarchiving...' : 'Archiving...') : (bill.isArchived ? 'Unarchive' : 'Archive')}
           </Button>
           <Button
             variant="secondary"

@@ -14,32 +14,93 @@ interface BillListProps {
   tag?: string;
   /** Currently selected bill ID */
   selectedBillId?: string | null;
+  /** Include archived bills in query */
+  includeArchived?: boolean;
+  /** Archive mode - indicates bills should be displayed with archive formatting */
+  isArchived?: boolean;
 }
 
-export async function BillList({ date, month, dateRange, tag, selectedBillId }: BillListProps) {
-  const [bills, settings] = await Promise.all([
-    getBillsFiltered({ date, month, dateRange, tag }),
+/**
+ * Determines the empty state primary message based on filter options.
+ */
+function getEmptyStateMessage(props: {
+  isArchived?: boolean;
+  tag?: string;
+  date?: string;
+  month?: string;
+  dateRange?: number;
+}): string {
+  const { isArchived, tag, date, month, dateRange } = props;
+
+  if (isArchived) {
+    return 'No archived bills.';
+  }
+
+  if (tag) {
+    return 'No bills with this tag.';
+  }
+
+  if (date) {
+    return 'No bills due on this date.';
+  }
+
+  if (month) {
+    return 'No bills due this month.';
+  }
+
+  if (dateRange !== undefined) {
+    return 'No bills due soon.';
+  }
+
+  return 'No bills yet.';
+}
+
+/**
+ * Determines the empty state subtitle message based on filter options.
+ */
+function getEmptyStateSubtitle(props: {
+  isArchived?: boolean;
+  tag?: string;
+  date?: string;
+  month?: string;
+  dateRange?: number;
+}): string {
+  const { isArchived, tag, date, month, dateRange } = props;
+
+  if (isArchived) {
+    return 'Archived bills will appear here.';
+  }
+
+  if (tag || date || month || dateRange !== undefined) {
+    return 'Try selecting a different filter or clearing the filter.';
+  }
+
+  return 'Click "Add Bill" to create your first bill.';
+}
+
+export async function BillList({ date, month, dateRange, tag, selectedBillId, includeArchived, isArchived }: BillListProps) {
+  const filterOptions = includeArchived
+    ? { includeArchived: true, tag }
+    : { date, month, dateRange, tag };
+
+  const [allBills, settings] = await Promise.all([
+    getBillsFiltered(filterOptions),
     SettingsService.getAll(),
   ]);
 
+  const bills = includeArchived ? allBills.filter((bill) => bill.isArchived) : allBills;
+
   if (bills.length === 0) {
+    const emptyMessage = getEmptyStateMessage({ isArchived, tag, date, month, dateRange });
+    const emptySubtitle = getEmptyStateSubtitle({ isArchived, tag, date, month, dateRange });
+
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <p className="text-lg text-muted-foreground">
-          {tag
-            ? 'No bills with this tag.'
-            : date
-              ? 'No bills due on this date.'
-              : month
-                ? 'No bills due this month.'
-                : dateRange !== undefined
-                  ? 'No bills due soon.'
-                  : 'No bills yet.'}
+          {emptyMessage}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {tag || date || month || dateRange !== undefined
-            ? 'Try selecting a different filter or clearing the filter.'
-            : 'Click "Add Bill" to create your first bill.'}
+          {emptySubtitle}
         </p>
       </div>
     );
@@ -66,6 +127,7 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId }: 
               bill={bill}
               currency={settings.currency}
               locale={settings.locale}
+              isArchived={isArchived}
             />
           </BillRowClickable>
         ))}

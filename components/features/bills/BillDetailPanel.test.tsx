@@ -269,4 +269,114 @@ describe('BillDetailPanel', () => {
       expect(screen.queryByText('Remaining This Cycle')).not.toBeInTheDocument();
     });
   });
+
+  describe('archived bill display', () => {
+    it('displays "Never" and "Archived" in date section when bill is archived', () => {
+      const archivedBill = createMockBill({
+        isArchived: true,
+        dueDate: new Date('2025-12-15'),
+        status: 'pending',
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByText('Never')).toBeInTheDocument();
+      expect(screen.getByText('Archived')).toBeInTheDocument();
+    });
+
+    it('hides Log Payment button when bill is archived', () => {
+      const archivedBill = createMockBill({
+        isArchived: true,
+        status: 'pending',
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      expect(screen.queryByRole('button', { name: /log payment/i })).not.toBeInTheDocument();
+    });
+
+    it('hides Skip button when bill is archived', () => {
+      const archivedBill = createMockBill({
+        isArchived: true,
+        status: 'pending',
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      expect(screen.queryByRole('button', { name: /skip/i })).not.toBeInTheDocument();
+    });
+
+    it('shows Unarchive button when bill is archived', () => {
+      const archivedBill = createMockBill({
+        isArchived: true,
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByRole('button', { name: /unarchive/i })).toBeInTheDocument();
+    });
+
+    it('shows Archive button when bill is not archived', () => {
+      const activeBill = createMockBill({
+        isArchived: false,
+      });
+      render(<BillDetailPanel bill={activeBill} currency="USD" locale="en-US" />);
+
+      expect(screen.getByRole('button', { name: /^archive$/i })).toBeInTheDocument();
+    });
+
+    it('calls archiveBill with false to unarchive archived bill', async () => {
+      const mockSetSelectedBill = jest.fn();
+      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+
+      const archivedBill = createMockBill({
+        isArchived: true,
+        title: 'Archived Bill',
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /unarchive/i }));
+
+      await waitFor(() => {
+        expect(archiveBill).toHaveBeenCalledWith(archivedBill.id, false);
+        expect(toast.success).toHaveBeenCalledWith('Bill unarchived', expect.any(Object));
+        expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it('calls archiveBill with true to archive active bill', async () => {
+      const mockSetSelectedBill = jest.fn();
+      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+
+      const activeBill = createMockBill({
+        isArchived: false,
+        title: 'Active Bill',
+      });
+      render(<BillDetailPanel bill={activeBill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /^archive$/i }));
+
+      await waitFor(() => {
+        expect(archiveBill).toHaveBeenCalledWith(activeBill.id, true);
+        expect(toast.success).toHaveBeenCalledWith('Bill archived', expect.any(Object));
+        expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it('shows error toast when unarchive fails', async () => {
+      (archiveBill as jest.Mock).mockResolvedValue({
+        success: false,
+        error: 'Failed to unarchive',
+      });
+
+      const archivedBill = createMockBill({
+        isArchived: true,
+      });
+      render(<BillDetailPanel bill={archivedBill} currency="USD" locale="en-US" />);
+
+      fireEvent.click(screen.getByRole('button', { name: /unarchive/i }));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Failed to unarchive bill', expect.any(Object));
+      });
+    });
+  });
 });

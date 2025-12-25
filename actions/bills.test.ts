@@ -1,4 +1,4 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, skipPayment, type CreateBillInput, type UpdateBillInput } from './bills';
+import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats, skipPayment, type CreateBillInput, type UpdateBillInput } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -1288,5 +1288,66 @@ describe('skipPayment', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Bill not found');
+  });
+});
+
+describe('getArchivedBillsStats', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns count of archived bills', async () => {
+    const mockBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        isArchived: false,
+      }),
+      createMockBillWithTags({
+        id: 'bill-2',
+        isArchived: true,
+      }),
+      createMockBillWithTags({
+        id: 'bill-3',
+        isArchived: true,
+      }),
+      createMockBillWithTags({
+        id: 'bill-4',
+        isArchived: false,
+      }),
+    ];
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getArchivedBillsStats();
+
+    expect(result).toEqual({ count: 2 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
+  });
+
+  it('returns zero count when no archived bills exist', async () => {
+    const mockBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        isArchived: false,
+      }),
+      createMockBillWithTags({
+        id: 'bill-2',
+        isArchived: false,
+      }),
+    ];
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+
+    const result = await getArchivedBillsStats();
+
+    expect(result).toEqual({ count: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
+  });
+
+  it('returns zero count when no bills exist', async () => {
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    const result = await getArchivedBillsStats();
+
+    expect(result).toEqual({ count: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
   });
 });

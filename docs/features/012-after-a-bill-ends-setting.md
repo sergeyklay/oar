@@ -2,7 +2,7 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-24
-- **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Recurrence Engine](./001-recurrence-engine.md)
+- **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Archive Screen](./013-archive-screen.md), [Recurrence Engine](./001-recurrence-engine.md)
 
 ## Overview
 
@@ -28,7 +28,7 @@ You find the "After a Bill Ends" setting in Settings under General → Behavior 
 
 **Mark as Never Due (default).** When a bill ends, it stays visible in your bill list. The status changes to "paid," the amount due becomes zero, and there's no next due date. The bill remains in your active views so you can reference it, but it won't appear in "Due Soon" or other time-based filters. This is useful when you want to keep a record of completed bills without cluttering your active obligations.
 
-**Move to the Archive.** When a bill ends, it's immediately archived. The bill disappears from your active bill list, "Due Soon" screen, and other active views. You can still access it through the Archive view, but it's out of the way. This is useful when you want a clean separation between active bills and completed ones.
+**Move to the Archive.** When a bill ends, it's immediately archived. The bill disappears from your active bill list, "Due Soon" screen, and other active views. You can still access it through the [Archive Screen](./013-archive-screen.md), but it's out of the way. This is useful when you want a clean separation between active bills and completed ones.
 
 The setting applies globally to all bills. You can't set different behaviors for different bills. This keeps the system simple and predictable. Once you choose your preference, every bill that ends follows that rule.
 
@@ -56,7 +56,7 @@ Here's what happens when a bill ends:
 
 **Changing the setting after bills have ended.** If you change the "After a Bill Ends" setting, it only affects bills that end after the change. Bills that already ended keep their current state. You can manually archive or unarchive bills later if needed.
 
-**Archived bills remain accessible.** When a bill is archived, it's not deleted. It's still in your database, and you can access it through the Archive view. You can also unarchive it later if you need to reference it or reactivate it.
+**Archived bills remain accessible.** When a bill is archived, it's not deleted. It's still in your database, and you can access it through the [Archive Screen](./013-archive-screen.md). You can also unarchive it later if you need to reference it or reactivate it.
 
 **Auto-pay bills and bill end.** If you have auto-pay enabled on a bill that ends, the system still processes the final payment automatically. The bill end detection happens after the auto-payment, and the setting applies the same way as manual payments.
 

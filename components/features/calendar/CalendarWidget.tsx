@@ -10,9 +10,11 @@ import { parse, format } from 'date-fns';
 
 interface CalendarWidgetProps {
   weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  /** Disable date filter feedback (hide "Showing bills for..." message) */
+  disableDateFilter?: boolean;
 }
 
-export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
+export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false }: CalendarWidgetProps) {
   const { month, date, setMonth, setDate, clearDate } = useCalendarState();
   const [dateStatuses, setDateStatuses] = useState<DateStatusMap>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -97,7 +99,7 @@ export function CalendarWidget({ weekStartsOn = 0 }: CalendarWidgetProps) {
         }}
       />
 
-      {date && selectedDate && (
+      {date && selectedDate && !disableDateFilter && (
         <div className="mt-4 p-3 rounded-lg bg-muted/50">
           <p className="text-sm text-muted-foreground">Showing bills for</p>
           <p className="font-medium">{format(selectedDate, 'MMMM d, yyyy')}</p>

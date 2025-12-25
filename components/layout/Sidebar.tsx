@@ -1,5 +1,5 @@
-import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle } from 'lucide-react';
-import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats } from '@/actions/bills';
+import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle, Archive } from 'lucide-react';
+import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats } from '@/actions/bills';
 import { getRecentPaymentsStats } from '@/actions/transactions';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
@@ -18,7 +18,7 @@ type NavItem = {
   /** Whether to show statistics subtitle below the label. */
   showStats?: boolean;
   /** Type of statistics to display when showStats is true. */
-  statsType?: 'all' | 'currentMonth' | 'dueSoon' | 'paidRecently';
+  statsType?: 'all' | 'currentMonth' | 'dueSoon' | 'paidRecently' | 'archived';
 };
 
 /**
@@ -33,6 +33,8 @@ type StatsData = {
   dueSoon: { count: number; total: number; hasVariable: boolean };
   /** Recently paid transactions with total amount. */
   paidRecently: { count: number; total: number };
+  /** Archived bills count. */
+  archived: { count: number };
   /** User settings for currency formatting. */
   settings: { currency: string; locale: string };
 };
@@ -52,7 +54,7 @@ function getStatsSubtitle(item: NavItem, stats: StatsData): string | null {
     return null;
   }
 
-  const { currentMonth, all, dueSoon, paidRecently, settings } = stats;
+  const { currentMonth, all, dueSoon, paidRecently, archived, settings } = stats;
 
   if (item.statsType === 'currentMonth') {
     if (currentMonth.count === 0) return 'No bills';
@@ -77,6 +79,11 @@ function getStatsSubtitle(item: NavItem, stats: StatsData): string | null {
     return `${all.count} bills`;
   }
 
+  if (item.statsType === 'archived') {
+    if (archived.count === 0) return 'No bills';
+    return `${archived.count} bills`;
+  }
+
   return null;
 }
 
@@ -89,6 +96,7 @@ const billsNavItems: NavItem[] = [
 
 const reportsNavItems: NavItem[] = [
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
+  { href: '/archive', icon: Archive, label: 'Archive', showStats: true, statsType: 'archived' },
 ];
 
 const settingsItem: NavItem = {
@@ -139,11 +147,12 @@ function NavLinkContent({
  * Settings link is pinned to the bottom of the sidebar.
  */
 export async function Sidebar() {
-  const [currentMonthStats, allBillsStats, dueSoonStats, paidRecentlyStats, settings] = await Promise.all([
+  const [currentMonthStats, allBillsStats, dueSoonStats, paidRecentlyStats, archivedBillsStats, settings] = await Promise.all([
     getBillsForCurrentMonthStats(),
     getAllBillsStats(),
     getBillsForDueSoonStats(),
     getRecentPaymentsStats(),
+    getArchivedBillsStats(),
     SettingsService.getAll(),
   ]);
 
@@ -152,6 +161,7 @@ export async function Sidebar() {
     all: allBillsStats,
     dueSoon: dueSoonStats,
     paidRecently: paidRecentlyStats,
+    archived: archivedBillsStats,
     settings,
   };
 

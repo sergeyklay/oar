@@ -34,9 +34,15 @@ export const BillService = {
    * Fetch a single bill with its associated tags and category icon.
    *
    * @param billId - Bill ID to fetch (assumed valid)
-   * @returns Bill with tags and category icon or null if not found/archived
+   * @param includeArchived - Whether to include archived bills (default: false)
+   * @returns Bill with tags and category icon or null if not found
    */
-  async getWithTags(billId: string): Promise<BillWithTags | null> {
+  async getWithTags(billId: string, includeArchived: boolean = false): Promise<BillWithTags | null> {
+    const conditions = [eq(bills.id, billId)];
+    if (!includeArchived) {
+      conditions.push(eq(bills.isArchived, false));
+    }
+
     const [result] = await db
       .select({
         bill: bills,
@@ -44,7 +50,7 @@ export const BillService = {
       })
       .from(bills)
       .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-      .where(and(eq(bills.id, billId), eq(bills.isArchived, false)));
+      .where(and(...conditions));
 
     if (!result) {
       return null;

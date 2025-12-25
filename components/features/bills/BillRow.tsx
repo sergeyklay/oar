@@ -13,6 +13,8 @@ interface BillRowProps {
   bill: BillWithTags;
   currency: string;
   locale: string;
+  /** Archive mode - indicates bill should be displayed with archive formatting */
+  isArchived?: boolean;
 }
 
 /**
@@ -24,6 +26,7 @@ export function BillRow({
   bill,
   currency,
   locale,
+  isArchived,
 }: BillRowProps) {
   return (
     <>
@@ -48,16 +51,30 @@ export function BillRow({
       </td>
       <td>
         <div className="flex items-stretch gap-3">
-          <div
-            className={cn('w-[3px] self-stretch rounded-sm', DueDateService.getStatusBarColor(bill.dueDate, bill.status))}
-            aria-hidden="true"
-          />
+          {!isArchived && (
+            <div
+              className={cn('w-[3px] self-stretch rounded-sm', DueDateService.getStatusBarColor(bill.dueDate, bill.status))}
+              aria-hidden="true"
+            />
+          )}
+          {isArchived && (
+            <div
+              className="w-[3px] self-stretch rounded-sm bg-muted"
+              aria-hidden="true"
+            />
+          )}
           <div className="flex flex-col">
-            <span>{DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}</span>
-            {!(bill.status === 'paid' && bill.frequency === 'once') && (
+            <span>{isArchived ? 'Never' : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}</span>
+            {isArchived ? (
               <span className="text-xs text-muted-foreground">
-                {format(bill.dueDate, 'EEE, MMM d')}
+                Archived
               </span>
+            ) : (
+              !(bill.status === 'paid' && bill.frequency === 'once') && (
+                <span className="text-xs text-muted-foreground">
+                  {format(bill.dueDate, 'EEE, MMM d')}
+                </span>
+              )
             )}
           </div>
         </div>

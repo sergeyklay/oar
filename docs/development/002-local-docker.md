@@ -241,7 +241,7 @@ Common causes:
 
 **Error:** `Failed to find Server Action "..."`
 
-**Fix:** The encryption key used at build-time must exactly match the key used at runtime. This is a hard constraint—mismatched keys will break Server Actions decryption. Verify:
+**Fix:** The encryption key used at build-time must exactly match the key used at runtime. This is a hard constraint - mismatched keys will break Server Actions decryption. Verify:
 
 1. **For docker-compose:** The same key value is set in `.env` and used for both `build.args` and `environment` sections in `docker-compose.yml`
 2. **For manual Docker:** The exact same key value is passed via `--build-arg` during build and `-e` at runtime
