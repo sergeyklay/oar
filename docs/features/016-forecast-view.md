@@ -37,7 +37,7 @@ Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page op
 
 **Tag Filter.** Select a tag from the dropdown to filter bills. Only bills with the selected tag that have occurrences in the chosen month will appear. This works the same as tag filtering in other views. Clear the filter to see all bills.
 
-**Settings Toggle.** Click the settings icon to toggle visibility of two features: "Amount to Save" (amortization) and estimate indicators. When toggled off, the "Amount to Save" column hides, and estimated amounts don't show visual distinction. The calculations still happen; they're just hidden from view. This helps simplify the interface when you don't need those details.
+**Settings Toggle.** Click the settings icon to open a popover with two independent checkboxes. You can control each visibility option separately: "Show Amount to Save" controls whether the amortization column appears, and "Show Estimates" controls whether estimated amounts display with visual distinction. The button shows an active state when either setting is disabled, indicating that some columns are hidden. The calculations still happen regardless of visibility; they're hidden from view when unchecked. This lets you customize the interface to show only the information you need.
 
 **Sidebar Toggle.** Click to hide the left navigation sidebar, giving more space for the forecast table and summary panel.
 
@@ -122,7 +122,7 @@ To confirm the Forecast View works correctly:
 5. Check that long-term bills (quarterly, annual) show "Amount to Save" in the dedicated column.
 6. Review the summary panel. Verify "Total Due" sums all bill amounts, "Total to Save" sums amortization amounts, and "Grand Total" combines both.
 7. Select a tag from the filter. Verify only bills with that tag appear in the selected month.
-8. Toggle the settings icon. Verify the "Amount to Save" column and estimate indicators hide/show accordingly.
+8. Click the settings icon to open the popover. Toggle each checkbox independently. Verify the "Amount to Save" column hides when "Show Amount to Save" is unchecked, and estimate indicators hide when "Show Estimates" is unchecked. Verify the button shows an active state when either setting is disabled.
 9. Select a month where no bills have occurrences. Verify the empty state message appears.
 10. Select a past month. Verify bills that should have been due in that month appear correctly.
 11. Check a bill with an end date. Select a month after the end date. Verify the bill doesn't appear.
