@@ -95,16 +95,16 @@ export const TransactionService = {
       .from(transactions)
       .where(eq(transactions.billId, billId));
 
-    const results =
+    const orderedQuery =
       options?.orderBy === 'paidAt DESC'
-        ? await baseQuery.orderBy(desc(transactions.paidAt))
-        : await baseQuery.orderBy(transactions.paidAt);
+        ? baseQuery.orderBy(desc(transactions.paidAt))
+        : baseQuery.orderBy(transactions.paidAt);
 
     if (options?.limit) {
-      return results.slice(0, options.limit);
+      return orderedQuery.limit(options.limit);
     }
 
-    return results;
+    return orderedQuery;
   },
 
   /**
