@@ -51,7 +51,22 @@ describe('EstimationService', () => {
       expect(result).toBe(11000);
     });
 
-    it('rounds up when average is fractional', async () => {
+    it('rounds up when average is fractional and >= 0.5', async () => {
+      const strategy = new AverageLastThreePaymentsStrategy();
+      const mockTransactions: Transaction[] = [
+        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        { id: 'tx-2', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        { id: 'tx-3', billId: 'bill-1', amount: 10002, paidAt: new Date(), notes: null, createdAt: new Date() },
+      ];
+
+      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+
+      const result = await strategy.calculate('bill-1', new Date());
+
+      expect(result).toBe(10001);
+    });
+
+    it('rounds down when average is fractional and < 0.5', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
         { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
