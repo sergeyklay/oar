@@ -387,6 +387,210 @@ describe('ForecastService', () => {
         result[2].dueDate.getTime()
       );
     });
+
+    describe('twice-monthly edge cases for month-end dates', () => {
+      it('projects twice-monthly bill with dueDate on 29th in same month as dueDate', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-29'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-01');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(29);
+      });
+
+      it('projects twice-monthly bill with dueDate on 29th in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-29'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(15);
+      });
+
+      it('projects twice-monthly bill with dueDate on 30th in same month as dueDate', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-30'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-01');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(30);
+      });
+
+      it('projects twice-monthly bill with dueDate on 30th in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-30'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(16);
+      });
+
+      it('projects twice-monthly bill with dueDate on 31st in same month as dueDate', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-01');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(31);
+      });
+
+      it('projects twice-monthly bill with dueDate on 31st in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(17);
+      });
+
+      it('projects twice-monthly bill with dueDate on 31st in months with 30 days', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-04');
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].dueDate.getDate()).toBe(17);
+      });
+
+      it('verifies that 29th occurrence is silently dropped in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-29'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBe(1);
+        expect(result[0].dueDate.getDate()).toBe(15);
+        expect(result[0].dueDate.getDate()).not.toBe(29);
+      });
+
+      it('verifies that 30th occurrence is silently dropped in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-30'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBe(1);
+        expect(result[0].dueDate.getDate()).toBe(16);
+        expect(result[0].dueDate.getDate()).not.toBe(30);
+      });
+
+      it('verifies that 31st occurrence is silently dropped in February (non-leap year)', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-02');
+
+        expect(result.length).toBe(1);
+        expect(result[0].dueDate.getDate()).toBe(17);
+        expect(result[0].dueDate.getDate()).not.toBe(31);
+      });
+
+      it('verifies that 31st occurrence is silently dropped in months with 30 days', async () => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'twicemonthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+          new Map([['bill-1', []]])
+        );
+
+        const result = await ForecastService.getBillsForMonth('2025-04');
+
+        expect(result.length).toBe(1);
+        expect(result[0].dueDate.getDate()).toBe(17);
+        expect(result[0].dueDate.getDate()).not.toBe(31);
+      });
+    });
   });
 
   describe('calculateSummary', () => {
