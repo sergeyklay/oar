@@ -420,6 +420,8 @@ function seedBills(
         })
       : null;
 
+    const isArchived = faker.datatype.boolean(0.15);
+
     const bill: typeof schema.bills.$inferInsert = {
       id,
       title: template.title,
@@ -431,6 +433,7 @@ function seedBills(
       isAutoPay: faker.datatype.boolean(0.2),
       isVariable,
       status,
+      isArchived,
       categoryId,
       notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
       createdAt: subDays(dueDate, 30),
@@ -483,6 +486,8 @@ function seedBills(
         })
       : null;
 
+    const isArchived = faker.datatype.boolean(0.15);
+
     const bill: typeof schema.bills.$inferInsert = {
       id,
       title: `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`,
@@ -494,6 +499,7 @@ function seedBills(
       isAutoPay: faker.datatype.boolean(0.2),
       isVariable,
       status,
+      isArchived,
       categoryId,
       notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
       createdAt: subDays(dueDate, 30),
