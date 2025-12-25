@@ -1315,7 +1315,7 @@ describe('getArchivedBillsStats', () => {
     expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 
-  it('returns zero count when no archived bills exist', async () => {
+  it('returns zero count when no bills exist', async () => {
     (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
 
     const result = await getArchivedBillsStats();
@@ -1324,12 +1324,31 @@ describe('getArchivedBillsStats', () => {
     expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 
-  it('returns zero count when no bills exist', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+  it('returns correct count when all bills are archived', async () => {
+    const allArchivedBills: BillWithTags[] = [
+      createMockBillWithTags({
+        id: 'bill-1',
+        isArchived: true,
+      }),
+      createMockBillWithTags({
+        id: 'bill-2',
+        isArchived: true,
+      }),
+      createMockBillWithTags({
+        id: 'bill-3',
+        isArchived: true,
+      }),
+      createMockBillWithTags({
+        id: 'bill-4',
+        isArchived: true,
+      }),
+    ];
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(allArchivedBills);
 
     const result = await getArchivedBillsStats();
 
-    expect(result).toEqual({ count: 0 });
+    expect(result.count).toBe(allArchivedBills.length);
+    expect(result.count).toBe(4);
     expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 });
