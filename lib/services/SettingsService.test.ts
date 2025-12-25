@@ -1,8 +1,10 @@
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories, settingsSections, settings } from '@/db';
 import { DEFAULT_CATEGORIES, DEFAULT_SECTIONS, DEFAULT_SETTINGS_VALUES } from '@/lib/constants';
+import { getLogger } from '@/lib/logger';
 
 jest.mock('@/db');
+jest.mock('@/lib/logger');
 
 describe('SettingsService', () => {
   describe('initializeDefaults', () => {
@@ -143,7 +145,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when stored value is invalid', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const mockLogger = getLogger('SettingsService') as unknown as { error: jest.Mock };
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -154,8 +156,7 @@ describe('SettingsService', () => {
 
       const result = await SettingsService.getDueSoonRange();
       expect(result).toBe(7);
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(mockLogger.error).toHaveBeenCalled();
     });
   });
 
@@ -228,7 +229,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when stored value is invalid', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const mockLogger = getLogger('SettingsService') as unknown as { error: jest.Mock };
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -239,8 +240,7 @@ describe('SettingsService', () => {
 
       const result = await SettingsService.getPaidRecentlyRange();
       expect(result).toBe(7);
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(mockLogger.error).toHaveBeenCalled();
     });
   });
 

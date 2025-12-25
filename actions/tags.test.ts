@@ -1,10 +1,12 @@
 import { createTag, getTags, getTagBySlug } from './tags';
 import { db, tags, resetDbMocks } from '@/db';
+import { getLogger } from '@/lib/logger';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
+jest.mock('@/lib/logger');
 
 describe('createTag', () => {
   beforeEach(() => {
@@ -135,7 +137,7 @@ describe('createTag', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    const mockLogger = getLogger('Actions:Tags') as unknown as { error: jest.Mock };
 
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
@@ -147,9 +149,7 @@ describe('createTag', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to create tag. Please try again.');
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
 });
 

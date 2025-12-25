@@ -5,11 +5,13 @@ import { SettingsService } from '@/lib/services/SettingsService';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import type { BillWithTags } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { getLogger } from '@/lib/logger';
 
 jest.mock('@/db');
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
+jest.mock('@/lib/logger');
 jest.mock('@/lib/services/BillService', () => ({
   BillService: {
     getFiltered: jest.fn(),
@@ -153,7 +155,7 @@ describe('createBill', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    const mockLogger = getLogger('Actions:Bills') as unknown as { error: jest.Mock };
 
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
@@ -171,9 +173,7 @@ describe('createBill', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to create bill. Please try again.');
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
+    expect(mockLogger.error).toHaveBeenCalled();
   });
 
   it('persists isVariable flag when set to true', async () => {
