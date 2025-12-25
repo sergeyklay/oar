@@ -7,46 +7,52 @@ import pino from 'pino';
  * Client: Uses pino's native browser API with console output.
  *   - Development: All logs (debug level)
  *   - Production: Only error and fatal logs
+ * Test: All logging is suppressed (silent level) for clean test output.
  */
 
 const isServer = typeof window === 'undefined';
 const isProduction = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
 
 /**
  * Create the base logger instance.
  */
 function createBaseLogger(): pino.Logger {
+  if (isTest) {
+    return pino({
+      level: 'silent'
+    });
+  }
+
   if (isServer) {
     if (isProduction) {
       return pino({
         level: 'info',
       });
-    } else {
-      return pino({
-        level: 'debug',
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
-            ignore: 'pid,hostname',
-            singleLine: false,
-          },
-        },
-      });
     }
-  } else {
-    // Client-side: Use pino's native browser API
-    // In production, only error and fatal logs are shown (level: 'error')
-    // In development, all logs are shown (level: 'debug')
-    // Error serialization is enabled for proper Error object formatting
+
     return pino({
-      level: isProduction ? 'error' : 'debug',
-      browser: {
-        serialize: true, // Enable error serialization and all standard serializers
+      level: 'debug',
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
+          ignore: 'pid,hostname',
+          singleLine: false,
+        },
       },
     });
   }
+
+
+  return pino({
+    level: isProduction ? 'error' : 'debug',
+    browser: {
+      serialize: true,
+    },
+  });
+
 }
 
 // Create singleton base logger
