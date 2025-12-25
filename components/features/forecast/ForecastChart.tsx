@@ -110,12 +110,23 @@ export function ForecastChart({
             }}
           />
           <ChartLegend
-            content={
-              <ChartLegendContent
-                config={chartConfig}
-                className="justify-start"
-              />
-            }
+            content={(props) => {
+              const { payload } = props as {
+                payload?: Array<{
+                  value?: string;
+                  type?: string;
+                  id?: string;
+                  color?: string;
+                }>;
+              };
+              return (
+                <ChartLegendContent
+                  payload={payload}
+                  config={chartConfig}
+                  className="justify-start px-6"
+                />
+              );
+            }}
             wrapperStyle={{ paddingTop: '12px', paddingBottom: '0' }}
             align="left"
             verticalAlign="top"

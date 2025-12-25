@@ -53,9 +53,23 @@ jest.mock('@/components/ui/chart', () => ({
     };
     return <div data-testid="chart-tooltip">{content(mockProps)}</div>;
   },
-  ChartLegend: ({ content }: { content: React.ReactNode }) => (
-    <div data-testid="chart-legend">{content}</div>
-  ),
+  ChartLegend: ({
+    content,
+  }: {
+    content?: (props: unknown) => React.ReactNode;
+  }) => {
+    const mockProps = {
+      payload: [
+        { value: 'totalDue', id: 'totalDue', color: '#000' },
+        { value: 'totalToSave', id: 'totalToSave', color: '#000' },
+      ],
+    };
+    return (
+      <div data-testid="chart-legend">
+        {content ? content(mockProps) : null}
+      </div>
+    );
+  },
   ChartLegendContent: ({ config }: { config: Record<string, unknown> }) => (
     <div data-testid="chart-legend-content" data-config={JSON.stringify(config)} />
   ),
