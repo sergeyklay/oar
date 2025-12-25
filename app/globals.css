@@ -156,6 +156,7 @@
   border-bottom: 1px solid hsl(var(--border));
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bill-table tbody tr:hover {
