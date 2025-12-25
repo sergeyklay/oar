@@ -189,6 +189,112 @@ interface ChartTooltipContentProps {
   color?: string;
 }
 
+interface TooltipIndicatorProps {
+  indicator: 'line' | 'dot' | 'dashed';
+  color: string;
+  nestLabel: boolean;
+}
+
+const TooltipIndicator = ({
+  indicator,
+  color,
+  nestLabel,
+}: TooltipIndicatorProps) => (
+  <div
+    className={cn(
+      'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
+      {
+        'h-2.5 w-2.5': indicator === 'dot',
+        'w-1': indicator === 'line',
+        'w-0 border-[1.5px] border-dashed bg-transparent':
+          indicator === 'dashed',
+        'my-0.5': nestLabel && indicator === 'dashed',
+      }
+    )}
+    style={
+      {
+        '--color-bg': color,
+        '--color-border': color,
+      } as React.CSSProperties
+    }
+  />
+);
+
+type TooltipPayloadItem = NonNullable<
+  ChartTooltipContentProps['payload']
+>[number];
+
+interface TooltipItemContentProps {
+  item: TooltipPayloadItem;
+  itemConfig: ChartConfig[string] | undefined;
+  indicator: 'line' | 'dot' | 'dashed';
+  indicatorColor: string;
+  hideIndicator: boolean;
+  nestLabel: boolean;
+  tooltipLabel: React.ReactNode;
+  formatter?: ChartTooltipContentProps['formatter'];
+  formatterIndex: number;
+}
+
+const TooltipItemContent = ({
+  item,
+  itemConfig,
+  indicator,
+  indicatorColor,
+  hideIndicator,
+  nestLabel,
+  tooltipLabel,
+  formatter,
+  formatterIndex,
+}: TooltipItemContentProps) => {
+  const shouldUseFormatter =
+    formatter && item?.value !== undefined && item.name;
+
+  if (shouldUseFormatter) {
+    return (
+      <>
+        {formatter(
+          item.value,
+          item.name,
+          item,
+          formatterIndex,
+          item.payload || {}
+        )}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {itemConfig && !hideIndicator && (
+        <TooltipIndicator
+          indicator={indicator}
+          color={indicatorColor}
+          nestLabel={nestLabel}
+        />
+      )}
+      <div
+        className={cn(
+          'flex flex-1 justify-between leading-none',
+          nestLabel ? 'items-end' : 'items-center'
+        )}
+      >
+        <div className="grid gap-1.5">
+          {nestLabel && tooltipLabel}
+          <span className="text-muted-foreground">
+            {itemConfig?.label || item.name}
+          </span>
+        </div>
+        {item.value && (
+          <span className="font-mono font-medium tabular-nums text-foreground">
+            {item.value.toLocaleString()}
+          </span>
+        )}
+      </div>
+    </>
+  );
+};
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   ChartTooltipContentProps
@@ -260,13 +366,13 @@ const ChartTooltipContent = React.forwardRef<
           className
         )}
       >
-        {!nestLabel ? tooltipLabel : null}
+        {!nestLabel && tooltipLabel}
         <div className="grid gap-1.5">
           {payload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || 'value'}`;
             const itemConfig = item.payload?.config?.[key];
             const indicatorColor =
-              color || item.payload?.fill || item.color;
+              color || item.payload?.fill || item.color || '';
 
             return (
               <div
@@ -276,56 +382,17 @@ const ChartTooltipContent = React.forwardRef<
                   indicator === 'dot' && 'items-center'
                 )}
               >
-                    {formatter && item?.value !== undefined && item.name ? (
-                      formatter(
-                        item.value,
-                        item.name,
-                        item,
-                        index,
-                        item.payload || {}
-                      )
-                    ) : (
-                  <>
-                    {itemConfig && !hideIndicator ? (
-                      <div
-                        className={cn(
-                          'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
-                          {
-                            'h-2.5 w-2.5': indicator === 'dot',
-                            'w-1': indicator === 'line',
-                            'w-0 border-[1.5px] border-dashed bg-transparent':
-                              indicator === 'dashed',
-                            'my-0.5': nestLabel && indicator === 'dashed',
-                          }
-                        )}
-                        style={
-                          {
-                            '--color-bg': indicatorColor,
-                            '--color-border': indicatorColor,
-                          } as React.CSSProperties
-                        }
-                      />
-                    ) : null}
-                    <div
-                      className={cn(
-                        'flex flex-1 justify-between leading-none',
-                        nestLabel ? 'items-end' : 'items-center'
-                      )}
-                    >
-                      <div className="grid gap-1.5">
-                        {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
-                        </span>
-                      </div>
-                      {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                  </>
-                )}
+                <TooltipItemContent
+                  item={item}
+                  itemConfig={itemConfig}
+                  indicator={indicator}
+                  indicatorColor={indicatorColor}
+                  hideIndicator={hideIndicator}
+                  nestLabel={nestLabel}
+                  tooltipLabel={tooltipLabel}
+                  formatter={formatter}
+                  formatterIndex={index}
+                />
               </div>
             );
           })}
