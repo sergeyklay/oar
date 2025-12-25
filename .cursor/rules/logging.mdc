@@ -9,6 +9,7 @@ globs: **/*.ts, **/*.tsx
 ## 1. Core Principle: No Console Logs
 - **FORBIDDEN:** Direct use of `console.log`, `console.error`, `console.warn`.
 - **REQUIRED:** Use the unified logger exported from `@/lib/logger`.
+- **ENFORCEMENT:** ESLint `no-console` rule is set to `error` to automatically catch violations. Exceptions are allowed in test setup files for mocking purposes.
 
 ## 2. Logger Implementation (Pino)
 The project uses `pino` with `pino-pretty` for development.
