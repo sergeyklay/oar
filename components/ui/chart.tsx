@@ -5,6 +5,77 @@ import * as RechartsPrimitive from 'recharts';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Escapes a string for safe use in CSS identifiers.
+ *
+ * Replaces characters that could break CSS selector syntax.
+ * This prevents CSS injection vulnerabilities.
+ *
+ * @internal Exported for testing purposes
+ */
+export function escapeCssIdentifier(value: string): string {
+  // Replace characters that could break CSS syntax
+  return value.replace(/[^a-zA-Z0-9-_]/g, '');
+}
+
+/**
+ * Validates that a color value is safe for CSS injection.
+ *
+ * Only allows:
+ * - CSS custom properties (var(--...))
+ * - HSL/RGB/RGBA functions with simple values
+ * - HSL/RGB/RGBA functions with nested var() calls (hsl(var(--primary)))
+ * - Hex colors (#...)
+ * - Named colors (basic validation)
+ *
+ * @returns The sanitized color value, or a fallback if invalid
+ * @internal Exported for testing purposes
+ */
+export function sanitizeColorValue(value: string): string {
+  const trimmed = value.trim();
+
+  // Allow CSS custom properties (var(--name))
+  if (/^var\(--[a-zA-Z0-9-_]+\)$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Allow nested functions like hsl(var(--primary)) or rgb(var(--color))
+  // Pattern: function(var(--css-variable-name))
+  if (/^(hsl|rgb|rgba)\(var\(--[a-zA-Z0-9-_]+\)\)$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Allow HSL/RGB/RGBA functions with simple numeric values only
+  // Pattern: function(numbers, numbers, numbers) with safe characters
+  if (/^(hsl|rgb|rgba)\([\d.\s,%]+\)$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Allow hex colors (# followed by exactly 3, 4, 6, or 8 hex digits)
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed) ||
+      /^#[0-9a-fA-F]{4}$/.test(trimmed) ||
+      /^#[0-9a-fA-F]{6}$/.test(trimmed) ||
+      /^#[0-9a-fA-F]{8}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Allow basic named colors (whitelist approach for safety)
+  const safeNamedColors = [
+    'transparent',
+    'currentcolor',
+    'inherit',
+    'initial',
+    'unset',
+  ];
+  const normalized = trimmed.toLowerCase();
+  if (safeNamedColors.includes(normalized)) {
+    return normalized;
+  }
+
+  // If color doesn't match safe patterns, return fallback
+  return 'hsl(var(--chart-1))';
+}
+
 // Chart container
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
@@ -47,23 +118,33 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
+  // Escape id to prevent CSS injection
+  const escapedId = escapeCssIdentifier(id);
+
   return (
     <style
       dangerouslySetInnerHTML={{
         __html: Object.entries(config)
           .filter(([, configItem]) => configItem.theme || configItem.color)
           .map(([key, itemConfig]) => {
-            const color =
-              itemConfig.theme?.light || itemConfig.color || 'hsl(var(--chart-1))';
-            const dark =
-              itemConfig.theme?.dark || itemConfig.color || 'hsl(var(--chart-1))';
+            // Escape config key to prevent CSS injection
+            const escapedKey = escapeCssIdentifier(key);
 
-            return `[data-chart=${id}] {
-              --color-${key}: ${color};
+            // Sanitize color values to prevent CSS injection
+            const rawColor =
+              itemConfig.theme?.light || itemConfig.color || 'hsl(var(--chart-1))';
+            const rawDark =
+              itemConfig.theme?.dark || itemConfig.color || 'hsl(var(--chart-1))';
+            const color = sanitizeColorValue(rawColor);
+            const dark = sanitizeColorValue(rawDark);
+
+            // Use quoted attribute selector and escaped identifiers
+            return `[data-chart="${escapedId}"] {
+              --color-${escapedKey}: ${color};
             }
             @media (prefers-color-scheme: dark) {
-              [data-chart=${id}] {
-                --color-${key}: ${dark};
+              [data-chart="${escapedId}"] {
+                --color-${escapedKey}: ${dark};
               }
             }`;
           })
@@ -308,7 +389,19 @@ const ChartLegendContent = React.forwardRef<
 });
 ChartLegendContent.displayName = 'ChartLegendContent';
 
-// Chart config type
+/**
+ * Chart configuration for styling chart elements.
+ *
+ * All color values are sanitized to prevent CSS injection vulnerabilities.
+ * ChartConfig should only contain developer-controlled constants, never user-supplied values.
+ *
+ * @security Color values are validated to only allow safe CSS color formats:
+ * - CSS custom properties: var(--name)
+ * - Nested functions: hsl(var(--primary))
+ * - HSL/RGB/RGBA functions with numeric values
+ * - Hex colors: #rrggbb
+ * - Safe named colors: transparent, currentColor, inherit, etc.
+ */
 type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode;
