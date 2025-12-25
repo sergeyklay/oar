@@ -3,6 +3,9 @@
 import { z } from 'zod';
 import type { ActionResult } from '@/lib/types';
 import { ForecastService, type ForecastBill } from '@/lib/services/ForecastService';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('Actions:Forecast');
 
 /**
  * Zod schema for forecast query parameters
@@ -38,7 +41,8 @@ export async function getForecastData(
       success: true,
       data: bills,
     };
-  } catch {
+  } catch (error) {
+    logger.error(error, 'Failed to fetch forecast data');
     return {
       success: false,
       error: 'Failed to fetch forecast data',

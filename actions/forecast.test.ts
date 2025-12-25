@@ -1,8 +1,10 @@
 import { getForecastData } from './forecast';
 import { ForecastService } from '@/lib/services/ForecastService';
 import type { ForecastBill } from '@/lib/services/ForecastService';
+import { getLogger } from '@/lib/logger';
 
 jest.mock('@/lib/services/ForecastService');
+jest.mock('@/lib/logger');
 
 describe('getForecastData', () => {
   beforeEach(() => {
@@ -96,9 +98,8 @@ describe('getForecastData', () => {
   });
 
   it('returns error when ForecastService throws', async () => {
-    (ForecastService.getBillsForMonth as jest.Mock).mockRejectedValue(
-      new Error('Database error')
-    );
+    const dbError = new Error('Database error');
+    (ForecastService.getBillsForMonth as jest.Mock).mockRejectedValue(dbError);
 
     const result = await getForecastData({ month: '2025-03' });
 
@@ -106,6 +107,9 @@ describe('getForecastData', () => {
     if (!result.success) {
       expect(result.error).toBe('Failed to fetch forecast data');
     }
+
+    const logger = getLogger('Actions:Forecast');
+    expect(logger.error).toHaveBeenCalledWith(dbError, 'Failed to fetch forecast data');
   });
 
   it('handles empty array from ForecastService', async () => {
