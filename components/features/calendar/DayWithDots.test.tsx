@@ -121,7 +121,10 @@ describe('DayWithDots', () => {
       );
 
       const dots = screen.getAllByLabelText(/bill$/);
-      expect(dots.length).toBe(3);
+      expect(dots).toHaveLength(3);
+
+      const labels = dots.map((dot) => dot.getAttribute('aria-label'));
+      expect(labels).toEqual(['overdue bill', 'pending bill', 'paid bill']);
     });
   });
 
