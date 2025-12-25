@@ -1,7 +1,7 @@
 # Archive Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-23
+- **Last Updated:** 2025-12-25
 - **Related:** [Overview Screen](./005-overview-screen.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md)
 
 ## Overview

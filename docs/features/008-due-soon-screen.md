@@ -1,7 +1,7 @@
 # Due Soon Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-23
+- **Last Updated:** 2025-12-25
 - **Related:** [Due This Month Screen](./004-due-this-month.md), [Overview Screen](./005-overview-screen.md)
 
 ## Overview

@@ -1,7 +1,7 @@
 # Paid Recently Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-23
+- **Last Updated:** 2025-12-25
 - **Related:** [Due Soon Screen](./008-due-soon-screen.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
