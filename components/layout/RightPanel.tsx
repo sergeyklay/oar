@@ -4,6 +4,7 @@ import { BillDetailPanel } from '@/components/features/bills/BillDetailPanel';
 import { getTags } from '@/actions/tags';
 import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
 import type { WeekStartDay } from '@/lib/services/SettingsService';
+import type { DateStatusMap, PaymentDateMap } from '@/actions/calendar';
 
 interface RightPanelProps {
   selectedBillId: string | null;
@@ -14,6 +15,10 @@ interface RightPanelProps {
   includeArchived?: boolean;
   /** Disable date filter feedback in calendar */
   disableDateFilter?: boolean;
+  /** Controls calendar dot rendering mode */
+  dotMode?: 'status' | 'payment' | 'none';
+  /** Custom function to fetch date data (for payment dates) */
+  getDateData?: (month: string) => Promise<DateStatusMap | PaymentDateMap>;
 }
 
 /**
@@ -23,9 +28,16 @@ interface RightPanelProps {
  *
  * Server Component: calls BillService directly for read-only data.
  */
-export async function RightPanel({ selectedBillId, currency, locale, weekStart, includeArchived = false, disableDateFilter = false }: RightPanelProps) {
+export async function RightPanel({ selectedBillId, currency, locale, weekStart, includeArchived = false, disableDateFilter = false, dotMode = 'status', getDateData }: RightPanelProps) {
   if (!selectedBillId) {
-    return <CalendarPanel weekStartsOn={weekStart} disableDateFilter={disableDateFilter} />;
+    return (
+      <CalendarPanel
+        weekStartsOn={weekStart}
+        disableDateFilter={disableDateFilter}
+        dotMode={dotMode}
+        getDateData={getDateData}
+      />
+    );
   }
 
   const [bill, availableTags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -36,7 +48,14 @@ export async function RightPanel({ selectedBillId, currency, locale, weekStart, 
   ]);
 
   if (!bill) {
-    return <CalendarPanel weekStartsOn={weekStart} disableDateFilter={disableDateFilter} />;
+    return (
+      <CalendarPanel
+        weekStartsOn={weekStart}
+        disableDateFilter={disableDateFilter}
+        dotMode={dotMode}
+        getDateData={getDateData}
+      />
+    );
   }
 
   return (

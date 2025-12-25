@@ -1,7 +1,7 @@
 # Due This Month Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
+- **Last Updated:** 2025-12-23
 - **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
@@ -47,6 +47,16 @@ You can filter the Due This Month view by tag, the same way you filter the Overv
 
 The filter combines both conditions: bills must be unpaid, due this month, AND have the selected tag. Clear the tag filter to return to showing all unpaid bills due this month.
 
+## Filtering by date
+
+The calendar panel on the right side lets you filter bills by a specific date within the current month. Click any day in the calendar to see only bills due on that exact date. This narrows your view from the entire month to a single day, helping you focus on what's due on a particular date.
+
+When you click a calendar day, the URL updates to include the selected date (e.g., `?date=2025-12-15`), and the bill list filters to show only bills due on that day. The calendar shows colored dots below dates: red for overdue bills, yellow for pending bills, and green for paid bills.
+
+Clicking the same selected day again clears the date filter and returns to showing all unpaid bills due in the current month. You can also click the "Clear filter" button that appears below the calendar when a date is selected.
+
+**Date filter precedence:** When a date is selected, it takes precedence over the month filter. If you click December 20, you'll see only bills due on December 20, not all bills due in December. This lets you drill down into specific dates while maintaining the monthly context.
+
 ## What counts as "this month"
 
 The system uses calendar month boundaries and shows only unpaid bills. A bill is included only if:
@@ -80,6 +90,8 @@ The system uses calendar month boundaries and shows only unpaid bills. A bill is
 
 **Paid bills exclusion.** Bills marked as paid are automatically excluded from the Due This Month view, even if their due date falls within the current month. This keeps the view focused on upcoming obligations you still need to handle. Once you log a payment, that bill disappears from this view immediately.
 
+**Date filter with no matches.** When you select a calendar date that has no bills due, the page shows "No bills due on this date" with guidance to try a different date or clear the filter. This helps you distinguish between "no bills this month" and "no bills on this specific date."
+
 ## Verification
 
 To confirm the Due This Month feature works:
@@ -90,6 +102,9 @@ To confirm the Due This Month feature works:
 4. Check that bills from previous or future months are not shown.
 5. Verify bills already marked as paid do not appear, even if their due date is in the current month.
 6. Select a tag from the filter dropdown. Only unpaid bills matching both the tag and current month should appear.
-7. Click a bill to open its detail in the right panel.
-8. Log a payment for a bill in the current month. Verify it disappears from the Due This Month view immediately.
-9. Verify the sidebar subtitle updates when bills change (after logging payments or adding new bills).
+7. Click a date in the calendar. Verify the bill list filters to show only bills due on that date.
+8. Verify the URL updates with the selected date parameter.
+9. Click the same date again or click "Clear filter." Verify the date filter clears and all unpaid bills due this month reappear.
+10. Click a bill to open its detail in the right panel.
+11. Log a payment for a bill in the current month. Verify it disappears from the Due This Month view immediately.
+12. Verify the sidebar subtitle updates when bills change (after logging payments or adding new bills).

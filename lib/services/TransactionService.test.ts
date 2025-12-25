@@ -1,7 +1,7 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills } from '@/db';
 import { PaymentWithBill } from '@/lib/types';
-import { startOfDay, endOfDay, subDays } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -158,6 +158,93 @@ describe('TransactionService', () => {
         expect.objectContaining({ type: 'gte' }),
         expect.objectContaining({ type: 'lte' })
       );
+    });
+  });
+
+  describe('getPaymentsByDate', () => {
+    const mockPayments: PaymentWithBill[] = [
+      {
+        id: 'tx-1',
+        billTitle: 'Rent',
+        amount: 5000,
+        paidAt: new Date('2025-12-15T10:30:00.000Z'),
+        notes: 'Monthly rent',
+        categoryIcon: 'house',
+      },
+      {
+        id: 'tx-2',
+        billTitle: 'Electric',
+        amount: 2500,
+        paidAt: new Date('2025-12-15T14:45:00.000Z'),
+        notes: null,
+        categoryIcon: 'zap',
+      },
+    ];
+
+    const setupDbMock = (returnValue: PaymentWithBill[]) => {
+      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
+      const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
+      const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+      const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return { orderByMock, whereMock, innerJoinMock: firstInnerJoinMock, fromMock };
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('fetches payments for a specific date', async () => {
+      const { fromMock, innerJoinMock } = setupDbMock(mockPayments);
+
+      const result = await TransactionService.getPaymentsByDate('2025-12-15');
+
+      expect(result).toEqual(mockPayments);
+      expect(db.select).toHaveBeenCalled();
+      expect(fromMock).toHaveBeenCalledWith(transactions);
+      expect(innerJoinMock).toHaveBeenCalledWith(bills, expect.anything());
+    });
+
+    it('returns empty array when no payments found for date', async () => {
+      setupDbMock([]);
+
+      const result = await TransactionService.getPaymentsByDate('2025-12-15');
+
+      expect(result).toEqual([]);
+    });
+
+    it('calculates correct date range for the specified date', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByDate('2025-12-15');
+
+      const dateObj = parse('2025-12-15', 'yyyy-MM-dd', new Date());
+      const expectedStart = startOfDay(dateObj);
+      const expectedEnd = endOfDay(dateObj);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
+    });
+
+    it('combines date conditions with and()', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByDate('2025-12-15');
+
+      expect(mockAnd).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'gte' }),
+        expect.objectContaining({ type: 'lte' })
+      );
+    });
+
+    it('orders results by paidAt descending', async () => {
+      const { orderByMock } = setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByDate('2025-12-15');
+
+      expect(orderByMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'desc' }));
     });
   });
 });

@@ -1,7 +1,7 @@
 # Due Soon Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
+- **Last Updated:** 2025-12-23
 - **Related:** [Due This Month Screen](./004-due-this-month.md), [Overview Screen](./005-overview-screen.md)
 
 ## Overview
@@ -81,6 +81,16 @@ You can filter the Due Soon view by tag, the same way you filter the Overview. S
 
 The filter combines both conditions: bills must be unpaid, within the range, and have the selected tag.
 
+## Filtering by date
+
+The calendar panel on the right side lets you filter bills by a specific date. Click any day in the calendar to see only bills due on that exact date. This narrows your view from the configured range to a single day, helping you focus on what's due on a particular date.
+
+When you click a calendar day, the URL updates to include the selected date (e.g., `?date=2025-12-15`), and the bill list filters to show only bills due on that day. The calendar shows colored dots below dates: red for overdue bills, yellow for pending bills, and green for paid bills.
+
+Clicking the same selected day again clears the date filter and returns to showing all bills within your configured range. You can also click the "Clear filter" button that appears below the calendar when a date is selected.
+
+**Date filter precedence:** When a date is selected, it takes precedence over your configured range setting. If your range is set to 7 days but you click December 20, you'll see only bills due on December 20, not all bills due within the next 7 days. This lets you drill down into specific dates while maintaining the flexibility of your range setting.
+
 ## Edge cases
 
 **Range of 0.** When set to "Today," only bills due today appear. If none are due, you see an empty state. This is useful for daily payment reviews.
@@ -97,6 +107,8 @@ The filter combines both conditions: bills must be unpaid, within the range, and
 
 **Paid Recently interaction.** The Paid Recently view in the sidebar shows your logged payments from the past few days. Due Soon shows unpaid bills. These views don't overlap, but a bill can appear on Due Soon while its past payments appear in Paid Recently if you've made partial payments.
 
+**Date filter with no matches.** When you select a calendar date that has no bills due, the page shows "No bills due on this date" with guidance to try a different date or clear the filter. This helps you distinguish between "no bills in range" and "no bills on this specific date."
+
 ## Verification
 
 To confirm the Due Soon feature works:
@@ -108,5 +120,8 @@ To confirm the Due Soon feature works:
 5. Go to Settings > Behavior Options and change the Due Soon Range.
 6. Return to Due Soon. The page subtitle and visible bills should reflect the new range.
 7. Select a tag from the filter dropdown. Only matching bills within the range should appear.
-8. Log a payment for a bill in the range. Verify it either disappears or updates based on its next due date.
+8. Click a date in the calendar. Verify the bill list filters to show only bills due on that date.
+9. Verify the URL updates with the selected date parameter.
+10. Click the same date again or click "Clear filter." Verify the date filter clears and all bills within your range reappear.
+11. Log a payment for a bill in the range. Verify it either disappears or updates based on its next due date.
 

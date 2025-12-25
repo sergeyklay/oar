@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { DayButtonProps } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
-import { getBillDatesForMonth, type DateStatusMap } from '@/actions/calendar';
+import { getBillDatesForMonth, type DateStatusMap, type PaymentDateMap } from '@/actions/calendar';
 import { useCalendarState } from './useCalendarState';
 import { DayWithDots } from './DayWithDots';
 import { parse, format } from 'date-fns';
@@ -12,11 +12,16 @@ interface CalendarWidgetProps {
   weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   /** Disable date filter feedback (hide "Showing bills for..." message) */
   disableDateFilter?: boolean;
+  /** Controls calendar dot rendering mode */
+  dotMode?: 'status' | 'payment' | 'none';
+  /** Custom function to fetch date data (for payment dates) */
+  getDateData?: (month: string) => Promise<DateStatusMap | PaymentDateMap>;
 }
 
-export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false }: CalendarWidgetProps) {
+export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, dotMode = 'status', getDateData }: CalendarWidgetProps) {
   const { month, date, setMonth, setDate, clearDate } = useCalendarState();
   const [dateStatuses, setDateStatuses] = useState<DateStatusMap>({});
+  const [paymentDates, setPaymentDates] = useState<PaymentDateMap>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,9 +30,18 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false }: 
     async function fetchDates() {
       setIsLoading(true);
       try {
-        const data = await getBillDatesForMonth(month);
-        if (!cancelled) {
-          setDateStatuses(data);
+        if (dotMode === 'payment' && getDateData) {
+          const data = await getDateData(month);
+          if (!cancelled) {
+            setPaymentDates(data as PaymentDateMap);
+            setDateStatuses({});
+          }
+        } else {
+          const data = await getBillDatesForMonth(month);
+          if (!cancelled) {
+            setDateStatuses(data);
+            setPaymentDates({});
+          }
         }
       } finally {
         if (!cancelled) {
@@ -40,7 +54,7 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false }: 
     return () => {
       cancelled = true;
     };
-  }, [month]);
+  }, [month, dotMode, getDateData]);
 
   const monthDate = parse(month, 'yyyy-MM', new Date());
   const selectedDate = date ? parse(date, 'yyyy-MM-dd', new Date()) : undefined;
@@ -94,6 +108,8 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false }: 
               {...props}
               dateStatuses={dateStatuses}
               isLoading={isLoading}
+              dotMode={dotMode}
+              paymentDates={paymentDates}
             />
           ),
         }}
