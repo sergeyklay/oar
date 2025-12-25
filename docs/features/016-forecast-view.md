@@ -43,6 +43,26 @@ Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page op
 
 The main content area uses a vertical layout that maximizes the chart display. The forecast chart occupies the full width at the top, with no rounded corners and a flush connection to the section below. Below the chart, a two-column section displays the bills table on the left and the summary panel on the right. This layout maximizes chart width and positions the summary totals alongside the bill list.
 
+## The forecast chart
+
+The chart at the top of the Forecast View provides a visual overview of your projected financial liabilities over the next 12 months. Unlike the detailed bill list below, which shows individual bills for a single month, the chart summarizes totals across multiple months so you can quickly spot patterns and plan ahead.
+
+When you select a month in the Forecast View, the chart displays 12 bars starting from that month. Each bar represents one month's projected financial burden, shown as two side-by-side bars grouped together. The left bar (in the primary theme color) shows "Amount Due" - the total of all direct payments projected for that month. The right bar (in a muted color) shows "Amount to Save" - the total amortized portions for long-term bills that you should be setting aside monthly.
+
+This two-bar grouping helps you distinguish between immediate payments and savings obligations. A month with a tall "Amount Due" bar but short "Amount to Save" bar means you'll have high direct payments but fewer long-term savings requirements. The opposite pattern shows months when you should focus on building reserves for upcoming large bills.
+
+The chart respects your visibility settings. When you deselect "Show Amount to Save" in the settings toggle, the chart changes to show only the "Amount Due" bars. The "Amount to Save" bars disappear, the "Amount Due" bars expand to full width for each month, and the legend removes the "Amount to Save" entry. This gives you a simplified view focused solely on direct payment obligations. When you re-enable the setting, both bars return.
+
+Tag filtering affects the chart just like it affects the bill list. When you select a tag, the chart recalculates totals using only bills with that tag. The bars adjust to reflect the filtered amounts, making it easy to see how a specific category of bills (like utilities or subscriptions) varies across months.
+
+The X-axis shows abbreviated month names (Jan, Feb, Mar, etc.) for easy scanning. Hovering over any bar reveals a tooltip with formatted currency values for both amounts, using your configured currency and locale settings. The tooltip shows the exact same totals you'd see if you navigated to that month's detailed view.
+
+The chart updates automatically when you change the selected month. The 12-month window shifts forward or backward to always start from your current selection. If you're viewing January 2026 and switch to June 2026, the chart now shows June 2026 through May 2027, keeping you focused on the planning horizon ahead of your selected month.
+
+If no bills are projected for any of the 12 months in the chart range, the chart displays an empty state message: "No bills projected for this period." This can happen when you apply a tag filter that excludes all bills, or when you select a month far in the future after all your bills have end dates.
+
+The chart's compact height (200 pixels) keeps it visible without pushing the detailed bill list too far down the page. This balance ensures you can see both the high-level trend and the detailed breakdown in a single view, supporting the "Active Payer" philosophy by making patterns visible without requiring separate navigation or analysis tools.
+
 ## Understanding estimated amounts
 
 Variable bills like electricity or heating don't have fixed amounts. The Forecast View estimates these amounts using your payment history. Two strategies work together to provide the best estimate:
@@ -123,12 +143,13 @@ To confirm the Forecast View works correctly:
 4. Verify variable bills show estimated amounts with visual distinction (muted or italic styling).
 5. Check that long-term bills (quarterly, annual) show "Amount to Save" in the dedicated column.
 6. Review the summary panel. Verify "Bills Due" shows the correct count of projected bills for the selected month. Verify "Total Due" sums all bill amounts, "Total to Save" sums amortization amounts, and "Grand Total" combines both.
-7. Select a tag from the filter. Verify only bills with that tag appear in the selected month.
-8. Click the settings icon to open the popover. Toggle each checkbox independently. Verify the "Amount to Save" column hides when "Show Amount to Save" is unchecked, and estimate indicators hide when "Show Estimates" is unchecked. Verify the button shows an active state when either setting is disabled.
-9. Select a month when no bills have occurrences. Verify the empty state message appears.
-10. Select a past month. Verify bills that should have been due in that month appear correctly.
-11. Check a bill with an end date. Select a month after the end date. Verify the bill doesn't appear.
-12. Verify one-time bills only appear in their specific due month, not in other months.
+7. Select a tag from the filter. Verify only bills with that tag appear in the selected month. Verify the chart bars adjust to reflect the filtered totals.
+8. Click the settings icon to open the popover. Toggle each checkbox independently. Verify the "Amount to Save" column hides when "Show Amount to Save" is unchecked, and estimate indicators hide when "Show Estimates" is unchecked. Verify the button shows an active state when either setting is disabled. When "Show Amount to Save" is unchecked, verify the chart shows only "Amount Due" bars at full width, and the legend removes "Amount to Save". When re-enabled, verify both bars return.
+9. Verify the forecast chart displays 12 months starting from the selected month. Hover over bars to verify tooltips show formatted currency values for both amounts (when "Show Amount to Save" is enabled).
+10. Select a month when no bills have occurrences. Verify the empty state message appears in both the chart and the bill list.
+11. Select a past month. Verify bills that should have been due in that month appear correctly.
+12. Check a bill with an end date. Select a month after the end date. Verify the bill doesn't appear.
+13. Verify one-time bills only appear in their specific due month, not in other months.
 
 ## Related Documents
 

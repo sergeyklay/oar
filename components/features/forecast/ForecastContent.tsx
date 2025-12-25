@@ -49,7 +49,13 @@ export async function ForecastContent({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0">
-        <ForecastGraph />
+        <ForecastGraph
+          month={month}
+          tag={tag}
+          currency={currency}
+          locale={locale}
+          showAmortization={showAmortization}
+        />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
         <div className="overflow-y-auto">
