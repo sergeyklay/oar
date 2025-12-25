@@ -4,7 +4,9 @@ import pino from 'pino';
  * Logger configuration for Oar.
  *
  * Server: Uses pino with pino-pretty transport in non-production.
- * Client: Lightweight wrapper that respects log levels (hides debug in production).
+ * Client: Uses pino's native browser API with console output.
+ *   - Development: All logs (debug level)
+ *   - Production: Only error and fatal logs
  */
 
 const isServer = typeof window === 'undefined';
@@ -34,77 +36,16 @@ function createBaseLogger(): pino.Logger {
       });
     }
   } else {
-    const minLevel = isProduction ? 'error' : 'debug';
-
-    // Pino level numbers (lower = more verbose)
-    const levelNumbers: Record<string, number> = {
-      trace: 10,
-      debug: 20,
-      info: 30,
-      warn: 40,
-      error: 50,
-      fatal: 60,
-    };
-
-    const minLevelNumber = levelNumbers[minLevel] ?? 30;
-
-    // Helper to create a log method
-    const createLogMethod = (
-      level: string,
-      consoleMethod: 'log' | 'info' | 'warn' | 'error',
-      contextName?: string
-    ) => {
-      const levelNum = levelNumbers[level] ?? 30;
-      const prefix = contextName ? `[${level.toUpperCase()}:${contextName}]` : `[${level.toUpperCase()}]`;
-
-      return (objOrMsg: unknown, msg?: string) => {
-        if (levelNum < minLevelNumber) {
-          return; // Suppress logs below minimum level
-        }
-
-        // Handle structured logging: first arg is object/Error, second is message
-        if (objOrMsg instanceof Error) {
-          if (msg) {
-            console[consoleMethod](prefix, msg, objOrMsg);
-          } else {
-            console[consoleMethod](prefix, objOrMsg);
-          }
-        } else if (typeof objOrMsg === 'object' && objOrMsg !== null && msg) {
-          // Structured logging: { data }, "message"
-          console[consoleMethod](prefix, objOrMsg, msg);
-        } else if (typeof objOrMsg === 'string') {
-          // Simple message: "message"
-          console[consoleMethod](prefix, objOrMsg);
-        } else {
-          // Fallback: log as-is
-          console[consoleMethod](prefix, objOrMsg);
-        }
-      };
-    };
-
-    // Create base logger methods
-    const createBaseMethods = (contextName?: string): pino.Logger => {
-      const methods = {
-        trace: createLogMethod('trace', 'log', contextName),
-        debug: createLogMethod('debug', 'log', contextName),
-        info: createLogMethod('info', 'info', contextName),
-        warn: createLogMethod('warn', 'warn', contextName),
-        error: createLogMethod('error', 'error', contextName),
-        fatal: createLogMethod('fatal', 'error', contextName),
-        child: (bindings: Record<string, unknown>) => {
-          const name = (bindings.name as string) ?? contextName ?? 'unknown';
-          return createBaseMethods(name);
-        },
-        // Add required pino.Logger properties with minimal implementations
-        level: minLevel,
-        silent: false,
-        msgPrefix: contextName ? `[${contextName}]` : '',
-      };
-
-      return methods as unknown as pino.Logger;
-    };
-
-    return createBaseMethods();
+    // Client-side: Use pino's native browser API
+    // In production, only error and fatal logs are shown (level: 'error')
+    // In development, all logs are shown (level: 'debug')
+    // Error serialization is enabled for proper Error object formatting
+    return pino({
+      level: isProduction ? 'error' : 'debug',
+      browser: {
+        serialize: true, // Enable error serialization and all standard serializers
+      },
+    });
   }
 }
 
