@@ -208,7 +208,7 @@ describe('getForecastDataForRange', () => {
     );
   });
 
-  it('uses default months value when not provided', async () => {
+  it('passes months value to ForecastService', async () => {
     (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
       mockMonthlyTotals
     );
