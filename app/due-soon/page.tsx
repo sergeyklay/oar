@@ -1,10 +1,12 @@
 import { AppShell } from '@/components/layout/AppShell';
+import { AppShellClient } from '@/components/layout/AppShellClient';
 import { MainContent } from '@/components/layout/MainContent';
 import { RightPanel } from '@/components/layout/RightPanel';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getTags } from '@/actions/tags';
 import { searchParamsCache } from '@/lib/search-params';
-import { DueSoonHeader } from './DueSoonHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,31 +19,38 @@ export default async function DueSoonPage({
 }: DueSoonPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
-  const [settings, dueSoonRange] = await Promise.all([
+  const [settings, dueSoonRange, tags] = await Promise.all([
     SettingsService.getAll(),
     SettingsService.getDueSoonRange(),
+    getTags(),
   ]);
 
   return (
-    <AppShell
-      rightPanel={
-        <RightPanel
-          selectedBillId={selectedBill ?? null}
-          currency={settings.currency}
-          locale={settings.locale}
-          weekStart={settings.weekStart}
-        />
-      }
-    >
-      <MainContent header={<DueSoonHeader dueSoonRange={dueSoonRange} />}>
-        <BillList
-          dateRange={dueSoonRange}
-          date={date ?? undefined}
-          tag={tag ?? undefined}
-          selectedBillId={selectedBill}
-        />
-      </MainContent>
-    </AppShell>
+    <AppShellClient>
+      <AppShell
+        rightPanel={
+          <RightPanel
+            selectedBillId={selectedBill ?? null}
+            currency={settings.currency}
+            locale={settings.locale}
+            weekStart={settings.weekStart}
+          />
+        }
+      >
+        <MainContent
+          header={
+            <PageHeader showCreateBill={false} showTagFilter={true} tagFilterTags={tags} />
+          }
+        >
+          <BillList
+            dateRange={dueSoonRange}
+            date={date ?? undefined}
+            tag={tag ?? undefined}
+            selectedBillId={selectedBill}
+          />
+        </MainContent>
+      </AppShell>
+    </AppShellClient>
   );
 }
 

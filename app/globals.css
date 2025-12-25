@@ -71,12 +71,33 @@
   grid-template-columns: var(--sidebar-width) 1fr;
 }
 
+.sidebar-hidden .app-shell {
+  grid-template-columns: 0fr 1fr var(--calendar-width) !important;
+}
+
+.sidebar-hidden .app-shell.no-right-panel {
+  grid-template-columns: 0fr 1fr !important;
+}
+
+.sidebar-hidden .sidebar {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden;
+  border-right: none !important;
+  grid-column: 1;
+}
+
 .sidebar {
   height: 100dvh;
   overflow: hidden;
   border-right: 1px solid hsl(var(--border));
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .calendar-panel {
@@ -90,6 +111,9 @@
   flex-direction: column;
   height: 100dvh;
   overflow: hidden;
+  min-width: 0;
+  width: 100%;
+  grid-column: 2;
 }
 
 .content-header {
@@ -97,6 +121,9 @@
   top: 0;
   z-index: 10;
   flex-shrink: 0;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
   background: hsl(var(--background));
   border-bottom: 1px solid hsl(var(--border));
 }

@@ -1,10 +1,11 @@
 import { AppShell } from '@/components/layout/AppShell';
+import { AppShellClient } from '@/components/layout/AppShellClient';
 import { MainContent } from '@/components/layout/MainContent';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('SettingsPage');
-import { SettingsHeader } from '@/components/features/settings/SettingsHeader';
 import { SettingsLayout } from '@/components/features/settings/SettingsLayout';
 import { SettingsNavigation } from '@/components/features/settings/SettingsNavigation';
 import { SettingsCategoryPanel } from '@/components/features/settings/SettingsCategoryPanel';
@@ -27,15 +28,19 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   } catch (error) {
     logger.error(error, 'Failed to load settings');
     return (
-      <AppShell rightPanel={null}>
-        <MainContent header={<SettingsHeader />}>
-          <div className="p-6">
-            <p className="text-destructive">
-              Failed to load settings structure
-            </p>
-          </div>
-        </MainContent>
-      </AppShell>
+      <AppShellClient>
+        <AppShell rightPanel={null}>
+          <MainContent
+            header={<PageHeader showCreateBill={false} showTagFilter={false} />}
+          >
+            <div className="p-6">
+              <p className="text-destructive">
+                Failed to load settings structure
+              </p>
+            </div>
+          </MainContent>
+        </AppShell>
+      </AppShellClient>
     );
   }
 
@@ -46,29 +51,37 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
   if (!selectedCategory) {
     return (
-      <AppShell rightPanel={null}>
-        <MainContent header={<SettingsHeader />}>
-          <div className="p-6">
-            <p className="text-muted-foreground">
-              No settings categories available
-            </p>
-          </div>
-        </MainContent>
-      </AppShell>
+      <AppShellClient>
+        <AppShell rightPanel={null}>
+          <MainContent
+            header={<PageHeader showCreateBill={false} showTagFilter={false} />}
+          >
+            <div className="p-6">
+              <p className="text-muted-foreground">
+                No settings categories available
+              </p>
+            </div>
+          </MainContent>
+        </AppShell>
+      </AppShellClient>
     );
   }
 
   return (
-    <AppShell rightPanel={null}>
-      <MainContent header={<SettingsHeader />}>
-        <SettingsLayout
-          navigation={
-            <SettingsNavigation categories={structure.categories} />
-          }
+    <AppShellClient>
+      <AppShell rightPanel={null}>
+        <MainContent
+          header={<PageHeader showCreateBill={false} showTagFilter={false} />}
         >
-          <SettingsCategoryPanel category={selectedCategory} />
-        </SettingsLayout>
-      </MainContent>
-    </AppShell>
+          <SettingsLayout
+            navigation={
+              <SettingsNavigation categories={structure.categories} />
+            }
+          >
+            <SettingsCategoryPanel category={selectedCategory} />
+          </SettingsLayout>
+        </MainContent>
+      </AppShell>
+    </AppShellClient>
   );
 }

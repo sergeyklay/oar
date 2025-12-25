@@ -26,9 +26,8 @@ export function AddBillButton({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Bill
+      <Button onClick={() => setOpen(true)} size="icon" aria-label="Add Bill">
+        <Plus className="h-4 w-4" />
       </Button>
       <BillFormDialog
         open={open}

@@ -2,7 +2,7 @@ import { Sidebar } from './Sidebar';
 import { CalendarPanel } from './CalendarPanel';
 import { cn } from '@/lib/utils';
 
-interface AppShellProps {
+export interface AppShellProps {
   children: React.ReactNode;
   /** Right panel content; defaults to CalendarPanel. Pass null to hide. */
   rightPanel?: React.ReactNode | null;

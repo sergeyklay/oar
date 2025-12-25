@@ -42,11 +42,11 @@ Navigate to Settings > Behavior Options to adjust the "Due Soon Range" preferenc
 | 20 | In next 20 days |
 | 30 | In next 30 days |
 
-The setting takes effect immediately. The sidebar subtitle and Due Soon page both update to reflect your new range.
+The setting takes effect immediately. The sidebar subtitle and Due Soon page content both update to reflect your new range.
 
 ## Viewing bills due soon
 
-Click "Due Soon" in the sidebar to open the page. The header shows your current range setting as a subtitle (like "In next 7 days").
+Click "Due Soon" in the sidebar to open the page. The page displays unpaid bills within your configured range.
 
 The sidebar menu item shows a summary:
 - **With unpaid bills:** "3 bills - 1250 zl" (or your currency)
@@ -115,13 +115,12 @@ To confirm the Due Soon feature works:
 
 1. Check the sidebar navigation. You should see "Due Soon" below "Overview" with a subtitle showing the bill count and total for your configured range.
 2. Click "Due Soon" to navigate to the page.
-3. Verify the page subtitle matches your range setting (e.g., "In next 7 days").
-4. Check that only unpaid bills within your range appear.
-5. Go to Settings > Behavior Options and change the Due Soon Range.
-6. Return to Due Soon. The page subtitle and visible bills should reflect the new range.
-7. Select a tag from the filter dropdown. Only matching bills within the range should appear.
-8. Click a date in the calendar. Verify the bill list filters to show only bills due on that date.
-9. Verify the URL updates with the selected date parameter.
-10. Click the same date again or click "Clear filter." Verify the date filter clears and all bills within your range reappear.
-11. Log a payment for a bill in the range. Verify it either disappears or updates based on its next due date.
+3. Check that only unpaid bills within your range appear.
+4. Go to Settings > Behavior Options and change the Due Soon Range.
+5. Return to Due Soon. The visible bills should reflect the new range.
+6. Select a tag from the filter dropdown. Only matching bills within the range should appear.
+7. Click a date in the calendar. Verify the bill list filters to show only bills due on that date.
+8. Verify the URL updates with the selected date parameter.
+9. Click the same date again or click "Clear filter." Verify the date filter clears and all bills within your range reappear.
+10. Log a payment for a bill in the range. Verify it either disappears or updates based on its next due date.
 
