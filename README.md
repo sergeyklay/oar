@@ -17,10 +17,22 @@ Sovereignty by default. Your data lives on your machine. No cloud sync, no telem
 
 ## Features
 
-- **Manual payment logging** - Each payment is a deliberate act, not a background process
-- **Forecasting and liquidity planning** - See your cash flow before it happens
-- **Sinking funds** - Know exactly how much to save for upcoming obligations
-- **Local-first architecture** - Works offline, stores everything in SQLite
+### Core Philosophy
+
+* Manual payment logging ensures deliberate action, preventing "subscription zombie" mode.
+* 100% offline-capable, self-hosted on SQLite. Your data never leaves your device.
+
+### Financial Intelligence
+
+* Project liabilities months ahead using intelligent estimation for variable bills.
+* Automatic amortization calculations ("Amount to Save") for non-monthly bills (e.g., insurance).
+* Real-time view of what is Due Soon vs. Due This Month.
+
+### Organization & Power Features
+
+* Handles complex intervals (weekly, quarterly, yearly) with auto-advancement.
+* Tagging system, auto-pay detection, and partial payment tracking.
+* Complete transaction records with preserving logic for inactive bills.
 
 ## Tech stack
 
