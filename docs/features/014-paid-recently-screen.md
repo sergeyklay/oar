@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
-- **Related:** [Due Soon Screen](./008-due-soon-screen.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
 
@@ -89,7 +88,7 @@ Clicking the same selected day again clears the date filter and returns to showi
 
 **Date filter precedence:** When a date is selected, it takes precedence over your configured range setting. If your range is set to 7 days but you click December 15, you'll see only payments made on December 15, not all payments from the last 7 days. This lets you drill down into specific dates while maintaining the flexibility of your range setting.
 
-**Calendar dot behavior:** The calendar on Paid Recently uses a different visual style than bill views. Instead of colored dots indicating bill statuses (red for overdue, yellow for pending, green for paid), it shows white dots only on days where payments actually occurred. Days without payments show no dots at all. This visual distinction reinforces that you're viewing payment history, not bill statuses.
+**Calendar dot behavior:** The calendar on Paid Recently uses a different visual style than bill views. Instead of colored dots indicating bill statuses (red for overdue, yellow for pending, green for paid), it shows white dots only on days where payments occurred. Days without payments show no dots at all. This visual distinction reinforces that you're viewing payment history, not bill statuses.
 
 ## Edge cases
 
@@ -116,7 +115,7 @@ To confirm the Paid Recently feature works:
 1. Log a payment for a bill using the Bill Detail Panel.
 2. Check the sidebar navigation. You should see "Paid Recently" in the Reports section.
 3. Click "Paid Recently" to navigate to the page.
-4. Verify the payment you just logged appears in the list.
+4. Verify the payment you logged appears in the list.
 5. Check that the payment date, amount, and bill name are correct.
 6. Go to Settings > Behavior Options and change the Paid Recently Range.
 7. Return to Paid Recently. The visible payments should reflect the new range.
@@ -126,4 +125,9 @@ To confirm the Paid Recently feature works:
 11. Verify no dots appear on days without payments.
 12. Click the same date again or click "Clear filter." Verify the date filter clears and all payments within your range reappear.
 13. Click a date with no payments. Verify the empty state message appears.
+
+## Related Documents
+
+* [Due Soon Screen](./008-due-soon-screen.md) - Bills due within a configurable time range
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 

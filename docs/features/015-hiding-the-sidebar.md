@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
-- **Related:** [Overview Screen](./005-overview-screen.md), [Organizing Bills with Tags](./003-organizing-bills-with-tags.md)
 
 ## Overview
 
@@ -10,7 +9,7 @@ When you're reviewing a long list of bills, you might want more horizontal space
 
 The sidebar toggle button appears at the top of every page, in the same spot on every screen. This consistency means you always know where to find it, whether you're on the Overview page, Due Soon, or any other view.
 
-Hiding the sidebar doesn't just give you more space—it remembers your preference as you navigate. If you hide the sidebar on the Overview page, it stays hidden when you move to Due Soon or any other page. This persistence respects your workflow, so you don't have to hide it again every time you change views.
+Hiding the sidebar gives you more space and remembers your preference as you navigate. If you hide the sidebar on the Overview page, it stays hidden when you move to Due Soon or any other page. This persistence respects your workflow, so you don't have to hide it again every time you change views.
 
 ## How it works
 
@@ -68,3 +67,8 @@ To confirm the sidebar toggle works:
 7. Refresh the page. The sidebar should remain hidden after refresh.
 8. Show the sidebar again, then navigate to a different page. The sidebar should remain visible.
 9. Open a new tab and navigate to a page. The sidebar should be visible by default (unless the URL contains `?sidebar=hidden`).
+
+## Related Documents
+
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) - Categorizing bills with tags

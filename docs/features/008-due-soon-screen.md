@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
-- **Related:** [Due This Month Screen](./004-due-this-month.md), [Overview Screen](./005-overview-screen.md)
 
 ## Overview
 
@@ -123,4 +122,9 @@ To confirm the Due Soon feature works:
 8. Verify the URL updates with the selected date parameter.
 9. Click the same date again or click "Clear filter." Verify the date filter clears and all bills within your range reappear.
 10. Log a payment for a bill in the range. Verify it either disappears or updates based on its next due date.
+
+## Related Documents
+
+* [Due This Month Screen](./004-due-this-month.md) - Bills due in the current calendar month
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
 

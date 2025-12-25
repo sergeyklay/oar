@@ -1,8 +1,7 @@
 # Overview Screen
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-22
-- **Related:** [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Logging Payments](./002-auto-pay.md), [Archive Screen](./013-archive-screen.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -22,7 +21,7 @@ The table shows your bills with these columns:
 
 **Due date.** Shows when payment is due using human-readable text. A colored vertical bar on the left indicates the bill's urgency.
 
-## Bill Detail Panel
+## Bill detail panel
 
 Clicking anywhere on a bill row opens the **Bill Detail Panel** on the right side of the screen. This panel provides a focused view of the specific bill and serves as the primary location for taking action.
 
@@ -140,3 +139,9 @@ To confirm the Overview screen works:
 8. Click on a bill row. The Bill Detail Panel should appear on the right.
 9. Look at the bottom of the Bill Detail Panel. You should see Archive, Edit, and Delete buttons.
 10. Look for the "View Payment History" section in the panel to access past payments.
+
+## Related Documents
+
+* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Archive Screen](./013-archive-screen.md) - Viewing and managing archived bills

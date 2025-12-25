@@ -1,7 +1,7 @@
 # Getting Started
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-20
+- **Last Updated:** 2025-12-25
 
 ## 1. Goal
 
@@ -143,3 +143,7 @@ and that you restarted the development server after adding it.
 ## 7. Next Steps
 
 To learn about Local Docker deployment, see [Local Docker Deployment](./002-local-docker.md).
+
+## Related Documents
+
+* [Local Docker Deployment](./002-local-docker.md) - Running Oar locally with Docker
