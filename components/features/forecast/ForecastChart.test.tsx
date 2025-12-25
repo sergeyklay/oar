@@ -1,0 +1,315 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ForecastChart } from './ForecastChart';
+import type { MonthlyForecastTotal } from '@/lib/services/ForecastService';
+
+jest.mock('recharts', () => ({
+  BarChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
+    <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)}>
+      {children}
+    </div>
+  ),
+  Bar: ({ dataKey, onClick }: { dataKey: string; onClick?: (data: unknown) => void }) => (
+    <div
+      data-testid={`bar-${dataKey}`}
+      onClick={() => onClick?.({ payload: { month: '2025-03' } })}
+    />
+  ),
+  XAxis: ({ dataKey }: { dataKey: string }) => (
+    <div data-testid="x-axis" data-key={dataKey} />
+  ),
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+}));
+
+jest.mock('@/components/ui/chart', () => ({
+  ChartContainer: ({
+    children,
+    config,
+  }: {
+    children: React.ReactNode;
+    config: Record<string, unknown>;
+  }) => (
+    <div data-testid="chart-container" data-config={JSON.stringify(config)}>
+      {children}
+    </div>
+  ),
+  ChartTooltip: ({ content }: { content: (props: unknown) => React.ReactNode }) => {
+    const mockProps = {
+      active: true,
+      payload: [
+        {
+          value: 30000,
+          dataKey: 'totalDue',
+          name: 'totalDue',
+          color: '#000',
+        },
+        {
+          value: 5000,
+          dataKey: 'totalToSave',
+          name: 'totalToSave',
+          color: '#000',
+        },
+      ],
+    };
+    return <div data-testid="chart-tooltip">{content(mockProps)}</div>;
+  },
+  ChartLegend: ({ content }: { content: React.ReactNode }) => (
+    <div data-testid="chart-legend">{content}</div>
+  ),
+  ChartLegendContent: ({ config }: { config: Record<string, unknown> }) => (
+    <div data-testid="chart-legend-content" data-config={JSON.stringify(config)} />
+  ),
+}));
+
+jest.mock('@/lib/money', () => ({
+  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+}));
+
+import { formatMoney } from '@/lib/money';
+
+const mockData: MonthlyForecastTotal[] = [
+  {
+    month: '2025-03',
+    monthLabel: 'Mar',
+    totalDue: 30000,
+    totalToSave: 5000,
+    grandTotal: 35000,
+  },
+  {
+    month: '2025-04',
+    monthLabel: 'Apr',
+    totalDue: 20000,
+    totalToSave: 0,
+    grandTotal: 20000,
+  },
+];
+
+describe('ForecastChart', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders chart with provided data', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    expect(screen.getByTestId('chart-container')).toBeInTheDocument();
+    expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+  });
+
+  it('renders both bars for totalDue and totalToSave when showAmortization is true', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
+    expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
+  });
+
+  it('renders only totalDue bar when showAmortization is false', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={false}
+      />
+    );
+
+    expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
+    expect(screen.queryByTestId('bar-totalToSave')).not.toBeInTheDocument();
+  });
+
+  it('renders X-axis with monthLabel dataKey', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    const xAxis = screen.getByTestId('x-axis');
+    expect(xAxis).toBeInTheDocument();
+    expect(xAxis).toHaveAttribute('data-key', 'monthLabel');
+  });
+
+  it('renders cartesian grid', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    expect(screen.getByTestId('cartesian-grid')).toBeInTheDocument();
+  });
+
+  it('renders chart legend', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    expect(screen.getByTestId('chart-legend')).toBeInTheDocument();
+    expect(screen.getByTestId('chart-legend-content')).toBeInTheDocument();
+  });
+
+  it('includes totalToSave in legend config when showAmortization is true', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    const container = screen.getByTestId('chart-container');
+    const config = JSON.parse(container.getAttribute('data-config') || '{}');
+
+    expect(config.totalDue).toBeDefined();
+    expect(config.totalToSave).toBeDefined();
+    expect(config.totalDue.label).toBe('Amount Due');
+    expect(config.totalToSave.label).toBe('Amount to Save');
+  });
+
+  it('excludes totalToSave from legend config when showAmortization is false', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={false}
+      />
+    );
+
+    const container = screen.getByTestId('chart-container');
+    const config = JSON.parse(container.getAttribute('data-config') || '{}');
+
+    expect(config.totalDue).toBeDefined();
+    expect(config.totalToSave).toBeUndefined();
+    expect(config.totalDue.label).toBe('Amount Due');
+  });
+
+  it('formats tooltip values using formatMoney', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    screen.getByTestId('chart-tooltip');
+
+    expect(formatMoney).toHaveBeenCalledWith(30000, 'USD', 'en-US');
+    expect(formatMoney).toHaveBeenCalledWith(5000, 'USD', 'en-US');
+  });
+
+  it('displays formatted currency values in tooltip', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    const tooltip = screen.getByTestId('chart-tooltip');
+    expect(tooltip).toHaveTextContent('$300.00');
+    expect(tooltip).toHaveTextContent('$50.00');
+  });
+
+  it('calls onBarClick when bar is clicked', async () => {
+    const user = userEvent.setup();
+    const onBarClick = jest.fn();
+
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+        onBarClick={onBarClick}
+      />
+    );
+
+    const totalDueBar = screen.getByTestId('bar-totalDue');
+    await user.click(totalDueBar);
+
+    expect(onBarClick).toHaveBeenCalledWith('2025-03');
+  });
+
+  it('does not call onBarClick when not provided', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    const totalDueBar = screen.getByTestId('bar-totalDue');
+    await user.click(totalDueBar);
+
+    expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
+  });
+
+  it('handles empty data array', () => {
+    render(
+      <ForecastChart
+        data={[]}
+        currency="USD"
+        locale="en-US"
+        showAmortization={true}
+      />
+    );
+
+    expect(screen.getByTestId('chart-container')).toBeInTheDocument();
+    expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
+  });
+
+  it('passes correct currency and locale to formatMoney', () => {
+    render(
+      <ForecastChart
+        data={mockData}
+        currency="PLN"
+        locale="pl-PL"
+        showAmortization={true}
+      />
+    );
+
+    screen.getByTestId('chart-tooltip');
+
+    expect(formatMoney).toHaveBeenCalledWith(
+      expect.any(Number),
+      'PLN',
+      'pl-PL'
+    );
+  });
+});
+

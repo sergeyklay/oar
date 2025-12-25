@@ -60,6 +60,7 @@
     "react-day-picker": "^9.13.0",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.69.0",
+    "recharts": "^3.6.0",
     "rrule": "^2.8.1",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.4.0",

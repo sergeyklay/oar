@@ -3,7 +3,14 @@ import { BillService } from './BillService';
 import { EstimationService } from './EstimationService';
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import { eq, and, inArray, ne } from 'drizzle-orm';
-import { parse, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import {
+  parse,
+  startOfMonth,
+  endOfMonth,
+  isWithinInterval,
+  addMonths,
+  format,
+} from 'date-fns';
 import { RRule, Frequency } from 'rrule';
 
 /**
@@ -37,6 +44,22 @@ export interface ForecastSummary {
   /** Sum of amortized portions for future bills (in minor units) */
   totalToSave: number;
   /** Grand total (totalDue + totalToSave) in minor units */
+  grandTotal: number;
+}
+
+/**
+ * Monthly forecast total for chart visualization
+ */
+export interface MonthlyForecastTotal {
+  /** Month string in YYYY-MM format (for URL navigation) */
+  month: string;
+  /** Abbreviated month name for X-axis display (e.g., "Jan", "Feb", "Mar") */
+  monthLabel: string;
+  /** Sum of direct payments due this month (in minor units, integer) */
+  totalDue: number;
+  /** Sum of amortized portions for future bills (in minor units, integer) */
+  totalToSave: number;
+  /** Grand total (totalDue + totalToSave) in minor units, integer */
   grandTotal: number;
 }
 
@@ -404,6 +427,42 @@ export const ForecastService = {
       totalToSave,
       grandTotal,
     };
+  },
+
+  /**
+   * Projects bills for multiple months and returns aggregated monthly totals.
+   *
+   * @param startMonth - Starting month in YYYY-MM format
+   * @param count - Number of months to project (default 12, max 24)
+   * @param tag - Optional tag slug for filtering
+   * @returns Array of monthly forecast totals
+   */
+  async getBillsForMonthRange(
+    startMonth: string,
+    count: number,
+    tag?: string
+  ): Promise<MonthlyForecastTotal[]> {
+    const startDate = parse(startMonth, 'yyyy-MM', new Date());
+    const results: MonthlyForecastTotal[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const currentMonthDate = addMonths(startDate, i);
+      const currentMonthStr = format(currentMonthDate, 'yyyy-MM');
+      const monthLabel = format(currentMonthDate, 'MMM');
+
+      const bills = await this.getBillsForMonth(currentMonthStr, tag);
+      const summary = this.calculateSummary(bills);
+
+      results.push({
+        month: currentMonthStr,
+        monthLabel,
+        totalDue: summary.totalDue,
+        totalToSave: summary.totalToSave,
+        grandTotal: summary.grandTotal,
+      });
+    }
+
+    return results;
   },
 };
 
