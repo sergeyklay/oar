@@ -47,7 +47,14 @@ export function BillRow({
       </td>
       <td>
         <div className="flex flex-col">
-          <span className="font-mono">{formatMoney(bill.amount, currency, locale)}</span>
+          <span
+            className={cn(
+              'font-mono',
+              bill.isVariable && 'text-muted-foreground'
+            )}
+          >
+            {formatMoney(bill.amount, currency, locale)}
+          </span>
           {bill.isVariable && (
             <span className="text-xs text-muted-foreground">(estimate)</span>
           )}
