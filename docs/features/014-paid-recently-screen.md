@@ -101,7 +101,7 @@ Clicking the same selected day again clears the date filter and returns to showi
 
 **Payments at range boundary.** A payment made exactly on the boundary day of your range is included. If your range is 7 and a payment was made 7 days ago, it appears in the list.
 
-**Date filter with no matches.** When you select a calendar date that has no payments, the page shows "No payments in this time range" (the same message as an empty range). This helps you distinguish between "no payments in range" and "no payments on this specific date."
+**Date filter with no matches.** When you select a calendar date that has no payments, the page shows "No payments in this time range" (the same message as an empty range). You can distinguish between "no payments in your configured range" and "no payments on this specific date" by checking whether a date is selected in the calendar. If you see the "Clear filter" button below the calendar, you're viewing a filtered date with no payments. If there's no filter button, you're viewing your full range with no payments.
 
 **Partial payments.** If you made multiple partial payments for the same bill, each payment appears as a separate row in the list. This gives you a complete record of all payment activity, even when payments were split across multiple transactions.
 
