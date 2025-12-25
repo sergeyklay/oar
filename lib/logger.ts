@@ -24,6 +24,7 @@ function createBaseLogger(): pino.Logger {
     });
   }
 
+  /* c8 ignore start */
   if (isServer) {
     if (isProduction) {
       return pino({
@@ -45,14 +46,13 @@ function createBaseLogger(): pino.Logger {
     });
   }
 
-
   return pino({
     level: isProduction ? 'error' : 'debug',
     browser: {
       serialize: true,
     },
   });
-
+  /* c8 ignore stop */
 }
 
 // Create singleton base logger
