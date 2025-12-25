@@ -4,26 +4,12 @@
  *
  * Uses pino directly without TypeScript dependencies.
  * This is a simplified version for use in production Docker scripts.
+ * Always uses JSON output for production log aggregation.
  */
 
 import pino from 'pino';
 
-const isProduction = process.env.NODE_ENV === 'production';
-
-const baseLogger = isProduction
-  ? pino({ level: 'info' })
-  : pino({
-      level: 'debug',
-      transport: {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
-          ignore: 'pid,hostname',
-          singleLine: false,
-        },
-      },
-    });
+const baseLogger = pino({ level: 'info' });
 
 /**
  * Get a child logger with the specified name/context.

@@ -91,7 +91,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 # Copy required node_modules for seed/migration scripts
 # These packages are not included in Next.js standalone output but are needed
 # for database initialization scripts that run at container startup.
-# Direct dependencies: better-sqlite3, @paralleldrive/cuid2, pino, pino-pretty
+# Direct dependencies: better-sqlite3, @paralleldrive/cuid2, pino
 # Transitive deps of better-sqlite3: bindings, prebuild-install
 # Transitive dep of bindings: file-uri-to-path
 # Transitive deps of @paralleldrive/cuid2: @noble, bignumber.js, error-causes
@@ -104,7 +104,6 @@ COPY --from=deps --chown=nextjs:nodejs /app/node_modules/bindings ./node_modules
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prebuild-install ./node_modules/prebuild-install
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/file-uri-to-path ./node_modules/file-uri-to-path
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/pino ./node_modules/pino
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/pino-pretty ./node_modules/pino-pretty
 
 # Make entrypoint executable
 RUN chmod +x scripts/docker-entrypoint.sh
