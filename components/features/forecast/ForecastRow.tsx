@@ -41,12 +41,12 @@ export function ForecastRow({
           </span>
         </div>
       </td>
-      <td>
-        <div className="flex flex-col">
+      <td className="text-right">
+        <div className="flex flex-col items-end">
           <span
             className={cn(
               'font-mono',
-              bill.isEstimated && showEstimates && 'text-muted-foreground italic'
+              bill.isEstimated && showEstimates && 'text-muted-foreground'
             )}
           >
             {formatMoney(bill.displayAmount, currency, locale)}
@@ -56,7 +56,7 @@ export function ForecastRow({
           )}
         </div>
       </td>
-      <td className={showAmortization ? '' : 'hidden'}>
+      <td className={cn(showAmortization ? 'text-right' : 'hidden')}>
         {bill.amortizationAmount !== null ? (
           <span className="font-mono text-muted-foreground">
             {formatMoney(bill.amortizationAmount, currency, locale)}
@@ -65,8 +65,8 @@ export function ForecastRow({
           <span className="text-muted-foreground">—</span>
         )}
       </td>
-      <td>
-        <div className="flex flex-col">
+      <td className="text-right">
+        <div className="flex flex-col items-end">
           <span>{format(bill.dueDate, 'EEE, MMM d')}</span>
           <span className="text-xs text-muted-foreground">
             {format(bill.dueDate, 'MMM d, yyyy')}

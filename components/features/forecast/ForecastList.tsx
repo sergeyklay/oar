@@ -1,5 +1,6 @@
 import { format, parse } from 'date-fns';
 import { ForecastRow } from './ForecastRow';
+import { cn } from '@/lib/utils';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
 interface ForecastListProps {
@@ -52,9 +53,9 @@ export function ForecastList({
         <tr>
           <th className="w-10" aria-hidden="true" />
           <th>Name</th>
-          <th>Amount Due</th>
-          <th className={showAmortization ? '' : 'hidden'}>Amount to Save</th>
-          <th>Due Date</th>
+          <th className="text-right">Amount Due</th>
+          <th className={cn(showAmortization ? 'text-right' : 'hidden')}>Amount to Save</th>
+          <th className="text-right">Due Date</th>
         </tr>
       </thead>
       <tbody>
