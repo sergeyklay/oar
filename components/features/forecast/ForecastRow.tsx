@@ -54,9 +54,6 @@ export function ForecastRow({
           {bill.isEstimated && showEstimates && (
             <span className="text-xs text-muted-foreground">(estimate)</span>
           )}
-          {bill.isVariable && !showEstimates && (
-            <span className="text-xs text-muted-foreground">(estimate)</span>
-          )}
         </div>
       </td>
       <td className={showAmortization ? '' : 'hidden'}>

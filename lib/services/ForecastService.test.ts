@@ -1,7 +1,7 @@
 import { ForecastService } from './ForecastService';
 import { BillService } from './BillService';
 import { EstimationService } from './EstimationService';
-import { db, bills, tags, billsToTags, billCategories } from '@/db';
+import { db } from '@/db';
 import type { BillWithTags } from '@/db/schema';
 import type { ForecastBill } from './ForecastService';
 
@@ -87,8 +87,6 @@ describe('ForecastService', () => {
       const mockBills: BillWithTags[] = [createMockBill()];
       createDbMock(mockBills);
 
-      const tagSelectMock = jest.fn().mockResolvedValue([{ id: 'tag-1' }]);
-      const billsToTagsSelectMock = jest.fn().mockResolvedValue([{ billId: 'bill-1' }]);
       (db.select as jest.Mock)
         .mockReturnValueOnce({
           from: jest.fn().mockReturnValue({ where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]) }),
