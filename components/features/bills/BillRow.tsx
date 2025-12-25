@@ -28,6 +28,10 @@ export function BillRow({
   locale,
   isArchived,
 }: BillRowProps) {
+  const statusClass = isArchived
+    ? 'bg-muted'
+    : DueDateService.getStatusBarColor(bill.dueDate, bill.status);
+
   return (
     <>
       <td className="w-10 text-center">
@@ -51,18 +55,10 @@ export function BillRow({
       </td>
       <td>
         <div className="flex items-stretch gap-3">
-          {!isArchived && (
-            <div
-              className={cn('w-[3px] self-stretch rounded-sm', DueDateService.getStatusBarColor(bill.dueDate, bill.status))}
-              aria-hidden="true"
-            />
-          )}
-          {isArchived && (
-            <div
-              className="w-[3px] self-stretch rounded-sm bg-muted"
-              aria-hidden="true"
-            />
-          )}
+          <div
+            className={cn('w-[3px] self-stretch rounded-sm', statusClass)}
+            aria-hidden="true"
+          />
           <div className="flex flex-col">
             <span>{isArchived ? 'Never' : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}</span>
             {isArchived ? (
