@@ -1,7 +1,7 @@
 import { db, transactions, bills, billCategories } from '@/db';
 import { gte, lte, desc, eq, and } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid } from 'date-fns';
-import type { PaymentWithBill } from '@/lib/types';
+import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth } from 'date-fns';
+import type { PaymentWithBill, Transaction } from '@/lib/types';
 
 /**
  * Service for transaction-related operations.
@@ -72,6 +72,66 @@ export const TransactionService = {
         and(
           gte(transactions.paidAt, startDate),
           lte(transactions.paidAt, endDate)
+        )
+      )
+      .orderBy(desc(transactions.paidAt));
+
+    return results;
+  },
+
+  /**
+   * Fetches transactions for a specific bill with optional limit and ordering.
+   *
+   * @param billId - Bill ID to fetch transactions for
+   * @param options - Optional limit and ordering
+   * @returns Array of transactions ordered by paidAt
+   */
+  async getByBillId(
+    billId: string,
+    options?: { limit?: number; orderBy?: 'paidAt' | 'paidAt DESC' }
+  ): Promise<Transaction[]> {
+    const baseQuery = db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.billId, billId));
+
+    const results =
+      options?.orderBy === 'paidAt DESC'
+        ? await baseQuery.orderBy(desc(transactions.paidAt))
+        : await baseQuery.orderBy(transactions.paidAt);
+
+    if (options?.limit) {
+      return results.slice(0, options.limit);
+    }
+
+    return results;
+  },
+
+  /**
+   * Fetches transactions for a specific bill within a specific month and year.
+   *
+   * @param billId - Bill ID to fetch transactions for
+   * @param month - Month number (1-12)
+   * @param year - Year number
+   * @returns Array of transactions ordered by paidAt descending
+   */
+  async getByBillIdAndMonth(
+    billId: string,
+    month: number,
+    year: number
+  ): Promise<Transaction[]> {
+    const monthDate = new Date(year, month - 1, 1);
+    const monthStart = startOfMonth(monthDate);
+    const monthEnd = endOfMonth(monthDate);
+
+    const results = await db
+      .select()
+      .from(transactions)
+      .where(
+        and(
+          eq(transactions.billId, billId),
+          gte(transactions.paidAt, monthStart),
+          lte(transactions.paidAt, monthEnd)
         )
       )
       .orderBy(desc(transactions.paidAt));

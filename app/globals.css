@@ -178,6 +178,25 @@
   min-width: 280px;
 }
 
+/* === Forecast Table Column Widths === */
+.forecast-table th:nth-child(3),
+.forecast-table td:nth-child(3) {
+  width: 180px;
+  min-width: 180px;
+}
+
+.forecast-table th:nth-child(4),
+.forecast-table td:nth-child(4) {
+  width: 180px;
+  min-width: 180px;
+}
+
+.forecast-table th:nth-child(5),
+.forecast-table td:nth-child(5) {
+  width: 280px;
+  min-width: 280px;
+}
+
 .bill-table td {
   padding: 16px;
   border-bottom: 1px solid hsl(var(--border));
