@@ -1297,11 +1297,7 @@ describe('getArchivedBillsStats', () => {
   });
 
   it('returns count of archived bills', async () => {
-    const mockBills: BillWithTags[] = [
-      createMockBillWithTags({
-        id: 'bill-1',
-        isArchived: false,
-      }),
+    const archivedBills: BillWithTags[] = [
       createMockBillWithTags({
         id: 'bill-2',
         isArchived: true,
@@ -1310,36 +1306,22 @@ describe('getArchivedBillsStats', () => {
         id: 'bill-3',
         isArchived: true,
       }),
-      createMockBillWithTags({
-        id: 'bill-4',
-        isArchived: false,
-      }),
     ];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue(archivedBills);
 
     const result = await getArchivedBillsStats();
 
     expect(result).toEqual({ count: 2 });
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 
   it('returns zero count when no archived bills exist', async () => {
-    const mockBills: BillWithTags[] = [
-      createMockBillWithTags({
-        id: 'bill-1',
-        isArchived: false,
-      }),
-      createMockBillWithTags({
-        id: 'bill-2',
-        isArchived: false,
-      }),
-    ];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
 
     const result = await getArchivedBillsStats();
 
     expect(result).toEqual({ count: 0 });
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 
   it('returns zero count when no bills exist', async () => {
@@ -1348,6 +1330,6 @@ describe('getArchivedBillsStats', () => {
     const result = await getArchivedBillsStats();
 
     expect(result).toEqual({ count: 0 });
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
   });
 });

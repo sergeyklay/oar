@@ -232,8 +232,7 @@ export async function getBillsForDueSoonStats(): Promise<{
 export async function getArchivedBillsStats(): Promise<{
   count: number;
 }> {
-  const allBills = await BillService.getFiltered({ includeArchived: true });
-  const archivedBills = allBills.filter((bill) => bill.isArchived);
+  const archivedBills = await BillService.getFiltered({ archivedOnly: true });
   return { count: archivedBills.length };
 }
 

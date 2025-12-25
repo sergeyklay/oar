@@ -79,16 +79,16 @@ function getEmptyStateSubtitle(props: {
 }
 
 export async function BillList({ date, month, dateRange, tag, selectedBillId, includeArchived, isArchived }: BillListProps) {
-  const filterOptions = includeArchived
-    ? { includeArchived: true, tag }
-    : { date, month, dateRange, tag };
+  const filterOptions = isArchived
+    ? { archivedOnly: true, tag }
+    : includeArchived
+      ? { includeArchived: true, tag }
+      : { date, month, dateRange, tag };
 
-  const [allBills, settings] = await Promise.all([
+  const [bills, settings] = await Promise.all([
     getBillsFiltered(filterOptions),
     SettingsService.getAll(),
   ]);
-
-  const bills = includeArchived ? allBills.filter((bill) => bill.isArchived) : allBills;
 
   if (bills.length === 0) {
     const emptyMessage = getEmptyStateMessage({ isArchived, tag, date, month, dateRange });
