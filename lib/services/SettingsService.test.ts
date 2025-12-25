@@ -145,7 +145,6 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when stored value is invalid', async () => {
-      const mockLogger = getLogger('SettingsService') as unknown as { error: jest.Mock };
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -156,7 +155,9 @@ describe('SettingsService', () => {
 
       const result = await SettingsService.getDueSoonRange();
       expect(result).toBe(7);
-      expect(mockLogger.error).toHaveBeenCalled();
+
+      const logger = getLogger('SettingsService');
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 
@@ -229,7 +230,6 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when stored value is invalid', async () => {
-      const mockLogger = getLogger('SettingsService') as unknown as { error: jest.Mock };
       (db.select as jest.Mock).mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -240,7 +240,9 @@ describe('SettingsService', () => {
 
       const result = await SettingsService.getPaidRecentlyRange();
       expect(result).toBe(7);
-      expect(mockLogger.error).toHaveBeenCalled();
+
+      const logger = getLogger('SettingsService');
+      expect(logger.error).toHaveBeenCalled();
     });
   });
 
