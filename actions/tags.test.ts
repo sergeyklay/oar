@@ -11,6 +11,7 @@ jest.mock('@/lib/logger');
 describe('createTag', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('returns existing tag if slug already exists (idempotent)', async () => {
@@ -137,8 +138,6 @@ describe('createTag', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    const mockLogger = getLogger('Actions:Tags') as unknown as { error: jest.Mock };
-
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
         where: jest.fn().mockRejectedValue(new Error('DB error')),
@@ -149,13 +148,16 @@ describe('createTag', () => {
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Failed to create tag. Please try again.');
-    expect(mockLogger.error).toHaveBeenCalled();
+
+    const logger = getLogger('Actions:Tags');
+    expect(logger.error).toHaveBeenCalled();
   });
 });
 
 describe('getTags', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('fetches all tags ordered by name', async () => {
@@ -180,6 +182,7 @@ describe('getTags', () => {
 describe('getTagBySlug', () => {
   beforeEach(() => {
     resetDbMocks();
+    jest.clearAllMocks();
   });
 
   it('returns tag when found', async () => {
