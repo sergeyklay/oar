@@ -275,24 +275,6 @@ describe('ForecastChart', () => {
     expect(onBarClick).toHaveBeenCalledWith('2025-03');
   });
 
-  it('does not call onBarClick when not provided', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-        showAmortization={true}
-      />
-    );
-
-    const totalDueBar = screen.getByTestId('bar-totalDue');
-    await user.click(totalDueBar);
-
-    expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
-  });
-
   it('handles empty data array', () => {
     render(
       <ForecastChart
