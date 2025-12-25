@@ -1,8 +1,7 @@
 # After a Bill Ends Setting
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-24
-- **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [Archive Screen](./013-archive-screen.md), [Recurrence Engine](./001-recurrence-engine.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -93,4 +92,11 @@ To test the "Never" interval scenario:
 3. Log a payment that fully pays the bill.
 4. Verify the bill ends according to your setting preference.
 5. Check the payment history to confirm the payment was recorded.
+
+## Related Documents
+
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Archive Screen](./013-archive-screen.md) - Viewing and managing archived bills
+* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
 

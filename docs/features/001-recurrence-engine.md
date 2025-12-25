@@ -1,8 +1,7 @@
 # Recurrence Engine
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
-- **Related:** [Logging Payments](./002-auto-pay.md), [Background Jobs](./006-background-jobs.md)
+- **Last Updated:** 2025-12-25
 
 ## Concept
 
@@ -106,3 +105,8 @@ To confirm the recurrence engine works:
 4. Create a bill with "Every 2 Weeks" interval; due date should advance 14 days after payment.
 5. Create a bill with "Never" interval, log payment; status should show "paid".
 6. Create a bill due yesterday without logging payment; status should show "overdue".
+
+## Related Documents
+
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Background Jobs](./006-background-jobs.md) - Automated system tasks

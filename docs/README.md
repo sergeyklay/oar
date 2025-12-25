@@ -2,7 +2,7 @@
 
 This directory contains the technical documentation for Oar. Architecture Decision Records explain system design choices. Feature docs describe user-facing functionality. Development guides help contributors set up and build the project.
 
-## 📐 Architecture
+## Architecture
 
 Foundational decisions about system design and technical direction.
 
@@ -10,7 +10,7 @@ Foundational decisions about system design and technical direction.
 |----------|-------------|
 | [ADR-001: Hyper-optimized modular monolith](./architecture/001-monolith.md) | Hyper-optimized modular monolith architecture |
 
-## 💡 Features
+## Features
 
 Explanations of user-facing functionality and domain logic. Start with the foundation concepts, then explore the interface, actions, and advanced features.
 
@@ -28,6 +28,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 
 | Document | Description |
 |----------|-------------|
+| [Active Payer Philosophy](./features/000-active-payer-philosophy.md) | The foundational philosophy behind Oar's approach to personal finance |
 | [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
 
 ### Core Interface
@@ -63,7 +64,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 | [Background Jobs](./features/006-background-jobs.md) | Automated system tasks |
 | [Active Payer Signals](./features/010-active-payer-signals.md) | Explicit payment mode indicators (Auto/Manual) for each bill |
 
-## 🚀 Development
+## Development
 
 Guides for contributors and local development.
 

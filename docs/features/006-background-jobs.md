@@ -1,8 +1,7 @@
 # Background Jobs
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-21
-- **Related:** [Recurrence Engine](./001-recurrence-engine.md), [Logging Payments](./002-auto-pay.md), [Active Payer Signals](./010-active-payer-signals.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -46,4 +45,10 @@ To confirm background jobs are running:
 
 1. Create a bill with a due date in the past. After midnight, check that its status changed to "overdue."
 2. Mark a bill as auto-pay with a due date of today. After 00:05 UTC, check the bill's payment history. You should see a new payment with the note "Logged by Oar."
+
+## Related Documents
+
+* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
 

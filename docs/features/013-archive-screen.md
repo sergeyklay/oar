@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
-- **Related:** [Overview Screen](./005-overview-screen.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md), [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md)
 
 ## Overview
 
@@ -28,7 +27,7 @@ The Archive page uses the same table structure as other bill views, maintaining 
 
 **Name.** The bill title appears in bold, with the repeat interval and payment mode shown below (e.g., "Every month • Manual").
 
-**Amount.** The payment amount displays in your currency. Variable bills show "(estimate)" below the amount, just like in active views.
+**Amount.** The payment amount displays in your currency. Variable bills show "(estimate)" below the amount, like in active views.
 
 **Due date.** This column displays "Never" as the main text, with "Archived" as the subtitle. This consistent labeling signals that archived bills have no active due date, regardless of their original due date value.
 
@@ -68,7 +67,7 @@ After unarchiving:
 4. **The detail panel closes.** The panel automatically closes after successful unarchive, returning focus to the Archive page.
 5. **A success notification appears.** A toast message confirms the bill was unarchived (e.g., "Bill unarchived - 'Netflix Subscription' has been unarchived").
 
-The bill's original data remains intact. Its due date, amount, frequency, tags, and payment history are all preserved. Unarchiving simply makes it active again, as if you had never archived it.
+The bill's original data remains intact. Its due date, amount, frequency, tags, and payment history are all preserved. Unarchiving makes it active again, as if you had never archived it.
 
 ## Manual vs automatic archiving
 
@@ -92,7 +91,7 @@ Both paths lead to the same Archive view. The Archive doesn't distinguish betwee
 
 **Bill detail panel styling.** Archived bills in the detail panel always use neutral colors (muted background, gray text) regardless of their original status. Even if a bill was overdue when archived, it doesn't show red colors in the Archive view because it's inactive.
 
-**Payment history in archived bills.** Archived bills retain their full payment history. When you open an archived bill's detail panel and expand the payment history section, you can see all past payments just like active bills. This preserves complete financial records even for inactive commitments.
+**Payment history in archived bills.** Archived bills retain their full payment history. When you open an archived bill's detail panel and expand the payment history section, you can see all past payments like active bills. This preserves complete financial records even for inactive commitments.
 
 ## Verification
 
@@ -112,4 +111,10 @@ To confirm the Archive feature works as expected:
 12. Check the sidebar Archive count decreased (e.g., back to "No bills").
 13. Test tag filtering on the Archive page by selecting a tag from the dropdown.
 14. Verify only archived bills with that tag appear.
+
+## Related Documents
+
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) - What happens when a bill ends
 

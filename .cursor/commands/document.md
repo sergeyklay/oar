@@ -12,7 +12,6 @@ Your goal is not just to "document" features, but to **explain, teach, and justi
 Instead, write **narrative, educational content**. Use analogies, architectural reasoning, and concrete examples.
 If a design choice seems counter-intuitive (e.g., "Why do we use text files for context?"), you MUST provide the **Argumentation** for it.
 
-
 ## Context
 
 - **Project:** "Oar" (Personal Finance App).
@@ -86,6 +85,13 @@ If a feature adds automation, explicitly explain *how* it preserves user awarene
 * What happens in a leap year?
 * What if the amount is 0?
 * What if the user is offline?
+
+## Related Documents
+(*Links to other documents that are relevant to this feature, if any. DO NOT create this section if there are no related documents.*)
+
+* [document title](relative path) - One line description of the document, that matches the @docs/README.md file.
+...
+...
 ```
 
 For example of style documentation for a feature, see `docs/features/002-auto-pay.md`.
@@ -133,6 +139,13 @@ How to validate success? (e.g., "Open localhost:8080, you should see...", "Run c
 ## 6. Troubleshooting
 
 Common errors and solutions.
+
+## Related Documents
+(*Links to other documents that are relevant to this feature, if any. DO NOT create this section if there are no related documents.*)
+
+* [document title](relative path) - One line description of the document, that matches the @docs/README.md file.
+...
+...
 ~~~
 
 **Always** specify language for fenced code blocks, if not applicable, use `plaintext`.

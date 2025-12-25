@@ -1,8 +1,7 @@
 # Editing Payment History
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-23
-- **Related:** [Logging Payments](./002-auto-pay.md), [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -89,7 +88,7 @@ If no payment is selected, the bottom of the payment history section displays a 
 
 ## Edge cases and constraints
 
-**Empty payment history.** If a bill has no payments, the selection prompt doesn't appear. The history section simply shows "No payments recorded yet."
+**Empty payment history.** If a bill has no payments, the selection prompt doesn't appear. The history section shows "No payments recorded yet."
 
 **Historical payments.** Payments recorded before the current billing cycle started are considered "historical." Editing or deleting a historical payment doesn't trigger cycle recalculation because it didn't affect the current cycle. The payment record updates, but the bill's due date, amount due, and status remain unchanged.
 
@@ -152,4 +151,9 @@ To confirm historical payment handling:
 4. Delete the historical payment
 5. Verify the bill's state still doesn't change
 6. Check that the payment no longer appears in history, but the bill's current obligations are unaffected
+
+## Related Documents
+
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
 

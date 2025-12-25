@@ -2,7 +2,6 @@
 
 - **Status:** Draft
 - **Last Updated:** 2025-12-25
-- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md)
 
 ## Overview
 
@@ -108,3 +107,8 @@ To confirm the Due This Month feature works:
 10. Click a bill to open its detail in the right panel.
 11. Log a payment for a bill in the current month. Verify it disappears from the Due This Month view immediately.
 12. Verify the sidebar subtitle updates when bills change (after logging payments or adding new bills).
+
+## Related Documents
+
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection

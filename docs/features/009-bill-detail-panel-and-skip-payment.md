@@ -1,8 +1,7 @@
 # Bill Detail Panel & Skip Payment
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-22
-- **Related:** [Overview Screen](./005-overview-screen.md), [Logging Payments](./002-auto-pay.md), [Editing Payment History](./011-editing-payment-history.md), [Archive Screen](./013-archive-screen.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -103,3 +102,10 @@ To confirm the Bill Detail Panel works as expected:
 9. Click "View Payment History" to expand. Verify the status block, action buttons, notes, and tags all hide.
 10. Check the transaction list displays dates, amounts, and notes correctly.
 11. Click the back arrow. Verify all hidden sections reappear.
+
+## Related Documents
+
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
+* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Editing Payment History](./011-editing-payment-history.md) - Correcting payment mistakes and managing payment records
+* [Archive Screen](./013-archive-screen.md) - Viewing and managing archived bills

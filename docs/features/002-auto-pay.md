@@ -1,8 +1,7 @@
 # Logging Payments
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-22
-- **Related:** [Recurrence Engine](./001-recurrence-engine.md), [Background Jobs](./006-background-jobs.md), [Overview Screen](./005-overview-screen.md)
+- **Last Updated:** 2025-12-25
 
 ## Overview
 
@@ -135,3 +134,9 @@ To confirm historical payment detection works:
 4. The "Update Due Date" toggle should disappear.
 5. Log the payment. The bill's due date and amount due should remain unchanged.
 6. Check the payment history; your historical payment should appear with the backdated date.
+
+## Related Documents
+
+* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
+* [Background Jobs](./006-background-jobs.md) - Automated system tasks
+* [Overview Screen](./005-overview-screen.md) - The main screen for managing all bills
