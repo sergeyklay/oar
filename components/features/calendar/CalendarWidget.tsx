@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type { DayButtonProps } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
 import { getBillDatesForMonth, type DateStatusMap, type PaymentDateMap } from '@/actions/calendar';
@@ -14,7 +14,11 @@ interface CalendarWidgetProps {
   disableDateFilter?: boolean;
   /** Controls calendar dot rendering mode */
   dotMode?: 'status' | 'payment' | 'none';
-  /** Custom function to fetch date data (for payment dates) */
+  /**
+   * Custom function to fetch date data (for payment dates).
+   * Must be a stable reference (e.g., server action or memoized with useCallback).
+   * Passing an inline arrow function will cause unnecessary re-fetches.
+   */
   getDateData?: (month: string) => Promise<DateStatusMap | PaymentDateMap>;
 }
 
@@ -24,14 +28,22 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, do
   const [paymentDates, setPaymentDates] = useState<PaymentDateMap>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  // Store the latest getDateData function in a ref to avoid dependency array issues.
+  // This allows us to always call the latest function without triggering re-renders
+  // when the function reference changes (e.g., if parent passes inline arrow function).
+  const getDateDataRef = useRef(getDateData);
+  useEffect(() => {
+    getDateDataRef.current = getDateData;
+  }, [getDateData]);
+
   useEffect(() => {
     let cancelled = false;
 
     async function fetchDates() {
       setIsLoading(true);
       try {
-        if (dotMode === 'payment' && getDateData) {
-          const data = await getDateData(month);
+        if (dotMode === 'payment' && getDateDataRef.current) {
+          const data = await getDateDataRef.current(month);
           if (!cancelled) {
             setPaymentDates(data as PaymentDateMap);
             setDateStatuses({});
@@ -54,7 +66,7 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, do
     return () => {
       cancelled = true;
     };
-  }, [month, dotMode, getDateData]);
+  }, [month, dotMode]);
 
   const monthDate = parse(month, 'yyyy-MM', new Date());
   const selectedDate = date ? parse(date, 'yyyy-MM-dd', new Date()) : undefined;
