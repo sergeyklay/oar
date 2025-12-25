@@ -43,7 +43,7 @@ The "(est.)" indicator appears when any unpaid bill in the current month has var
 
 ## Filtering by tag
 
-You can filter the Due This Month view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within the current month.
+You can filter the Due This Month view by tag, the same way you filter the Overview. Select a tag from the tag filter dropdown in the page header to see only unpaid bills matching that tag within the current month.
 
 The filter combines both conditions: bills must be unpaid, due this month, AND have the selected tag. Clear the tag filter to return to showing all unpaid bills due this month.
 

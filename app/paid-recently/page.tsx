@@ -1,12 +1,13 @@
 import { AppShell } from '@/components/layout/AppShell';
+import { AppShellClient } from '@/components/layout/AppShellClient';
 import { MainContent } from '@/components/layout/MainContent';
 import { RightPanel } from '@/components/layout/RightPanel';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { PaidRecentlyList } from '@/components/features/payments';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { searchParamsCache } from '@/lib/search-params';
 import { getPaymentDatesForMonth } from '@/actions/calendar';
-import { PaidRecentlyHeader } from './PaidRecentlyHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,26 +30,32 @@ export default async function PaidRecentlyPage({
     : await TransactionService.getRecentPayments(paidRecentlyRange);
 
   return (
-    <AppShell
-      rightPanel={
-        <RightPanel
-          selectedBillId={null}
-          currency={settings.currency}
-          locale={settings.locale}
-          weekStart={settings.weekStart}
-          dotMode="payment"
-          getDateData={getPaymentDatesForMonth}
-        />
-      }
-    >
-      <MainContent header={<PaidRecentlyHeader />}>
-        <PaidRecentlyList
-          payments={payments}
-          currency={settings.currency}
-          locale={settings.locale}
-        />
-      </MainContent>
-    </AppShell>
+    <AppShellClient>
+      <AppShell
+        rightPanel={
+          <RightPanel
+            selectedBillId={null}
+            currency={settings.currency}
+            locale={settings.locale}
+            weekStart={settings.weekStart}
+            dotMode="payment"
+            getDateData={getPaymentDatesForMonth}
+          />
+        }
+      >
+        <MainContent
+          header={
+            <PageHeader showCreateBill={false} showTagFilter={false} />
+          }
+        >
+          <PaidRecentlyList
+            payments={payments}
+            currency={settings.currency}
+            locale={settings.locale}
+          />
+        </MainContent>
+      </AppShell>
+    </AppShellClient>
   );
 }
 

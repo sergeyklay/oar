@@ -94,7 +94,7 @@ export function TagFilter({ tags }: TagFilterProps) {
           <button
             type="button"
             onClick={handleClear}
-            className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
           >
             <X className="h-3 w-3" />
             <span className="sr-only">Clear filter</span>

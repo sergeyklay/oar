@@ -42,11 +42,11 @@ Navigate to Settings > Behavior Options to adjust the "Paid Recently Range" pref
 | 20 | Last 20 days |
 | 30 | Last 30 days |
 
-The setting takes effect immediately. The page header subtitle updates to reflect your new range.
+The setting takes effect immediately. The page content updates to reflect your new range.
 
 ## Viewing recent payments
 
-Click "Paid Recently" in the sidebar to open the page. The header shows your current range setting as a subtitle (like "Last 7 days").
+Click "Paid Recently" in the sidebar to open the page. The page displays payments within your configured range.
 
 The page displays a table with four columns:
 
@@ -97,7 +97,7 @@ Clicking the same selected day again clears the date filter and returns to showi
 
 **Empty range.** When no payments fall within your range, the page shows "No payments in this time range" with guidance that payments will appear when you log them on your bills.
 
-**Range change mid-session.** If you change the range in Settings, the Paid Recently view updates on your next navigation. The page header subtitle also updates to reflect the new range.
+**Range change mid-session.** If you change the range in Settings, the Paid Recently view updates on your next navigation to reflect the new range.
 
 **Payments at range boundary.** A payment made exactly on the boundary day of your range is included. If your range is 7 and a payment was made 7 days ago, it appears in the list.
 
@@ -118,13 +118,12 @@ To confirm the Paid Recently feature works:
 3. Click "Paid Recently" to navigate to the page.
 4. Verify the payment you just logged appears in the list.
 5. Check that the payment date, amount, and bill name are correct.
-6. Verify the page header subtitle matches your range setting (e.g., "Last 7 days").
-7. Go to Settings > Behavior Options and change the Paid Recently Range.
-8. Return to Paid Recently. The page header subtitle should reflect the new range.
-9. Verify payments outside the new range no longer appear.
-10. Click a date in the calendar that has payments. Verify the list filters to show only payments made on that date.
-11. Verify white dots appear on calendar days that have payments.
-12. Verify no dots appear on days without payments.
-13. Click the same date again or click "Clear filter." Verify the date filter clears and all payments within your range reappear.
-14. Click a date with no payments. Verify the empty state message appears.
+6. Go to Settings > Behavior Options and change the Paid Recently Range.
+7. Return to Paid Recently. The visible payments should reflect the new range.
+8. Verify payments outside the new range no longer appear.
+9. Click a date in the calendar that has payments. Verify the list filters to show only payments made on that date.
+10. Verify white dots appear on calendar days that have payments.
+11. Verify no dots appear on days without payments.
+12. Click the same date again or click "Clear filter." Verify the date filter clears and all payments within your range reappear.
+13. Click a date with no payments. Verify the empty state message appears.
 
