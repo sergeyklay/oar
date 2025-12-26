@@ -5,6 +5,10 @@ jest.mock('@/lib/money', () => ({
   formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
+jest.mock('nuqs', () => ({
+  useQueryState: jest.fn().mockReturnValue([null, jest.fn()]),
+}));
+
 describe('ForecastSummary', () => {
   beforeEach(() => {
     jest.clearAllMocks();

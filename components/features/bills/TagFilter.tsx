@@ -31,10 +31,6 @@ interface TagFilterProps {
  *
  * Dropdown filter for dashboard header.
  * Updates URL search params via nuqs.
- *
- * WHY CLIENT:
- * - Uses nuqs for URL state management
- * - Interactive dropdown
  */
 export function TagFilter({ tags }: TagFilterProps) {
   const [selectedTag, setSelectedTag] = useQueryState(

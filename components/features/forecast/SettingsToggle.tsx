@@ -15,11 +15,6 @@ import { Label } from '@/components/ui/label';
  * Icon button that opens a popover with independent toggles for
  * "Amount to Save" and "Estimates" visibility.
  * Updates URL search params via nuqs.
- *
- * WHY CLIENT:
- * - Uses nuqs for URL state management
- * - Interactive button and popover
- * - Checkbox state management
  */
 export function SettingsToggle() {
   const [open, setOpen] = useState(false);

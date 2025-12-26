@@ -210,7 +210,6 @@ export const tags = sqliteTable('tags', {
   name: text('name').notNull(),
 
   // URL-safe slug (e.g., "business-expenses")
-  // WHY UNIQUE: Used in URL params for filtering
   slug: text('slug').notNull().unique(),
 
   // Creation timestamp
@@ -223,7 +222,6 @@ export const tags = sqliteTable('tags', {
  * Bills-to-Tags Junction Table
  *
  * Many-to-Many relationship between bills and tags.
- * WHY COMPOSITE PK: Prevents duplicate tag assignments.
  */
 export const billsToTags = sqliteTable('bills_to_tags', {
   billId: text('bill_id')

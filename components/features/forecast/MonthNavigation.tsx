@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryState } from 'nuqs';
-import { parseAsString } from 'nuqs';
 import { parse, format, startOfMonth, subMonths, addMonths } from 'date-fns';
 import { Triangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,18 +25,12 @@ interface MonthNavigationProps {
  *
  * Navigation arrows for month selection in forecast view.
  * Updates URL search param via nuqs to trigger server refetch.
- *
- * WHY CLIENT:
- * - Uses nuqs for URL state management
- * - Click handlers for month navigation
  */
 export function MonthNavigation({ currentMonth }: MonthNavigationProps) {
-  const [, setMonth] = useQueryState(
-    'month',
-    parseAsString.withDefault(getCurrentMonth()).withOptions({
-      shallow: false,
-    })
-  );
+  const [, setMonth] = useQueryState('month', {
+    defaultValue: getCurrentMonth(),
+    shallow: false,
+  });
 
   const monthDate = parse(currentMonth, 'yyyy-MM', new Date());
 
