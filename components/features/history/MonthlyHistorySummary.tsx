@@ -1,8 +1,7 @@
 'use client';
 
-import { format, parse, isValid } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { formatMoney } from '@/lib/money';
-import { getCurrentMonth } from '@/lib/utils';
 import { MonthNavigation } from '@/components/features/forecast/MonthNavigation';
 import type { HistorySummary } from '@/lib/types';
 
@@ -29,16 +28,15 @@ export function MonthlyHistorySummary({
   locale,
   month,
 }: MonthlyHistorySummaryProps) {
+  // month is guaranteed valid from historySearchParamsCache (parseAsMonth) or default (getCurrentMonth)
   const monthDate = parse(month, 'yyyy-MM', new Date());
-  const validMonth = isValid(monthDate) ? month : getCurrentMonth();
-  const validMonthDate = isValid(monthDate) ? monthDate : parse(validMonth, 'yyyy-MM', new Date());
-  const monthLabel = format(validMonthDate, 'MMMM yyyy');
+  const monthLabel = format(monthDate, 'MMMM yyyy');
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">{monthLabel}</h2>
-        <MonthNavigation currentMonth={validMonth} />
+        <MonthNavigation currentMonth={month} />
       </div>
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
