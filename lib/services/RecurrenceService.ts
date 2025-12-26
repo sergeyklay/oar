@@ -3,8 +3,6 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
 import { getLogger } from '@/lib/logger';
-import { addMonths } from 'date-fns';
-import { clampToEndOfMonth } from '@/lib/utils';
 
 const logger = getLogger('RecurrenceService');
 
@@ -78,44 +76,23 @@ export const RecurrenceService = {
     const rule = new RRule(options);
     const occurrences = rule.all();
 
+    // With count: 2, RRule always returns exactly 2 occurrences (current + next)
+    // RRule skips months where the day doesn't exist (e.g., Jan 31 -> March 31, skipping Feb)
     const nextUtc = occurrences[1];
 
-    // Handle end-of-month clamping for monthly frequencies with dates 29-31
-    // RRule will skip months where the day doesn't exist, so we handle this case specially
-    const originalDueDay = currentDueDate.getDate();
-    const needsEndOfMonthClamping =
-      (frequency === 'monthly' ||
-        frequency === 'bimonthly' ||
-        frequency === 'quarterly') &&
-      originalDueDay >= 29;
-
-    let nextDueDate: Date | null = null;
-
-    if (needsEndOfMonthClamping && (!nextUtc || occurrences.length < 2)) {
-      // Manually calculate the next occurrence with end-of-month clamping
-      let monthsToAdd = 1;
-      if (frequency === 'bimonthly') monthsToAdd = 2;
-      else if (frequency === 'quarterly') monthsToAdd = 3;
-
-      const nextMonthDate = addMonths(currentDueDate, monthsToAdd);
-      nextDueDate = clampToEndOfMonth(
-        nextMonthDate,
-        originalDueDay,
-        currentDueDate
-      );
-    } else if (nextUtc) {
-      // Convert back from UTC components to local date
-      nextDueDate = new Date(
-        nextUtc.getUTCFullYear(),
-        nextUtc.getUTCMonth(),
-        nextUtc.getUTCDate(),
-        nextUtc.getUTCHours(),
-        nextUtc.getUTCMinutes(),
-        nextUtc.getUTCSeconds()
-      );
-    } else {
+    if (!nextUtc) {
       return null;
     }
+
+    // Convert back from UTC components to local date
+    const nextDueDate = new Date(
+      nextUtc.getUTCFullYear(),
+      nextUtc.getUTCMonth(),
+      nextUtc.getUTCDate(),
+      nextUtc.getUTCHours(),
+      nextUtc.getUTCMinutes(),
+      nextUtc.getUTCSeconds()
+    );
 
     // Check if next due date exceeds end date
     if (endDate && nextDueDate > endDate) {

@@ -204,8 +204,8 @@ describe('RecurrenceService', () => {
       });
     });
 
-    describe('end-of-month clamping for monthly bills', () => {
-      it('uses RRule result when it finds valid occurrence after skipping month', () => {
+    describe('RRule behavior for monthly bills with end-of-month dates', () => {
+      it('skips months without the target day (Jan 31 -> March 31)', () => {
         const date = new Date('2025-01-31');
         date.setHours(14, 30, 45, 123);
 
@@ -259,8 +259,8 @@ describe('RecurrenceService', () => {
       });
     });
 
-    describe('end-of-month clamping for bimonthly bills', () => {
-      it('calculates next occurrence 2 months later', () => {
+    describe('RRule behavior for bimonthly bills with end-of-month dates', () => {
+      it('skips months without the target day (Jan 31 -> March 31)', () => {
         const date = new Date('2025-01-31');
         date.setHours(9, 15, 30, 500);
 
@@ -285,8 +285,8 @@ describe('RecurrenceService', () => {
       });
     });
 
-    describe('end-of-month clamping for quarterly bills', () => {
-      it('uses RRule result when skipping months without the target day', () => {
+    describe('RRule behavior for quarterly bills with end-of-month dates', () => {
+      it('skips months without the target day (Jan 31 -> July 31)', () => {
         const date = new Date('2025-01-31');
         date.setHours(12, 0, 0, 0);
 
