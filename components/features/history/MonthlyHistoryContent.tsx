@@ -66,7 +66,6 @@ export async function MonthlyHistoryContent({
         </div>
         <div className="bg-card border-l border-border overflow-y-auto p-6">
           <MonthlyHistorySummary
-            paymentsCount={payments.length}
             summary={summary}
             currency={currency}
             locale={locale}
