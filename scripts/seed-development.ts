@@ -1043,8 +1043,7 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
   }
 
   // Safety check: filter out any future dates (should not happen, but ensures data integrity)
-  const nowForFilter = new Date();
-  const validTransactions = transactionsToInsert.filter((tx) => tx.paidAt <= nowForFilter);
+  const validTransactions = transactionsToInsert.filter((tx) => tx.paidAt <= now);
 
   if (validTransactions.length !== transactionsToInsert.length) {
     const filteredCount = transactionsToInsert.length - validTransactions.length;
