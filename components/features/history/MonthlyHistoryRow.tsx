@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { formatMoney } from '@/lib/money';
 import { CategoryIcon } from '@/components/features/bills/CategoryIcon';
 import type { PaymentWithBill } from '@/lib/types';
@@ -35,13 +36,7 @@ export function MonthlyHistoryRow({
         </span>
       </td>
       <td className="text-right">
-        <span>
-          {new Intl.DateTimeFormat(locale, {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-          }).format(payment.paidAt)}
-        </span>
+        <span>{format(payment.paidAt, 'MMM d, yyyy')}</span>
       </td>
     </tr>
   );

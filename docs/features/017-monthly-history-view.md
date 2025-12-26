@@ -1,7 +1,7 @@
 # Monthly History View
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-26
+- **Last Updated:** 2025-12-27
 
 ## Overview
 
@@ -25,21 +25,21 @@ Month navigation happens in the summary panel on the right side of the page. The
 
 ## The history chart
 
-The chart at the top of the Monthly History View provides a visual comparison of your spending patterns year-over-year. When you select a month, the chart displays 12 bars starting from that month, showing both the current year and the previous year side-by-side for easy comparison.
+The chart at the top of the Monthly History View provides a visual comparison of your spending patterns year-over-year. When you select a month, the chart displays 12 bars ending at that month, showing both the current year and the previous year side-by-side for easy comparison. The selected month appears as the rightmost bar, providing a retrospective view of your payment history leading up to that point.
 
 Each month appears as two bars grouped together. The left bar (in the primary theme color) shows "Current Year" - your actual payments for that month in the current year. The right bar (in a muted color) shows "Last Year" - your payments for the same month in the previous year. This side-by-side comparison makes it easy to spot trends like seasonal variations or changes in spending habits.
 
 **Example:** If you select December 2025, the chart shows:
-- Current Year bars: December 2025, January 2026, February 2026, through November 2026
-- Last Year bars: December 2024, January 2025, February 2025, through November 2025
+- Current Year bars: January 2025, February 2025, through December 2025 (with December 2025 as the rightmost bar)
+- Last Year bars: January 2024, February 2024, through December 2024 (with December 2024 as the rightmost bar)
 
-The bars align by month position, so December 2025 compares directly with December 2024, January 2026 with January 2025, and so on. This alignment makes it easy to see if you're spending more or less than the same period last year.
+The bars align by month position, so January 2025 compares directly with January 2024, February 2025 with February 2024, and December 2025 with December 2024. This alignment makes it easy to see if you're spending more or less than the same period last year. The retrospective view ensures all bars represent actual historical data, avoiding empty future months.
 
 Tag filtering affects the chart just like it affects the payments table. When you select a tag, the chart recalculates totals using only payments for bills with that tag. The bars adjust to reflect the filtered amounts, making it easy to see how spending in a specific category (like utilities or subscriptions) varies across months and compares year-over-year.
 
 The X-axis shows abbreviated month names (Dec, Jan, Feb, etc.) for easy scanning. Hovering over any bar reveals a tooltip with formatted currency values for both the current year and last year amounts, using your configured currency and locale settings. The tooltip shows the same totals you'd see if you navigated to that month's detailed view.
 
-The chart updates automatically when you change the selected month. The 12-month window shifts forward or backward to always start from your current selection. If you're viewing January 2026 and switch to June 2026, the chart now shows June 2026 through May 2027 for the current year, and June 2025 through May 2026 for the previous year.
+The chart updates automatically when you change the selected month. The 12-month window shifts forward or backward to always end at your current selection. If you're viewing January 2026 and switch to June 2026, the chart now shows July 2025 through June 2026 for the current year (with June 2026 as the rightmost bar), and July 2024 through June 2025 for the previous year (with June 2025 as the rightmost bar).
 
 If no payments exist for any of the 12 months in the chart range, the chart displays an empty state message: "No payment data for this period." This can happen when you apply a tag filter that excludes all payments, or when you select a month before you started logging payments.
 
@@ -83,7 +83,7 @@ The chart's year-over-year comparison feature helps you identify spending patter
 
 **Estimation accuracy.** Compare what you actually paid (shown in Monthly History) with what you projected (shown in Forecast View) to improve your bill estimates over time.
 
-The comparison works by aligning months by position, not by calendar year. When you select December 2025, the chart shows December 2025 through November 2026 for the current year, and December 2024 through November 2025 for the previous year. This alignment ensures you're comparing equivalent periods, making trends easier to spot.
+The comparison works by aligning months by position, not by calendar year. When you select December 2025, the chart shows January 2025 through December 2025 for the current year (with December 2025 as the rightmost bar), and January 2024 through December 2024 for the previous year (with December 2024 as the rightmost bar). This alignment ensures you're comparing equivalent periods, making trends easier to spot. The retrospective view means all bars represent actual payment history, not empty future months.
 
 If you don't have payment history for the previous year (for example, you just started using Oar), the "Last Year" bars will show zero. As you build payment history over time, the comparison becomes more meaningful.
 
@@ -124,13 +124,13 @@ To confirm the Monthly History View works correctly:
 3. Check that payments you logged for that month appear in the table with the correct bill name, amount, and date.
 4. Verify the date column shows dates in "1 December 2025" format (day number, full month name, full year).
 5. Review the summary panel. Verify the header shows the current month and year with navigation arrows. Verify "Payments" shows the correct count of payments for the selected month. Verify "Total Paid" sums all payment amounts correctly.
-6. Verify the chart displays 12 months starting from the selected month. Check that both "Current Year" and "Last Year" bars appear for months where you have payment history.
+6. Verify the chart displays 12 months ending at the selected month, with the selected month appearing as the rightmost bar. Check that both "Current Year" and "Last Year" bars appear for months where you have payment history.
 7. Hover over chart bars to verify tooltips show formatted currency values for both current year and last year amounts.
 8. Select a tag from the filter in the header. Verify only payments for bills with that tag appear in the table. Verify the chart bars adjust to reflect the filtered totals.
 9. Navigate to a month with no payments. Verify the empty state message appears in the table.
 10. Navigate to a month before you started logging payments. Verify the chart shows zero for "Last Year" bars if you don't have previous year data.
 11. Check that payments appear in reverse chronological order (newest first) in the table.
-12. Verify the chart aligns months by position (December 2025 compares with December 2024, not November 2024).
+12. Verify the chart aligns months by position (January 2025 compares with January 2024, December 2025 compares with December 2024). Verify the selected month appears as the rightmost bar in the chart.
 
 ## Related Documents
 
