@@ -85,7 +85,7 @@ The chart's year-over-year comparison feature helps you identify spending patter
 
 The comparison works by aligning months by position, not by calendar year. When you select December 2025, the chart shows January 2025 through December 2025 for the current year (with December 2025 as the rightmost bar), and January 2024 through December 2024 for the previous year (with December 2024 as the rightmost bar). This alignment ensures you're comparing equivalent periods, making trends easier to spot. The retrospective view means all bars represent actual payment history, not empty future months.
 
-If you don't have payment history for the previous year (for example, you just started using Oar), the "Last Year" bars will show zero. As you build payment history over time, the comparison becomes more meaningful.
+If you don't have payment history for the previous year (for example, you started using Oar), the "Last Year" bars will show zero. As you build payment history over time, the comparison becomes more meaningful.
 
 ## Edge cases
 
@@ -124,7 +124,7 @@ To confirm the Monthly History View works correctly:
 3. Check that payments you logged for that month appear in the table with the correct bill name, amount, and date.
 4. Verify the date column shows dates in "1 December 2025" format (day number, full month name, full year).
 5. Review the summary panel. Verify the header shows the current month and year with navigation arrows. Verify "Payments" shows the correct count of payments for the selected month. Verify "Total Paid" sums all payment amounts correctly.
-6. Verify the chart displays 12 months ending at the selected month, with the selected month appearing as the rightmost bar. Check that both "Current Year" and "Last Year" bars appear for months where you have payment history.
+6. Verify the chart displays 12 months ending at the selected month, with the selected month appearing as the rightmost bar. Check that both "Current Year" and "Last Year" bars appear for months when you have payment history.
 7. Hover over chart bars to verify tooltips show formatted currency values for both current year and last year amounts.
 8. Select a tag from the filter in the header. Verify only payments for bills with that tag appear in the table. Verify the chart bars adjust to reflect the filtered totals.
 9. Navigate to a month with no payments. Verify the empty state message appears in the table.
