@@ -2,6 +2,7 @@
 
 import { format, parse, isValid } from 'date-fns';
 import { formatMoney } from '@/lib/money';
+import { getCurrentMonth } from '@/lib/utils';
 import { MonthNavigation } from './MonthNavigation';
 import type { ForecastSummary as ForecastSummaryType } from '@/lib/services/ForecastService';
 
@@ -11,13 +12,6 @@ interface ForecastSummaryProps {
   currency: string;
   locale: string;
   month: string;
-}
-
-/**
- * Returns current month in YYYY-MM format.
- */
-function getCurrentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
 }
 
 /**
