@@ -14,10 +14,6 @@ interface SidebarToggleProps {
  *
  * Client component that toggles sidebar visibility via URL state.
  * Clicking the button toggles between visible and hidden states.
- *
- * WHY CLIENT:
- * - Uses useQueryState hook for URL state management
- * - Requires click handler for interactivity
  */
 export function SidebarToggle({ className }: SidebarToggleProps) {
   const [sidebarState, setSidebarState] = useQueryState(

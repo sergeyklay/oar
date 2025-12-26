@@ -26,10 +26,6 @@ interface MonthPickerProps {
  *
  * Calendar popover for selecting a month in forecast view.
  * Updates URL search param via nuqs.
- *
- * WHY CLIENT:
- * - Uses nuqs for URL state management
- * - Interactive calendar popover
  */
 export function MonthPicker({ defaultMonth }: MonthPickerProps) {
   const [month, setMonth] = useQueryState(

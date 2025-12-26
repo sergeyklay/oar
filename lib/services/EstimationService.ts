@@ -3,9 +3,6 @@ import { BillService } from './BillService';
 
 /**
  * Strategy interface for estimating variable bill amounts.
- *
- * WHY STRATEGY PATTERN: Allows extensibility (e.g., ML-based estimation)
- * without modifying UI or core forecast logic.
  */
 export interface EstimationStrategy {
   /**

@@ -13,10 +13,6 @@ interface ForecastHeaderProps {
  * ForecastHeader
  *
  * Header component for forecast view with sidebar toggle and tag filter.
- *
- * WHY CLIENT:
- * - Contains interactive elements (SidebarToggle, TagFilter)
- * - Components manage URL state via nuqs
  */
 export function ForecastHeader({ tags }: ForecastHeaderProps) {
   return (

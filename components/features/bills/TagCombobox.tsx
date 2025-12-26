@@ -41,11 +41,6 @@ interface TagComboboxProps {
  * TagCombobox
  *
  * Multi-select combobox with create-on-fly capability.
- *
- * WHY CLIENT:
- * - Manages open/close state
- * - Handles async tag creation
- * - Controlled selection state
  */
 export function TagCombobox({
   availableTags,
