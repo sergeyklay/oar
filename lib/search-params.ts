@@ -87,3 +87,19 @@ export const forecastSearchParams = {
  * Server-side cache for reading forecast page search params in RSC.
  */
 export const forecastSearchParamsCache = createSearchParamsCache(forecastSearchParams);
+
+/**
+ * Monthly History view URL search params schema.
+ *
+ * - month: Selected month (YYYY-MM, defaults to current month)
+ * - tag: Filter by tag slug (optional)
+ */
+export const historySearchParams = {
+  month: parseAsMonth.withDefault(getCurrentMonth()),
+  tag: parseAsString,
+};
+
+/**
+ * Server-side cache for reading monthly history page search params in RSC.
+ */
+export const historySearchParamsCache = createSearchParamsCache(historySearchParams);

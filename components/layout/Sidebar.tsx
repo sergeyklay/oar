@@ -1,4 +1,4 @@
-import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle, Archive } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle, Archive, History } from 'lucide-react';
 import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats } from '@/actions/bills';
 import { getRecentPaymentsStats } from '@/actions/transactions';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -96,6 +96,7 @@ const billsNavItems: NavItem[] = [
 
 const reportsNavItems: NavItem[] = [
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
+  { href: '/monthly-history', icon: History, label: 'Monthly History' },
   { href: '/archive', icon: Archive, label: 'Archive', showStats: true, statsType: 'archived' },
 ];
 
