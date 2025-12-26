@@ -76,7 +76,16 @@ export function sanitizeColorValue(value: string): string {
   return 'hsl(var(--chart-1))';
 }
 
-// Chart container
+/**
+ * Container component that wraps chart content and applies responsive styling.
+ *
+ * Generates CSS custom properties from chart config for theming.
+ * Provides responsive container wrapper for Recharts components.
+ *
+ * @param {ChartConfig} config - Chart configuration for color theming.
+ * @param {React.ReactNode} children - Recharts chart components to render.
+ * @returns Chart container with applied styling and responsive wrapper.
+ */
 const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & {
@@ -108,7 +117,16 @@ const ChartContainer = React.forwardRef<
 });
 ChartContainer.displayName = 'Chart';
 
-// Chart style component
+/**
+ * Generates and injects CSS styles for chart color theming.
+ *
+ * Creates CSS custom properties from chart config and applies them via
+ * inline styles. Sanitizes all values to prevent CSS injection.
+ *
+ * @param {string} id - Unique chart identifier for scoped CSS selectors.
+ * @param {ChartConfig} config - Chart configuration containing color definitions.
+ * @returns Style element with sanitized CSS, or null if no colors configured.
+ */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, configItem]) => configItem.theme || configItem.color
@@ -157,6 +175,9 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 // Chart tooltip
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+/**
+ * Props for ChartTooltipContent component.
+ */
 interface ChartTooltipContentProps {
   active?: boolean;
   payload?: Array<{
@@ -295,6 +316,20 @@ const TooltipItemContent = ({
   );
 };
 
+/**
+ * Renders tooltip content for chart data points.
+ *
+ * Displays formatted values with optional indicators, labels, and custom
+ * formatting. Supports multiple payload items and conditional label nesting.
+ *
+ * @param {boolean} active - Whether the tooltip should be displayed.
+ * @param {Array} payload - Array of data point information to display.
+ * @param {string | number} label - Tooltip label text.
+ * @param {'line' | 'dot' | 'dashed'} indicator - Visual indicator style for data points.
+ * @param {Function} formatter - Optional function to format tooltip values.
+ * @param {Function} labelFormatter - Optional function to format tooltip label.
+ * @returns Tooltip content element, or null if not active or no payload.
+ */
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   ChartTooltipContentProps
@@ -406,6 +441,9 @@ ChartTooltipContent.displayName = 'ChartTooltipContent';
 // Chart legend
 const ChartLegend = RechartsPrimitive.Legend;
 
+/**
+ * Props for ChartLegendContent component.
+ */
 interface ChartLegendContentProps {
   payload?: Array<{
     value?: string;
@@ -416,6 +454,16 @@ interface ChartLegendContentProps {
   config?: ChartConfig;
 }
 
+/**
+ * Renders legend items for chart data series.
+ *
+ * Displays color indicators and labels for each chart series based on
+ * chart configuration. Falls back to payload values if config is unavailable.
+ *
+ * @param {Array} payload - Array of legend item data.
+ * @param {ChartConfig} config - Chart configuration for label and color mapping.
+ * @returns Legend content element, or null if no payload items.
+ */
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   ChartLegendContentProps & React.ComponentProps<'div'>
