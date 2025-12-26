@@ -1,13 +1,7 @@
 import { createSearchParamsCache, parseAsString, createParser } from 'nuqs/server';
-import { format, parse, isValid } from 'date-fns';
+import { parse, isValid } from 'date-fns';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
-
-/**
- * Returns current month in YYYY-MM format.
- */
-function getCurrentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
-}
+import { getCurrentMonth } from '@/lib/utils';
 
 /**
  * Validates and parses a month string in YYYY-MM format.

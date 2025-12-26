@@ -3,13 +3,7 @@
 import { useQueryStates, parseAsString } from 'nuqs';
 import { useCallback } from 'react';
 import { format, startOfMonth } from 'date-fns';
-
-/**
- * Returns current month in YYYY-MM format.
- */
-function getCurrentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
-}
+import { getCurrentMonth } from '@/lib/utils';
 
 /**
  * URL state hook for calendar navigation and date selection.

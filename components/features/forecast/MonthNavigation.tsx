@@ -3,12 +3,8 @@
 import { useQueryState } from 'nuqs';
 import { parse, format, startOfMonth, subMonths, addMonths } from 'date-fns';
 import { Triangle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, getCurrentMonth } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
-
-function getCurrentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
-}
 
 const navButtonClass = cn(
   buttonVariants({ variant: 'ghost' }),

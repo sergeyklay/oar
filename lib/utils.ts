@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { format } from 'date-fns';
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -29,4 +30,14 @@ export function generateSlug(name: string): string {
     .replace(/[^\w\s-]/g, '') // Remove special chars
     .replace(/[\s_-]+/g, '-') // Replace spaces/underscores with hyphens
     .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+}
+
+/**
+ * Returns current month in YYYY-MM format.
+ *
+ * @example
+ * getCurrentMonth() // "2026-01"
+ */
+export function getCurrentMonth(): string {
+  return format(new Date(), 'yyyy-MM');
 }

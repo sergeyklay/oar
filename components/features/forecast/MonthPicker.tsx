@@ -11,10 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
-
-function getCurrentMonth(): string {
-  return format(new Date(), 'yyyy-MM');
-}
+import { getCurrentMonth } from '@/lib/utils';
 
 interface MonthPickerProps {
   /** Default month in YYYY-MM format */
