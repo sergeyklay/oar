@@ -2,7 +2,7 @@ import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { faker } from '@faker-js/faker';
-import { subDays, subMonths, addMonths, subYears } from 'date-fns';
+import { subDays, subMonths, addMonths, addDays, subYears } from 'date-fns';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
@@ -125,13 +125,15 @@ const CATEGORY_SEED_DATA = [
  * - Scenario B: Due soon big expense (tests transition from savings to due)
  * - Scenario C: Variable bill estimation (tests average calculation)
  * - Scenario D: Baseline bills (tests base "Amount Due" bars)
+ * - Scenario E: Non-standard frequency (tests biweekly YoY data generation)
  */
 interface ScenarioBill {
   title: string;
   slug: string;
   frequency: 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';
   amount: number; // in minor units (cents)
-  dueDateMonthsFromNow: number; // months from now
+  dueDateMonthsFromNow?: number; // months from now (optional)
+  dueDateDaysFromNow?: number; // days from now (optional, takes precedence over months)
   isVariable?: boolean;
   status?: 'pending' | 'paid' | 'overdue';
   isAutoPay?: boolean;
@@ -201,6 +203,39 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     status: 'pending',
     isAutoPay: false,
   },
+  // Scenario E: Non-Standard Frequency (Testing YoY Data Generation)
+  // Biweekly bill to test non-standard frequency transaction generation
+  {
+    title: 'Biweekly Paycheck Deduction',
+    slug: 'gym',
+    frequency: 'biweekly',
+    amount: 5000, // $50.00
+    dueDateMonthsFromNow: 1,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  // Scenario F: Due Soon (Testing 7-day range)
+  // Bill due in 3 days to test Due Soon view
+  {
+    title: 'Electric Bill',
+    slug: 'electric-utilities',
+    frequency: 'monthly',
+    amount: 12000, // $120.00
+    dueDateDaysFromNow: 3, // Due in 3 days (within 7-day range)
+    status: 'pending',
+    isAutoPay: false,
+  },
+  // Scenario G: Due This Month (Testing current month filter)
+  // Bill due in 15 days to test Due This Month view
+  {
+    title: 'Water Bill',
+    slug: 'water',
+    frequency: 'monthly',
+    amount: 4500, // $45.00
+    dueDateDaysFromNow: 15, // Due in 15 days (this month, outside 7-day range)
+    status: 'pending',
+    isAutoPay: false,
+  },
 ];
 
 /**
@@ -221,8 +256,6 @@ const BILL_TEMPLATES = [
   { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly' },
   { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly' },
   { title: 'Gym Membership', slug: 'gym', frequency: 'monthly' },
-  { title: 'Electric Bill', slug: 'electric-utilities', frequency: 'monthly' },
-  { title: 'Water Bill', slug: 'water', frequency: 'monthly' },
   { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly' },
   { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly' },
   { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once' },
@@ -294,16 +327,18 @@ function generateBillState(
     };
   }
 
+  // Generate due dates with higher probability of near-term dates
+  // 30% within 7 days (Due Soon), 30% within 30 days (This Month), 40% further out
+  const dateRange = faker.helpers.arrayElement([
+    { from: now, to: addDays(now, 7) }, // 30% chance: Due Soon range
+    { from: addDays(now, 7), to: addDays(now, 30) }, // 30% chance: This month, outside Due Soon
+    { from: addDays(now, 30), to: addMonths(now, 6) }, // 20% chance: Next 6 months
+    { from: addMonths(now, 6), to: addMonths(now, 24) }, // 20% chance: Further out
+  ]);
+
   return {
     status,
-    dueDate: faker.date.between({
-      from: now,
-      to: faker.helpers.arrayElement([
-        addMonths(now, 60),
-        addMonths(now, 10),
-        addMonths(now, 24),
-      ]),
-    }),
+    dueDate: faker.date.between(dateRange),
     amountDue: amount,
   };
 }
@@ -493,8 +528,10 @@ function seedBills(
       throw new Error(`Category not found for slug: ${scenario.slug}. Required for scenario: ${scenario.title}`);
     }
 
-    // Calculate due date from now
-    const dueDate = addMonths(now, scenario.dueDateMonthsFromNow);
+    // Calculate due date from now (days take precedence over months)
+    const dueDate = scenario.dueDateDaysFromNow !== undefined
+      ? addDays(now, scenario.dueDateDaysFromNow)
+      : addMonths(now, scenario.dueDateMonthsFromNow ?? 1);
 
     // For pending bills, amountDue equals amount. For paid bills, amountDue is 0.
     const amountDue = scenario.status === 'paid' ? 0 : scenario.amount;
