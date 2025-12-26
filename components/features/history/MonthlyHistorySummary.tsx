@@ -6,7 +6,6 @@ import { MonthNavigation } from '@/components/features/forecast/MonthNavigation'
 import type { HistorySummary } from '@/lib/types';
 
 interface MonthlyHistorySummaryProps {
-  paymentsCount: number;
   summary: HistorySummary;
   currency: string;
   locale: string;
@@ -22,7 +21,6 @@ interface MonthlyHistorySummaryProps {
  * Render Mode: Client Component (contains MonthNavigation which requires client-side URL state)
  */
 export function MonthlyHistorySummary({
-  paymentsCount,
   summary,
   currency,
   locale,
@@ -41,7 +39,7 @@ export function MonthlyHistorySummary({
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Payments</span>
-          <span className="font-mono font-medium">{paymentsCount}</span>
+          <span className="font-mono font-medium">{summary.count}</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total Paid</span>
