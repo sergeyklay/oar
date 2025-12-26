@@ -93,8 +93,9 @@ const ChartContainer = React.forwardRef<
     children: React.ComponentProps<
       typeof RechartsPrimitive.ResponsiveContainer
     >['children'];
+    initialDimension?: { width: number; height: number };
   }
->(({ id, className, children, config, ...props }, ref) => {
+>(({ id, className, children, config, initialDimension, ...props }, ref) => {
   const uniqueId = React.useId();
   const chartId = `chart-${escapeCssIdentifier(id || uniqueId)}`;
 
@@ -109,7 +110,9 @@ const ChartContainer = React.forwardRef<
       {...props}
     >
       <ChartStyle id={chartId} config={config} />
-      <RechartsPrimitive.ResponsiveContainer>
+      <RechartsPrimitive.ResponsiveContainer
+        initialDimension={initialDimension}
+      >
         {children}
       </RechartsPrimitive.ResponsiveContainer>
     </div>

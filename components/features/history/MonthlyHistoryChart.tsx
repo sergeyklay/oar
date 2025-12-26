@@ -88,7 +88,11 @@ export function MonthlyHistoryChart({
 
   return (
     <div className="relative h-[200px] w-full">
-      <ChartContainer config={chartConfig} className="h-full w-full">
+      <ChartContainer
+        config={chartConfig}
+        className="h-full w-full"
+        initialDimension={{ width: 800, height: 200 }}
+      >
         <BarChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />
           <XAxis
