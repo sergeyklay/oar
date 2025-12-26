@@ -2,7 +2,7 @@ import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { faker } from '@faker-js/faker';
-import { subDays, subMonths, addMonths } from 'date-fns';
+import { subDays, subMonths, addMonths, subYears } from 'date-fns';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
@@ -828,31 +828,58 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
           createdAt: previousYearPaidAt,
         });
       } else {
-        // For other frequencies, generate a few transactions
-        const count = bill.frequency === 'bimonthly' ? 6 : 3;
-        for (let j = 0; j < count; j++) {
-          let paidAt: Date;
-          const offset = j + 1;
+        // For other frequencies (weekly, biweekly, twicemonthly, bimonthly),
+        // generate YoY data for consistency with monthly/quarterly/yearly
+        let currentYearCount = 0;
+
+        if (bill.frequency === 'weekly') {
+          currentYearCount = 52; // 52 weeks = 1 year
+        } else if (bill.frequency === 'biweekly') {
+          currentYearCount = 26; // 26 biweekly periods = 1 year
+        } else if (bill.frequency === 'twicemonthly') {
+          currentYearCount = 24; // 24 twice-monthly periods = 1 year
+        } else if (bill.frequency === 'bimonthly') {
+          currentYearCount = 6; // 6 bimonthly periods = 1 year
+        } else {
+          // Fallback for any other frequency
+          currentYearCount = 3;
+        }
+
+        // Generate current year and previous year transactions
+        for (let j = 0; j < currentYearCount; j++) {
+          let currentYearPaidAt: Date;
 
           if (bill.frequency === 'weekly') {
-            paidAt = subDays(now, offset * 7);
+            currentYearPaidAt = subDays(now, (j + 1) * 7);
           } else if (bill.frequency === 'biweekly') {
-            paidAt = subDays(now, offset * 14);
+            currentYearPaidAt = subDays(now, (j + 1) * 14);
           } else if (bill.frequency === 'twicemonthly') {
-            paidAt = subDays(now, offset * 15);
+            currentYearPaidAt = subDays(now, (j + 1) * 15);
           } else if (bill.frequency === 'bimonthly') {
-            paidAt = subMonths(now, offset * 2);
+            currentYearPaidAt = subMonths(now, (j + 1) * 2);
           } else {
-            paidAt = subMonths(now, offset);
+            currentYearPaidAt = subMonths(now, j + 1);
           }
 
           transactionsToInsert.push({
             id: createId(),
             billId: bill.id,
             amount: bill.amount,
-            paidAt,
+            paidAt: currentYearPaidAt,
             notes: null,
-            createdAt: paidAt,
+            createdAt: currentYearPaidAt,
+          });
+
+          // Generate corresponding previous year transaction (exactly 1 year earlier)
+          const previousYearPaidAt = subYears(currentYearPaidAt, 1);
+
+          transactionsToInsert.push({
+            id: createId(),
+            billId: bill.id,
+            amount: bill.amount,
+            paidAt: previousYearPaidAt,
+            notes: null,
+            createdAt: previousYearPaidAt,
           });
         }
       }
@@ -947,7 +974,8 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
       }
 
       // For yearly bills, also generate previous year transaction for YoY comparison
-      if (bill.frequency === 'yearly' && count >= 1) {
+      // Only add if count === 1 to avoid duplicates (when count >= 2, loop already generates it)
+      if (bill.frequency === 'yearly' && count === 1) {
         const previousYearPaidAt = subMonths(dueDate, 12 + (bill.status === 'paid' ? 0 : 1));
         const previousYearAmount = generateTransactionAmount(bill.amount, isVariable);
 
