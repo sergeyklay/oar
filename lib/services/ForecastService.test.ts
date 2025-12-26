@@ -475,35 +475,95 @@ describe('ForecastService', () => {
       );
     });
 
-    it('projects monthly bill due on 31st to last day of shorter months', async () => {
-      const mockBills: BillWithTags[] = [
-        createMockBill({
-          dueDate: new Date('2025-01-31'),
-          frequency: 'monthly' as const,
-        }),
-      ];
-      createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
+    describe('end-of-month clamping for monthly bills due on 31st', () => {
+      it.each([
+        {
+          targetMonth: '2025-02',
+          expectedMonth: 1,
+          expectedDate: 28,
+          description: 'clamps to last day of February (28 days)',
+        },
+        {
+          targetMonth: '2025-04',
+          expectedMonth: 3,
+          expectedDate: 30,
+          description: 'clamps to last day of April (30 days)',
+        },
+        {
+          targetMonth: '2025-06',
+          expectedMonth: 5,
+          expectedDate: 30,
+          description: 'clamps to last day of June (30 days)',
+        },
+        {
+          targetMonth: '2025-09',
+          expectedMonth: 8,
+          expectedDate: 30,
+          description: 'clamps to last day of September (30 days)',
+        },
+        {
+          targetMonth: '2025-11',
+          expectedMonth: 10,
+          expectedDate: 30,
+          description: 'clamps to last day of November (30 days)',
+        },
+        {
+          targetMonth: '2025-03',
+          expectedMonth: 2,
+          expectedDate: 31,
+          description: 'preserves 31st in March (31 days)',
+        },
+        {
+          targetMonth: '2025-05',
+          expectedMonth: 4,
+          expectedDate: 31,
+          description: 'preserves 31st in May (31 days)',
+        },
+        {
+          targetMonth: '2025-07',
+          expectedMonth: 6,
+          expectedDate: 31,
+          description: 'preserves 31st in July (31 days)',
+        },
+        {
+          targetMonth: '2025-08',
+          expectedMonth: 7,
+          expectedDate: 31,
+          description: 'preserves 31st in August (31 days)',
+        },
+        {
+          targetMonth: '2025-10',
+          expectedMonth: 9,
+          expectedDate: 31,
+          description: 'preserves 31st in October (31 days)',
+        },
+        {
+          targetMonth: '2025-12',
+          expectedMonth: 11,
+          expectedDate: 31,
+          description: 'preserves 31st in December (31 days)',
+        },
+      ])(
+        '$description',
+        async ({ targetMonth, expectedMonth, expectedDate }) => {
+          const mockBills: BillWithTags[] = [
+            createMockBill({
+              dueDate: new Date('2025-01-31'),
+              frequency: 'monthly' as const,
+            }),
+          ];
+          createDbMock(mockBills);
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+            new Map([['bill-1', []]])
+          );
+
+          const result = await ForecastService.getBillsForMonth(targetMonth);
+
+          expect(result).toHaveLength(1);
+          expect(result[0].dueDate.getMonth()).toBe(expectedMonth);
+          expect(result[0].dueDate.getDate()).toBe(expectedDate);
+        }
       );
-
-      // February (28 days) - should clamp to Feb 28
-      const febResult = await ForecastService.getBillsForMonth('2025-02');
-      expect(febResult).toHaveLength(1);
-      expect(febResult[0].dueDate.getMonth()).toBe(1); // February (0-indexed)
-      expect(febResult[0].dueDate.getDate()).toBe(28);
-
-      // April (30 days) - should clamp to Apr 30
-      const aprResult = await ForecastService.getBillsForMonth('2025-04');
-      expect(aprResult).toHaveLength(1);
-      expect(aprResult[0].dueDate.getMonth()).toBe(3); // April (0-indexed)
-      expect(aprResult[0].dueDate.getDate()).toBe(30);
-
-      // March (31 days) - should use original day (31st)
-      const marResult = await ForecastService.getBillsForMonth('2025-03');
-      expect(marResult).toHaveLength(1);
-      expect(marResult[0].dueDate.getMonth()).toBe(2); // March (0-indexed)
-      expect(marResult[0].dueDate.getDate()).toBe(31);
     });
 
     it('projects quarterly bill due on 31st to last day of shorter months', async () => {
