@@ -306,7 +306,7 @@ const TooltipItemContent = ({
             {itemConfig?.label || item.name}
           </span>
         </div>
-        {item.value && (
+        {item.value != null && (
           <span className="font-mono font-medium tabular-nums text-foreground">
             {item.value.toLocaleString()}
           </span>
