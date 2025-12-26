@@ -35,6 +35,9 @@ export function generateSlug(name: string): string {
 /**
  * Returns current month in YYYY-MM format.
  *
+ * Thin wrapper around format(new Date(), 'yyyy-MM') for consistency across
+ * the codebase. Used in multiple places for URL state defaults and month handling.
+ *
  * @example
  * getCurrentMonth() // "2026-01"
  */

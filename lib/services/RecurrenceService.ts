@@ -3,7 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
 import { getLogger } from '@/lib/logger';
-import { addMonths, getDate, endOfMonth } from 'date-fns';
+import { addMonths } from 'date-fns';
 import { clampToEndOfMonth } from '@/lib/utils';
 
 const logger = getLogger('RecurrenceService');
@@ -113,28 +113,6 @@ export const RecurrenceService = {
         nextUtc.getUTCMinutes(),
         nextUtc.getUTCSeconds()
       );
-
-      // Debug assertion: RRule skips invalid dates, so if nextUtc exists,
-      // the date is already valid. This assertion catches any future changes
-      // that might break this assumption.
-      if (needsEndOfMonthClamping) {
-        const nextMonthEnd = endOfMonth(nextDueDate);
-        const nextMonthLastDay = getDate(nextMonthEnd);
-        const projectedDay = getDate(nextDueDate);
-
-        if (projectedDay > nextMonthLastDay) {
-          logger.error(
-            {
-              currentDueDate: currentDueDate.toISOString(),
-              frequency,
-              nextDueDate: nextDueDate.toISOString(),
-              projectedDay,
-              nextMonthLastDay,
-            },
-            'RRule returned invalid date - this should never happen'
-          );
-        }
-      }
     } else {
       return null;
     }
