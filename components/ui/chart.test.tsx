@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-dom" />
 import { render, screen } from '@testing-library/react';
 import * as React from 'react';
 import {
@@ -376,11 +377,10 @@ describe('ChartContainer', () => {
     expect(styleElement?.textContent).not.toContain('url(evil)');
   });
 
-  it('prioritizes theme.light over color when both are provided', () => {
-    const mixedConfig: ChartConfig = {
+  it('uses theme.light when theme is provided', () => {
+    const themeConfig: ChartConfig = {
       series1: {
         label: 'Series 1',
-        color: 'rgb(255, 0, 0)',
         theme: {
           light: 'hsl(var(--primary))',
           dark: 'hsl(var(--primary-dark))',
@@ -389,14 +389,13 @@ describe('ChartContainer', () => {
     };
 
     const { container } = render(
-      <ChartContainer config={mixedConfig}>
+      <ChartContainer config={themeConfig}>
         <div>Content</div>
       </ChartContainer>
     );
 
     const styleElement = container.querySelector('style');
     expect(styleElement?.textContent).toContain('hsl(var(--primary))');
-    expect(styleElement?.textContent).not.toContain('rgb(255, 0, 0)');
   });
 });
 
@@ -938,6 +937,27 @@ describe('ChartTooltipContent', () => {
       el.classList.contains('tabular-nums')
     );
     expect(formattedValueElements.length).toBe(0);
+  });
+
+  it('renders zero value in tooltip', () => {
+    const payloadWithZero = [
+      {
+        name: 'Series 1',
+        value: 0,
+        dataKey: 'series1',
+        color: '#ff0000',
+        payload: {},
+      },
+    ];
+
+    render(<ChartTooltipContent active={true} payload={payloadWithZero} />);
+
+    expect(screen.getByText('Series 1')).toBeInTheDocument();
+    const valueElements = screen.queryAllByText('0');
+    const formattedValueElement = valueElements.find(el =>
+      el.classList.contains('tabular-nums')
+    );
+    expect(formattedValueElement).toBeInTheDocument();
   });
 
   it('handles payload without name or dataKey', () => {
