@@ -955,7 +955,8 @@ describe('ChartTooltipContent', () => {
     expect(screen.getByText('Series 1')).toBeInTheDocument();
     const valueElements = screen.queryAllByText('0');
     const formattedValueElement = valueElements.find(el =>
-      el.classList.contains('tabular-nums')
+      el.classList.contains('tabular-nums') &&
+      el.classList.contains('font-mono')
     );
     expect(formattedValueElement).toBeInTheDocument();
   });
