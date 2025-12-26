@@ -19,8 +19,6 @@ interface ForecastChartProps {
   currency: string;
   /** Locale identifier (BCP 47) */
   locale: string;
-  /** Whether to show amortization amounts */
-  showAmortization: boolean;
   /** Optional handler for bar click (receives month string in YYYY-MM format) */
   onBarClick?: (month: string) => void;
 }
@@ -37,7 +35,6 @@ export function ForecastChart({
   data,
   currency,
   locale,
-  showAmortization,
   onBarClick,
 }: ForecastChartProps) {
   const chartConfig: ChartConfig = {
@@ -45,19 +42,17 @@ export function ForecastChart({
       label: 'Amount Due',
       color: 'hsl(var(--primary))',
     },
-    ...(showAmortization && {
-      totalToSave: {
-        label: 'Amount to Save',
-        color: 'hsl(var(--muted-foreground))',
-      },
-    }),
+    totalToSave: {
+      label: 'Amount to Save',
+      color: 'hsl(var(--muted-foreground))',
+    },
   };
 
   const chartData = data.map((item) => ({
     month: item.month,
     monthLabel: item.monthLabel,
     totalDue: item.totalDue,
-    ...(showAmortization && { totalToSave: item.totalToSave }),
+    totalToSave: item.totalToSave,
   }));
 
   return (
@@ -145,22 +140,20 @@ export function ForecastChart({
               },
             })}
           />
-          {showAmortization && (
-            <Bar
-              dataKey="totalToSave"
-              fill="var(--color-totalToSave)"
-              radius={4}
-              {...(onBarClick && {
-                onClick: (data: unknown) => {
-                  const payload = (data as { payload?: { month?: string } })
-                    ?.payload;
-                  if (payload?.month) {
-                    onBarClick(payload.month);
-                  }
-                },
-              })}
-            />
-          )}
+          <Bar
+            dataKey="totalToSave"
+            fill="var(--color-totalToSave)"
+            radius={4}
+            {...(onBarClick && {
+              onClick: (data: unknown) => {
+                const payload = (data as { payload?: { month?: string } })
+                  ?.payload;
+                if (payload?.month) {
+                  onBarClick(payload.month);
+                }
+              },
+            })}
+          />
         </BarChart>
       </ChartContainer>
     </div>

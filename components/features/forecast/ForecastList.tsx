@@ -1,14 +1,11 @@
 import { format, parse } from 'date-fns';
 import { ForecastRow } from './ForecastRow';
-import { cn } from '@/lib/utils';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
 interface ForecastListProps {
   bills: ForecastBill[];
   currency: string;
   locale: string;
-  showAmortization: boolean;
-  showEstimates: boolean;
   month: string;
   tag?: string | null;
 }
@@ -24,8 +21,6 @@ export function ForecastList({
   bills,
   currency,
   locale,
-  showAmortization,
-  showEstimates,
   month,
   tag,
 }: ForecastListProps) {
@@ -54,7 +49,7 @@ export function ForecastList({
           <th className="w-10" aria-hidden="true" />
           <th>Name</th>
           <th className="text-right">Amount Due</th>
-          <th className={cn(showAmortization ? 'text-right' : 'hidden')}>Amount to Save</th>
+          <th className="text-right">Amount to Save</th>
           <th className="text-right">Due Date</th>
         </tr>
       </thead>
@@ -65,8 +60,6 @@ export function ForecastList({
             bill={bill}
             currency={currency}
             locale={locale}
-            showAmortization={showAmortization}
-            showEstimates={showEstimates}
           />
         ))}
       </tbody>

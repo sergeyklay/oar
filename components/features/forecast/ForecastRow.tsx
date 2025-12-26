@@ -9,8 +9,6 @@ interface ForecastRowProps {
   bill: ForecastBill;
   currency: string;
   locale: string;
-  showAmortization: boolean;
-  showEstimates: boolean;
 }
 
 /**
@@ -25,8 +23,6 @@ export function ForecastRow({
   bill,
   currency,
   locale,
-  showAmortization,
-  showEstimates,
 }: ForecastRowProps) {
   return (
     <tr>
@@ -46,17 +42,17 @@ export function ForecastRow({
           <span
             className={cn(
               'font-mono',
-              bill.isEstimated && showEstimates && 'text-muted-foreground'
+              bill.isEstimated && 'text-muted-foreground'
             )}
           >
             {formatMoney(bill.displayAmount, currency, locale)}
           </span>
-          {bill.isEstimated && showEstimates && (
+          {bill.isEstimated && (
             <span className="text-xs text-muted-foreground">(estimate)</span>
           )}
         </div>
       </td>
-      <td className={cn(showAmortization ? 'text-right' : 'hidden')}>
+      <td className="text-right">
         {bill.amortizationAmount !== null ? (
           <span className="font-mono text-muted-foreground">
             {formatMoney(bill.amortizationAmount, currency, locale)}

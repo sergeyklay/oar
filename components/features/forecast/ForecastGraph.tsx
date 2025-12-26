@@ -10,8 +10,6 @@ interface ForecastGraphProps {
   currency: string;
   /** Locale identifier */
   locale: string;
-  /** Whether to show amortization amounts */
-  showAmortization: boolean;
 }
 
 /**
@@ -27,7 +25,6 @@ export async function ForecastGraph({
   tag,
   currency,
   locale,
-  showAmortization,
 }: ForecastGraphProps) {
   const result = await getForecastDataForRange({
     startMonth: month,
@@ -61,7 +58,6 @@ export async function ForecastGraph({
         data={result.data}
         currency={currency}
         locale={locale}
-        showAmortization={showAmortization}
       />
     </div>
   );

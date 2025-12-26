@@ -109,7 +109,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -117,13 +116,12 @@ describe('ForecastChart', () => {
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 
-  it('renders both bars for totalDue and totalToSave when showAmortization is true', () => {
+  it('renders both bars for totalDue and totalToSave', () => {
     render(
       <ForecastChart
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -131,18 +129,17 @@ describe('ForecastChart', () => {
     expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
   });
 
-  it('renders only totalDue bar when showAmortization is false', () => {
+  it('always renders both bars (amortization is always visible)', () => {
     render(
       <ForecastChart
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={false}
       />
     );
 
     expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
-    expect(screen.queryByTestId('bar-totalToSave')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
   });
 
   it('renders X-axis with monthLabel dataKey', () => {
@@ -151,7 +148,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -166,7 +162,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -179,7 +174,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -187,13 +181,12 @@ describe('ForecastChart', () => {
     expect(screen.getByTestId('chart-legend-content')).toBeInTheDocument();
   });
 
-  it('includes totalToSave in legend config when showAmortization is true', () => {
+  it('includes totalToSave in legend config', () => {
     render(
       <ForecastChart
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -206,13 +199,12 @@ describe('ForecastChart', () => {
     expect(config.totalToSave.label).toBe('Amount to Save');
   });
 
-  it('excludes totalToSave from legend config when showAmortization is false', () => {
+  it('always includes totalToSave in legend config', () => {
     render(
       <ForecastChart
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={false}
       />
     );
 
@@ -220,8 +212,9 @@ describe('ForecastChart', () => {
     const config = JSON.parse(container.getAttribute('data-config') || '{}');
 
     expect(config.totalDue).toBeDefined();
-    expect(config.totalToSave).toBeUndefined();
+    expect(config.totalToSave).toBeDefined();
     expect(config.totalDue.label).toBe('Amount Due');
+    expect(config.totalToSave.label).toBe('Amount to Save');
   });
 
   it('formats tooltip values using formatMoney', () => {
@@ -230,7 +223,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -246,7 +238,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -264,7 +255,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
         onBarClick={onBarClick}
       />
     );
@@ -281,7 +271,6 @@ describe('ForecastChart', () => {
         data={[]}
         currency="USD"
         locale="en-US"
-        showAmortization={true}
       />
     );
 
@@ -295,7 +284,6 @@ describe('ForecastChart', () => {
         data={mockData}
         currency="PLN"
         locale="pl-PL"
-        showAmortization={true}
       />
     );
 

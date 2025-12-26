@@ -2,13 +2,12 @@ import { ForecastGraph } from './ForecastGraph';
 import { ForecastList } from './ForecastList';
 import { ForecastSummary } from './ForecastSummary';
 import { getForecastData } from '@/actions/forecast';
+import { ForecastService } from '@/lib/services/ForecastService';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
 interface ForecastContentProps {
   month: string;
   tag?: string | null;
-  showAmortization: boolean;
-  showEstimates: boolean;
   currency: string;
   locale: string;
 }
@@ -24,8 +23,6 @@ interface ForecastContentProps {
 export async function ForecastContent({
   month,
   tag,
-  showAmortization,
-  showEstimates,
   currency,
   locale,
 }: ForecastContentProps) {
@@ -45,6 +42,7 @@ export async function ForecastContent({
   }
 
   const bills: ForecastBill[] = forecastResult.data ?? [];
+  const summary = ForecastService.calculateSummary(bills);
 
   return (
     <div className="flex flex-col h-full">
@@ -54,7 +52,6 @@ export async function ForecastContent({
           tag={tag}
           currency={currency}
           locale={locale}
-          showAmortization={showAmortization}
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
@@ -63,18 +60,17 @@ export async function ForecastContent({
             bills={bills}
             currency={currency}
             locale={locale}
-            showAmortization={showAmortization}
-            showEstimates={showEstimates}
             month={month}
             tag={tag}
           />
         </div>
         <div className="bg-card border-l border-border overflow-y-auto p-6">
           <ForecastSummary
-            bills={bills}
+            billsDueCount={bills.length}
+            summary={summary}
             currency={currency}
             locale={locale}
-            showAmortization={showAmortization}
+            month={month}
           />
         </div>
       </div>

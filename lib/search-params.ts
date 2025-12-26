@@ -1,4 +1,4 @@
-import { createSearchParamsCache, parseAsString, parseAsBoolean } from 'nuqs/server';
+import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { format } from 'date-fns';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 
@@ -48,14 +48,10 @@ export const settingsSearchParamsCache = createSearchParamsCache(settingsSearchP
  *
  * - month: Selected month (YYYY-MM, defaults to current month)
  * - tag: Filter by tag slug (optional)
- * - showAmortization: Toggle for "Amount to Save" visibility (default: true)
- * - showEstimates: Toggle for estimated amounts visibility (default: true)
  */
 export const forecastSearchParams = {
   month: parseAsString.withDefault(getCurrentMonth()),
   tag: parseAsString,
-  showAmortization: parseAsBoolean.withDefault(true),
-  showEstimates: parseAsBoolean.withDefault(true),
 };
 
 /**
