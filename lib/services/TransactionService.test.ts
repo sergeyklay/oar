@@ -1,7 +1,7 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills } from '@/db';
 import { PaymentWithBill, Transaction } from '@/lib/types';
-import { startOfDay, endOfDay, subDays, parse } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -23,12 +23,21 @@ jest.mock('@/db', () => ({
     id: 'bill_categories.id',
     icon: 'bill_categories.icon',
   },
+  tags: {
+    id: 'tags.id',
+    slug: 'tags.slug',
+  },
+  billsToTags: {
+    billId: 'bills_to_tags.bill_id',
+    tagId: 'bills_to_tags.tag_id',
+  },
 }));
 
 const mockGte = jest.fn();
 const mockLte = jest.fn();
 const mockAnd = jest.fn();
 const mockEq = jest.fn();
+const mockInArray = jest.fn();
 
 jest.mock('drizzle-orm', () => ({
   gte: (...args: unknown[]) => {
@@ -47,6 +56,10 @@ jest.mock('drizzle-orm', () => ({
   eq: (...args: unknown[]) => {
     mockEq(...args);
     return { type: 'eq', a: args[0], b: args[1] };
+  },
+  inArray: (...args: unknown[]) => {
+    mockInArray(...args);
+    return { type: 'inArray', args };
   },
 }));
 
@@ -482,6 +495,227 @@ describe('TransactionService', () => {
       await TransactionService.getByBillIdAndMonth('bill-1', 12, 2024);
 
       expect(mockEq).toHaveBeenCalledWith(transactions.billId, 'bill-1');
+    });
+  });
+
+  describe('getPaymentsByMonth', () => {
+    const mockPayments: PaymentWithBill[] = [
+      {
+        id: 'tx-1',
+        billTitle: 'Rent',
+        amount: 200000,
+        paidAt: new Date('2025-12-15'),
+        notes: null,
+        categoryIcon: 'house',
+      },
+      {
+        id: 'tx-2',
+        billTitle: 'Internet',
+        amount: 8000,
+        paidAt: new Date('2025-12-20'),
+        notes: null,
+        categoryIcon: 'wifi',
+      },
+    ];
+
+    const setupDbMock = (returnValue: PaymentWithBill[]) => {
+      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
+      const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
+      const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+      const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return { orderByMock, whereMock, innerJoinMock: firstInnerJoinMock, fromMock };
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('fetches payments for a specific month', async () => {
+      const { fromMock } = setupDbMock(mockPayments);
+
+      const result = await TransactionService.getPaymentsByMonth('2025-12');
+
+      expect(result).toEqual(mockPayments);
+      expect(db.select).toHaveBeenCalled();
+      expect(fromMock).toHaveBeenCalledWith(transactions);
+    });
+
+    it('calculates correct month range', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByMonth('2025-12');
+
+      const monthDate = parse('2025-12', 'yyyy-MM', new Date());
+      const expectedStart = startOfMonth(monthDate);
+      const expectedEnd = endOfMonth(monthDate);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedEnd);
+    });
+
+    it('combines date conditions with and()', async () => {
+      setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByMonth('2025-12');
+
+      expect(mockAnd).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'gte' }),
+        expect.objectContaining({ type: 'lte' })
+      );
+    });
+
+    it('orders results by paidAt descending', async () => {
+      const { orderByMock } = setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByMonth('2025-12');
+
+      expect(orderByMock).toHaveBeenCalledWith(expect.objectContaining({ type: 'desc' }));
+    });
+
+    it('returns empty array when no payments found', async () => {
+      setupDbMock([]);
+
+      const result = await TransactionService.getPaymentsByMonth('2025-12');
+
+      expect(result).toEqual([]);
+    });
+
+    it('filters by tag when provided', async () => {
+      const tagFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([{ id: 'tag-1' }]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: tagFromMock });
+
+      const billsToTagsFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([{ billId: 'bill-1' }]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: billsToTagsFromMock });
+
+      setupDbMock(mockPayments);
+
+      await TransactionService.getPaymentsByMonth('2025-12', 'utilities');
+
+      expect(mockEq).toHaveBeenCalledWith(expect.anything(), 'utilities');
+      expect(mockInArray).toHaveBeenCalled();
+    });
+
+    it('returns empty array when tag does not exist', async () => {
+      const tagFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValue({ from: tagFromMock });
+
+      const result = await TransactionService.getPaymentsByMonth('2025-12', 'nonexistent');
+
+      expect(result).toEqual([]);
+    });
+
+    it('returns empty array when tag exists but no bills have it', async () => {
+      const tagFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([{ id: 'tag-1' }]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: tagFromMock });
+
+      const billsToTagsFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: billsToTagsFromMock });
+
+      const result = await TransactionService.getPaymentsByMonth('2025-12', 'utilities');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getMonthlyPaymentTotals', () => {
+
+    const setupDbMock = (returnValue: { amount: number }[]) => {
+      const whereMock = jest.fn().mockResolvedValue(returnValue);
+      const innerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
+      const fromMock = jest.fn().mockReturnValue({ innerJoin: innerJoinMock });
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return { whereMock, innerJoinMock, fromMock };
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('fetches monthly totals for specified range', async () => {
+      setupDbMock([{ amount: 208000 }]);
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].month).toBe('2025-12');
+      expect(result[0].monthLabel).toBe('Dec');
+    });
+
+    it('calculates correct month ranges for multiple months', async () => {
+      setupDbMock([{ amount: 10000 }]);
+
+      await TransactionService.getMonthlyPaymentTotals('2025-12', 3);
+
+      expect(mockGte).toHaveBeenCalledTimes(3);
+      expect(mockLte).toHaveBeenCalledTimes(3);
+    });
+
+    it('sums transaction amounts for each month', async () => {
+      setupDbMock([
+        { amount: 100000 },
+        { amount: 50000 },
+        { amount: 30000 },
+      ]);
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1);
+
+      expect(result[0].totalPaid).toBe(180000);
+    });
+
+    it('returns zero total for months with no payments', async () => {
+      setupDbMock([]);
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1);
+
+      expect(result[0].totalPaid).toBe(0);
+    });
+
+    it('formats month labels correctly', async () => {
+      setupDbMock([{ amount: 10000 }]);
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-01', 12);
+
+      expect(result[0].monthLabel).toBe('Jan');
+      expect(result[1].monthLabel).toBe('Feb');
+      expect(result[11].monthLabel).toBe('Dec');
+    });
+
+    it('filters by tag when provided', async () => {
+      const tagFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([{ id: 'tag-1' }]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: tagFromMock });
+
+      const billsToTagsFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([{ billId: 'bill-1' }]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValueOnce({ from: billsToTagsFromMock });
+
+      setupDbMock([{ amount: 10000 }]);
+
+      await TransactionService.getMonthlyPaymentTotals('2025-12', 1, 'utilities');
+
+      expect(mockEq).toHaveBeenCalledWith(expect.anything(), 'utilities');
+      expect(mockInArray).toHaveBeenCalled();
+    });
+
+    it('returns empty array when tag does not exist', async () => {
+      const tagFromMock = jest.fn().mockReturnValue({ where: jest.fn().mockReturnValue({ then: (onResolve: (value: unknown[]) => unknown) => Promise.resolve([]).then(onResolve) }) });
+      (db.select as jest.Mock).mockReturnValue({ from: tagFromMock });
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1, 'nonexistent');
+
+      expect(result).toEqual([]);
+    });
+
+    it('handles multiple months correctly', async () => {
+      setupDbMock([{ amount: 10000 }]);
+
+      const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 12);
+
+      expect(result).toHaveLength(12);
+      expect(result[0].month).toBe('2025-12');
+      expect(result[11].month).toBe('2026-11');
     });
   });
 });

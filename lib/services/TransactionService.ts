@@ -1,7 +1,7 @@
-import { db, transactions, bills, billCategories } from '@/db';
-import { gte, lte, desc, eq, and } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth } from 'date-fns';
-import type { PaymentWithBill, Transaction } from '@/lib/types';
+import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
+import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
+import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths } from 'date-fns';
+import type { PaymentWithBill, Transaction, MonthlyPaymentTotal } from '@/lib/types';
 
 /**
  * Service for transaction-related operations.
@@ -137,6 +137,144 @@ export const TransactionService = {
       .orderBy(desc(transactions.paidAt));
 
     return results;
+  },
+
+  /**
+   * Fetches all payments for a specific month, optionally filtered by bill tag.
+   *
+   * @param month - Month string in YYYY-MM format
+   * @param tag - Optional tag slug for filtering
+   * @returns Payments with bill information and category icons, ordered by paidAt descending
+   */
+  async getPaymentsByMonth(month: string, tag?: string): Promise<PaymentWithBill[]> {
+    const monthDate = parse(month, 'yyyy-MM', new Date());
+    const monthStart = startOfMonth(monthDate);
+    const monthEnd = endOfMonth(monthDate);
+
+    let billIds: string[] | undefined;
+    if (tag) {
+      const [tagRecord] = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, tag));
+
+      if (!tagRecord) {
+        return [];
+      }
+
+      const billsWithTag = await db
+        .select({ billId: billsToTags.billId })
+        .from(billsToTags)
+        .where(eq(billsToTags.tagId, tagRecord.id));
+
+      billIds = billsWithTag.map((b) => b.billId);
+
+      if (billIds.length === 0) {
+        return [];
+      }
+    }
+
+    const conditions = [
+      gte(transactions.paidAt, monthStart),
+      lte(transactions.paidAt, monthEnd),
+    ];
+
+    if (billIds) {
+      conditions.push(inArray(transactions.billId, billIds));
+    }
+
+    const results = await db
+      .select({
+        id: transactions.id,
+        billTitle: bills.title,
+        amount: transactions.amount,
+        paidAt: transactions.paidAt,
+        notes: transactions.notes,
+        categoryIcon: billCategories.icon,
+      })
+      .from(transactions)
+      .innerJoin(bills, eq(transactions.billId, bills.id))
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
+      .where(and(...conditions))
+      .orderBy(desc(transactions.paidAt));
+
+    return results;
+  },
+
+  /**
+   * Fetches aggregated payment totals grouped by month for chart visualization.
+   *
+   * @param startMonth - Starting month string in YYYY-MM format
+   * @param months - Number of months to include in the range
+   * @param tag - Optional tag slug for filtering
+   * @returns Array of monthly payment totals with month labels
+   */
+  async getMonthlyPaymentTotals(
+    startMonth: string,
+    months: number,
+    tag?: string
+  ): Promise<MonthlyPaymentTotal[]> {
+    const startDate = parse(startMonth, 'yyyy-MM', new Date());
+    let billIds: string[] | undefined;
+
+    if (tag) {
+      const [tagRecord] = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, tag));
+
+      if (!tagRecord) {
+        return [];
+      }
+
+      const billsWithTag = await db
+        .select({ billId: billsToTags.billId })
+        .from(billsToTags)
+        .where(eq(billsToTags.tagId, tagRecord.id));
+
+      billIds = billsWithTag.map((b) => b.billId);
+
+      if (billIds.length === 0) {
+        return [];
+      }
+    }
+
+    const monthlyTotals: MonthlyPaymentTotal[] = [];
+
+    for (let i = 0; i < months; i++) {
+      const currentMonth = addMonths(startDate, i);
+      const monthStart = startOfMonth(currentMonth);
+      const monthEnd = endOfMonth(currentMonth);
+
+      const conditions = [
+        gte(transactions.paidAt, monthStart),
+        lte(transactions.paidAt, monthEnd),
+      ];
+
+      if (billIds) {
+        conditions.push(inArray(transactions.billId, billIds));
+      }
+
+      const results = await db
+        .select({
+          amount: transactions.amount,
+        })
+        .from(transactions)
+        .innerJoin(bills, eq(transactions.billId, bills.id))
+        .where(and(...conditions));
+
+      const totalPaid = results.reduce((sum, tx) => sum + tx.amount, 0);
+      const monthLabel = format(currentMonth, 'MMM');
+      const monthStr = format(currentMonth, 'yyyy-MM');
+
+      monthlyTotals.push({
+        month: monthStr,
+        monthLabel,
+        totalPaid,
+      });
+    }
+
+    return monthlyTotals;
   },
 };
 

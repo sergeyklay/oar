@@ -127,3 +127,27 @@ export type Prop<
   Component extends ComponentType,
   PropKey extends keyof React.ComponentProps<Component>
 > = React.ComponentProps<Component>[PropKey];
+
+/**
+ * Monthly payment total for chart visualization.
+ *
+ * @property {string} month - Month in YYYY-MM format
+ * @property {string} monthLabel - Abbreviated month label (e.g., "Jan", "Feb")
+ * @property {number} totalPaid - Total payments for this month in minor units (integer)
+ */
+export interface MonthlyPaymentTotal {
+  month: string;
+  monthLabel: string;
+  totalPaid: number;
+}
+
+/**
+ * Summary statistics for monthly history view.
+ *
+ * @property {number} count - Number of payments in the selected month
+ * @property {number} totalPaid - Total amount paid in minor units (integer)
+ */
+export interface HistorySummary {
+  count: number;
+  totalPaid: number;
+}
