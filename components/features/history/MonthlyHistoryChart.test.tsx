@@ -20,11 +20,19 @@ jest.mock('@/components/ui/chart', () => ({
   ChartContainer: ({
     children,
     config,
+    initialDimension,
   }: {
     children: React.ReactNode;
     config: Record<string, unknown>;
+    initialDimension?: { width: number; height: number };
   }) => (
-    <div data-testid="chart-container" data-config={JSON.stringify(config)}>
+    <div
+      data-testid="chart-container"
+      data-config={JSON.stringify(config)}
+      data-initial-dimension={
+        initialDimension ? JSON.stringify(initialDimension) : null
+      }
+    >
       {children}
     </div>
   ),
@@ -260,6 +268,22 @@ describe('MonthlyHistoryChart', () => {
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-currentYear')).toBeInTheDocument();
     expect(screen.getByTestId('bar-lastYear')).toBeInTheDocument();
+  });
+
+  it('passes initialDimension to ChartContainer for SSR support', () => {
+    render(
+      <MonthlyHistoryChart
+        data={mockData}
+        currency="USD"
+        locale="en-US"
+      />
+    );
+
+    const container = screen.getByTestId('chart-container');
+    const dimensionAttr = container.getAttribute('data-initial-dimension');
+    const initialDimension = dimensionAttr ? JSON.parse(dimensionAttr) : null;
+
+    expect(initialDimension).toEqual({ width: 800, height: 200 });
   });
 });
 

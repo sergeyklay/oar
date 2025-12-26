@@ -201,8 +201,23 @@ describe('sanitizeColorValue', () => {
 });
 
 jest.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) =>
-    React.createElement('div', { 'data-testid': 'responsive-container' }, children),
+  ResponsiveContainer: ({
+    children,
+    initialDimension,
+  }: {
+    children: React.ReactNode;
+    initialDimension?: { width: number; height: number };
+  }) =>
+    React.createElement(
+      'div',
+      {
+        'data-testid': 'responsive-container',
+        'data-initial-dimension': initialDimension
+          ? JSON.stringify(initialDimension)
+          : null,
+      },
+      children
+    ),
 }));
 
 describe('ChartContainer', () => {
@@ -406,6 +421,32 @@ describe('ChartContainer', () => {
 
     const styleElement = container.querySelector('style');
     expect(styleElement?.textContent).toContain('hsl(var(--primary))');
+  });
+
+  it('passes initialDimension to ResponsiveContainer when provided', () => {
+    const initialDimension = { width: 800, height: 200 };
+
+    render(
+      <ChartContainer config={mockConfig} initialDimension={initialDimension}>
+        <div>Content</div>
+      </ChartContainer>
+    );
+
+    const responsiveContainer = screen.getByTestId('responsive-container');
+    const dimensionAttr = responsiveContainer.getAttribute('data-initial-dimension');
+    expect(dimensionAttr).toBe(JSON.stringify(initialDimension));
+  });
+
+  it('does not pass initialDimension to ResponsiveContainer when not provided', () => {
+    render(
+      <ChartContainer config={mockConfig}>
+        <div>Content</div>
+      </ChartContainer>
+    );
+
+    const responsiveContainer = screen.getByTestId('responsive-container');
+    const dimensionAttr = responsiveContainer.getAttribute('data-initial-dimension');
+    expect(dimensionAttr).toBeNull();
   });
 });
 
