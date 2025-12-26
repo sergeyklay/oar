@@ -4,7 +4,7 @@
  */
 
 // Mock table references (used by eq(), inArray(), etc.)
-export const bills = { id: 'bills.id', categoryId: 'bills.categoryId' };
+export const bills = { id: 'bills.id', categoryId: 'bills.categoryId', title: 'bills.title' };
 export const transactions = { id: 'transactions.id', billId: 'transactions.billId' };
 export const tags = { id: 'tags.id', slug: 'tags.slug' };
 export const billsToTags = { billId: 'billsToTags.billId', tagId: 'billsToTags.tagId' };

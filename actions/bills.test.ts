@@ -1,4 +1,4 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats, skipPayment, type CreateBillInput, type UpdateBillInput } from './bills';
+import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats, skipPayment, searchBills, type CreateBillInput, type UpdateBillInput } from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -16,6 +16,7 @@ jest.mock('@/lib/services/BillService', () => ({
   BillService: {
     getFiltered: jest.fn(),
     getTags: jest.fn(),
+    searchByTitle: jest.fn(),
   },
 }));
 jest.mock('@/lib/services/SettingsService', () => ({
@@ -1350,5 +1351,183 @@ describe('getArchivedBillsStats', () => {
     expect(result.count).toBe(allArchivedBills.length);
     expect(result.count).toBe(4);
     expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true });
+  });
+});
+
+describe('searchBills', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('successful search', () => {
+    it('returns search results when query is valid', async () => {
+      const mockBills: BillWithTags[] = [
+        createMockBillWithTags({
+          id: 'bill-1',
+          title: 'Electric Bill',
+          isArchived: false,
+          categoryIcon: 'house',
+        }),
+        createMockBillWithTags({
+          id: 'bill-2',
+          title: 'Electric Company',
+          isArchived: true,
+          categoryIcon: 'bolt',
+        }),
+      ];
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue(mockBills);
+
+      const result = await searchBills({ query: 'electric' });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(result.data?.[0]).toEqual({
+        id: 'bill-1',
+        title: 'Electric Bill',
+        isArchived: false,
+        categoryIcon: 'house',
+      });
+      expect(result.data?.[1]).toEqual({
+        id: 'bill-2',
+        title: 'Electric Company',
+        isArchived: true,
+        categoryIcon: 'bolt',
+      });
+      expect(BillService.searchByTitle).toHaveBeenCalledWith('electric');
+    });
+
+    it('returns empty array when no bills match', async () => {
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+
+      const result = await searchBills({ query: 'nonexistent' });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([]);
+      expect(BillService.searchByTitle).toHaveBeenCalledWith('nonexistent');
+    });
+
+    it('maps BillWithTags to BillSearchResult correctly', async () => {
+      const mockBill = createMockBillWithTags({
+        id: 'bill-1',
+        title: 'Test Bill',
+        isArchived: false,
+        categoryIcon: 'house',
+      });
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue([mockBill]);
+
+      const result = await searchBills({ query: 'test' });
+
+      expect(result.success).toBe(true);
+      expect(result.data?.[0]).toEqual({
+        id: 'bill-1',
+        title: 'Test Bill',
+        isArchived: false,
+        categoryIcon: 'house',
+      });
+      expect(result.data?.[0]).not.toHaveProperty('amount');
+      expect(result.data?.[0]).not.toHaveProperty('tags');
+      expect(result.data?.[0]).not.toHaveProperty('dueDate');
+      expect(result.data?.[0]).not.toHaveProperty('frequency');
+    });
+
+    it('includes both archived and non-archived bills in results', async () => {
+      const mockBills: BillWithTags[] = [
+        createMockBillWithTags({
+          id: 'bill-1',
+          title: 'Active Bill',
+          isArchived: false,
+          categoryIcon: 'house',
+        }),
+        createMockBillWithTags({
+          id: 'bill-2',
+          title: 'Archived Bill',
+          isArchived: true,
+          categoryIcon: 'archive',
+        }),
+      ];
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue(mockBills);
+
+      const result = await searchBills({ query: 'bill' });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveLength(2);
+      expect(result.data?.[0].isArchived).toBe(false);
+      expect(result.data?.[1].isArchived).toBe(true);
+    });
+  });
+
+  describe('input validation', () => {
+    it('returns error when query is less than 3 characters', async () => {
+      const result = await searchBills({ query: 'el' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('3 characters');
+      expect(BillService.searchByTitle).not.toHaveBeenCalled();
+    });
+
+    it('returns error when query is exactly 2 characters', async () => {
+      const result = await searchBills({ query: 'ab' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('3 characters');
+      expect(BillService.searchByTitle).not.toHaveBeenCalled();
+    });
+
+    it('accepts query with exactly 3 characters', async () => {
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+
+      const result = await searchBills({ query: 'abc' });
+
+      expect(result.success).toBe(true);
+      expect(BillService.searchByTitle).toHaveBeenCalledWith('abc');
+    });
+
+    it('returns error when query exceeds 100 characters', async () => {
+      const longQuery = 'a'.repeat(101);
+      const result = await searchBills({ query: longQuery });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('100 characters');
+      expect(BillService.searchByTitle).not.toHaveBeenCalled();
+    });
+
+    it('accepts query with exactly 100 characters', async () => {
+      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+
+      const longQuery = 'a'.repeat(100);
+      const result = await searchBills({ query: longQuery });
+
+      expect(result.success).toBe(true);
+      expect(BillService.searchByTitle).toHaveBeenCalledWith(longQuery);
+    });
+
+    it('returns error when query is empty string', async () => {
+      const result = await searchBills({ query: '' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('3 characters');
+      expect(BillService.searchByTitle).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('error handling', () => {
+    it('returns error when search service throws', async () => {
+      (BillService.searchByTitle as jest.Mock).mockRejectedValue(new Error('Database error'));
+
+      const result = await searchBills({ query: 'electric' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to search bills. Please try again.');
+    });
+
+    it('handles service errors gracefully', async () => {
+      (BillService.searchByTitle as jest.Mock).mockRejectedValue(new Error('Connection timeout'));
+
+      const result = await searchBills({ query: 'test' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to search bills. Please try again.');
+      expect(result.data).toBeUndefined();
+    });
   });
 });

@@ -1,6 +1,6 @@
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import type { BillWithTags, Tag } from '@/db/schema';
-import { and, eq, gte, lte, inArray, ne, or } from 'drizzle-orm';
+import { and, eq, gte, lte, inArray, ne, or, sql } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
 
 /**
@@ -255,6 +255,71 @@ export const BillService = {
     const billIds = billsWithCategories.map((b) => b.bill.id);
     const tagsByBillId = await this.getTagsForBills(billIds);
 
+    return billsWithCategories.map(({ bill, categoryIcon }) => ({
+      ...bill,
+      endDate: bill.endDate ?? null,
+      tags: tagsByBillId.get(bill.id) ?? [],
+      categoryIcon,
+    }));
+  },
+
+  /**
+   * Searches bills by title using word-start matching.
+   * Searches both archived and non-archived bills.
+   *
+   * @param query - Search query (minimum 3 characters, case-insensitive)
+   * @returns Array of bills with tags and category icons matching the query, limited to 20 results
+   */
+  async searchByTitle(query: string): Promise<BillWithTags[]> {
+    // Normalize query: trim whitespace and convert to lowercase
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery.length < 3) {
+      return [];
+    }
+
+    // Split query into words by whitespace
+    const words = normalizedQuery.split(/\s+/).filter((word) => word.length > 0);
+
+    if (words.length === 0) {
+      return [];
+    }
+
+    // Build SQL LIKE conditions for each word (word-start matching)
+    // Each word must match: title starts with word OR title contains ' word'
+    // Use parameterized sql template for case-insensitive matching (prevents SQL injection)
+    // Drizzle automatically parameterizes ${} interpolations, preventing SQL injection
+    const wordConditions = words.map((word) => {
+      const startPattern = `${word}%`;
+      const containsPattern = `% ${word}%`;
+      // Use sql template with parameterized pattern values (safe from SQL injection)
+      return sql`(LOWER(${bills.title}) LIKE ${startPattern} OR LOWER(${bills.title}) LIKE ${containsPattern})`;
+    });
+
+    // Combine word conditions with AND (all words must match)
+    const titleCondition = and(...wordConditions);
+
+    // Query bills table with no isArchived filter (include both archived and non-archived)
+    const billsWithCategories = await db
+      .select({
+        bill: bills,
+        categoryIcon: billCategories.icon,
+      })
+      .from(bills)
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
+      .where(titleCondition)
+      .orderBy(bills.title)
+      .limit(20);
+
+    if (billsWithCategories.length === 0) {
+      return [];
+    }
+
+    // Fetch tags for matching bills
+    const billIds = billsWithCategories.map((b) => b.bill.id);
+    const tagsByBillId = await this.getTagsForBills(billIds);
+
+    // Map results to BillWithTags format
     return billsWithCategories.map(({ bill, categoryIcon }) => ({
       ...bill,
       endDate: bill.endDate ?? null,

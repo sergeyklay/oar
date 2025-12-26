@@ -18,6 +18,10 @@ jest.mock('@/components/features/bills/TagFilter', () => ({
   ),
 }));
 
+jest.mock('@/components/features/bills/BillSearch', () => ({
+  BillSearch: () => <div data-testid="bill-search">Search</div>,
+}));
+
 const mockCategoriesGrouped: BillCategoryGroupWithCategories[] = [
   {
     id: '1',

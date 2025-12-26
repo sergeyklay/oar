@@ -37,6 +37,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 
 | Document | Description |
 |----------|-------------|
+| [Bill Search](./features/018-bill-search.md) | Search for bills by title across all pages |
 | [Hiding the Sidebar](./features/015-hiding-the-sidebar.md) | Temporarily hide the sidebar to get more space for your bill table |
 | [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
 
