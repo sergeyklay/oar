@@ -2,12 +2,11 @@ import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { faker } from '@faker-js/faker';
-import { addDays, subDays, subMonths, addMonths } from 'date-fns';
+import { subDays, subMonths, addMonths } from 'date-fns';
 import { type SQLiteTransaction } from 'drizzle-orm/sqlite-core';
 import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
 import { SettingsService } from '@/lib/services/SettingsService';
-import type { BillStatus } from '@/lib/types';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('SeedScript');
@@ -119,7 +118,95 @@ const CATEGORY_SEED_DATA = [
 ];
 
 /**
- * Bill templates for seeding.
+ * Deterministic scenario bills for Forecast View testing.
+ *
+ * These scenarios are designed to test specific visual patterns in the Forecast Chart:
+ * - Scenario A: Perfect sinking fund (tests savings bar amortization)
+ * - Scenario B: Due soon big expense (tests transition from savings to due)
+ * - Scenario C: Variable bill estimation (tests average calculation)
+ * - Scenario D: Baseline bills (tests base "Amount Due" bars)
+ */
+interface ScenarioBill {
+  title: string;
+  slug: string;
+  frequency: 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';
+  amount: number; // in minor units (cents)
+  dueDateMonthsFromNow: number; // months from now
+  isVariable?: boolean;
+  status?: 'pending' | 'paid' | 'overdue';
+  isAutoPay?: boolean;
+  notes?: string;
+}
+
+const SCENARIO_BILLS: ScenarioBill[] = [
+  // Scenario A: The Perfect Sinking Fund (Testing Savings Bar)
+  // $600 quarterly = $200/mo savings. Due in 6 months.
+  {
+    title: 'Car Insurance',
+    slug: 'insurance',
+    frequency: 'quarterly',
+    amount: 60000, // $600.00
+    dueDateMonthsFromNow: 6,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  // Scenario B: The "Due Soon" Big Expense (Testing Transition)
+  // $1200 yearly = $100/mo savings. Due in 2 months.
+  {
+    title: 'Annual Software License',
+    slug: 'subscriptions',
+    frequency: 'yearly',
+    amount: 120000, // $1200.00
+    dueDateMonthsFromNow: 2,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  // Scenario C: Variable Bill Estimation (Testing Estimates)
+  // Monthly variable bill with specific transaction history
+  {
+    title: 'Winter Heating / Gas',
+    slug: 'gas',
+    frequency: 'monthly',
+    amount: 11000, // $110.00 (average of $100, $120, $110)
+    dueDateMonthsFromNow: 1,
+    isVariable: true,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  // Scenario D: The Baseline (Background Noise)
+  {
+    title: 'Rent Payment',
+    slug: 'home-mortgage-rent',
+    frequency: 'monthly',
+    amount: 200000, // $2000.00
+    dueDateMonthsFromNow: 1,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  {
+    title: 'Internet Bill',
+    slug: 'internet-broadband',
+    frequency: 'monthly',
+    amount: 8000, // $80.00
+    dueDateMonthsFromNow: 1,
+    status: 'pending',
+    isAutoPay: false,
+  },
+  {
+    title: 'Spotify',
+    slug: 'music-subscriptions',
+    frequency: 'monthly',
+    amount: 1500, // $15.00
+    dueDateMonthsFromNow: 1,
+    status: 'pending',
+    isAutoPay: false,
+  },
+];
+
+/**
+ * Bill templates for random generation to supplement scenarios.
+ *
+ * These provide variety and ensure we have sufficient data for testing.
  */
 const BILL_TEMPLATES = [
   { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly' },
@@ -132,14 +219,10 @@ const BILL_TEMPLATES = [
   { title: 'Discord Nitro', slug: 'subscriptions', frequency: 'monthly' },
   { title: 'Fastmail', slug: 'subscriptions', frequency: 'yearly' },
   { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly' },
-  { title: 'Spotify', slug: 'music-subscriptions', frequency: 'monthly' },
   { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly' },
   { title: 'Gym Membership', slug: 'gym', frequency: 'monthly' },
-  { title: 'Rent Payment', slug: 'home-mortgage-rent', frequency: 'monthly' },
   { title: 'Electric Bill', slug: 'electric-utilities', frequency: 'monthly' },
   { title: 'Water Bill', slug: 'water', frequency: 'monthly' },
-  { title: 'Internet Bill', slug: 'internet-broadband', frequency: 'monthly' },
-  { title: 'Car Insurance', slug: 'insurance', frequency: 'monthly' },
   { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly' },
   { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly' },
   { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once' },
@@ -148,7 +231,7 @@ const BILL_TEMPLATES = [
 ] as const;
 
 interface BillState {
-  status: BillStatus;
+  status: 'pending' | 'paid' | 'overdue';
   dueDate: Date;
   amountDue: number;
 }
@@ -191,7 +274,7 @@ function generateBillState(
       dueDate: faker.date.between({
         from: now,
         to: faker.helpers.arrayElement([
-          addDays(now, 60),
+          addMonths(now, 60),
           addMonths(now, 8),
           addMonths(now, 15),
         ]),
@@ -216,7 +299,7 @@ function generateBillState(
     dueDate: faker.date.between({
       from: now,
       to: faker.helpers.arrayElement([
-        addDays(now, 60),
+        addMonths(now, 60),
         addMonths(now, 10),
         addMonths(now, 24),
       ]),
@@ -370,7 +453,10 @@ function getCategories(): typeof schema.billCategories.$inferSelect[] {
 }
 
 /**
- * Seed bills with various statuses and frequencies.
+ * Seed bills combining deterministic scenarios and random templates.
+ *
+ * First processes deterministic scenario bills for Forecast View testing,
+ * then supplements with random bills from templates for variety.
  *
  * @param tx - Database transaction instance
  * @param tags - Array of tag records to associate with bills
@@ -382,7 +468,7 @@ function seedBills(
   tags: typeof schema.tags.$inferSelect[],
   categories: typeof schema.billCategories.$inferSelect[]
 ): typeof schema.bills.$inferInsert[] {
-  logger.info('Seeding bills...');
+  logger.info('Seeding bills (scenarios + random templates)...');
 
   if (categories.length === 0) {
     throw new Error('No categories found. Categories must be seeded first.');
@@ -392,12 +478,69 @@ function seedBills(
   const billsToTagsToInsert: typeof schema.billsToTags.$inferInsert[] = [];
 
   const now = new Date();
+  const createdAt = subMonths(now, 3); // Set createdAt 3 months in the past
 
   // Create a map for quick category lookup by slug
   const categoryMap = new Map(categories.map((c) => [c.slug, c]));
 
-  for (let i = 0; i < BILL_TEMPLATES.length; i++) {
-    const template = BILL_TEMPLATES[i];
+  // Step 1: Process deterministic scenario bills
+  for (const scenario of SCENARIO_BILLS) {
+    const id = createId();
+
+    // Get category by slug, throw error if not found (deterministic scenarios require exact categories)
+    const category = categoryMap.get(scenario.slug);
+    if (!category) {
+      throw new Error(`Category not found for slug: ${scenario.slug}. Required for scenario: ${scenario.title}`);
+    }
+
+    // Calculate due date from now
+    const dueDate = addMonths(now, scenario.dueDateMonthsFromNow);
+
+    // For pending bills, amountDue equals amount. For paid bills, amountDue is 0.
+    const amountDue = scenario.status === 'paid' ? 0 : scenario.amount;
+
+    const bill: typeof schema.bills.$inferInsert = {
+      id,
+      title: scenario.title,
+      amount: scenario.amount,
+      amountDue,
+      dueDate,
+      endDate: null, // No end dates for scenario bills
+      frequency: scenario.frequency,
+      isAutoPay: scenario.isAutoPay ?? false,
+      isVariable: scenario.isVariable ?? false,
+      status: scenario.status ?? 'pending',
+      isArchived: false, // Keep all scenario bills active
+      categoryId: category.id,
+      notes: scenario.notes ?? null,
+      createdAt,
+      updatedAt: now,
+    };
+
+    billsToInsert.push(bill);
+
+    // Assign 1-2 relevant tags to each bill
+    const relevantTags = tags.filter(t =>
+      t.name.toLowerCase().includes(scenario.slug.split('-')[0]) ||
+      (scenario.slug === 'insurance' && t.name === 'Insurance') ||
+      (scenario.slug === 'subscriptions' && t.name === 'Subscriptions') ||
+      (scenario.slug === 'gas' && t.name === 'Utilities') ||
+      (scenario.slug === 'home-mortgage-rent' && t.name === 'Rent')
+    );
+    const selectedTags = relevantTags.length > 0
+      ? faker.helpers.arrayElements(relevantTags, { min: 1, max: Math.min(2, relevantTags.length) })
+      : faker.helpers.arrayElements(tags, { min: 1, max: 2 });
+
+    billsToTagsToInsert.push(
+      ...selectedTags.map((tag) => ({
+        billId: id,
+        tagId: tag.id,
+      }))
+    );
+  }
+
+  // Step 2: Process random template bills
+  for (const template of BILL_TEMPLATES) {
     const id = createId();
 
     const frequency = template.frequency;
@@ -520,7 +663,7 @@ function seedBills(
   tx.insert(schema.bills).values(billsToInsert).run();
   tx.insert(schema.billsToTags).values(billsToTagsToInsert).run();
 
-  logger.info({ billCount: billsToInsert.length }, 'Seeded bills');
+  logger.info({ billCount: billsToInsert.length }, 'Seeded bills (scenarios + random)');
   return billsToInsert;
 }
 
@@ -549,13 +692,12 @@ function generateTransactionAmount(baseAmount: number, isVariable: boolean): num
 }
 
 /**
- * Seed historical transactions for bills.
+ * Seed transaction history for bills (deterministic scenarios + random).
  *
- * Generates transaction history to support Forecast View testing:
- * - Variable bills get varying amounts (±20% variance)
- * - Variable bills get at least 3 transactions for AverageLastThreePaymentsStrategy
- * - Generates transactions from previous year for HistoricalMonthStrategy testing
- * - Long-term bills (quarterly, yearly) get sufficient history for amortization testing
+ * Generates transaction patterns:
+ * - Scenario C (Winter Heating/Gas): Exactly 3 transactions: $100, $120, $110
+ * - Other scenario bills: Deterministic history based on frequency
+ * - Random bills: Variable history with realistic patterns
  *
  * @param tx - Database transaction instance
  * @param bills - Array of bill records to generate transactions for
@@ -564,13 +706,89 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
   logger.info('Seeding transactions...');
 
   const transactionsToInsert: typeof schema.transactions.$inferInsert[] = [];
+  const scenarioTitles = new Set(SCENARIO_BILLS.map(s => s.title));
 
   for (const bill of bills) {
     if (bill.id === undefined || bill.dueDate === undefined || bill.amount === undefined) {
       continue;
     }
 
+    const dueDate = bill.dueDate as Date;
     const isVariable = bill.isVariable ?? false;
+    const isScenarioBill = scenarioTitles.has(bill.title);
+
+    // Scenario C: Winter Heating / Gas - specific transaction history
+    if (bill.title === 'Winter Heating / Gas' && isVariable) {
+      // Generate exactly 3 transactions: $100, $120, $110 (most recent first)
+      const specificAmounts = [11000, 12000, 10000]; // $110, $120, $100 in cents
+
+      for (let i = 0; i < specificAmounts.length; i++) {
+        const paidAt = subMonths(dueDate, i + 1); // 1, 2, 3 months before due date
+
+        transactionsToInsert.push({
+          id: createId(),
+          billId: bill.id,
+          amount: specificAmounts[i],
+          paidAt,
+          notes: null,
+          createdAt: paidAt,
+        });
+      }
+      continue;
+    }
+
+    // For scenario bills (except Winter Heating), use deterministic history
+    if (isScenarioBill) {
+      // Determine transaction count based on frequency
+      let count = 0;
+      if (bill.frequency === 'monthly') {
+        count = 3; // 3 months of history
+      } else if (bill.frequency === 'quarterly') {
+        count = 2; // 2 quarters of history (6 months)
+      } else if (bill.frequency === 'yearly') {
+        count = 1; // 1 year of history
+      } else {
+        count = 1; // At least one payment for other frequencies
+      }
+
+      // Generate transactions going backwards from due date
+      for (let j = 0; j < count; j++) {
+        let paidAt: Date;
+        const offset = j + 1; // Always go back from due date
+
+        if (bill.frequency === 'weekly') {
+          paidAt = subDays(dueDate, offset * 7);
+        } else if (bill.frequency === 'biweekly') {
+          paidAt = subDays(dueDate, offset * 14);
+        } else if (bill.frequency === 'twicemonthly') {
+          paidAt = subDays(dueDate, offset * 15);
+        } else if (bill.frequency === 'bimonthly') {
+          paidAt = subMonths(dueDate, offset * 2);
+        } else if (bill.frequency === 'quarterly') {
+          paidAt = subMonths(dueDate, offset * 3);
+        } else if (bill.frequency === 'yearly') {
+          paidAt = subMonths(dueDate, offset * 12);
+        } else {
+          // monthly and once
+          paidAt = subMonths(dueDate, offset);
+        }
+
+        // For scenario bills, use exact amount (they're deterministic)
+        const transactionAmount = bill.amount;
+
+        transactionsToInsert.push({
+          id: createId(),
+          billId: bill.id,
+          amount: transactionAmount,
+          paidAt,
+          notes: null,
+          createdAt: paidAt,
+        });
+      }
+      continue;
+    }
+
+    // For random bills, use the original random generation logic
     let count = 0;
 
     // Determine transaction count based on frequency
@@ -604,19 +822,19 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
       const offset = j + (bill.status === 'paid' ? 0 : 1);
 
       if (bill.frequency === 'weekly') {
-        paidAt = subDays(bill.dueDate as Date, offset * 7);
+        paidAt = subDays(dueDate, offset * 7);
       } else if (bill.frequency === 'biweekly') {
-        paidAt = subDays(bill.dueDate as Date, offset * 14);
+        paidAt = subDays(dueDate, offset * 14);
       } else if (bill.frequency === 'twicemonthly') {
-        paidAt = subDays(bill.dueDate as Date, offset * 15);
+        paidAt = subDays(dueDate, offset * 15);
       } else if (bill.frequency === 'bimonthly') {
-        paidAt = subMonths(bill.dueDate as Date, offset * 2);
+        paidAt = subMonths(dueDate, offset * 2);
       } else if (bill.frequency === 'quarterly') {
-        paidAt = subMonths(bill.dueDate as Date, offset * 3);
+        paidAt = subMonths(dueDate, offset * 3);
       } else if (bill.frequency === 'yearly') {
-        paidAt = subMonths(bill.dueDate as Date, offset * 12);
+        paidAt = subMonths(dueDate, offset * 12);
       } else {
-        paidAt = subMonths(bill.dueDate as Date, offset);
+        paidAt = subMonths(dueDate, offset);
       }
 
       const transactionAmount = generateTransactionAmount(bill.amount, isVariable);
@@ -634,7 +852,6 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     // For variable bills, generate additional transactions from previous year
     // to support HistoricalMonthStrategy testing
     if (isVariable && bill.frequency !== 'once') {
-      const dueDate = bill.dueDate as Date;
       const previousYear = new Date(dueDate);
       previousYear.setFullYear(previousYear.getFullYear() - 1);
 
