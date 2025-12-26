@@ -41,7 +41,7 @@ Clicking calendar days has no effect on the Archive view - the page always shows
 
 ## Filtering archived bills
 
-You can filter archived bills by tag using the tag filter dropdown in the page header. This works the same way as filtering on other bill views: select a tag to see only archived bills that have that tag assigned. This helps when you have many archived bills and want to find specific ones, like all archived utility bills or subscription services.
+You can filter archived bills by tag using the tag filter dropdown in the page header. This works the same way as filtering on other bill views: select a tag to see only archived bills that have that tag assigned. This helps when you have many archived bills and want to find specific ones, like all archived utility bills or subscription services. For details about header controls, see [Page Header](./019-page-header.md).
 
 ## Bill detail panel for archived bills
 

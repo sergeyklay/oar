@@ -8,15 +8,48 @@ import type { PaymentWithBill, Transaction, MonthlyPaymentTotal } from '@/lib/ty
  */
 export const TransactionService = {
   /**
-   * Fetches recent payments within the specified lookback period.
+   * Fetches recent payments within the specified lookback period, optionally filtered by bill tag.
    *
    * @param days - Number of days to look back (0 = today only, 7 = last 7 days)
+   * @param tag - Optional tag slug for filtering
    * @returns Payments with bill information and category icons, ordered by paidAt descending
    */
-  async getRecentPayments(days: number): Promise<PaymentWithBill[]> {
+  async getRecentPayments(days: number, tag?: string): Promise<PaymentWithBill[]> {
     const now = new Date();
     const endDate = endOfDay(now);
     const startDate = days === 0 ? startOfDay(now) : startOfDay(subDays(now, days));
+
+    let billIds: string[] | undefined;
+    if (tag) {
+      const [tagRecord] = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, tag));
+
+      if (!tagRecord) {
+        return [];
+      }
+
+      const billsWithTag = await db
+        .select({ billId: billsToTags.billId })
+        .from(billsToTags)
+        .where(eq(billsToTags.tagId, tagRecord.id));
+
+      billIds = billsWithTag.map((b) => b.billId);
+
+      if (billIds.length === 0) {
+        return [];
+      }
+    }
+
+    const conditions = [
+      gte(transactions.paidAt, startDate),
+      lte(transactions.paidAt, endDate),
+    ];
+
+    if (billIds) {
+      conditions.push(inArray(transactions.billId, billIds));
+    }
 
     const results = await db
       .select({
@@ -30,25 +63,21 @@ export const TransactionService = {
       .from(transactions)
       .innerJoin(bills, eq(transactions.billId, bills.id))
       .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-      .where(
-        and(
-          gte(transactions.paidAt, startDate),
-          lte(transactions.paidAt, endDate)
-        )
-      )
+      .where(and(...conditions))
       .orderBy(desc(transactions.paidAt));
 
     return results;
   },
 
   /**
-   * Fetches all payments made on a specific date.
+   * Fetches all payments made on a specific date, optionally filtered by bill tag.
    *
    * @param date - Date string in YYYY-MM-DD format
+   * @param tag - Optional tag slug for filtering
    * @returns Payments with bill information and category icons, ordered by paidAt descending
    * @throws Error if date string is invalid or cannot be parsed
    */
-  async getPaymentsByDate(date: string): Promise<PaymentWithBill[]> {
+  async getPaymentsByDate(date: string, tag?: string): Promise<PaymentWithBill[]> {
     const dateObj = parse(date, 'yyyy-MM-dd', new Date());
     if (!isValid(dateObj)) {
       throw new Error(`Invalid date format: "${date}". Expected YYYY-MM-DD format.`);
@@ -56,6 +85,38 @@ export const TransactionService = {
     const startDate = startOfDay(dateObj);
     const endDate = endOfDay(dateObj);
 
+    let billIds: string[] | undefined;
+    if (tag) {
+      const [tagRecord] = await db
+        .select({ id: tags.id })
+        .from(tags)
+        .where(eq(tags.slug, tag));
+
+      if (!tagRecord) {
+        return [];
+      }
+
+      const billsWithTag = await db
+        .select({ billId: billsToTags.billId })
+        .from(billsToTags)
+        .where(eq(billsToTags.tagId, tagRecord.id));
+
+      billIds = billsWithTag.map((b) => b.billId);
+
+      if (billIds.length === 0) {
+        return [];
+      }
+    }
+
+    const conditions = [
+      gte(transactions.paidAt, startDate),
+      lte(transactions.paidAt, endDate),
+    ];
+
+    if (billIds) {
+      conditions.push(inArray(transactions.billId, billIds));
+    }
+
     const results = await db
       .select({
         id: transactions.id,
@@ -68,12 +129,7 @@ export const TransactionService = {
       .from(transactions)
       .innerJoin(bills, eq(transactions.billId, bills.id))
       .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-      .where(
-        and(
-          gte(transactions.paidAt, startDate),
-          lte(transactions.paidAt, endDate)
-        )
-      )
+      .where(and(...conditions))
       .orderBy(desc(transactions.paidAt));
 
     return results;

@@ -3,6 +3,8 @@ import { AppShellClient } from '@/components/layout/AppShellClient';
 import { MainContent } from '@/components/layout/MainContent';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCurrencySymbol } from '@/lib/money';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('SettingsPage');
@@ -22,6 +24,13 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
   const { category: categorySlug } = await settingsSearchParamsCache.parse(searchParams);
 
+  const [settings, categoriesGrouped, defaultCategoryId] = await Promise.all([
+    SettingsService.getAll(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
+  ]);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
+
   let structure;
   try {
     structure = await SettingsService.getStructure();
@@ -31,7 +40,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <AppShellClient>
         <AppShell rightPanel={null}>
           <MainContent
-            header={<PageHeader showCreateBill={false} showTagFilter={false} />}
+            header={
+              <PageHeader
+                currencySymbol={currencySymbol}
+                availableTags={[]}
+                categoriesGrouped={categoriesGrouped}
+                defaultCategoryId={defaultCategoryId}
+              />
+            }
           >
             <div className="p-6">
               <p className="text-destructive">
@@ -54,7 +70,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <AppShellClient>
         <AppShell rightPanel={null}>
           <MainContent
-            header={<PageHeader showCreateBill={false} showTagFilter={false} />}
+            header={
+              <PageHeader
+                currencySymbol={currencySymbol}
+                availableTags={[]}
+                categoriesGrouped={categoriesGrouped}
+                defaultCategoryId={defaultCategoryId}
+              />
+            }
           >
             <div className="p-6">
               <p className="text-muted-foreground">
@@ -71,7 +94,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     <AppShellClient>
       <AppShell rightPanel={null}>
         <MainContent
-          header={<PageHeader showCreateBill={false} showTagFilter={false} />}
+          header={
+            <PageHeader
+              currencySymbol={currencySymbol}
+              availableTags={[]}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
+            />
+          }
         >
           <SettingsLayout
             navigation={

@@ -6,6 +6,9 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { PaidRecentlyList } from '@/components/features/payments';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { TransactionService } from '@/lib/services/TransactionService';
+import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 import { getPaymentDatesForMonth } from '@/actions/calendar';
 
@@ -18,16 +21,20 @@ interface PaidRecentlyPageProps {
 export default async function PaidRecentlyPage({
   searchParams,
 }: PaidRecentlyPageProps) {
-  const { date } = await searchParamsCache.parse(searchParams);
+  const { date, tag } = await searchParamsCache.parse(searchParams);
 
-  const [settings, paidRecentlyRange] = await Promise.all([
+  const [settings, paidRecentlyRange, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
     SettingsService.getPaidRecentlyRange(),
+    getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
   ]);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   const payments = date
-    ? await TransactionService.getPaymentsByDate(date)
-    : await TransactionService.getRecentPayments(paidRecentlyRange);
+    ? await TransactionService.getPaymentsByDate(date, tag ?? undefined)
+    : await TransactionService.getRecentPayments(paidRecentlyRange, tag ?? undefined);
 
   return (
     <AppShellClient>
@@ -45,7 +52,12 @@ export default async function PaidRecentlyPage({
       >
         <MainContent
           header={
-            <PageHeader showCreateBill={false} showTagFilter={false} />
+            <PageHeader
+              currencySymbol={currencySymbol}
+              availableTags={tags}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
+            />
           }
         >
           <PaidRecentlyList

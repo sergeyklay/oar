@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 
 export const dynamic = 'force-dynamic';
@@ -19,10 +21,13 @@ export default async function ArchivePage({
 }: ArchivePageProps) {
   const { tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
-  const [settings, tags] = await Promise.all([
+  const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
     getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
   ]);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   return (
     <AppShellClient>
@@ -41,7 +46,12 @@ export default async function ArchivePage({
       >
         <MainContent
           header={
-            <PageHeader showCreateBill={false} showTagFilter={true} tagFilterTags={tags} />
+            <PageHeader
+              currencySymbol={currencySymbol}
+              availableTags={tags}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
+            />
           }
         >
           <BillList

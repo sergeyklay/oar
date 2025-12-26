@@ -17,17 +17,15 @@ The [Overview view](./005-overview-view.md) shows all your bills, optionally fil
 
 **Overview:**
 - Shows all bills by default
-- Includes "Add Bill" button in the header
 - Can filter by specific date using calendar navigation
 
 **Due This Month:**
 - Shows only unpaid bills due in the current month
 - Excludes bills already marked as paid
-- No "Add Bill" button (focused view)
 - Always shows current month (no date navigation)
 - Displays summary stats in sidebar navigation
 
-Both views support tag filtering and show bill details in the right panel when you select a bill.
+Both views share the same header controls, including the Add Bill button and tag filter. Both views show bill details in the right panel when you select a bill. For details about header controls, see [Page Header](./019-page-header.md).
 
 ## Viewing bills due this month
 
@@ -42,7 +40,7 @@ The "(est.)" indicator appears when any unpaid bill in the current month has var
 
 ## Filtering by tag
 
-You can filter the Due This Month view by tag, the same way you filter the Overview. Select a tag from the tag filter dropdown in the page header to see only unpaid bills matching that tag within the current month.
+You can filter the Due This Month view by tag, the same way you filter the Overview. Select a tag from the tag filter dropdown in the page header to see only unpaid bills matching that tag within the current month. For details about tag filtering, see [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) and [Page Header](./019-page-header.md).
 
 The filter combines both conditions: bills must be unpaid, due this month, AND have the selected tag. Clear the tag filter to return to showing all unpaid bills due this month.
 
