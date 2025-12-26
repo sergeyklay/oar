@@ -328,13 +328,27 @@ function generateBillState(
   }
 
   // Generate due dates with higher probability of near-term dates
-  // 30% within 7 days (Due Soon), 30% within 30 days (This Month), 40% further out
-  const dateRange = faker.helpers.arrayElement([
+  // 30% within 7 days (Due Soon), 30% within 30 days (This Month), 20% next 6 months
+  // and 20% further out
+  const dateRanges = [
     { from: now, to: addDays(now, 7) }, // 30% chance: Due Soon range
     { from: addDays(now, 7), to: addDays(now, 30) }, // 30% chance: This month, outside Due Soon
     { from: addDays(now, 30), to: addMonths(now, 6) }, // 20% chance: Next 6 months
     { from: addMonths(now, 6), to: addMonths(now, 24) }, // 20% chance: Further out
-  ]);
+  ];
+  const weights = [30, 30, 20, 20];
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  const randomValue = faker.number.int({ min: 1, max: totalWeight });
+  let cumulativeWeight = 0;
+  let selectedIndex = 0;
+  for (let i = 0; i < weights.length; i++) {
+    cumulativeWeight += weights[i];
+    if (randomValue <= cumulativeWeight) {
+      selectedIndex = i;
+      break;
+    }
+  }
+  const dateRange = dateRanges[selectedIndex];
 
   return {
     status,
