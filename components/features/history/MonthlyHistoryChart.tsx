@@ -1,7 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  type BarRectangleItem,
+} from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
@@ -29,13 +35,16 @@ interface MonthlyHistoryChartProps {
  * Custom bar shape that hides bars with zero values.
  * Returns empty group for zero values, rectangle for non-zero values.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ConditionalBarShape = (props: any) => {
-  const { x, y, width, height, fill, payload, dataKey } = props;
-  const value = payload?.[dataKey as string] ?? 0;
+const ConditionalBarShape = (
+  props: unknown,
+): React.ReactElement<React.SVGProps<SVGPathElement>> => {
+  const barProps = props as BarRectangleItem;
+  const { x, y, width, height, fill, value } = barProps;
+  // Handle both number and tuple values (for stacked bars)
+  const numericValue = Array.isArray(value) ? value[1] : value;
 
   // Don't render bar if value is 0 (no payments in this month)
-  if (value === 0) {
+  if (numericValue === 0) {
     return <g />;
   }
 
