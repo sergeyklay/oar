@@ -129,19 +129,6 @@ describe('ForecastChart', () => {
     expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
   });
 
-  it('always renders both bars (amortization is always visible)', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
-
-    expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
-    expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
-  });
-
   it('renders X-axis with monthLabel dataKey', () => {
     render(
       <ForecastChart
@@ -182,24 +169,6 @@ describe('ForecastChart', () => {
   });
 
   it('includes totalToSave in legend config', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
-
-    const container = screen.getByTestId('chart-container');
-    const config = JSON.parse(container.getAttribute('data-config') || '{}');
-
-    expect(config.totalDue).toBeDefined();
-    expect(config.totalToSave).toBeDefined();
-    expect(config.totalDue.label).toBe('Amount Due');
-    expect(config.totalToSave.label).toBe('Amount to Save');
-  });
-
-  it('always includes totalToSave in legend config', () => {
     render(
       <ForecastChart
         data={mockData}
