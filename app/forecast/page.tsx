@@ -18,8 +18,7 @@ interface ForecastPageProps {
 export default async function ForecastPage({
   searchParams,
 }: ForecastPageProps) {
-  const { month, tag, showAmortization, showEstimates } =
-    await forecastSearchParamsCache.parse(searchParams);
+  const { month, tag } = await forecastSearchParamsCache.parse(searchParams);
 
   const [settings, tags] = await Promise.all([
     SettingsService.getAll(),
@@ -34,8 +33,6 @@ export default async function ForecastPage({
             <ForecastContent
               month={month}
               tag={tag}
-              showAmortization={showAmortization ?? true}
-              showEstimates={showEstimates ?? true}
               currency={settings.currency}
               locale={settings.locale}
             />

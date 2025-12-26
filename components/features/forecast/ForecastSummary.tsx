@@ -1,12 +1,16 @@
+'use client';
+
+import { format, parse } from 'date-fns';
 import { formatMoney } from '@/lib/money';
-import { ForecastService } from '@/lib/services/ForecastService';
-import type { ForecastBill } from '@/lib/services/ForecastService';
+import { MonthNavigation } from './MonthNavigation';
+import type { ForecastSummary as ForecastSummaryType } from '@/lib/services/ForecastService';
 
 interface ForecastSummaryProps {
-  bills: ForecastBill[];
+  billsDueCount: number;
+  summary: ForecastSummaryType;
   currency: string;
   locale: string;
-  showAmortization: boolean;
+  month: string;
 }
 
 /**
@@ -15,20 +19,24 @@ interface ForecastSummaryProps {
  * Summary panel with totals for forecast view.
  * Displays in the right column of the bottom section.
  *
- * Render Mode: Server Component (no hooks, calculates from props)
+ * Render Mode: Client Component (contains MonthNavigation which requires client-side URL state)
  */
 export function ForecastSummary({
-  bills,
+  billsDueCount,
+  summary,
   currency,
   locale,
-  showAmortization,
+  month,
 }: ForecastSummaryProps) {
-  const summary = ForecastService.calculateSummary(bills);
-  const billsDueCount = bills.length;
+  const monthDate = parse(month, 'yyyy-MM', new Date());
+  const monthLabel = format(monthDate, 'MMMM yyyy');
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">Summary</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">{monthLabel}</h2>
+        <MonthNavigation currentMonth={month} />
+      </div>
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Bills Due</span>
@@ -40,14 +48,12 @@ export function ForecastSummary({
             {formatMoney(summary.totalDue, currency, locale)}
           </span>
         </div>
-        {showAmortization && (
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">Total to Save</span>
-            <span className="font-mono text-muted-foreground">
-              {formatMoney(summary.totalToSave, currency, locale)}
-            </span>
-          </div>
-        )}
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground">Total to Save</span>
+          <span className="font-mono text-muted-foreground">
+            {formatMoney(summary.totalToSave, currency, locale)}
+          </span>
+        </div>
         <div className="flex justify-between items-center pt-2 border-t border-border">
           <span className="font-medium">Grand Total</span>
           <span className="font-mono font-bold">

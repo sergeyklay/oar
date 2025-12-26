@@ -19,8 +19,8 @@ jest.mock('./ForecastList', () => ({
 }));
 
 jest.mock('./ForecastSummary', () => ({
-  ForecastSummary: ({ bills }: { bills: ForecastBill[] }) => (
-    <div data-testid="forecast-summary">Summary: {bills.length} bills</div>
+  ForecastSummary: ({ billsDueCount }: { billsDueCount: number }) => (
+    <div data-testid="forecast-summary">Summary: {billsDueCount} bills</div>
   ),
 }));
 
@@ -62,8 +62,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -82,8 +80,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -103,8 +99,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -123,8 +117,6 @@ describe('ForecastContent', () => {
 
     await ForecastContent({
       month: '2026-03',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -144,8 +136,6 @@ describe('ForecastContent', () => {
     await ForecastContent({
       month: '2026-01',
       tag: 'utilities',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -164,8 +154,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -184,8 +172,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: false,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
@@ -196,7 +182,7 @@ describe('ForecastContent', () => {
     expect(screen.getByText('Summary: 0 bills')).toBeInTheDocument();
   });
 
-  it('passes showAmortization prop to ForecastSummary', async () => {
+  it('passes summary data and month prop to ForecastSummary', async () => {
     const bills = [createMockBill('1')];
     (getForecastData as jest.Mock).mockResolvedValue({
       success: true,
@@ -205,8 +191,6 @@ describe('ForecastContent', () => {
 
     const component = await ForecastContent({
       month: '2026-01',
-      showAmortization: true,
-      showEstimates: false,
       currency: 'USD',
       locale: 'en-US',
     });
