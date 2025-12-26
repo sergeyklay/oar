@@ -164,6 +164,62 @@ export async function getBillsFiltered(
   return BillService.getFiltered(options);
 }
 
+/** Validation schema for bill search input. */
+const searchBillsInputSchema = z.object({
+  query: z.string().min(3, 'Query must be at least 3 characters').max(100, 'Query must be 100 characters or less'),
+});
+
+/** Return type for search results. */
+export interface BillSearchResult {
+  id: string;
+  title: string;
+  isArchived: boolean;
+  categoryIcon: string;
+}
+
+/**
+ * Searches bills by title using word-start matching.
+ * Searches both archived and non-archived bills.
+ *
+ * @param input - Search input with query string
+ * @returns ActionResult with array of matching bills (limited to 20 results)
+ */
+export async function searchBills(
+  input: z.infer<typeof searchBillsInputSchema>
+): Promise<ActionResult<BillSearchResult[]>> {
+  const parsed = searchBillsInputSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? 'Invalid search query',
+    };
+  }
+
+  try {
+    const bills = await BillService.searchByTitle(parsed.data.query);
+
+    // Map BillWithTags to BillSearchResult format
+    const results: BillSearchResult[] = bills.map((bill) => ({
+      id: bill.id,
+      title: bill.title,
+      isArchived: bill.isArchived,
+      categoryIcon: bill.categoryIcon,
+    }));
+
+    return {
+      success: true,
+      data: results,
+    };
+  } catch (error) {
+    logger.error(error, 'Failed to search bills');
+    return {
+      success: false,
+      error: 'Failed to search bills. Please try again.',
+    };
+  }
+}
+
 /**
  * Fetches summary statistics for bills due in the current month.
  *

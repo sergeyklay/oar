@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { TextEncoder, TextDecoder } from 'util';
 
 /**
  * Suppress console output during tests for cleaner test output.
@@ -32,3 +33,9 @@ if (!global.PointerEvent) {
     }
   };
 }
+
+/**
+ * Mock TextEncoder/TextDecoder for Next.js server components.
+ */
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
