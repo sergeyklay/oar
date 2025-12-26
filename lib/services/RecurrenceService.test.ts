@@ -204,15 +204,111 @@ describe('RecurrenceService', () => {
       });
     });
 
-    it('handles month-end dates correctly for monthly bills', () => {
-      const currentDate = new Date('2025-01-31');
+    describe('end-of-month clamping for monthly bills', () => {
+      it('uses RRule result when it finds valid occurrence after skipping month', () => {
+        const date = new Date('2025-01-31');
+        date.setHours(14, 30, 45, 123);
 
-      const result = RecurrenceService.calculateNextDueDate(currentDate, 'monthly');
+        const result = RecurrenceService.calculateNextDueDate(date, 'monthly');
 
-      expect(result).not.toBeNull();
-      // rrule skips months without day 31, so Jan 31 -> Mar 31
-      expect(result!.getMonth()).toBe(2); // March (0-indexed)
-      expect(result!.getDate()).toBe(31);
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(2);
+        expect(result!.getDate()).toBe(31);
+        expect(result!.getHours()).toBe(14);
+        expect(result!.getMinutes()).toBe(30);
+        expect(result!.getSeconds()).toBe(45);
+        expect(result!.getMilliseconds()).toBe(0);
+      });
+
+      it('preserves time components when RRule finds valid occurrence', () => {
+        const date = new Date('2025-03-31');
+        date.setHours(8, 45, 20, 100);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'monthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(4);
+        expect(result!.getDate()).toBe(31);
+        expect(result!.getHours()).toBe(8);
+        expect(result!.getMinutes()).toBe(45);
+        expect(result!.getSeconds()).toBe(20);
+        expect(result!.getMilliseconds()).toBe(0);
+      });
+
+      it('handles leap year dates correctly', () => {
+        const date = new Date('2024-01-31');
+        date.setHours(10, 20, 30, 0);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'monthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(2);
+        expect(result!.getDate()).toBe(31);
+        expect(result!.getHours()).toBe(10);
+      });
+
+      it('preserves 30th when next month has 31 days', () => {
+        const date = new Date('2025-04-30');
+        date.setHours(16, 0, 0, 0);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'monthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(4);
+        expect(result!.getDate()).toBe(30);
+      });
+    });
+
+    describe('end-of-month clamping for bimonthly bills', () => {
+      it('calculates next occurrence 2 months later', () => {
+        const date = new Date('2025-01-31');
+        date.setHours(9, 15, 30, 500);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'bimonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(2);
+        expect(result!.getDate()).toBe(31);
+        expect(result!.getHours()).toBe(9);
+      });
+
+      it('preserves time components for bimonthly bills', () => {
+        const date = new Date('2025-02-28');
+        date.setHours(12, 30, 45, 200);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'bimonthly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(3);
+        expect(result!.getDate()).toBe(28);
+        expect(result!.getHours()).toBe(12);
+      });
+    });
+
+    describe('end-of-month clamping for quarterly bills', () => {
+      it('calculates next occurrence 3 months later', () => {
+        const date = new Date('2025-01-31');
+        date.setHours(12, 0, 0, 0);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'quarterly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(6);
+        expect(result!.getDate()).toBe(31);
+        expect(result!.getHours()).toBe(12);
+      });
+
+      it('preserves time components for quarterly bills', () => {
+        const date = new Date('2025-02-15');
+        date.setHours(10, 30, 15, 500);
+
+        const result = RecurrenceService.calculateNextDueDate(date, 'quarterly');
+
+        expect(result).not.toBeNull();
+        expect(result!.getMonth()).toBe(4);
+        expect(result!.getDate()).toBe(15);
+        expect(result!.getHours()).toBe(10);
+      });
     });
 
     it('handles leap year dates for yearly bills', () => {
