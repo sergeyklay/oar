@@ -612,14 +612,25 @@ describe('ForecastService', () => {
       amortizationAmount,
     });
 
+    let getBillsForMonthSpy: jest.SpyInstance;
+
+    afterEach(() => {
+      getBillsForMonthSpy?.mockRestore();
+    });
+
+    const setupSpy = (mockReturn: ForecastBill[]) => {
+      getBillsForMonthSpy = jest
+        .spyOn(ForecastService, 'getBillsForMonth')
+        .mockResolvedValue(mockReturn);
+      return getBillsForMonthSpy;
+    };
+
     it('returns monthly totals for single month', async () => {
       const mockBills = [
         createMockForecastBill('bill-1', 10000, null),
         createMockForecastBill('bill-2', 20000, 5000),
       ];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       const result = await ForecastService.getBillsForMonthRange('2025-03', 1);
 
@@ -631,15 +642,11 @@ describe('ForecastService', () => {
       expect(result[0].grandTotal).toBe(35000);
       expect(getBillsForMonthSpy).toHaveBeenCalledTimes(1);
       expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', undefined);
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('returns monthly totals for 12 months', async () => {
       const mockBills = [createMockForecastBill('bill-1', 10000, null)];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       const result = await ForecastService.getBillsForMonthRange('2025-03', 12);
 
@@ -649,15 +656,11 @@ describe('ForecastService', () => {
       expect(result[11].month).toBe('2026-02');
       expect(result[11].monthLabel).toBe('Feb');
       expect(getBillsForMonthSpy).toHaveBeenCalledTimes(12);
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('returns monthly totals for 24 months', async () => {
       const mockBills = [createMockForecastBill('bill-1', 10000, null)];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       const result = await ForecastService.getBillsForMonthRange('2025-03', 24);
 
@@ -665,28 +668,20 @@ describe('ForecastService', () => {
       expect(result[0].month).toBe('2025-03');
       expect(result[23].month).toBe('2027-02');
       expect(getBillsForMonthSpy).toHaveBeenCalledTimes(24);
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('filters bills by tag when tag is provided', async () => {
       const mockBills = [createMockForecastBill('bill-1', 10000, null)];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       await ForecastService.getBillsForMonthRange('2025-03', 1, 'utilities');
 
       expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', 'utilities');
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('handles year boundary correctly', async () => {
       const mockBills = [createMockForecastBill('bill-1', 10000, null)];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       const result = await ForecastService.getBillsForMonthRange('2025-12', 3);
 
@@ -697,15 +692,11 @@ describe('ForecastService', () => {
       expect(result[1].monthLabel).toBe('Jan');
       expect(result[2].month).toBe('2026-02');
       expect(result[2].monthLabel).toBe('Feb');
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('formats month labels correctly', async () => {
       const mockBills = [createMockForecastBill('bill-1', 10000, null)];
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue(mockBills);
+      setupSpy(mockBills);
 
       const result = await ForecastService.getBillsForMonthRange('2025-01', 12);
 
@@ -723,17 +714,11 @@ describe('ForecastService', () => {
         'Nov',
         'Dec',
       ];
-      result.forEach((month, index) => {
-        expect(month.monthLabel).toBe(expectedLabels[index]);
-      });
-
-      getBillsForMonthSpy.mockRestore();
+      expect(result.map((month) => month.monthLabel)).toEqual(expectedLabels);
     });
 
     it('handles empty bills array for a month', async () => {
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
-        .mockResolvedValue([]);
+      setupSpy([]);
 
       const result = await ForecastService.getBillsForMonthRange('2025-03', 1);
 
@@ -741,13 +726,11 @@ describe('ForecastService', () => {
       expect(result[0].totalDue).toBe(0);
       expect(result[0].totalToSave).toBe(0);
       expect(result[0].grandTotal).toBe(0);
-
-      getBillsForMonthSpy.mockRestore();
     });
 
     it('calculates totals correctly for each month', async () => {
-      const getBillsForMonthSpy = jest
-        .spyOn(ForecastService, 'getBillsForMonth')
+      getBillsForMonthSpy = jest.spyOn(ForecastService, 'getBillsForMonth');
+      getBillsForMonthSpy
         .mockResolvedValueOnce([createMockForecastBill('bill-1', 10000, 2000)])
         .mockResolvedValueOnce([createMockForecastBill('bill-2', 20000, null)]);
 
@@ -760,8 +743,6 @@ describe('ForecastService', () => {
       expect(result[1].totalDue).toBe(20000);
       expect(result[1].totalToSave).toBe(0);
       expect(result[1].grandTotal).toBe(20000);
-
-      getBillsForMonthSpy.mockRestore();
     });
   });
 });
