@@ -31,11 +31,7 @@ This means you can forecast any month, even years in the future, without the dat
 
 ## Viewing forecast data
 
-Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page opens showing the current month by default. The header contains two controls:
-
-**Tag Filter.** Select a tag from the dropdown to filter bills. Only bills with the selected tag that have occurrences in the chosen month will appear. This works the same as tag filtering in other views. Clear the filter to see all bills.
-
-**Sidebar Toggle.** Click to hide the left navigation sidebar and expand the forecast chart and content.
+Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page opens showing the current month by default. The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls and their behavior, see [Page Header](./019-page-header.md).
 
 Month navigation happens in the summary panel on the right side of the page. The panel header displays the current month and year (for example, "January 2026") with navigation arrows on the right. Click the left arrow to move to the previous month, or the right arrow to move to the next month. The URL updates immediately with `?month=YYYY-MM`, and the page refreshes to show projected bills for the new month. You can navigate to past months to review what should have been due, or future months to plan ahead.
 

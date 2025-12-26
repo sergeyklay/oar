@@ -76,5 +76,5 @@ The dropdown closes when you click outside the search component, press the Escap
 * [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Archive View](./013-archive-view.md) - Viewing and managing archived bills
 * [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Hiding the Sidebar](./015-hiding-the-sidebar.md) - Temporarily hide the sidebar to get more space for your bill table
+* [Page Header](./019-page-header.md) - Common header controls available on all pages
 

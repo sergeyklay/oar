@@ -15,7 +15,7 @@ This aligns with the "Active Payer" philosophy by making your past payment decis
 
 Navigate to the Monthly History View by clicking "Monthly History" in the sidebar under the Reports section. The page opens showing the current month by default. The layout matches the Forecast View: a chart at the top, a payments table below, and a summary panel on the right side.
 
-The header contains two controls:
+The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls, see [Page Header](./019-page-header.md). Month navigation and other view-specific controls:
 
 **Tag Filter.** Select a tag from the dropdown to filter payments. Only payments for bills with the selected tag appear in both the chart and the table. This lets you analyze spending patterns for specific categories, like seeing how much you spent on utilities versus subscriptions in a given month. Clear the filter to see all payments.
 

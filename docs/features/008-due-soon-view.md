@@ -76,7 +76,7 @@ For example, if today is December 21 and your range is 7:
 
 ## Filtering by tag
 
-You can filter the Due Soon view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within your configured range.
+You can filter the Due Soon view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within your configured range. For details about header controls, see [Page Header](./019-page-header.md).
 
 The filter combines both conditions: bills must be unpaid, within the range, and have the selected tag.
 

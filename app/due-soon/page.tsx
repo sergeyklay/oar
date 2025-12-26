@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 
 export const dynamic = 'force-dynamic';
@@ -19,11 +21,14 @@ export default async function DueSoonPage({
 }: DueSoonPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
-  const [settings, dueSoonRange, tags] = await Promise.all([
+  const [settings, dueSoonRange, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
     SettingsService.getDueSoonRange(),
     getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
   ]);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   return (
     <AppShellClient>
@@ -39,7 +44,12 @@ export default async function DueSoonPage({
       >
         <MainContent
           header={
-            <PageHeader showCreateBill={false} showTagFilter={true} tagFilterTags={tags} />
+            <PageHeader
+              currencySymbol={currencySymbol}
+              availableTags={tags}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
+            />
           }
         >
           <BillList

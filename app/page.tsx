@@ -46,15 +46,10 @@ export default async function DashboardPage({
         <MainContent
           header={
             <PageHeader
-              showCreateBill={true}
-              showTagFilter={true}
-              createBillProps={{
-                currencySymbol,
-                availableTags: tags,
-                categoriesGrouped,
-                defaultCategoryId,
-              }}
-              tagFilterTags={tags}
+              currencySymbol={currencySymbol}
+              availableTags={tags}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
             />
         }
         >

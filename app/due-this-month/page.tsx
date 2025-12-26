@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { BillList } from '@/components/features/bills';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getTags } from '@/actions/tags';
+import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 import { format } from 'date-fns';
 
@@ -20,10 +22,13 @@ export default async function DueThisMonthPage({
 }: DueThisMonthPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
-  const [settings, tags] = await Promise.all([
+  const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
     getTags(),
+    getCategoriesGrouped(),
+    getDefaultCategoryId(),
   ]);
+  const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
   const currentMonth = format(new Date(), 'yyyy-MM');
 
   return (
@@ -40,7 +45,12 @@ export default async function DueThisMonthPage({
       >
         <MainContent
           header={
-            <PageHeader showCreateBill={false} showTagFilter={true} tagFilterTags={tags} />
+            <PageHeader
+              currencySymbol={currencySymbol}
+              availableTags={tags}
+              categoriesGrouped={categoriesGrouped}
+              defaultCategoryId={defaultCategoryId}
+            />
           }
         >
           <BillList
