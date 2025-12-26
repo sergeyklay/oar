@@ -3,7 +3,8 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
 import { getLogger } from '@/lib/logger';
-import { addMonths, endOfMonth, getDate, setDate } from 'date-fns';
+import { addMonths, getDate, endOfMonth } from 'date-fns';
+import { clampToEndOfMonth } from '@/lib/utils';
 
 const logger = getLogger('RecurrenceService');
 
@@ -97,19 +98,10 @@ export const RecurrenceService = {
       else if (frequency === 'quarterly') monthsToAdd = 3;
 
       const nextMonthDate = addMonths(currentDueDate, monthsToAdd);
-      const nextMonthEnd = endOfMonth(nextMonthDate);
-      const nextMonthLastDay = getDate(nextMonthEnd);
-
-      // Clamp to the last day of the next month if the original due day doesn't exist
-      const clampedDay = Math.min(originalDueDay, nextMonthLastDay);
-      nextDueDate = setDate(nextMonthDate, clampedDay);
-
-      // Preserve the original time components
-      nextDueDate.setHours(
-        currentDueDate.getHours(),
-        currentDueDate.getMinutes(),
-        currentDueDate.getSeconds(),
-        currentDueDate.getMilliseconds()
+      nextDueDate = clampToEndOfMonth(
+        nextMonthDate,
+        originalDueDay,
+        currentDueDate
       );
     } else if (nextUtc) {
       // Convert back from UTC components to local date
@@ -122,15 +114,25 @@ export const RecurrenceService = {
         nextUtc.getUTCSeconds()
       );
 
-      // Apply end-of-month clamping if needed
+      // Debug assertion: RRule skips invalid dates, so if nextUtc exists,
+      // the date is already valid. This assertion catches any future changes
+      // that might break this assumption.
       if (needsEndOfMonthClamping) {
         const nextMonthEnd = endOfMonth(nextDueDate);
         const nextMonthLastDay = getDate(nextMonthEnd);
         const projectedDay = getDate(nextDueDate);
 
-        // If the projected day exceeds the next month's last day, clamp it
         if (projectedDay > nextMonthLastDay) {
-          nextDueDate = setDate(nextDueDate, nextMonthLastDay);
+          logger.error(
+            {
+              currentDueDate: currentDueDate.toISOString(),
+              frequency,
+              nextDueDate: nextDueDate.toISOString(),
+              projectedDay,
+              nextMonthLastDay,
+            },
+            'RRule returned invalid date - this should never happen'
+          );
         }
       }
     } else {

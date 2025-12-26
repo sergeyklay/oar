@@ -11,8 +11,8 @@ import {
   addMonths,
   format,
   getDate,
-  setDate,
 } from 'date-fns';
+import { clampToEndOfMonth } from '@/lib/utils';
 import { RRule, Frequency } from 'rrule';
 
 /**
@@ -267,14 +267,12 @@ function projectOccurrenceInMonth(
     }
 
     if (shouldOccur) {
-      // Calculate the target month's last day
-      const targetMonthLastDay = getDate(targetMonthEnd);
-
-      // Clamp to the last day of the target month if the original due day doesn't exist
-      const clampedDay = Math.min(originalDueDay, targetMonthLastDay);
-
-      // Create the occurrence date in the target month
-      const clampedDate = setDate(targetMonthStart, clampedDay);
+      // Create the occurrence date in the target month with end-of-month clamping
+      const clampedDate = clampToEndOfMonth(
+        targetMonthStart,
+        originalDueDay,
+        bill.dueDate
+      );
 
       // Verify the clamped date is within the target month bounds
       if (
@@ -283,13 +281,6 @@ function projectOccurrenceInMonth(
           end: targetMonthEnd,
         })
       ) {
-        // Preserve the original time components
-        clampedDate.setHours(
-          bill.dueDate.getHours(),
-          bill.dueDate.getMinutes(),
-          bill.dueDate.getSeconds(),
-          bill.dueDate.getMilliseconds()
-        );
         return clampedDate;
       }
     }

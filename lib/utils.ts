@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { format } from 'date-fns';
+import { format, endOfMonth, getDate, setDate } from 'date-fns';
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -40,4 +40,43 @@ export function generateSlug(name: string): string {
  */
 export function getCurrentMonth(): string {
   return format(new Date(), 'yyyy-MM');
+}
+
+/**
+ * Clamps a date to the end of month if the original due day doesn't exist.
+ *
+ * For bills due on the 29th, 30th, or 31st, this ensures they map to the last
+ * valid day of shorter months (e.g., Jan 31 -> Feb 28/29, Apr 30).
+ *
+ * @param targetMonthStart - Start of the target month to clamp to
+ * @param originalDueDay - The original due day (1-31)
+ * @param originalTime - Date to preserve time components from (hours, minutes, seconds)
+ * @returns Date clamped to the target month with preserved time components
+ *
+ * @example
+ * // Bill due on Jan 31, projecting to February
+ * clampToEndOfMonth(new Date(2025, 1, 1), 31, new Date(2025, 0, 31))
+ * // Returns: Feb 28, 2025 (or Feb 29 in leap years)
+ */
+export function clampToEndOfMonth(
+  targetMonthStart: Date,
+  originalDueDay: number,
+  originalTime: Date
+): Date {
+  const targetMonthEnd = endOfMonth(targetMonthStart);
+  const targetMonthLastDay = getDate(targetMonthEnd);
+
+  // Clamp to the last day of the target month if the original due day doesn't exist
+  const clampedDay = Math.min(originalDueDay, targetMonthLastDay);
+  const clampedDate = setDate(targetMonthStart, clampedDay);
+
+  // Preserve the original time components
+  clampedDate.setHours(
+    originalTime.getHours(),
+    originalTime.getMinutes(),
+    originalTime.getSeconds(),
+    originalTime.getMilliseconds()
+  );
+
+  return clampedDate;
 }
