@@ -96,7 +96,7 @@ const ChartContainer = React.forwardRef<
   }
 >(({ id, className, children, config, ...props }, ref) => {
   const uniqueId = React.useId();
-  const chartId = `chart-${id || uniqueId.replace(/:/g, '')}`;
+  const chartId = `chart-${escapeCssIdentifier(id || uniqueId)}`;
 
   return (
     <div
@@ -136,8 +136,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  // Escape id to prevent CSS injection
-  const escapedId = escapeCssIdentifier(id);
+  // We can use id directly since it's already escaped
+  const escapedId = id;
 
   return (
     <style
