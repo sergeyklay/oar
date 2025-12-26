@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
 import { getLogger } from '@/lib/logger';
+import { addMonths, endOfMonth, getDate, setDate } from 'date-fns';
 
 const logger = getLogger('RecurrenceService');
 
@@ -77,17 +78,64 @@ export const RecurrenceService = {
     const occurrences = rule.all();
 
     const nextUtc = occurrences[1];
-    if (!nextUtc) return null;
 
-    // Convert back from UTC components to local date
-    const nextDueDate = new Date(
-      nextUtc.getUTCFullYear(),
-      nextUtc.getUTCMonth(),
-      nextUtc.getUTCDate(),
-      nextUtc.getUTCHours(),
-      nextUtc.getUTCMinutes(),
-      nextUtc.getUTCSeconds()
-    );
+    // Handle end-of-month clamping for monthly frequencies with dates 29-31
+    // RRule will skip months where the day doesn't exist, so we handle this case specially
+    const originalDueDay = currentDueDate.getDate();
+    const needsEndOfMonthClamping =
+      (frequency === 'monthly' ||
+        frequency === 'bimonthly' ||
+        frequency === 'quarterly') &&
+      originalDueDay >= 29;
+
+    let nextDueDate: Date | null = null;
+
+    if (needsEndOfMonthClamping && (!nextUtc || occurrences.length < 2)) {
+      // Manually calculate the next occurrence with end-of-month clamping
+      let monthsToAdd = 1;
+      if (frequency === 'bimonthly') monthsToAdd = 2;
+      else if (frequency === 'quarterly') monthsToAdd = 3;
+
+      const nextMonthDate = addMonths(currentDueDate, monthsToAdd);
+      const nextMonthEnd = endOfMonth(nextMonthDate);
+      const nextMonthLastDay = getDate(nextMonthEnd);
+
+      // Clamp to the last day of the next month if the original due day doesn't exist
+      const clampedDay = Math.min(originalDueDay, nextMonthLastDay);
+      nextDueDate = setDate(nextMonthDate, clampedDay);
+
+      // Preserve the original time components
+      nextDueDate.setHours(
+        currentDueDate.getHours(),
+        currentDueDate.getMinutes(),
+        currentDueDate.getSeconds(),
+        currentDueDate.getMilliseconds()
+      );
+    } else if (nextUtc) {
+      // Convert back from UTC components to local date
+      nextDueDate = new Date(
+        nextUtc.getUTCFullYear(),
+        nextUtc.getUTCMonth(),
+        nextUtc.getUTCDate(),
+        nextUtc.getUTCHours(),
+        nextUtc.getUTCMinutes(),
+        nextUtc.getUTCSeconds()
+      );
+
+      // Apply end-of-month clamping if needed
+      if (needsEndOfMonthClamping) {
+        const nextMonthEnd = endOfMonth(nextDueDate);
+        const nextMonthLastDay = getDate(nextMonthEnd);
+        const projectedDay = getDate(nextDueDate);
+
+        // If the projected day exceeds the next month's last day, clamp it
+        if (projectedDay > nextMonthLastDay) {
+          nextDueDate = setDate(nextDueDate, nextMonthLastDay);
+        }
+      }
+    } else {
+      return null;
+    }
 
     // Check if next due date exceeds end date
     if (endDate && nextDueDate > endDate) {
