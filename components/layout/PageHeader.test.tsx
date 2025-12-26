@@ -171,5 +171,44 @@ describe('PageHeader', () => {
     const tagFilterWrapper = container.querySelector('.ml-4');
     expect(tagFilterWrapper).toBeInTheDocument();
   });
+
+  it('renders BillSearch by default when showSearch is not specified', () => {
+    render(<PageHeader />);
+
+    expect(screen.getByTestId('bill-search')).toBeInTheDocument();
+  });
+
+  it('renders BillSearch when showSearch is true', () => {
+    render(<PageHeader showSearch={true} />);
+
+    expect(screen.getByTestId('bill-search')).toBeInTheDocument();
+  });
+
+  it('does not render BillSearch when showSearch is false', () => {
+    render(<PageHeader showSearch={false} />);
+
+    expect(screen.queryByTestId('bill-search')).not.toBeInTheDocument();
+  });
+
+  it('renders BillSearch when all components are enabled', () => {
+    render(
+      <PageHeader
+        showCreateBill={true}
+        showTagFilter={true}
+        showSearch={true}
+        createBillProps={{
+          currencySymbol: '$',
+          categoriesGrouped: mockCategoriesGrouped,
+          defaultCategoryId: null,
+        }}
+        tagFilterTags={mockTags}
+      />
+    );
+
+    expect(screen.getByTestId('sidebar-toggle')).toBeInTheDocument();
+    expect(screen.getByTestId('add-bill-button')).toBeInTheDocument();
+    expect(screen.getByTestId('tag-filter')).toBeInTheDocument();
+    expect(screen.getByTestId('bill-search')).toBeInTheDocument();
+  });
 });
 

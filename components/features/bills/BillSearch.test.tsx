@@ -313,7 +313,9 @@ describe('BillSearch', () => {
       const input = screen.getByPlaceholderText('Search') as HTMLInputElement;
       await user.type(input, 'electric');
 
-      jest.advanceTimersByTime(400);
+      await act(async () => {
+        jest.advanceTimersByTime(400);
+      });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });
       await user.click(resultButton);
