@@ -352,10 +352,20 @@ describe('ChartContainer', () => {
       </ChartContainer>
     );
 
+    const wrapper = container.firstChild as HTMLElement;
+    const dataChartAttr = wrapper.getAttribute('data-chart');
     const styleElement = container.querySelector('style');
-    expect(styleElement?.textContent).toContain('[data-chart="chart-chartid"]');
+    const cssContent = styleElement?.textContent || '';
+
     expect(styleElement?.textContent).toContain('--color-series1:');
     expect(styleElement?.textContent).not.toContain('series:1');
+
+    const selectorMatch = cssContent.match(/\[data-chart="([^"]+)"\]/);
+    expect(selectorMatch).toBeTruthy();
+    const cssSelectorValue = selectorMatch?.[1];
+
+    expect(dataChartAttr).toBe(cssSelectorValue);
+    expect(dataChartAttr).toBe('chart-chartid');
   });
 
   it('sanitizes color values in generated CSS', () => {
