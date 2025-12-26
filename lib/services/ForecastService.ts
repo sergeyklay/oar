@@ -10,6 +10,8 @@ import {
   isWithinInterval,
   addMonths,
   format,
+  getDate,
+  setDate,
 } from 'date-fns';
 import { RRule, Frequency } from 'rrule';
 
@@ -235,7 +237,65 @@ function projectOccurrenceInMonth(
     )
   );
 
-  // Find occurrences between target month bounds
+  // For monthly/bimonthly/quarterly bills with due dates on 29th-31st,
+  // manually calculate occurrences with end-of-month clamping.
+  // RRule will skip months where the day doesn't exist, so we handle this case specially.
+  const originalDueDay = getDate(bill.dueDate);
+  const needsEndOfMonthClamping =
+    (bill.frequency === 'monthly' ||
+      bill.frequency === 'bimonthly' ||
+      bill.frequency === 'quarterly') &&
+    originalDueDay >= 29;
+
+  if (needsEndOfMonthClamping) {
+    // Calculate how many months from the original due date to the target month
+    const monthsDiff =
+      (targetMonthStart.getFullYear() - bill.dueDate.getFullYear()) * 12 +
+      (targetMonthStart.getMonth() - bill.dueDate.getMonth());
+
+    // Determine if the bill should occur in the target month based on frequency
+    // For monthly: every month (monthsDiff > 0)
+    // For bimonthly: every 2 months (monthsDiff > 0 && monthsDiff % 2 === 0)
+    // For quarterly: every 3 months (monthsDiff > 0 && monthsDiff % 3 === 0)
+    let shouldOccur = false;
+    if (bill.frequency === 'monthly') {
+      shouldOccur = monthsDiff > 0;
+    } else if (bill.frequency === 'bimonthly') {
+      shouldOccur = monthsDiff > 0 && monthsDiff % 2 === 0;
+    } else if (bill.frequency === 'quarterly') {
+      shouldOccur = monthsDiff > 0 && monthsDiff % 3 === 0;
+    }
+
+    if (shouldOccur) {
+      // Calculate the target month's last day
+      const targetMonthLastDay = getDate(targetMonthEnd);
+
+      // Clamp to the last day of the target month if the original due day doesn't exist
+      const clampedDay = Math.min(originalDueDay, targetMonthLastDay);
+
+      // Create the occurrence date in the target month
+      const clampedDate = setDate(targetMonthStart, clampedDay);
+
+      // Verify the clamped date is within the target month bounds
+      if (
+        isWithinInterval(clampedDate, {
+          start: targetMonthStart,
+          end: targetMonthEnd,
+        })
+      ) {
+        // Preserve the original time components
+        clampedDate.setHours(
+          bill.dueDate.getHours(),
+          bill.dueDate.getMinutes(),
+          bill.dueDate.getSeconds(),
+          bill.dueDate.getMilliseconds()
+        );
+        return clampedDate;
+      }
+    }
+  }
+
+  // For other cases, use RRule
   const occurrences = rule.between(targetStartUtc, targetEndUtc, true);
 
   if (occurrences.length === 0) {

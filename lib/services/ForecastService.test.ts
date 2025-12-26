@@ -474,6 +474,56 @@ describe('ForecastService', () => {
         }
       );
     });
+
+    it('projects monthly bill due on 31st to last day of shorter months', async () => {
+      const mockBills: BillWithTags[] = [
+        createMockBill({
+          dueDate: new Date('2025-01-31'),
+          frequency: 'monthly' as const,
+        }),
+      ];
+      createDbMock(mockBills);
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+        new Map([['bill-1', []]])
+      );
+
+      // February (28 days) - should clamp to Feb 28
+      const febResult = await ForecastService.getBillsForMonth('2025-02');
+      expect(febResult).toHaveLength(1);
+      expect(febResult[0].dueDate.getMonth()).toBe(1); // February (0-indexed)
+      expect(febResult[0].dueDate.getDate()).toBe(28);
+
+      // April (30 days) - should clamp to Apr 30
+      const aprResult = await ForecastService.getBillsForMonth('2025-04');
+      expect(aprResult).toHaveLength(1);
+      expect(aprResult[0].dueDate.getMonth()).toBe(3); // April (0-indexed)
+      expect(aprResult[0].dueDate.getDate()).toBe(30);
+
+      // March (31 days) - should use original day (31st)
+      const marResult = await ForecastService.getBillsForMonth('2025-03');
+      expect(marResult).toHaveLength(1);
+      expect(marResult[0].dueDate.getMonth()).toBe(2); // March (0-indexed)
+      expect(marResult[0].dueDate.getDate()).toBe(31);
+    });
+
+    it('projects quarterly bill due on 31st to last day of shorter months', async () => {
+      const mockBills: BillWithTags[] = [
+        createMockBill({
+          dueDate: new Date('2025-01-31'),
+          frequency: 'quarterly' as const,
+        }),
+      ];
+      createDbMock(mockBills);
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+        new Map([['bill-1', []]])
+      );
+
+      // April (3 months later, 30 days) - should clamp to Apr 30
+      const aprResult = await ForecastService.getBillsForMonth('2025-04');
+      expect(aprResult).toHaveLength(1);
+      expect(aprResult[0].dueDate.getMonth()).toBe(3); // April (0-indexed)
+      expect(aprResult[0].dueDate.getDate()).toBe(30);
+    });
   });
 
   describe('calculateSummary', () => {
