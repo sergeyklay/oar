@@ -51,7 +51,7 @@ This two-bar grouping helps you distinguish between immediate payments and savin
 
 Tag filtering affects the chart just like it affects the bill list. When you select a tag, the chart recalculates totals using only bills with that tag. The bars adjust to reflect the filtered amounts, making it easy to see how a specific category of bills (like utilities or subscriptions) varies across months.
 
-The X-axis shows abbreviated month names (Jan, Feb, Mar, etc.) for easy scanning. Hovering over any bar reveals a tooltip with formatted currency values for both the "Amount Due" and "Amount to Save" amounts, using your configured currency and locale settings. The tooltip shows the exact same totals you'd see if you navigated to that month's detailed view.
+The X-axis shows abbreviated month names (Jan, Feb, Mar, etc.) for easy scanning. Hovering over any bar reveals a tooltip with formatted currency values for both the "Amount Due" and "Amount to Save" amounts, using your configured currency and locale settings. The tooltip shows the same totals you'd see if you navigated to that month's detailed view.
 
 The chart updates automatically when you change the selected month. The 12-month window shifts forward or backward to always start from your current selection. If you're viewing January 2026 and switch to June 2026, the chart now shows June 2026 through May 2027, keeping you focused on the planning horizon ahead of your selected month.
 
