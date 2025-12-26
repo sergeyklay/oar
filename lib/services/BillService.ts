@@ -285,21 +285,14 @@ export const BillService = {
       return [];
     }
 
-    // Build SQL LIKE conditions for each word (word-start matching)
-    // Each word must match: title starts with word OR title contains ' word'
-    // Use parameterized sql template for case-insensitive matching (prevents SQL injection)
-    // Drizzle automatically parameterizes ${} interpolations, preventing SQL injection
     const wordConditions = words.map((word) => {
       const startPattern = `${word}%`;
       const containsPattern = `% ${word}%`;
-      // Use sql template with parameterized pattern values (safe from SQL injection)
       return sql`(LOWER(${bills.title}) LIKE ${startPattern} OR LOWER(${bills.title}) LIKE ${containsPattern})`;
     });
 
-    // Combine word conditions with AND (all words must match)
     const titleCondition = and(...wordConditions);
 
-    // Query bills table with no isArchived filter (include both archived and non-archived)
     const billsWithCategories = await db
       .select({
         bill: bills,
