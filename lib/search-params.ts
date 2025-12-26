@@ -1,5 +1,5 @@
-import { createSearchParamsCache, parseAsString } from 'nuqs/server';
-import { format } from 'date-fns';
+import { createSearchParamsCache, parseAsString, createParser } from 'nuqs/server';
+import { format, parse, isValid } from 'date-fns';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 
 /**
@@ -8,6 +8,41 @@ import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
 function getCurrentMonth(): string {
   return format(new Date(), 'yyyy-MM');
 }
+
+/**
+ * Validates and parses a month string in YYYY-MM format.
+ *
+ * Returns null for invalid format or invalid dates, which triggers the default value.
+ * Strict validation ensures exactly YYYY-MM format (e.g., "2026-01", not "2026-1").
+ */
+export const parseAsMonth = createParser({
+  parse(queryValue: string): string | null {
+    if (typeof queryValue !== 'string') {
+      return null;
+    }
+
+    const monthRegex = /^\d{4}-\d{2}$/;
+    if (!monthRegex.test(queryValue)) {
+      return null;
+    }
+
+    const parsedDate = parse(queryValue, 'yyyy-MM', new Date());
+    if (!isValid(parsedDate)) {
+      return null;
+    }
+
+    const [, month] = queryValue.split('-');
+    const monthNum = parseInt(month, 10);
+    if (monthNum < 1 || monthNum > 12) {
+      return null;
+    }
+
+    return queryValue;
+  },
+  serialize(value: string): string {
+    return value;
+  },
+});
 
 /**
  * Calendar and filter URL search params schema.
@@ -50,7 +85,7 @@ export const settingsSearchParamsCache = createSearchParamsCache(settingsSearchP
  * - tag: Filter by tag slug (optional)
  */
 export const forecastSearchParams = {
-  month: parseAsString.withDefault(getCurrentMonth()),
+  month: parseAsMonth.withDefault(getCurrentMonth()),
   tag: parseAsString,
 };
 

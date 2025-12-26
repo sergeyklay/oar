@@ -1,6 +1,6 @@
 'use client';
 
-import { format, parse } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 import { formatMoney } from '@/lib/money';
 import { MonthNavigation } from './MonthNavigation';
 import type { ForecastSummary as ForecastSummaryType } from '@/lib/services/ForecastService';
@@ -11,6 +11,13 @@ interface ForecastSummaryProps {
   currency: string;
   locale: string;
   month: string;
+}
+
+/**
+ * Returns current month in YYYY-MM format.
+ */
+function getCurrentMonth(): string {
+  return format(new Date(), 'yyyy-MM');
 }
 
 /**
@@ -29,13 +36,15 @@ export function ForecastSummary({
   month,
 }: ForecastSummaryProps) {
   const monthDate = parse(month, 'yyyy-MM', new Date());
-  const monthLabel = format(monthDate, 'MMMM yyyy');
+  const validMonth = isValid(monthDate) ? month : getCurrentMonth();
+  const validMonthDate = isValid(monthDate) ? monthDate : parse(validMonth, 'yyyy-MM', new Date());
+  const monthLabel = format(validMonthDate, 'MMMM yyyy');
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">{monthLabel}</h2>
-        <MonthNavigation currentMonth={month} />
+        <MonthNavigation currentMonth={validMonth} />
       </div>
       <div className="flex flex-col gap-3">
         <div className="flex justify-between items-center">
