@@ -260,7 +260,7 @@ describe('RecurrenceService', () => {
     });
 
     describe('RRule behavior for bimonthly bills with end-of-month dates', () => {
-      it('skips months without the target day (Jan 31 -> March 31)', () => {
+      it('calculates next occurrence 2 months later for 31st day bills', () => {
         const date = new Date('2025-01-31');
         date.setHours(9, 15, 30, 500);
 
