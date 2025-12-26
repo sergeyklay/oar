@@ -10,9 +10,9 @@ interface PageHeaderProps {
   /** All available tags for the AddBillButton and TagFilter */
   availableTags?: Tag[];
   /** Category groups with nested categories for AddBillButton */
-  categoriesGrouped: BillCategoryGroupWithCategories[];
+  categoriesGrouped?: BillCategoryGroupWithCategories[];
   /** Default category ID for AddBillButton */
-  defaultCategoryId: string | null;
+  defaultCategoryId?: string | null;
 }
 
 /**
@@ -46,7 +46,7 @@ export function PageHeader({
             currencySymbol={currencySymbol}
             availableTags={availableTags}
             categoriesGrouped={categoriesGrouped}
-            defaultCategoryId={defaultCategoryId}
+            defaultCategoryId={defaultCategoryId ?? null}
           />
         </div>
       )}
