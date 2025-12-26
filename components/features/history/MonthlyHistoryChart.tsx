@@ -26,6 +26,34 @@ interface MonthlyHistoryChartProps {
 }
 
 /**
+ * Custom bar shape that hides bars with zero values.
+ * Returns empty group for zero values, rectangle for non-zero values.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ConditionalBarShape = (props: any) => {
+  const { x, y, width, height, fill, payload, dataKey } = props;
+  const value = payload?.[dataKey as string] ?? 0;
+
+  // Don't render bar if value is 0 (no payments in this month)
+  if (value === 0) {
+    return <g />;
+  }
+
+  // Render rectangle for non-zero values
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={fill}
+      rx={4}
+      ry={4}
+    />
+  );
+};
+
+/**
  * MonthlyHistoryChart
  *
  * Client Component that renders a bar chart visualizing monthly payment history.
@@ -124,11 +152,13 @@ export function MonthlyHistoryChart({
             dataKey="currentYear"
             fill="var(--color-currentYear)"
             radius={4}
+            shape={ConditionalBarShape}
           />
           <Bar
             dataKey="lastYear"
             fill="var(--color-lastYear)"
             radius={4}
+            shape={ConditionalBarShape}
           />
         </BarChart>
       </ChartContainer>

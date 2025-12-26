@@ -1,4 +1,4 @@
-import { parse, subYears, format } from 'date-fns';
+import { parse, subYears, format, subMonths } from 'date-fns';
 import { MonthlyHistoryChart } from './MonthlyHistoryChart';
 import { getMonthlyHistoryChartData } from '@/actions/history';
 
@@ -27,48 +27,86 @@ export async function MonthlyHistoryGraph({
   currency,
   locale,
 }: MonthlyHistoryGraphProps) {
-  const currentYearResult = await getMonthlyHistoryChartData({
-    startMonth: month,
+  const monthDate = parse(month, 'yyyy-MM', new Date());
+  const startMonthDate = subMonths(monthDate, 11);
+  const calculatedStartMonth = format(startMonthDate, 'yyyy-MM');
+
+  // Fetch 12 months of data ending at selected month
+  const allMonthsResult = await getMonthlyHistoryChartData({
+    startMonth: calculatedStartMonth,
     months: 12,
     tag: tag ?? undefined,
   });
 
-  if (!currentYearResult.success) {
+  if (!allMonthsResult.success) {
     return (
       <div className="flex items-center justify-center h-64 bg-card border border-border">
         <p className="text-muted-foreground">
-          {currentYearResult.error ?? 'Failed to load chart data'}
+          {allMonthsResult.error ?? 'Failed to load chart data'}
         </p>
       </div>
     );
   }
 
-  const monthDate = parse(month, 'yyyy-MM', new Date());
+  // Fetch corresponding 12 months from previous year
   const previousYearDate = subYears(monthDate, 1);
-  const previousYearMonth = format(previousYearDate, 'yyyy-MM');
+  const previousYearStartMonthDate = subMonths(previousYearDate, 11);
+  const previousYearStartMonth = format(previousYearStartMonthDate, 'yyyy-MM');
 
   const lastYearResult = await getMonthlyHistoryChartData({
-    startMonth: previousYearMonth,
+    startMonth: previousYearStartMonth,
     months: 12,
     tag: tag ?? undefined,
   });
 
-  const currentYearData = currentYearResult.data ?? [];
+  const allMonthsData = allMonthsResult.data ?? [];
   const lastYearData = lastYearResult.success ? (lastYearResult.data ?? []) : [];
 
-  // Align data by index position (both arrays should have 12 months in same order)
-  // Current year: Dec 2025, Jan 2026, Feb 2026, ..., Nov 2026
-  // Last year: Dec 2024, Jan 2025, Feb 2025, ..., Nov 2025
-  // The service returns all 12 months, so we can safely align by index
-  const mergedData = currentYearData.map((currentItem, index) => {
-    const lastYearItem = lastYearData[index];
-    return {
-      month: currentItem.month,
-      monthLabel: currentItem.monthLabel,
-      currentYear: currentItem.totalPaid,
-      lastYear: lastYearItem?.totalPaid ?? 0,
-    };
-  });
+  // Create maps for quick lookup by month string (YYYY-MM)
+  // Only include months with actual payments (totalPaid > 0)
+  const allMonthsMap = new Map(
+    allMonthsData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid])
+  );
+  const lastYearMap = new Map(
+    lastYearData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid])
+  );
+
+  // Build merged data: always show 12 months ending at selected month
+  // For each month, compare it to the same month one year earlier (year-over-year)
+  // Recharts will not render bars for zero values, so months with no payments won't show bars
+  const mergedData: Array<{
+    month: string;
+    monthLabel: string;
+    currentYear: number;
+    lastYear: number;
+  }> = [];
+
+  for (let i = 0; i < 12; i++) {
+    const monthToCheck = subMonths(monthDate, 11 - i);
+    const monthStr = format(monthToCheck, 'yyyy-MM');
+    const monthLabel = format(monthToCheck, 'MMM');
+
+    // Get data for this month (the "current period" - the 12 months ending at selected month)
+    // Only get from map if month has payments (map only contains months with totalPaid > 0)
+    // If month has no payments, currentYearAmount will be 0 (no blue bar rendered)
+    const currentYearAmount = allMonthsMap.get(monthStr) ?? 0;
+
+    // Get corresponding month from previous year for year-over-year comparison
+    // If previous year month has no payments, lastYearAmount will be 0 (no gray bar rendered)
+    const previousYearMonth = subYears(monthToCheck, 1);
+    const previousYearMonthStr = format(previousYearMonth, 'yyyy-MM');
+    const lastYearAmount = lastYearMap.get(previousYearMonthStr) ?? 0;
+
+    // Always include all 12 months - Recharts won't render bars for zero values
+    mergedData.push({
+      month: monthStr,
+      monthLabel,
+      currentYear: currentYearAmount,
+      lastYear: lastYearAmount,
+    });
+  }
+
+  // Array is already in correct order: oldest month (left) to selected month (right)
 
   if (mergedData.length === 0) {
     return (

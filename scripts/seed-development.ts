@@ -765,7 +765,6 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
       continue;
     }
 
-    const dueDate = bill.dueDate as Date;
     const isVariable = bill.isVariable ?? false;
     const isScenarioBill = scenarioTitles.has(bill.title);
 
@@ -991,25 +990,26 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
         count = 1;
       }
 
-      // Generate transactions going backwards from due date
+      // Generate transactions going backwards from now (current date)
+      // This ensures all transactions are in the past, regardless of due date
       for (let j = 0; j < count; j++) {
         let paidAt: Date;
-        const offset = j + (bill.status === 'paid' ? 0 : 1);
+        const offset = j + 1; // Start from 1 to ensure all dates are in the past
 
         if (bill.frequency === 'weekly') {
-          paidAt = subDays(dueDate, offset * 7);
+          paidAt = subDays(now, offset * 7);
         } else if (bill.frequency === 'biweekly') {
-          paidAt = subDays(dueDate, offset * 14);
+          paidAt = subDays(now, offset * 14);
         } else if (bill.frequency === 'twicemonthly') {
-          paidAt = subDays(dueDate, offset * 15);
+          paidAt = subDays(now, offset * 15);
         } else if (bill.frequency === 'bimonthly') {
-          paidAt = subMonths(dueDate, offset * 2);
+          paidAt = subMonths(now, offset * 2);
         } else if (bill.frequency === 'quarterly') {
-          paidAt = subMonths(dueDate, offset * 3);
+          paidAt = subMonths(now, offset * 3);
         } else if (bill.frequency === 'yearly') {
-          paidAt = subMonths(dueDate, offset * 12);
+          paidAt = subMonths(now, offset * 12);
         } else {
-          paidAt = subMonths(dueDate, offset);
+          paidAt = subMonths(now, offset);
         }
 
         const transactionAmount = generateTransactionAmount(bill.amount, isVariable);
@@ -1027,7 +1027,7 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
       // For yearly bills, also generate previous year transaction for YoY comparison
       // Only add if count === 1 to avoid duplicates (when count >= 2, loop already generates it)
       if (bill.frequency === 'yearly' && count === 1) {
-        const previousYearPaidAt = subMonths(dueDate, 12 + (bill.status === 'paid' ? 0 : 1));
+        const previousYearPaidAt = subMonths(now, 24); // 2 years ago
         const previousYearAmount = generateTransactionAmount(bill.amount, isVariable);
 
         transactionsToInsert.push({
@@ -1042,12 +1042,24 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     }
   }
 
-  if (transactionsToInsert.length > 0) {
-    tx.insert(schema.transactions).values(transactionsToInsert).run();
+  // Safety check: filter out any future dates (should not happen, but ensures data integrity)
+  const nowForFilter = new Date();
+  const validTransactions = transactionsToInsert.filter((tx) => tx.paidAt <= nowForFilter);
+
+  if (validTransactions.length !== transactionsToInsert.length) {
+    const filteredCount = transactionsToInsert.length - validTransactions.length;
+    logger.warn(
+      { filteredCount, totalCount: transactionsToInsert.length },
+      'Filtered out future-dated transactions'
+    );
+  }
+
+  if (validTransactions.length > 0) {
+    tx.insert(schema.transactions).values(validTransactions).run();
   }
 
   logger.info(
-    { transactionCount: transactionsToInsert.length },
+    { transactionCount: validTransactions.length },
     'Seeded transactions'
   );
 }
