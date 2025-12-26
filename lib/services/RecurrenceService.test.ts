@@ -286,7 +286,7 @@ describe('RecurrenceService', () => {
     });
 
     describe('end-of-month clamping for quarterly bills', () => {
-      it('calculates next occurrence 3 months later', () => {
+      it('uses RRule result when skipping months without the target day', () => {
         const date = new Date('2025-01-31');
         date.setHours(12, 0, 0, 0);
 
