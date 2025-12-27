@@ -118,12 +118,12 @@ const CATEGORY_SEED_DATA = [
 ];
 
 /**
- * Realistic bill amount ranges in minor units (cents) based on 2024 averages.
+ * Bill amount ranges in minor units (cents).
  *
- * Values are organized by category slug for easy lookup.
- * Ranges allow for realistic variation while maintaining test predictability.
+ * Typical values are based on 2024 averages. Ranges allow for realistic variation while
+ * maintaining test predictability. Values are organized by category slug for easy lookup.
  */
-const REALISTIC_BILL_AMOUNTS: Record<string, { min: number; max: number; typical?: number }> = {
+const BILL_AMOUNTS: Record<string, { min: number; max: number; typical?: number }> = {
   'home-mortgage-rent': { min: 140000, max: 250000, typical: 163200 }, // $1,400-$2,500 (avg $1,632)
   'electric-utilities': { min: 10000, max: 18000, typical: 14226 }, // $100-$180 (avg $142.26)
   'gas': { min: 3500, max: 20000, typical: 11000 }, // $35-$200 (avg $110, variable)
@@ -270,7 +270,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
  */
 const BILL_TEMPLATES = [
   { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 1500, max: 3000 } },
-  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 500, max: 5000 } },
+  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 1000, max: 3000 } },
   { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 2000, max: 3000 } },
   { title: 'Apple iCloud', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 300, max: 1000 } },
   { title: 'Coursera', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 5000, max: 6000 } },
@@ -710,19 +710,29 @@ function seedBills(
 
     // Generate unique bill title
     let billTitle: string;
+    let fallbackCounter = 0;
     let titleAttempts = 0;
     do {
-      billTitle = `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`;
+      const billPrefix = faker.finance.accountName();
+      const billSuffix = faker.helpers.arrayElement([
+        'Bill',
+        'Payment',
+        'Expense',
+        'Invoice',
+        'Subscription',
+      ]);
+
+      billTitle = `${billPrefix} ${billSuffix}`;
       titleAttempts++;
       if (titleAttempts > 50) {
         // Fallback to include timestamp if too many attempts
-        billTitle = `${billTitle} ${Date.now()}`;
+        billTitle = `${billTitle} ${++fallbackCounter}`;
         break;
       }
     } while (usedBillTitles.has(billTitle));
 
     // Use realistic amount based on category slug, or fallback range
-    const amountRange = REALISTIC_BILL_AMOUNTS[category.slug];
+    const amountRange = BILL_AMOUNTS[category.slug];
     let amount: number;
     if (amountRange) {
       amount = faker.number.int({ min: amountRange.min, max: amountRange.max });
