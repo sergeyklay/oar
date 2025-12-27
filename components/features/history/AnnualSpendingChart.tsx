@@ -57,7 +57,8 @@ export function AnnualSpendingChart({
   ];
 
   chartData.forEach((item, index) => {
-    chartConfig[item.billId] = {
+    const escapedBillId = item.billId.replace(/[^a-zA-Z0-9-_]/g, '');
+    chartConfig[escapedBillId] = {
       label: item.name,
       color: chartColors[index % chartColors.length],
     };
