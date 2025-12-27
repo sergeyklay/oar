@@ -1,6 +1,6 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths, startOfYear, endOfYear } from 'date-fns';
 import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 
 /**
@@ -345,9 +345,9 @@ export const TransactionService = {
       return [];
     }
 
-    const yearStart = parse(`${year}-01-01`, 'yyyy-MM-dd', new Date());
-    const yearEnd = parse(`${year}-12-31`, 'yyyy-MM-dd', new Date());
-    const yearEndDay = endOfDay(yearEnd);
+    const yearDate = parse(`${year}-06-15`, 'yyyy-MM-dd', new Date());
+    const yearStart = startOfYear(yearDate);
+    const yearEndDay = endOfYear(yearDate);
 
     const results = await db
       .select({
