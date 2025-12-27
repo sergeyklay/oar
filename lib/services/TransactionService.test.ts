@@ -1,7 +1,7 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills, tags } from '@/db';
 import type { PaymentWithBill, Transaction } from '@/lib/types';
-import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -835,9 +835,8 @@ describe('TransactionService', () => {
 
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
-      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
-      const expectedNextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
-      const expectedYearEnd = new Date(expectedNextYearStart.getTime() - 1);
+      const expectedYearStart = parseISO('2024-12-31T10:00:00.000Z');
+      const expectedYearEnd = parseISO('2026-01-01T11:59:59.999Z');
 
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
       expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedYearEnd);
@@ -965,8 +964,8 @@ describe('TransactionService', () => {
       expect(builder.orderBy).toHaveBeenCalledWith(transactions.billId);
     });
 
-    it('includes payment at exact year start boundary (Dec 31, 23:00:00 UTC)', async () => {
-      const yearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+    it('includes payment at exact year start boundary (Dec 31, 10:00:00 UTC for UTC+14)', async () => {
+      const yearStart = parseISO('2024-12-31T10:00:00.000Z');
       const mockResults: YearAggregationResult[] = [
         { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
       ];
@@ -978,9 +977,8 @@ describe('TransactionService', () => {
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
     });
 
-    it('includes payment at exact year end boundary (Dec 31, 23:59:59.999 UTC)', async () => {
-      const nextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
-      const yearEnd = new Date(nextYearStart.getTime() - 1);
+    it('includes payment at exact year end boundary (Jan 1, 11:59:59.999 UTC next year for UTC-12)', async () => {
+      const yearEnd = parseISO('2026-01-01T11:59:59.999Z');
       const mockResults: YearAggregationResult[] = [
         { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
       ];
@@ -993,7 +991,7 @@ describe('TransactionService', () => {
     });
 
     it('includes payments logged at midnight in UTC+1 timezone (stored as previous day in UTC)', async () => {
-      const paymentAtMidnightUTCPlus1 = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const paymentAtMidnightUTCPlus1 = parseISO('2024-12-31T23:00:00.000Z');
       const mockResults: YearAggregationResult[] = [
         { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
       ];
@@ -1002,7 +1000,7 @@ describe('TransactionService', () => {
 
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
-      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const expectedYearStart = parseISO('2024-12-31T10:00:00.000Z');
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
       expect(paymentAtMidnightUTCPlus1.getTime()).toBeGreaterThanOrEqual(expectedYearStart.getTime());
     });
@@ -1012,9 +1010,8 @@ describe('TransactionService', () => {
 
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
-      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
-      const expectedNextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
-      const expectedYearEnd = new Date(expectedNextYearStart.getTime() - 1);
+      const expectedYearStart = parseISO('2024-12-31T10:00:00.000Z');
+      const expectedYearEnd = parseISO('2026-01-01T11:59:59.999Z');
 
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
       expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedYearEnd);
@@ -1022,8 +1019,9 @@ describe('TransactionService', () => {
       const yearStartTimestamp = expectedYearStart.getTime();
       const yearEndTimestamp = expectedYearEnd.getTime();
 
-      expect(yearStartTimestamp).toBe(1735686000000);
-      expect(yearEndTimestamp).toBe(1767225599999);
+      // Verify timestamps match expected values for UTC+14 (earliest) and UTC-12 (latest)
+      expect(yearStartTimestamp).toBe(1735639200000); // 2024-12-31T10:00:00.000Z
+      expect(yearEndTimestamp).toBe(1767268799999);   // 2026-01-01T11:59:59.999Z
     });
 
     it('includes yearly boundary payments for a bill with monthly payments spanning the year', async () => {
@@ -1040,6 +1038,113 @@ describe('TransactionService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].paymentCount).toBe(3);
       expect(result[0].totalAmount).toBe(300000);
+    });
+
+    describe('timezone offset coverage (UTC+14 to UTC-12)', () => {
+      const yearStart = parseISO('2024-12-31T10:00:00.000Z');
+      const yearEnd = parseISO('2026-01-01T11:59:59.999Z');
+
+      it('includes payment from UTC+14 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (14 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2024-12-31T10:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC+12 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (12 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2024-12-31T12:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC+7 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (7 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2024-12-31T17:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC+2 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (2 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2024-12-31T22:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC+1 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (1 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2024-12-31T23:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC+0 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2025-01-01T00:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC-5 logged on Jan 1, 2025 at midnight local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (-5 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2025-01-01T05:00:00.000Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('includes payment from UTC-12 logged on Dec 31, 2025 at 23:59:59 local time', async () => {
+        const paymentUtcTimestamp = Date.UTC(2025, 11, 31, 23, 59, 59, 999) - (-12 * 60 * 60 * 1000);
+        const paymentDate = new Date(paymentUtcTimestamp);
+
+        expect(paymentDate.toISOString()).toBe('2026-01-01T11:59:59.999Z');
+        expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+        expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+      });
+
+      it('verifies query boundaries include all timezone offsets from UTC+14 to UTC-12', async () => {
+        createYearQueryBuilder([]);
+
+        await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, yearEnd);
+
+        const timezoneOffsets: Array<{ offset: number; year: number; month: number; day: number; hour: number; minute: number; second: number; millisecond: number }> = [
+          { offset: 14, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: 12, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: 7, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: 2, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: 1, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: 0, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: -5, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
+          { offset: -12, year: 2025, month: 11, day: 31, hour: 23, minute: 59, second: 59, millisecond: 999 },
+        ];
+
+        timezoneOffsets.forEach(({ offset, year, month, day, hour, minute, second, millisecond }) => {
+          const paymentUtcTimestamp = Date.UTC(year, month, day, hour, minute, second, millisecond) - (offset * 60 * 60 * 1000);
+          const paymentDate = new Date(paymentUtcTimestamp);
+          const isWithinBounds = paymentDate.getTime() >= yearStart.getTime() && paymentDate.getTime() <= yearEnd.getTime();
+
+          expect(isWithinBounds).toBe(true);
+          expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+          expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+        });
+      });
     });
   });
 });

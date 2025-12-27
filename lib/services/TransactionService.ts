@@ -1,6 +1,6 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths, parseISO } from 'date-fns';
 import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 
 /**
@@ -345,18 +345,25 @@ export const TransactionService = {
       return [];
     }
 
-    // Use explicit UTC date construction to ensure consistent behavior
-    // regardless of server timezone.
+    // All dates are stored in UTC in the database (per codebase guidelines), which is the
+    // correct approach for consistent behavior regardless of server timezone.
     //
-    // To include all payments logged within the calendar year regardless of timezone,
-    // we need to account for payments logged at midnight in timezones ahead of UTC.
-    // A payment logged on Jan 1, 2025 at 00:00:00 in UTC+1 is stored as 2024-12-31T23:00:00.000Z.
-    // So we start from Dec 31, 23:00:00 UTC of the previous year to include these.
-    // This covers timezones up to UTC+1 (most common case).
-    const yearStart = new Date(Date.UTC(yearNum - 1, 11, 31, 23, 0, 0, 0));
-    // End at the last millisecond of Dec 31 in the target year (UTC)
-    const nextYearStart = new Date(Date.UTC(yearNum + 1, 0, 1, 0, 0, 0, 0));
-    const yearEnd = new Date(nextYearStart.getTime() - 1);
+    // When querying for payments within a calendar year, we need to account for the fact that
+    // a payment logged on "Jan 1, 2025" in the user's local timezone may be stored with a UTC
+    // timestamp from Dec 31, 2024 (for timezones ahead of UTC). Similarly, a payment logged
+    // on "Dec 31, 2025" may be stored with a UTC timestamp from Jan 1, 2026 (for timezones
+    // behind UTC).
+    //
+    // To include all payments logged within the calendar year regardless of user timezone,
+    // we extend the query boundaries to cover the maximum possible timezone offsets:
+    // - UTC+14 (Line Islands, Kiribati): Jan 1, 2025 00:00:00 local = 2024-12-31T10:00:00.000Z
+    // - UTC-12 (Baker Island, Howland Island): Dec 31, 2025 23:59:59 local = 2026-01-01T11:59:59.999Z
+    //
+    // This is an intentional design decision, not a workaround. Storing in UTC and querying
+    // with UTC boundaries that account for timezone offsets is the standard approach for
+    // calendar-based queries when timezone information is not stored with each record.
+    const yearStart = parseISO(`${yearNum - 1}-12-31T10:00:00.000Z`);
+    const yearEnd = parseISO(`${yearNum + 1}-01-01T11:59:59.999Z`);
 
     const results = await db
       .select({
