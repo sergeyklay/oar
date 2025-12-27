@@ -33,11 +33,25 @@ export function AnnualSpendingChart({
   highlightedBillId,
   onBillClick,
 }: AnnualSpendingChartProps) {
-  const chartData = data.map((bill) => ({
-    name: bill.billTitle,
-    value: bill.totalAmount,
-    billId: bill.billId,
-  }));
+  const chartData = data.map((bill) => {
+    const escapedBillId = bill.billId.replace(/[^a-zA-Z0-9-_]/g, '');
+    return {
+      name: bill.billTitle,
+      value: bill.totalAmount,
+      billId: bill.billId,
+      escapedBillId,
+    };
+  });
+
+  const escapedIds = chartData.map((item) => item.escapedBillId);
+  const duplicateIds = escapedIds.filter(
+    (id, index) => escapedIds.indexOf(id) !== index
+  );
+  if (duplicateIds.length > 0) {
+    throw new Error(
+      `Chart config collision: Multiple billIds escape to the same value: ${duplicateIds.join(', ')}`
+    );
+  }
 
   const chartConfig: ChartConfig = {};
 
@@ -57,8 +71,7 @@ export function AnnualSpendingChart({
   ];
 
   chartData.forEach((item, index) => {
-    const escapedBillId = item.billId.replace(/[^a-zA-Z0-9-_]/g, '');
-    chartConfig[escapedBillId] = {
+    chartConfig[item.escapedBillId] = {
       label: item.name,
       color: chartColors[index % chartColors.length],
     };
@@ -91,10 +104,9 @@ export function AnnualSpendingChart({
           >
             {chartData.map((entry) => {
               const isHighlighted = entry.billId === highlightedBillId;
-              const escapedBillId = entry.billId.replace(/[^a-zA-Z0-9-_]/g, '');
               const fillColor = isHighlighted
                 ? 'hsl(var(--primary))'
-                : `var(--color-${escapedBillId})`;
+                : `var(--color-${entry.escapedBillId})`;
 
               return (
                 <Cell
