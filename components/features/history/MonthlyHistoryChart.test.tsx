@@ -283,7 +283,7 @@ describe('MonthlyHistoryChart', () => {
     const dimensionAttr = container.getAttribute('data-initial-dimension');
     const initialDimension = dimensionAttr ? JSON.parse(dimensionAttr) : null;
 
-    expect(initialDimension).toEqual({ width: 800, height: 200 });
+    expect(initialDimension).toEqual({ width: 800, height: 400 });
   });
 });
 
