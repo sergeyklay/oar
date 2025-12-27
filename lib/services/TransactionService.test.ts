@@ -2,7 +2,7 @@ import { TransactionService } from './TransactionService';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import type { PaymentWithBill, Transaction } from '@/lib/types';
-import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -836,11 +836,12 @@ describe('TransactionService', () => {
 
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
-      const yearStart = parse('2025-01-01', 'yyyy-MM-dd', new Date());
-      const yearEnd = parse('2025-12-31', 'yyyy-MM-dd', new Date());
+      const yearDate = parse('2025-06-15', 'yyyy-MM-dd', new Date());
+      const yearStart = startOfYear(yearDate);
+      const yearEndDay = endOfYear(yearDate);
 
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
-      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(yearEnd));
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, yearEndDay);
       expect(mockAnd).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'gte' }),
         expect.objectContaining({ type: 'lte' })
