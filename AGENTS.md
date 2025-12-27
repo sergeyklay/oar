@@ -197,14 +197,6 @@ User clicks filter
 > - Conversion: Only at UI boundary via `lib/money.ts`
 > - NEVER use `float`, `double`, or `Decimal` for money
 
-### Date & Time Handling
-
-- **Strict Rule:** NEVER use `date-fns`'s `format()` function directly inside JSX/TSX return statements. This causes hydration mismatches (Server UTC vs Client Local).
-- **Solution:** Always use the `<ClientDate />` component for displaying dates.
-  - ✅ Correct: `<ClientDate date={bill.dueDate} format="dd MMM" />`
-  - ❌ Wrong: `<span>{format(bill.dueDate, 'dd MMM')}</span>`
-- **Inputs:** Pass the raw date (string or number from DB) directly to the component. Do not instantiate `new Date()` in Server Components.
-
 ### React Server Components First
 
 - **Default:** Every component is a Server Component unless proven otherwise.
@@ -232,7 +224,12 @@ User clicks filter
 
 - **Storage:** Timestamps in milliseconds (`timestamp_ms` mode in Drizzle)
 - **Library:** `date-fns` for all date manipulation
-- **Timezone:** Normalize to user's local timezone at display, store in UTC
+- **Timezone:** Store in UTC, normalize to user's local timezone at display
+- **Rendering Rule:** NEVER use `date-fns`'s `format()` directly in JSX/TSX return statements. This causes hydration mismatches (Server UTC vs Client Local).
+- **Solution:** Always use the `<ClientDate />` component for displaying dates.
+  - ✅ Correct: `<ClientDate date={bill.dueDate} format="dd MMM" />`
+  - ❌ Wrong: `<span>{format(bill.dueDate, 'dd MMM')}</span>`
+- **Server Components:** Pass raw date values (string or number) to ClientDate. Do not instantiate `new Date()` in Server Components.
 
 ---
 
@@ -346,7 +343,6 @@ When encountering legacy or inconsistent code:
 > Leave code *you touched* cleaner than you found it. Leave code *you didn't touch* alone.
 
 ---
-
-Last Updated: 2025-12-23
+Last Updated: 2025-12-27
 
 Maintained by: AI Agents under human supervision
