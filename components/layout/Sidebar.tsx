@@ -97,6 +97,7 @@ const billsNavItems: NavItem[] = [
 const reportsNavItems: NavItem[] = [
   { href: '/forecast', icon: TrendingUp, label: 'Forecast' },
   { href: '/monthly-history', icon: History, label: 'Monthly History' },
+  { href: '/annual-spending', icon: History, label: 'Annual Spending' },
   { href: '/archive', icon: Archive, label: 'Archive', showStats: true, statsType: 'archived' },
 ];
 

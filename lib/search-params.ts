@@ -1,7 +1,7 @@
 import { createSearchParamsCache, parseAsString, createParser } from 'nuqs/server';
 import { parse, isValid } from 'date-fns';
 import { DEFAULT_SETTINGS_CATEGORY } from '@/lib/constants';
-import { getCurrentMonth } from '@/lib/utils';
+import { getCurrentMonth, getCurrentYear } from '@/lib/utils';
 
 /**
  * Validates and parses a month string in YYYY-MM format.
@@ -103,3 +103,46 @@ export const historySearchParams = {
  * Server-side cache for reading monthly history page search params in RSC.
  */
 export const historySearchParamsCache = createSearchParamsCache(historySearchParams);
+
+/**
+ * Validates and parses a year string in YYYY format.
+ *
+ * Returns null for invalid format or invalid dates, which triggers the default value.
+ * Strict validation ensures exactly YYYY format (e.g., "2026", not "26").
+ */
+export const parseAsYear = createParser({
+  parse(queryValue: string): string | null {
+    if (typeof queryValue !== 'string') {
+      return null;
+    }
+
+    const yearRegex = /^\d{4}$/;
+    if (!yearRegex.test(queryValue)) {
+      return null;
+    }
+
+    const yearNum = parseInt(queryValue, 10);
+    if (isNaN(yearNum) || yearNum < 1000 || yearNum > 9999) {
+      return null;
+    }
+
+    return queryValue;
+  },
+  serialize(value: string): string {
+    return value;
+  },
+});
+
+/**
+ * Annual Spending view URL search params schema.
+ *
+ * - year: Selected year (YYYY, defaults to current year)
+ */
+export const annualSpendingSearchParams = {
+  year: parseAsYear.withDefault(getCurrentYear()),
+};
+
+/**
+ * Server-side cache for reading annual spending page search params in RSC.
+ */
+export const annualSpendingSearchParamsCache = createSearchParamsCache(annualSpendingSearchParams);

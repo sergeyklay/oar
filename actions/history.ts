@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import type { ActionResult, PaymentWithBill, MonthlyPaymentTotal } from '@/lib/types';
+import type { ActionResult, PaymentWithBill, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { getLogger } from '@/lib/logger';
 
@@ -22,6 +22,13 @@ const historyRangeQuerySchema = z.object({
   startMonth: z.string().regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format'),
   months: z.number().int().min(1).max(24).default(12),
   tag: z.string().optional(),
+});
+
+/**
+ * Zod schema for annual spending query parameters
+ */
+const annualSpendingQuerySchema = z.object({
+  year: z.string().regex(/^\d{4}$/, 'Year must be in YYYY format'),
 });
 
 /**
@@ -91,6 +98,40 @@ export async function getMonthlyHistoryChartData(
     return {
       success: false,
       error: 'Failed to fetch chart data',
+    };
+  }
+}
+
+/**
+ * Fetches annual spending data aggregated by bill.
+ *
+ * @param input - Query parameters (year)
+ * @returns Aggregated bill spending data with payment counts, totals, and averages
+ */
+export async function getAnnualSpendingData(
+  input: z.infer<typeof annualSpendingQuerySchema>
+): Promise<ActionResult<AggregatedBillSpending[]>> {
+  const parsed = annualSpendingQuerySchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Invalid annual spending query parameters',
+    };
+  }
+
+  try {
+    const aggregatedData = await TransactionService.getPaymentsByYearAggregatedByBill(
+      parsed.data.year
+    );
+    return {
+      success: true,
+      data: aggregatedData,
+    };
+  } catch (error) {
+    logger.error(error, 'Failed to fetch annual spending data');
+    return {
+      success: false,
+      error: 'Failed to fetch annual spending data',
     };
   }
 }

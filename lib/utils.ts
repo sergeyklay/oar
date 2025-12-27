@@ -46,6 +46,19 @@ export function getCurrentMonth(): string {
 }
 
 /**
+ * Returns current year in YYYY format.
+ *
+ * Thin wrapper around format(new Date(), 'yyyy') for consistency across
+ * the codebase. Used for URL state defaults and year handling.
+ *
+ * @example
+ * getCurrentYear() // "2026"
+ */
+export function getCurrentYear(): string {
+  return format(new Date(), 'yyyy');
+}
+
+/**
  * Clamps a date to the end of month if the original due day doesn't exist.
  *
  * For bills due on the 29th, 30th, or 31st, this ensures they map to the last

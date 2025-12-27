@@ -1,12 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
 /**
- * MonthlyHistorySkeleton
+ * AnnualSpendingSkeleton
  *
- * Loading skeleton for monthly history view while data is being fetched.
- * Matches the layout structure of MonthlyHistoryContent.
+ * Loading skeleton for annual spending view while data is being fetched.
+ * Matches the layout structure of AnnualSpendingContent.
  */
-export function MonthlyHistorySkeleton() {
+export function AnnualSpendingSkeleton() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0">
@@ -36,6 +36,10 @@ export function MonthlyHistorySkeleton() {
               </div>
               <div className="flex justify-between items-center">
                 <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="flex justify-between items-center">
+                <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-4 w-24" />
               </div>
             </div>

@@ -56,8 +56,8 @@ const ConditionalBarShape = (
       width={width}
       height={height}
       fill={fill}
-      rx={4}
-      ry={4}
+      rx={8}
+      ry={8}
     />
   );
 };
@@ -87,18 +87,18 @@ export function MonthlyHistoryChart({
   };
 
   return (
-    <div className="relative h-[200px] w-full">
+    <div className="relative h-[400px] w-full">
       <ChartContainer
         config={chartConfig}
         className="h-full w-full"
-        initialDimension={{ width: 800, height: 200 }}
+        initialDimension={{ width: 800, height: 400 }}
       >
         <BarChart accessibilityLayer data={data}>
           <CartesianGrid vertical={false} />
           <XAxis
             dataKey="monthLabel"
             tickLine={false}
-            tickMargin={10}
+            tickMargin={20}
             axisLine={false}
             className="text-muted-foreground"
           />
@@ -157,20 +157,20 @@ export function MonthlyHistoryChart({
                 />
               );
             }}
-            wrapperStyle={{ paddingTop: '12px', paddingBottom: '0' }}
+            wrapperStyle={{ paddingTop: '24px', paddingBottom: '0' }}
             align="left"
             verticalAlign="top"
           />
           <Bar
             dataKey="currentYear"
             fill="var(--color-currentYear)"
-            radius={4}
+            radius={8}
             shape={ConditionalBarShape}
           />
           <Bar
             dataKey="lastYear"
             fill="var(--color-lastYear)"
-            radius={4}
+            radius={8}
             shape={ConditionalBarShape}
           />
         </BarChart>
