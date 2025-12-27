@@ -92,19 +92,15 @@ describe('PaymentHistorySection', () => {
       (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...defaultProps} />);
 
-      await waitFor(() => {
-        const subtitle = screen.getAllByText((content, element) => {
-          const text = element?.textContent || '';
-          const className = typeof element?.className === 'string' ? element.className : element?.getAttribute('class') || '';
-          const hasClass = className.includes('text-xs') && className.includes('text-muted-foreground');
-          return hasClass && text.includes('Last Paid') && text.includes('$164.20') && text.includes('on');
-        })[0];
-        expect(subtitle).toBeInTheDocument();
-      }, { timeout: 3000 });
+      const button = await screen.findByRole('button', { name: /view payment history/i });
 
       await waitFor(() => {
-        expect(screen.getByText('Fri, Jun 20')).toBeInTheDocument();
-      }, { timeout: 3000 });
+        expect(button).toHaveTextContent('Last Paid');
+        expect(button).toHaveTextContent('$164.20');
+        expect(button).toHaveTextContent('on');
+      });
+
+      expect(await screen.findByText('Fri, Jun 20')).toBeInTheDocument();
     });
 
     it('calls onExpandChange(true) when clicked', async () => {
@@ -238,20 +234,15 @@ describe('PaymentHistorySection', () => {
 
       rerender(<PaymentHistorySection {...defaultProps} refreshKey={1} />);
 
-      await waitFor(() => {
-        const subtitle = screen.getAllByText((content, element) => {
-          const text = element?.textContent || '';
-          const className = typeof element?.className === 'string' ? element.className : element?.getAttribute('class') || '';
-          const hasClass = className.includes('text-xs') && className.includes('text-muted-foreground');
-          return hasClass && text.includes('Last Paid') && text.includes('$50.00') && text.includes('on');
-        })[0];
-        expect(subtitle).toBeInTheDocument();
-      }, { timeout: 3000 });
+      const button = await screen.findByRole('button', { name: /view payment history/i });
 
       await waitFor(() => {
-        expect(screen.getByText('Tue, Jul 15')).toBeInTheDocument();
-      }, { timeout: 3000 });
+        expect(button).toHaveTextContent('Last Paid');
+        expect(button).toHaveTextContent('$50.00');
+        expect(button).toHaveTextContent('on');
+      });
 
+      expect(await screen.findByText('Tue, Jul 15')).toBeInTheDocument();
       expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
     });
   });
