@@ -315,7 +315,7 @@ describe('AnnualSpendingInteractive', () => {
       const summary = screen.getByTestId('annual-spending-summary');
 
       const listParent = list.parentElement;
-      const summaryParent = summary.parentElement;
+      const summaryParent = summary.parentElement?.parentElement;
 
       expect(listParent?.parentElement).toHaveClass('grid');
       expect(summaryParent?.parentElement).toHaveClass('grid');

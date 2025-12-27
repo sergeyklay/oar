@@ -24,14 +24,27 @@ describe('ScrollableContainer', () => {
     expect(screen.getByText('Second')).toBeInTheDocument();
   });
 
-  it('renders children when className prop is provided', () => {
-    render(
+  it('applies bill-list-container class by default', () => {
+    const { container } = render(
+      <ScrollableContainer>
+        <div>Content</div>
+      </ScrollableContainer>
+    );
+
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper).toHaveClass('bill-list-container');
+  });
+
+  it('merges additional className with bill-list-container class', () => {
+    const { container } = render(
       <ScrollableContainer className="custom-class">
         <div>Content</div>
       </ScrollableContainer>
     );
 
-    expect(screen.getByText('Content')).toBeInTheDocument();
+    const wrapper = container.firstChild as HTMLElement;
+    expect(wrapper).toHaveClass('bill-list-container');
+    expect(wrapper).toHaveClass('custom-class');
   });
 });
 

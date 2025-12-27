@@ -70,7 +70,7 @@ describe('AnnualSpendingList', () => {
     it('renders table with header row', () => {
       renderList();
 
-      expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: 'Bill' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Payments' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Average' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Amount' })).toBeInTheDocument();

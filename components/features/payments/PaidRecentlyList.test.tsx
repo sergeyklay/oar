@@ -52,7 +52,7 @@ describe('PaidRecentlyList', () => {
     it('renders table with correct column headers', () => {
       render(<PaidRecentlyList payments={mockPayments} {...defaultProps} />);
 
-      expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument();
+      expect(screen.getByRole('columnheader', { name: 'Bill' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Amount Paid' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Payment Date' })).toBeInTheDocument();
     });

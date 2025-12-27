@@ -264,7 +264,7 @@ describe('AnnualSpendingSummary', () => {
       expect(amountPaidRow).toHaveClass('pt-2', 'border-t', 'border-border');
       expect(amountPaidLabel).toHaveClass('font-medium');
 
-      const amountValue = amountPaidRow?.querySelector('.font-bold');
+      const amountValue = amountPaidRow?.querySelector('.font-medium');
       expect(amountValue).toBeInTheDocument();
     });
 
