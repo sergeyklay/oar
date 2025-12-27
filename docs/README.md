@@ -9,6 +9,7 @@ Foundational decisions about system design and technical direction.
 | Document | Description |
 |----------|-------------|
 | [ADR-001: Hyper-optimized modular monolith](./architecture/001-monolith.md) | Hyper-optimized modular monolith architecture |
+| [ADR-002: Client-Side Only Date Rendering Strategy](./architecture/002-client-side-date-rendering.md) | Client-Side Only Date Rendering Strategy |
 
 ## Features
 

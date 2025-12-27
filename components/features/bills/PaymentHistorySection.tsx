@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { formatMoney } from '@/lib/money';
+import { ClientDate } from '@/components/ui/client-date';
 import { getTransactionsByBillId, deleteTransaction } from '@/actions/transactions';
 import type { Transaction } from '@/lib/types';
 import { PaymentDetailForm } from './PaymentDetailForm';
@@ -110,7 +110,7 @@ export function PaymentHistorySection({
 
   const lastPayment = transactions[0];
 
-  const getSubtitle = (): string => {
+  const getSubtitle = (): React.ReactNode => {
     if (isLoading) {
       return 'Loading...';
     }
@@ -118,8 +118,11 @@ export function PaymentHistorySection({
       return 'No Payments';
     }
     const amount = formatMoney(lastPayment.amount, currency, locale);
-    const date = format(lastPayment.paidAt, 'EEE, MMM d');
-    return `Last Paid ${amount} on ${date}`;
+    return (
+      <>
+        Last Paid {amount} on <ClientDate date={lastPayment.paidAt} format="EEE, MMM d" />
+      </>
+    );
   };
 
   if (!isExpanded) {
@@ -172,7 +175,7 @@ export function PaymentHistorySection({
               title={tx.notes ?? undefined}
             >
               <span className="text-muted-foreground shrink-0">
-                {format(tx.paidAt, 'dd/MM/yyyy')}
+                <ClientDate date={tx.paidAt} format="dd/MM/yyyy" />
               </span>
               <span className="font-mono shrink-0">
                 {formatMoney(tx.amount, currency, locale)}

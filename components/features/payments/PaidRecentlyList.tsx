@@ -1,6 +1,6 @@
-import { format } from 'date-fns';
 import { formatMoney } from '@/lib/money';
 import { CategoryIcon } from '@/components/features/bills/CategoryIcon';
+import { ClientDate } from '@/components/ui/client-date';
 import type { PaymentWithBill } from '@/lib/types';
 
 interface PaidRecentlyListProps {
@@ -47,7 +47,7 @@ export function PaidRecentlyList({
             <td>{formatMoney(payment.amount, currency, locale)}</td>
             <td>
               <div className="flex flex-col">
-                <span>{format(payment.paidAt, 'EEE, MMM d')}</span>
+                <ClientDate date={payment.paidAt} format="EEE, MMM d" />
                 {payment.notes && (
                   <span className="text-xs text-muted-foreground">
                     {payment.notes}

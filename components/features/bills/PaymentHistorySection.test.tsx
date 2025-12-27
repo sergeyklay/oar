@@ -93,8 +93,18 @@ describe('PaymentHistorySection', () => {
       render(<PaymentHistorySection {...defaultProps} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Last Paid \$164\.20 on Fri, Jun 20/)).toBeInTheDocument();
-      });
+        const subtitle = screen.getAllByText((content, element) => {
+          const text = element?.textContent || '';
+          const className = typeof element?.className === 'string' ? element.className : element?.getAttribute('class') || '';
+          const hasClass = className.includes('text-xs') && className.includes('text-muted-foreground');
+          return hasClass && text.includes('Last Paid') && text.includes('$164.20') && text.includes('on');
+        })[0];
+        expect(subtitle).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      await waitFor(() => {
+        expect(screen.getByText('Fri, Jun 20')).toBeInTheDocument();
+      }, { timeout: 3000 });
     });
 
     it('calls onExpandChange(true) when clicked', async () => {
@@ -229,8 +239,19 @@ describe('PaymentHistorySection', () => {
       rerender(<PaymentHistorySection {...defaultProps} refreshKey={1} />);
 
       await waitFor(() => {
-        expect(screen.getByText(/Last Paid \$50\.00 on Tue, Jul 15/)).toBeInTheDocument();
-      });
+        const subtitle = screen.getAllByText((content, element) => {
+          const text = element?.textContent || '';
+          const className = typeof element?.className === 'string' ? element.className : element?.getAttribute('class') || '';
+          const hasClass = className.includes('text-xs') && className.includes('text-muted-foreground');
+          return hasClass && text.includes('Last Paid') && text.includes('$50.00') && text.includes('on');
+        })[0];
+        expect(subtitle).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      await waitFor(() => {
+        expect(screen.getByText('Tue, Jul 15')).toBeInTheDocument();
+      }, { timeout: 3000 });
+
       expect(getTransactionsByBillId).toHaveBeenCalledTimes(2);
     });
   });

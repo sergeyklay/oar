@@ -1,11 +1,10 @@
 'use client';
 
-import { format } from 'date-fns';
-
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { FREQUENCY_DISPLAY_LABELS, PAYMENT_MODE_LABELS } from '@/lib/constants';
 import { DueDateService } from '@/lib/services/DueDateService';
+import { ClientDate } from '@/components/ui/client-date';
 import { CategoryIcon } from './CategoryIcon';
 import type { BillWithTags } from '@/lib/types';
 
@@ -75,7 +74,7 @@ export function BillRow({
             ) : (
               !(bill.status === 'paid' && bill.frequency === 'once') && (
                 <span className="text-xs text-muted-foreground">
-                  {format(bill.dueDate, 'EEE, MMM d')}
+                  <ClientDate date={bill.dueDate} format="EEE, MMM d" />
                 </span>
               )
             )}

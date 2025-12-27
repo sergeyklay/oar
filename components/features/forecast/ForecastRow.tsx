@@ -1,7 +1,7 @@
-import { format } from 'date-fns';
 import { formatMoney } from '@/lib/money';
 import { FREQUENCY_DISPLAY_LABELS, PAYMENT_MODE_LABELS } from '@/lib/constants';
 import { CategoryIcon } from '@/components/features/bills/CategoryIcon';
+import { ClientDate } from '@/components/ui/client-date';
 import { cn } from '@/lib/utils';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
@@ -63,9 +63,9 @@ export function ForecastRow({
       </td>
       <td className="text-right">
         <div className="flex flex-col items-end">
-          <span>{format(bill.dueDate, 'EEE, MMM d')}</span>
+          <ClientDate date={bill.dueDate} format="EEE, MMM d" />
           <span className="text-xs text-muted-foreground">
-            {format(bill.dueDate, 'MMM d, yyyy')}
+            <ClientDate date={bill.dueDate} format="MMM d, yyyy" />
           </span>
         </div>
       </td>

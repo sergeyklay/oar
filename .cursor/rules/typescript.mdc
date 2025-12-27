@@ -158,6 +158,35 @@ function MyComponent() {
 - Enforces correct return types automatically
 - Supports multiple arguments if the handler accepts them
 
+## Date Rendering Standards
+
+Next.js App Router renders Server Components in the server's timezone (usually UTC). The browser renders in the user's local timezone. Direct string formatting of dates results in "Hydration failed" errors.
+
+### Rules
+
+1. **Forbidden Pattern**:
+   - NEVER call `format(...)` from `date-fns` directly within the JSX return statement.
+   - NEVER render `new Date().toLocaleDateString()` directly in JSX.
+
+2. **Required Pattern**:
+   - ALWAYS use the `<ClientDate />` component for ALL date displays:
+
+   ```tsx
+   import { ClientDate } from '@/components/ui/client-date';
+
+   // ...
+   return (
+     <div>
+       <ClientDate date={data.createdAt} format="dd MMM yyyy" />
+     </div>
+   );
+   ```
+3. **Server Components:**
+   - Do NOT attempt to convert timezones on the server. Pass the raw string/number/Date to the client component.
+
+4. **Imports:**
+   - If you see import { format } from 'date-fns', verify it is NOT used for rendering UI. If it is, refactor to <ClientDate />.
+
 ## Error Handling
 
 - Use functional error handling where possible.

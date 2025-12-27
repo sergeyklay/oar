@@ -1,6 +1,5 @@
 'use client';
 
-import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { formatMoney } from '@/lib/money';
+import { ClientDate } from '@/components/ui/client-date';
 import type { Transaction } from '@/lib/types';
 
 interface DeleteConfirmationDialogProps {
@@ -42,7 +42,7 @@ export function DeleteConfirmationDialog({
             </span>
             <span className="block font-medium text-foreground">
               {formatMoney(transaction.amount, currency, locale)} on{' '}
-              {format(transaction.paidAt, 'PPP')}
+              <ClientDate date={transaction.paidAt} format="PPP" />
             </span>
             <span className="block text-amber-600 dark:text-amber-500">
               ⚠️ This will recalculate the billing cycle if this payment affected the current

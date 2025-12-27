@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
+import { ClientDate } from '@/components/ui/client-date';
 import { getCurrentMonth } from '@/lib/utils';
 
 interface MonthPickerProps {
@@ -44,7 +45,7 @@ export function MonthPicker({ defaultMonth }: MonthPickerProps) {
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-9">
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {format(monthDate, 'MMMM yyyy')}
+          <ClientDate date={monthDate} format="MMMM yyyy" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

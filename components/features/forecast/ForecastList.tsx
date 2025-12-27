@@ -1,5 +1,6 @@
-import { format, parse } from 'date-fns';
+import { parse } from 'date-fns';
 import { ForecastRow } from './ForecastRow';
+import { ClientDate } from '@/components/ui/client-date';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
 interface ForecastListProps {
@@ -26,10 +27,17 @@ export function ForecastList({
 }: ForecastListProps) {
   if (bills.length === 0) {
     const monthDate = parse(month, 'yyyy-MM', new Date());
-    const monthFormatted = format(monthDate, 'MMMM yyyy');
     const emptyMessage = tag
-      ? `No bills with this tag in ${monthFormatted}`
-      : `No bills due in ${monthFormatted}`;
+      ? (
+          <>
+            No bills with this tag in <ClientDate date={monthDate} format="MMMM yyyy" />
+          </>
+        )
+      : (
+          <>
+            No bills due in <ClientDate date={monthDate} format="MMMM yyyy" />
+          </>
+        );
     const emptySubtitle = tag
       ? 'Try selecting a different tag or month.'
       : 'Try selecting a different month.';
