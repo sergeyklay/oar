@@ -31,22 +31,22 @@ export function AnnualSpendingSummary({
         <h2 className="text-lg font-semibold">{year}</h2>
         <YearNavigation currentYear={year} />
       </div>
-          <div className="flex flex-col gap-3">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total Bills</span>
-              <span className="font-mono font-medium">{summary.totalBills}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total Payments</span>
-              <span className="font-mono font-medium">{summary.totalPayments}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <span className="font-medium">Amount Paid</span>
-              <span className="font-mono font-bold">
-                {formatMoney(summary.amountPaid, currency, locale)}
-              </span>
-            </div>
-          </div>
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground">Total Bills</span>
+          <span className="font-mono font-medium">{summary.totalBills}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-muted-foreground">Total Payments</span>
+          <span className="font-mono font-medium">{summary.totalPayments}</span>
+        </div>
+        <div className="flex justify-between items-center pt-2 border-t border-border">
+          <span className="font-medium">Amount Paid</span>
+          <span className="font-mono font-bold">
+            {formatMoney(summary.amountPaid, currency, locale)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
