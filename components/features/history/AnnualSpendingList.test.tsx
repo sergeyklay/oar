@@ -48,6 +48,19 @@ const mockBills: AggregatedBillSpending[] = [
   },
 ];
 
+const defaultProps = {
+  bills: mockBills,
+  currency: 'USD',
+  locale: 'en-US',
+  year: '2025',
+};
+
+function renderList(
+  overrides: Partial<typeof defaultProps & { highlightedBillId?: string; onBillClick?: (billId: string) => void }> = {}
+) {
+  return render(<AnnualSpendingList {...defaultProps} {...overrides} />);
+}
+
 describe('AnnualSpendingList', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -55,14 +68,7 @@ describe('AnnualSpendingList', () => {
 
   describe('rendering with data', () => {
     it('renders table with header row', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       expect(screen.getByRole('columnheader', { name: 'Name' })).toBeInTheDocument();
       expect(screen.getByRole('columnheader', { name: 'Payments' })).toBeInTheDocument();
@@ -71,28 +77,14 @@ describe('AnnualSpendingList', () => {
     });
 
     it('renders row for each bill', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       expect(screen.getByTestId('row-bill-1')).toBeInTheDocument();
       expect(screen.getByTestId('row-bill-2')).toBeInTheDocument();
     });
 
     it('passes bill data to row components', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       const row1 = screen.getByTestId('row-bill-1');
       expect(row1).toHaveTextContent('Rent');
@@ -104,14 +96,7 @@ describe('AnnualSpendingList', () => {
     });
 
     it('passes currency and locale to row components', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="PLN"
-          locale="pl-PL"
-          year="2025"
-        />
-      );
+      renderList({ currency: 'PLN', locale: 'pl-PL' });
 
       expect(screen.getByTestId('row-bill-1')).toBeInTheDocument();
       expect(screen.getByTestId('row-bill-2')).toBeInTheDocument();
@@ -120,41 +105,20 @@ describe('AnnualSpendingList', () => {
 
   describe('empty state', () => {
     it('displays empty message when no bills', () => {
-      render(
-        <AnnualSpendingList
-          bills={[]}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList({ bills: [] });
 
       expect(screen.getByText('No payments in 2025')).toBeInTheDocument();
       expect(screen.getByText('Try selecting a different year.')).toBeInTheDocument();
     });
 
     it('displays correct year in empty message', () => {
-      render(
-        <AnnualSpendingList
-          bills={[]}
-          currency="USD"
-          locale="en-US"
-          year="2024"
-        />
-      );
+      renderList({ bills: [], year: '2024' });
 
       expect(screen.getByText('No payments in 2024')).toBeInTheDocument();
     });
 
     it('does not render table when empty', () => {
-      render(
-        <AnnualSpendingList
-          bills={[]}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList({ bills: [] });
 
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
@@ -162,15 +126,7 @@ describe('AnnualSpendingList', () => {
 
   describe('highlighting', () => {
     it('passes highlight state to row when bill is highlighted', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-          highlightedBillId="bill-1"
-        />
-      );
+      renderList({ highlightedBillId: 'bill-1' });
 
       const row1 = screen.getByTestId('row-bill-1');
       const row2 = screen.getByTestId('row-bill-2');
@@ -180,14 +136,7 @@ describe('AnnualSpendingList', () => {
     });
 
     it('does not highlight any row when no bill is highlighted', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       const row1 = screen.getByTestId('row-bill-1');
       const row2 = screen.getByTestId('row-bill-2');
@@ -197,27 +146,13 @@ describe('AnnualSpendingList', () => {
     });
 
     it('updates highlight when highlightedBillId changes', () => {
-      const { rerender } = render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-          highlightedBillId="bill-1"
-        />
-      );
+      const { rerender } = renderList({ highlightedBillId: 'bill-1' });
 
       let row1 = screen.getByTestId('row-bill-1');
       expect(row1).toHaveAttribute('data-highlighted', 'true');
 
       rerender(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-          highlightedBillId="bill-2"
-        />
+        <AnnualSpendingList {...defaultProps} highlightedBillId="bill-2" />
       );
 
       row1 = screen.getByTestId('row-bill-1');
@@ -232,15 +167,7 @@ describe('AnnualSpendingList', () => {
       const user = userEvent.setup();
       const mockOnBillClick = jest.fn();
 
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-          onBillClick={mockOnBillClick}
-        />
-      );
+      renderList({ onBillClick: mockOnBillClick });
 
       const row1 = screen.getByTestId('row-bill-1');
       await user.click(row1);
@@ -253,15 +180,7 @@ describe('AnnualSpendingList', () => {
       const user = userEvent.setup();
       const mockOnBillClick = jest.fn();
 
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-          onBillClick={mockOnBillClick}
-        />
-      );
+      renderList({ onBillClick: mockOnBillClick });
 
       await user.click(screen.getByTestId('row-bill-1'));
       await user.click(screen.getByTestId('row-bill-2'));
@@ -275,14 +194,7 @@ describe('AnnualSpendingList', () => {
 
   describe('table structure', () => {
     it('renders table with correct structure', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       const table = screen.getByRole('table');
       expect(table).toBeInTheDocument();
@@ -290,14 +202,7 @@ describe('AnnualSpendingList', () => {
     });
 
     it('has right-aligned columns for Payments, Average, and Amount', () => {
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList();
 
       const paymentsHeader = screen.getByRole('columnheader', { name: 'Payments' });
       const averageHeader = screen.getByRole('columnheader', { name: 'Average' });
@@ -309,16 +214,7 @@ describe('AnnualSpendingList', () => {
     });
 
     it('handles single bill correctly', () => {
-      const singleBill = [mockBills[0]];
-
-      render(
-        <AnnualSpendingList
-          bills={singleBill}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
+      renderList({ bills: [mockBills[0]] });
 
       expect(screen.getByTestId('row-bill-1')).toBeInTheDocument();
       expect(screen.queryByTestId('row-bill-2')).not.toBeInTheDocument();
