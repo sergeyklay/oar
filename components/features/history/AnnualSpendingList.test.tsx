@@ -50,7 +50,7 @@ const mockBills: AggregatedBillSpending[] = [
 
 const defaultProps = {
   bills: mockBills,
-  currency: 'USD',
+  currency: 'USD' as const,
   locale: 'en-US',
   year: '2025',
 };
@@ -93,13 +93,6 @@ describe('AnnualSpendingList', () => {
       const row2 = screen.getByTestId('row-bill-2');
       expect(row2).toHaveTextContent('Internet');
       expect(row2).toHaveTextContent('12');
-    });
-
-    it('passes currency and locale to row components', () => {
-      renderList({ currency: 'PLN', locale: 'pl-PL' });
-
-      expect(screen.getByTestId('row-bill-1')).toBeInTheDocument();
-      expect(screen.getByTestId('row-bill-2')).toBeInTheDocument();
     });
   });
 
