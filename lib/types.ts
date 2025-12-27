@@ -151,3 +151,35 @@ export interface HistorySummary {
   count: number;
   totalPaid: number;
 }
+
+/**
+ * Aggregated spending data for a single bill within a year.
+ *
+ * @property {string} billId - Bill ID
+ * @property {string} billTitle - Bill display name
+ * @property {string} categoryIcon - Category icon name for display
+ * @property {number} paymentCount - Number of payments for this bill in the year
+ * @property {number} totalAmount - Sum of all payment amounts in minor units (integer)
+ * @property {number} averageAmount - Average payment amount in minor units (integer, rounded)
+ */
+export interface AggregatedBillSpending {
+  billId: string;
+  billTitle: string;
+  categoryIcon: string;
+  paymentCount: number;
+  totalAmount: number;
+  averageAmount: number;
+}
+
+/**
+ * Summary statistics for annual spending view.
+ *
+ * @property {number} totalBills - Number of distinct bills with payments in the year
+ * @property {number} totalPayments - Total number of payments across all bills
+ * @property {number} amountPaid - Total amount paid across all bills in minor units (integer)
+ */
+export interface AnnualSpendingSummary {
+  totalBills: number;
+  totalPayments: number;
+  amountPaid: number;
+}

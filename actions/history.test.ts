@@ -1,7 +1,7 @@
-import { getMonthlyHistoryData, getMonthlyHistoryChartData } from './history';
+import { getMonthlyHistoryData, getMonthlyHistoryChartData, getAnnualSpendingData } from './history';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { getLogger } from '@/lib/logger';
-import type { PaymentWithBill, MonthlyPaymentTotal } from '@/lib/types';
+import type { PaymentWithBill, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 
 jest.mock('@/lib/services/TransactionService');
 jest.mock('@/lib/logger');
@@ -319,6 +319,135 @@ describe('getMonthlyHistoryChartData', () => {
         months,
         undefined
       );
+    }
+  });
+});
+
+describe('getAnnualSpendingData', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const mockAggregatedData: AggregatedBillSpending[] = [
+    {
+      billId: 'bill-1',
+      billTitle: 'Rent',
+      categoryIcon: 'house',
+      paymentCount: 12,
+      totalAmount: 1200000,
+      averageAmount: 100000,
+    },
+    {
+      billId: 'bill-2',
+      billTitle: 'Internet',
+      categoryIcon: 'wifi',
+      paymentCount: 12,
+      totalAmount: 60000,
+      averageAmount: 5000,
+    },
+  ];
+
+  it('returns aggregated data for valid year', async () => {
+    (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockResolvedValue(
+      mockAggregatedData
+    );
+
+    const result = await getAnnualSpendingData({ year: '2025' });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(mockAggregatedData);
+    }
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).toHaveBeenCalledWith('2025');
+  });
+
+  it('returns error for invalid year format', async () => {
+    const result = await getAnnualSpendingData({ year: '2025-12' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe('Invalid annual spending query parameters');
+    }
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).not.toHaveBeenCalled();
+  });
+
+  it('returns error for year with wrong length', async () => {
+    const result = await getAnnualSpendingData({ year: '25' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe('Invalid annual spending query parameters');
+    }
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).not.toHaveBeenCalled();
+  });
+
+  it('returns error for non-numeric year', async () => {
+    const result = await getAnnualSpendingData({ year: 'abcd' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe('Invalid annual spending query parameters');
+    }
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).not.toHaveBeenCalled();
+  });
+
+  it('returns error for empty year string', async () => {
+    const result = await getAnnualSpendingData({ year: '' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe('Invalid annual spending query parameters');
+    }
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).not.toHaveBeenCalled();
+  });
+
+  it('returns error when TransactionService throws', async () => {
+    const dbError = new Error('Database error');
+    (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockRejectedValue(dbError);
+
+    const result = await getAnnualSpendingData({ year: '2025' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toBe('Failed to fetch annual spending data');
+    }
+
+    const logger = getLogger('Actions:History');
+    expect(logger.error).toHaveBeenCalledWith(dbError, 'Failed to fetch annual spending data');
+  });
+
+  it('handles empty array from TransactionService', async () => {
+    (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockResolvedValue([]);
+
+    const result = await getAnnualSpendingData({ year: '2025' });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual([]);
+    }
+  });
+
+  it('validates year format strictly (YYYY)', async () => {
+    const validYears = ['2025', '2024', '2026', '2000', '2099'];
+
+    for (const year of validYears) {
+      (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockResolvedValue(
+        mockAggregatedData
+      );
+      const result = await getAnnualSpendingData({ year });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it('rejects invalid year formats', async () => {
+    const invalidYears = ['25', '2025-12', '2025-01-01', 'abcd', ''];
+
+    for (const year of invalidYears) {
+      const result = await getAnnualSpendingData({ year });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBe('Invalid annual spending query parameters');
+      }
     }
   });
 });

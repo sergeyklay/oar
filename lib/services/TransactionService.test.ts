@@ -791,4 +791,178 @@ describe('TransactionService', () => {
       });
     });
   });
+
+  describe('getPaymentsByYearAggregatedByBill', () => {
+    type YearAggregationResult = {
+      billId: string;
+      billTitle: string;
+      categoryIcon: string;
+      amount: number;
+    };
+
+    const createYearQueryBuilder = (returnValue: YearAggregationResult[]) => {
+      const orderByMock = jest.fn().mockResolvedValue(returnValue);
+      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
+      const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
+      const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+      const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
+
+      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+
+      return {
+        from: fromMock,
+        innerJoin: firstInnerJoinMock,
+        where: whereMock,
+        orderBy: orderByMock,
+      };
+    };
+
+    it('returns empty array for invalid year string', async () => {
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('invalid');
+
+      expect(result).toEqual([]);
+      expect(db.select).not.toHaveBeenCalled();
+    });
+
+    it('returns empty array for non-numeric year', async () => {
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('abcd');
+
+      expect(result).toEqual([]);
+      expect(db.select).not.toHaveBeenCalled();
+    });
+
+    it('queries transactions within year range', async () => {
+      createYearQueryBuilder([]);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      const yearStart = parse('2025-01-01', 'yyyy-MM-dd', new Date());
+      const yearEnd = parse('2025-12-31', 'yyyy-MM-dd', new Date());
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(yearEnd));
+      expect(mockAnd).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'gte' }),
+        expect.objectContaining({ type: 'lte' })
+      );
+    });
+
+    it('aggregates payments by bill with correct calculations', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        billId: 'bill-1',
+        billTitle: 'Rent',
+        categoryIcon: 'house',
+        paymentCount: 2,
+        totalAmount: 200000,
+        averageAmount: 100000,
+      });
+      expect(result[1]).toMatchObject({
+        billId: 'bill-2',
+        billTitle: 'Internet',
+        categoryIcon: 'wifi',
+        paymentCount: 1,
+        totalAmount: 5000,
+        averageAmount: 5000,
+      });
+    });
+
+    it('sorts results by totalAmount descending', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result[0].totalAmount).toBeGreaterThan(result[1].totalAmount);
+      expect(result[0].billId).toBe('bill-1');
+      expect(result[1].billId).toBe('bill-2');
+    });
+
+    it('calculates average correctly with rounding', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100001 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100002 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result[0].totalAmount).toBe(300003);
+      expect(result[0].paymentCount).toBe(3);
+      expect(result[0].averageAmount).toBe(100001);
+    });
+
+    it('handles single payment per bill', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result).toHaveLength(2);
+      expect(result[0].paymentCount).toBe(1);
+      expect(result[0].averageAmount).toBe(result[0].totalAmount);
+      expect(result[1].paymentCount).toBe(1);
+      expect(result[1].averageAmount).toBe(result[1].totalAmount);
+    });
+
+    it('returns empty array when no payments found', async () => {
+      createYearQueryBuilder([]);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result).toEqual([]);
+    });
+
+    it('handles multiple payments for multiple bills', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 6000 },
+        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+        { billId: 'bill-3', billTitle: 'Electric', categoryIcon: 'zap', amount: 15000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result).toHaveLength(3);
+      expect(result[0].billId).toBe('bill-1');
+      expect(result[0].totalAmount).toBe(200000);
+      expect(result[1].billId).toBe('bill-2');
+      expect(result[1].totalAmount).toBe(16000);
+      expect(result[2].billId).toBe('bill-3');
+      expect(result[2].totalAmount).toBe(15000);
+    });
+
+    it('orders query results by billId', async () => {
+      const builder = createYearQueryBuilder([]);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(builder.orderBy).toHaveBeenCalledWith(transactions.billId);
+    });
+  });
 });

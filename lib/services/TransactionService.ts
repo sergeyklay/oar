@@ -1,7 +1,7 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
 import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths } from 'date-fns';
-import type { PaymentWithBill, Transaction, MonthlyPaymentTotal } from '@/lib/types';
+import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 
 /**
  * Service for transaction-related operations.
@@ -331,6 +331,78 @@ export const TransactionService = {
     }
 
     return monthlyTotals;
+  },
+
+  /**
+   * Fetches all payments for a year, grouped by bill, with aggregated statistics.
+   *
+   * @param year - Year string in YYYY format
+   * @returns Array of aggregated bill spending data sorted by totalAmount descending
+   */
+  async getPaymentsByYearAggregatedByBill(year: string): Promise<AggregatedBillSpending[]> {
+    const yearNum = parseInt(year, 10);
+    if (isNaN(yearNum)) {
+      return [];
+    }
+
+    const yearStart = parse(`${year}-01-01`, 'yyyy-MM-dd', new Date());
+    const yearEnd = parse(`${year}-12-31`, 'yyyy-MM-dd', new Date());
+    const yearEndDay = endOfDay(yearEnd);
+
+    const results = await db
+      .select({
+        billId: transactions.billId,
+        billTitle: bills.title,
+        categoryIcon: billCategories.icon,
+        amount: transactions.amount,
+      })
+      .from(transactions)
+      .innerJoin(bills, eq(transactions.billId, bills.id))
+      .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
+      .where(and(gte(transactions.paidAt, yearStart), lte(transactions.paidAt, yearEndDay)))
+      .orderBy(transactions.billId);
+
+    const aggregatedMap = new Map<string, {
+      billId: string;
+      billTitle: string;
+      categoryIcon: string;
+      amounts: number[];
+    }>();
+
+    for (const result of results) {
+      const existing = aggregatedMap.get(result.billId);
+      if (existing) {
+        existing.amounts.push(result.amount);
+      } else {
+        aggregatedMap.set(result.billId, {
+          billId: result.billId,
+          billTitle: result.billTitle,
+          categoryIcon: result.categoryIcon,
+          amounts: [result.amount],
+        });
+      }
+    }
+
+    const aggregated: AggregatedBillSpending[] = [];
+
+    for (const [, data] of aggregatedMap) {
+      const paymentCount = data.amounts.length;
+      const totalAmount = data.amounts.reduce((sum, amount) => sum + amount, 0);
+      const averageAmount = Math.round(totalAmount / paymentCount);
+
+      aggregated.push({
+        billId: data.billId,
+        billTitle: data.billTitle,
+        categoryIcon: data.categoryIcon,
+        paymentCount,
+        totalAmount,
+        averageAmount,
+      });
+    }
+
+    aggregated.sort((a, b) => b.totalAmount - a.totalAmount);
+
+    return aggregated;
   },
 };
 

@@ -24,6 +24,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 | [Paid Recently View](./features/014-paid-recently-view.md) | Payments made within a configurable lookback period |
 | [Forecast View](./features/016-forecast-view.md) | Projecting future financial liabilities by month |
 | [Monthly History View](./features/017-monthly-history-view.md) | Reviewing actual payment history with year-over-year comparison |
+| [Annual Spending View](./features/020-annual-spending-view.md) | Reviewing annual spending patterns aggregated by bill |
 | [Archive View](./features/013-archive-view.md) | Viewing and managing archived bills |
 
 ### Foundation
