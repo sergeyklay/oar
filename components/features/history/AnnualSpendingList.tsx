@@ -38,7 +38,7 @@ export function AnnualSpendingList({
   }
 
   return (
-    <table className="bill-table">
+    <table className="bill-table annual-spending-table">
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />

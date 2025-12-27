@@ -166,38 +166,58 @@
   max-width: 40px;
 }
 
-.bill-table th:nth-child(3),
-.bill-table td:nth-child(3) {
-  width: 140px;
-  min-width: 140px;
-}
+/* === Unified Column Width Standards === */
+/* Column 2 (Bill name) - flexible, no width constraint */
 
-.bill-table th:nth-child(4),
-.bill-table td:nth-child(4) {
-  width: 280px;
-  min-width: 280px;
-}
-
-/* === Forecast Table Column Widths === */
+/* === Forecast Table (5 columns) === */
 .forecast-table th:nth-child(3),
 .forecast-table td:nth-child(3) {
   width: 160px;
   min-width: 160px;
-  text-align: right;
 }
 
 .forecast-table th:nth-child(4),
 .forecast-table td:nth-child(4) {
   width: 160px;
   min-width: 160px;
-  text-align: right;
 }
 
 .forecast-table th:nth-child(5),
 .forecast-table td:nth-child(5) {
-  width: 180px;
-  min-width: 180px;
-  text-align: right;
+  width: 160px;
+  min-width: 160px;
+}
+
+/* === Annual Spending Table (5 columns) === */
+.annual-spending-table th:nth-child(3),
+.annual-spending-table td:nth-child(3) {
+  width: 120px;
+  min-width: 120px;
+}
+
+.annual-spending-table th:nth-child(4),
+.annual-spending-table td:nth-child(4) {
+  width: 160px;
+  min-width: 160px;
+}
+
+.annual-spending-table th:nth-child(5),
+.annual-spending-table td:nth-child(5) {
+  width: 160px;
+  min-width: 160px;
+}
+
+/* === Standard 4-column tables (BillList, MonthlyHistory, PaidRecently) === */
+.bill-table-standard th:nth-child(3),
+.bill-table-standard td:nth-child(3) {
+  width: 160px;
+  min-width: 160px;
+}
+
+.bill-table-standard th:nth-child(4),
+.bill-table-standard td:nth-child(4) {
+  width: 160px;
+  min-width: 160px;
 }
 
 .bill-table td {

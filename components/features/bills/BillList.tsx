@@ -107,7 +107,7 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId, in
   }
 
   return (
-    <table className="bill-table">
+    <table className="bill-table bill-table-standard">
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />
