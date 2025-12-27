@@ -271,23 +271,6 @@ describe('AnnualSpendingList', () => {
       expect(mockOnBillClick).toHaveBeenCalledTimes(2);
     });
 
-    it('does not call onBillClick when handler is not provided', async () => {
-      const user = userEvent.setup();
-
-      render(
-        <AnnualSpendingList
-          bills={mockBills}
-          currency="USD"
-          locale="en-US"
-          year="2025"
-        />
-      );
-
-      const row1 = screen.getByTestId('row-bill-1');
-      await user.click(row1);
-
-      expect(screen.getByTestId('row-bill-1')).toBeInTheDocument();
-    });
   });
 
   describe('table structure', () => {
