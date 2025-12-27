@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { PieChart, Pie, Cell } from 'recharts';
 import {
   ChartContainer,
@@ -53,34 +54,42 @@ export function AnnualSpendingChart({
   highlightedBillId,
   onBillClick,
 }: AnnualSpendingChartProps) {
-  const chartData = data.map((bill) => {
-    const escapedBillId = bill.billId.replace(/[^a-zA-Z0-9-_]/g, '');
-    return {
-      name: bill.billTitle,
-      value: bill.totalAmount,
-      billId: bill.billId,
-      escapedBillId,
-    };
-  });
+  const chartData = useMemo(() => {
+    const mapped = data.map((bill) => {
+      const escapedBillId = bill.billId.replace(/[^a-zA-Z0-9-_]/g, '');
+      return {
+        name: bill.billTitle,
+        value: bill.totalAmount,
+        billId: bill.billId,
+        escapedBillId,
+      };
+    });
 
-  const escapedIds = chartData.map((item) => item.escapedBillId);
-  const duplicateIds = escapedIds.filter(
-    (id, index) => escapedIds.indexOf(id) !== index
-  );
-  if (duplicateIds.length > 0) {
-    throw new Error(
-      `Chart config collision: Multiple billIds escape to the same value: ${duplicateIds.join(', ')}`
+    const escapedIds = mapped.map((item) => item.escapedBillId);
+    const duplicateIds = escapedIds.filter(
+      (id, index) => escapedIds.indexOf(id) !== index
     );
-  }
+    if (duplicateIds.length > 0) {
+      throw new Error(
+        `Chart config collision: Multiple billIds escape to the same value: ${duplicateIds.join(', ')}`
+      );
+    }
 
-  const chartConfig: ChartConfig = {};
+    return mapped;
+  }, [data]);
 
-  chartData.forEach((item, index) => {
-    chartConfig[item.escapedBillId] = {
-      label: item.name,
-      color: CHART_COLORS[index % CHART_COLORS.length],
-    };
-  });
+  const chartConfig: ChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+
+    chartData.forEach((item, index) => {
+      config[item.escapedBillId] = {
+        label: item.name,
+        color: CHART_COLORS[index % CHART_COLORS.length],
+      };
+    });
+
+    return config;
+  }, [chartData]);
 
   if (chartData.length === 0 || chartData.every((item) => item.value === 0)) {
     return (
