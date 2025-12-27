@@ -1,8 +1,7 @@
 import { TransactionService } from './TransactionService';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
+import { db, transactions, bills, tags } from '@/db';
 import type { PaymentWithBill, Transaction } from '@/lib/types';
-import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, startOfMonth, endOfMonth } from 'date-fns';
 
 jest.mock('@/db', () => ({
   db: {
@@ -831,17 +830,17 @@ describe('TransactionService', () => {
       expect(db.select).not.toHaveBeenCalled();
     });
 
-    it('queries transactions within year range', async () => {
+    it('queries transactions within year range using UTC boundaries', async () => {
       createYearQueryBuilder([]);
 
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
-      const yearDate = parse('2025-06-15', 'yyyy-MM-dd', new Date());
-      const yearStart = startOfYear(yearDate);
-      const yearEndDay = endOfYear(yearDate);
+      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const expectedNextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
+      const expectedYearEnd = new Date(expectedNextYearStart.getTime() - 1);
 
-      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
-      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, yearEndDay);
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedYearEnd);
       expect(mockAnd).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'gte' }),
         expect.objectContaining({ type: 'lte' })
@@ -964,6 +963,83 @@ describe('TransactionService', () => {
       await TransactionService.getPaymentsByYearAggregatedByBill('2025');
 
       expect(builder.orderBy).toHaveBeenCalledWith(transactions.billId);
+    });
+
+    it('includes payment at exact year start boundary (Dec 31, 23:00:00 UTC)', async () => {
+      const yearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
+    });
+
+    it('includes payment at exact year end boundary (Dec 31, 23:59:59.999 UTC)', async () => {
+      const nextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
+      const yearEnd = new Date(nextYearStart.getTime() - 1);
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, yearEnd);
+    });
+
+    it('includes payments logged at midnight in UTC+1 timezone (stored as previous day in UTC)', async () => {
+      const paymentAtMidnightUTCPlus1 = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
+      expect(paymentAtMidnightUTCPlus1.getTime()).toBeGreaterThanOrEqual(expectedYearStart.getTime());
+    });
+
+    it('uses consistent UTC boundaries regardless of server timezone', async () => {
+      createYearQueryBuilder([]);
+
+      await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      const expectedYearStart = new Date(Date.UTC(2024, 11, 31, 23, 0, 0, 0));
+      const expectedNextYearStart = new Date(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
+      const expectedYearEnd = new Date(expectedNextYearStart.getTime() - 1);
+
+      expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
+      expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedYearEnd);
+
+      const yearStartTimestamp = expectedYearStart.getTime();
+      const yearEndTimestamp = expectedYearEnd.getTime();
+
+      expect(yearStartTimestamp).toBe(1735686000000);
+      expect(yearEndTimestamp).toBe(1767225599999);
+    });
+
+    it('includes yearly boundary payments for a bill with monthly payments spanning the year', async () => {
+      const mockResults: YearAggregationResult[] = [
+        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
+        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
+      ];
+
+      createYearQueryBuilder(mockResults);
+
+      const result = await TransactionService.getPaymentsByYearAggregatedByBill('2025');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].paymentCount).toBe(3);
+      expect(result[0].totalAmount).toBe(300000);
     });
   });
 });
