@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { AnnualSpendingGraph } from './AnnualSpendingGraph';
 import { AnnualSpendingList } from './AnnualSpendingList';
 import { AnnualSpendingSummary } from './AnnualSpendingSummary';
+import { ScrollableContainer } from '@/components/common/ScrollableContainer';
+import { ReportSidebar } from '@/components/layout/ReportSidebar';
 import type { AggregatedBillSpending, AnnualSpendingSummary as AnnualSpendingSummaryType } from '@/lib/types';
 
 interface AnnualSpendingInteractiveProps {
@@ -47,7 +49,7 @@ export function AnnualSpendingInteractive({
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
-        <div className="bill-list-container">
+        <ScrollableContainer>
           <AnnualSpendingList
             bills={data}
             currency={currency}
@@ -56,15 +58,15 @@ export function AnnualSpendingInteractive({
             highlightedBillId={highlightedBillId}
             onBillClick={handleBillClick}
           />
-        </div>
-        <div className="bg-card border-l border-border bill-list-container p-6">
+        </ScrollableContainer>
+        <ReportSidebar>
           <AnnualSpendingSummary
             summary={summary}
             currency={currency}
             locale={locale}
             year={year}
           />
-        </div>
+        </ReportSidebar>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import { MonthlyHistorySummary } from './MonthlyHistorySummary';
 import { getMonthlyHistoryData } from '@/actions/history';
 import { HistoryService } from '@/lib/services/HistoryService';
 import type { PaymentWithBill } from '@/lib/types';
+import { ScrollableContainer } from '@/components/common/ScrollableContainer';
+import { ReportSidebar } from '@/components/layout/ReportSidebar';
 
 interface MonthlyHistoryContentProps {
   month: string;
@@ -55,7 +57,7 @@ export async function MonthlyHistoryContent({
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
-        <div className="overflow-y-auto">
+        <ScrollableContainer>
           <MonthlyHistoryList
             payments={payments}
             currency={currency}
@@ -63,15 +65,15 @@ export async function MonthlyHistoryContent({
             month={month}
             tag={tag}
           />
-        </div>
-        <div className="bg-card border-l border-border overflow-y-auto p-6">
+        </ScrollableContainer>
+        <ReportSidebar>
           <MonthlyHistorySummary
             summary={summary}
             currency={currency}
             locale={locale}
             month={month}
           />
-        </div>
+        </ReportSidebar>
       </div>
     </div>
   );

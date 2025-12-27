@@ -55,7 +55,7 @@ export function ForecastList({
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />
-          <th>Name</th>
+          <th>Bill</th>
           <th className="text-right">Amount Due</th>
           <th className="text-right">Amount to Save</th>
           <th className="text-right">Due Date</th>

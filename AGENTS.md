@@ -303,7 +303,11 @@ oar/
 │
 ├── components/
 │   ├── ui/                      ← Shadcn primitives (DO NOT EDIT)
-│   ├── layout/                  ← SACRED (AppShell, Sidebar, Panels)
+│   ├── layout/                  ← Structural layout components defining page shell
+│   │                              (AppShell, Sidebar, MainContent, RightPanel, PageHeader)
+│   ├── common/                  ← Generic reusable UI components usable anywhere
+│   │                              (ScrollableContainer, etc.)
+│   │                              NOT layout-specific; pure presentational wrappers
 │   └── features/                ← Feature-specific components
 │       ├── bills/               ← Bill list, forms, detail panel
 │       ├── calendar/            ← Calendar widget
@@ -316,6 +320,20 @@ oar/
 ├── tailwind.config.ts           ← SACRED (theme extensions)
 └── package.json                 ← Dependencies & scripts
 ```
+
+### Component Directory Organization
+
+**`components/layout/`** contains structural layout components that define the overall page shell and structure:
+- AppShell, Sidebar, MainContent, RightPanel, PageHeader
+- These components orchestrate the page layout and are always rendered in specific structural positions
+- They have layout-specific responsibilities (positioning, spacing, grid structure)
+
+**`components/common/`** contains generic reusable UI components that can be used anywhere in the application:
+- ScrollableContainer, ReportSidebarSummary (when applicable)
+- These are pure presentational wrappers with no layout-specific concerns
+- They are not tied to page structure and can appear in any context
+
+**Decision Rule:** If a component defines or participates in page structure (header, sidebar, main content areas), it belongs in `layout/`. If it's a generic reusable UI primitive usable anywhere, it belongs in `common/`.
 
 ### Sacred Files Protocol
 

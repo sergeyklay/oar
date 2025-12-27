@@ -111,7 +111,7 @@ export async function BillList({ date, month, dateRange, tag, selectedBillId, in
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />
-          <th>Name</th>
+          <th>Bill</th>
           <th>Amount</th>
           <th>Due Date</th>
         </tr>

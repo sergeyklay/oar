@@ -32,7 +32,7 @@ export function PaidRecentlyList({
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />
-          <th>Name</th>
+          <th>Bill</th>
           <th>Amount Paid</th>
           <th>Payment Date</th>
         </tr>

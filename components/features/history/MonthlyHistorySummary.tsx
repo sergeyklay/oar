@@ -43,8 +43,8 @@ export function MonthlyHistorySummary({
           <span className="text-muted-foreground">Payments</span>
           <span className="font-mono font-medium">{summary.count}</span>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-muted-foreground">Total Paid</span>
+        <div className="flex justify-between items-center pt-2 border-t border-border">
+          <span className="font-medium">Total Paid</span>
           <span className="font-mono font-medium">
             {formatMoney(summary.totalPaid, currency, locale)}
           </span>

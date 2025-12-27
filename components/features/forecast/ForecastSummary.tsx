@@ -55,13 +55,13 @@ export function ForecastSummary({
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Total to Save</span>
-          <span className="font-mono text-muted-foreground">
+          <span className="font-mono font-medium">
             {formatMoney(summary.totalToSave, currency, locale)}
           </span>
         </div>
         <div className="flex justify-between items-center pt-2 border-t border-border">
           <span className="font-medium">Grand Total</span>
-          <span className="font-mono font-bold">
+          <span className="font-mono font-medium">
             {formatMoney(summary.grandTotal, currency, locale)}
           </span>
         </div>
