@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { PieChart, Pie, Cell } from 'recharts';
 import {
   ChartContainer,
@@ -17,6 +16,27 @@ interface AnnualSpendingChartProps {
   highlightedBillId?: string;
   onBillClick?: (billId: string) => void;
 }
+
+/**
+ * CHART_COLORS
+ *
+ * Array of color values for the chart.
+ * Used to assign colors to each bill in the chart.
+ */
+const CHART_COLORS = [
+  'hsl(220, 70%, 50%)',
+  'hsl(160, 60%, 45%)',
+  'hsl(30, 80%, 55%)',
+  'hsl(280, 65%, 60%)',
+  'hsl(340, 75%, 55%)',
+  'hsl(200, 70%, 50%)',
+  'hsl(140, 65%, 45%)',
+  'hsl(50, 85%, 55%)',
+  'hsl(260, 70%, 60%)',
+  'hsl(10, 75%, 55%)',
+  'hsl(180, 70%, 50%)',
+  'hsl(120, 60%, 45%)',
+];
 
 /**
  * AnnualSpendingChart
@@ -55,25 +75,10 @@ export function AnnualSpendingChart({
 
   const chartConfig: ChartConfig = {};
 
-  const chartColors = [
-    'hsl(220, 70%, 50%)',
-    'hsl(160, 60%, 45%)',
-    'hsl(30, 80%, 55%)',
-    'hsl(280, 65%, 60%)',
-    'hsl(340, 75%, 55%)',
-    'hsl(200, 70%, 50%)',
-    'hsl(140, 65%, 45%)',
-    'hsl(50, 85%, 55%)',
-    'hsl(260, 70%, 60%)',
-    'hsl(10, 75%, 55%)',
-    'hsl(180, 70%, 50%)',
-    'hsl(120, 60%, 45%)',
-  ];
-
   chartData.forEach((item, index) => {
     chartConfig[item.escapedBillId] = {
       label: item.name,
-      color: chartColors[index % chartColors.length],
+      color: CHART_COLORS[index % CHART_COLORS.length],
     };
   });
 
