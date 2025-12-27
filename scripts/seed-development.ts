@@ -118,6 +118,30 @@ const CATEGORY_SEED_DATA = [
 ];
 
 /**
+ * Realistic bill amount ranges in minor units (cents) based on 2024 averages.
+ *
+ * Values are organized by category slug for easy lookup.
+ * Ranges allow for realistic variation while maintaining test predictability.
+ */
+const REALISTIC_BILL_AMOUNTS: Record<string, { min: number; max: number; typical?: number }> = {
+  'home-mortgage-rent': { min: 140000, max: 250000, typical: 163200 }, // $1,400-$2,500 (avg $1,632)
+  'electric-utilities': { min: 10000, max: 18000, typical: 14226 }, // $100-$180 (avg $142.26)
+  'gas': { min: 3500, max: 20000, typical: 11000 }, // $35-$200 (avg $110, variable)
+  'internet-broadband': { min: 5500, max: 9500, typical: 7500 }, // $55-$95 (avg $75)
+  'water': { min: 4000, max: 6000, typical: 5000 }, // $40-$60 (avg $50)
+  'cellphone-mobile-service': { min: 6000, max: 15000, typical: 9000 }, // $60-$150 (avg $90)
+  'insurance': { min: 8000, max: 15000, typical: 12000 }, // $80-$150/mo (varies by type)
+  'gym': { min: 3000, max: 8000, typical: 5000 }, // $30-$80 (avg $50)
+  'music-subscriptions': { min: 1000, max: 2000, typical: 1500 }, // $10-$20 (avg $15)
+  'video-streaming-television': { min: 1000, max: 2500, typical: 1800 }, // $10-$25 (avg $18)
+  'cloud-services': { min: 500, max: 3000, typical: 1500 }, // $5-$30 (varies widely)
+  'subscriptions': { min: 500, max: 3000, typical: 1500 }, // $5-$30 (varies)
+  'health-hospital-medicine': { min: 15000, max: 80000, typical: 40000 }, // $150-$800 (varies)
+  'maintenance-repairs': { min: 5000, max: 50000, typical: 25000 }, // $50-$500 (varies)
+  'gifts-donations': { min: 2000, max: 10000, typical: 5000 }, // $20-$100 (varies)
+};
+
+/**
  * Deterministic scenario bills for Forecast View testing.
  *
  * These scenarios are designed to test specific visual patterns in the Forecast Chart:
@@ -142,12 +166,12 @@ interface ScenarioBill {
 
 const SCENARIO_BILLS: ScenarioBill[] = [
   // Scenario A: The Perfect Sinking Fund (Testing Savings Bar)
-  // $600 quarterly = $200/mo savings. Due in 6 months.
+  // $450 quarterly = $150/mo savings. Due in 6 months.
   {
     title: 'Car Insurance',
     slug: 'insurance',
     frequency: 'quarterly',
-    amount: 60000, // $600.00
+    amount: 45000, // $450.00 (realistic quarterly car insurance)
     dueDateMonthsFromNow: 6,
     status: 'pending',
     isAutoPay: false,
@@ -180,7 +204,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Rent Payment',
     slug: 'home-mortgage-rent',
     frequency: 'monthly',
-    amount: 200000, // $2000.00
+    amount: 163200, // $1,632.00 (realistic average rent)
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -189,7 +213,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Internet Bill',
     slug: 'internet-broadband',
     frequency: 'monthly',
-    amount: 8000, // $80.00
+    amount: 7500, // $75.00 (realistic average)
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -206,10 +230,10 @@ const SCENARIO_BILLS: ScenarioBill[] = [
   // Scenario E: Non-Standard Frequency (Testing YoY Data Generation)
   // Biweekly bill to test non-standard frequency transaction generation
   {
-    title: 'Biweekly Paycheck Deduction',
+    title: 'Biweekly Gym Membership',
     slug: 'gym',
     frequency: 'biweekly',
-    amount: 5000, // $50.00
+    amount: 2500, // $25.00 biweekly = $50/mo
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -220,7 +244,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Electric Bill',
     slug: 'electric-utilities',
     frequency: 'monthly',
-    amount: 12000, // $120.00
+    amount: 14226, // $142.26 (realistic average)
     dueDateDaysFromNow: 3, // Due in 3 days (within 7-day range)
     status: 'pending',
     isAutoPay: false,
@@ -231,7 +255,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Water Bill',
     slug: 'water',
     frequency: 'monthly',
-    amount: 4500, // $45.00
+    amount: 5000, // $50.00 (realistic average)
     dueDateDaysFromNow: 15, // Due in 15 days (this month, outside 7-day range)
     status: 'pending',
     isAutoPay: false,
@@ -242,25 +266,26 @@ const SCENARIO_BILLS: ScenarioBill[] = [
  * Bill templates for random generation to supplement scenarios.
  *
  * These provide variety and ensure we have sufficient data for testing.
+ * Amounts are realistic based on 2024 market averages.
  */
 const BILL_TEMPLATES = [
-  { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly' },
-  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly' },
-  { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly' },
-  { title: 'Apple iCloud', slug: 'cloud-services', frequency: 'monthly' },
-  { title: 'Coursera', slug: 'subscriptions', frequency: 'monthly' },
-  { title: 'Cursor Subscription', slug: 'subscriptions', frequency: 'monthly' },
-  { title: '1Password', slug: 'subscriptions', frequency: 'yearly' },
-  { title: 'Discord Nitro', slug: 'subscriptions', frequency: 'monthly' },
-  { title: 'Fastmail', slug: 'subscriptions', frequency: 'yearly' },
-  { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly' },
-  { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly' },
-  { title: 'Gym Membership', slug: 'gym', frequency: 'monthly' },
-  { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly' },
-  { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly' },
-  { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once' },
-  { title: 'Medical Checkup', slug: 'health-hospital-medicine', frequency: 'once' },
-  { title: 'Birthday Gift', slug: 'gifts-donations', frequency: 'once' },
+  { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 1500, max: 3000 } },
+  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 500, max: 5000 } },
+  { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 2000, max: 3000 } },
+  { title: 'Apple iCloud', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 300, max: 1000 } },
+  { title: 'Coursera', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 5000, max: 6000 } },
+  { title: 'Cursor Subscription', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 2000, max: 2500 } },
+  { title: '1Password', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 3600, max: 5000 } },
+  { title: 'Discord Nitro', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 1000, max: 1200 } },
+  { title: 'Fastmail', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 3000, max: 5000 } },
+  { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly', amountRange: { min: 1500, max: 2300 } },
+  { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 14000, max: 16000 } },
+  { title: 'Gym Membership', slug: 'gym', frequency: 'monthly', amountRange: { min: 3000, max: 8000 } },
+  { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly', amountRange: { min: 20000, max: 60000 } },
+  { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly', amountRange: { min: 6000, max: 15000 } },
+  { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once', amountRange: { min: 5000, max: 50000 } },
+  { title: 'Medical Checkup', slug: 'health-hospital-medicine', frequency: 'once', amountRange: { min: 15000, max: 50000 } },
+  { title: 'Birthday Gift', slug: 'gifts-donations', frequency: 'once', amountRange: { min: 2000, max: 10000 } },
 ] as const;
 
 interface BillState {
@@ -525,6 +550,7 @@ function seedBills(
 
   const billsToInsert: typeof schema.bills.$inferInsert[] = [];
   const billsToTagsToInsert: typeof schema.billsToTags.$inferInsert[] = [];
+  const usedBillTitles = new Set<string>(); // Track bill titles to prevent duplicates
 
   const now = new Date();
   const createdAt = subMonths(now, 3); // Set createdAt 3 months in the past
@@ -569,6 +595,7 @@ function seedBills(
     };
 
     billsToInsert.push(bill);
+    usedBillTitles.add(scenario.title);
 
     // Assign 1-2 relevant tags to each bill
     const relevantTags = tags.filter(t =>
@@ -592,11 +619,21 @@ function seedBills(
 
   // Step 2: Process random template bills
   for (const template of BILL_TEMPLATES) {
+    // Skip if bill title already used
+    if (usedBillTitles.has(template.title)) {
+      logger.warn({ title: template.title }, 'Skipping duplicate bill title');
+      continue;
+    }
+
     const id = createId();
 
     const frequency = template.frequency;
     const isVariable = faker.datatype.boolean(0.2);
-    const amount = faker.number.int({ min: 1000, max: 25000 });
+    // Use realistic amount range from template
+    const amount = faker.number.int({
+      min: template.amountRange.min,
+      max: template.amountRange.max,
+    });
 
     // Try to get the matching category, fallback to random if not found
     const category = categoryMap.get(template.slug) ?? faker.helpers.arrayElement(categories);
@@ -635,6 +672,7 @@ function seedBills(
     };
 
     billsToInsert.push(bill);
+    usedBillTitles.add(template.title);
 
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
     billsToTagsToInsert.push(
@@ -646,8 +684,12 @@ function seedBills(
   }
 
   // Generate a few more random bills to ensure variety
-  for (let i = 0; i < 5; i++) {
-    const id = createId();
+  const targetAdditionalBills = 5;
+  const initialBillCount = billsToInsert.length;
+  let attempts = 0;
+  const maxAttempts = 50; // Prevent infinite loop
+  while (billsToInsert.length < initialBillCount + targetAdditionalBills && attempts < maxAttempts) {
+    attempts++;
 
     const frequencies = [
       'weekly',
@@ -663,10 +705,33 @@ function seedBills(
     ] as const;
     const frequency = faker.helpers.arrayElement(frequencies);
 
-    const isVariable = faker.datatype.boolean(0.3);
-    const amount = faker.number.int({ min: 1000, max: 200000 });
+    const category = faker.helpers.arrayElement(categories);
+    const categoryId = category.id;
 
-    const categoryId = faker.helpers.arrayElement(categories).id;
+    // Generate unique bill title
+    let billTitle: string;
+    let titleAttempts = 0;
+    do {
+      billTitle = `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`;
+      titleAttempts++;
+      if (titleAttempts > 50) {
+        // Fallback to include timestamp if too many attempts
+        billTitle = `${billTitle} ${Date.now()}`;
+        break;
+      }
+    } while (usedBillTitles.has(billTitle));
+
+    // Use realistic amount based on category slug, or fallback range
+    const amountRange = REALISTIC_BILL_AMOUNTS[category.slug];
+    let amount: number;
+    if (amountRange) {
+      amount = faker.number.int({ min: amountRange.min, max: amountRange.max });
+    } else {
+      // Fallback for categories without predefined ranges
+      amount = faker.number.int({ min: 1000, max: 50000 });
+    }
+
+    const isVariable = faker.datatype.boolean(0.3);
 
     // Generate realistic bill states based on frequency
     const { status, dueDate, amountDue } = generateBillState(frequency, amount, now);
@@ -682,9 +747,11 @@ function seedBills(
 
     const isArchived = faker.datatype.boolean(0.15);
 
+    const id = createId();
+
     const bill: typeof schema.bills.$inferInsert = {
       id,
-      title: `${faker.finance.accountName()} ${faker.helpers.arrayElement(['Bill', 'Payment', 'Expense', 'Invoice'])}`,
+      title: billTitle,
       amount,
       amountDue,
       dueDate,
@@ -701,6 +768,7 @@ function seedBills(
     };
 
     billsToInsert.push(bill);
+    usedBillTitles.add(billTitle);
 
     const selectedTags = faker.helpers.arrayElements(tags, { min: 1, max: 3 });
     billsToTagsToInsert.push(
