@@ -42,7 +42,7 @@ export function AnnualSpendingList({
       <thead>
         <tr>
           <th className="w-10" aria-hidden="true" />
-          <th>Name</th>
+          <th>Bill</th>
           <th className="text-right">Payments</th>
           <th className="text-right">Average</th>
           <th className="text-right">Amount</th>

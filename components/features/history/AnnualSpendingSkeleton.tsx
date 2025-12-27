@@ -1,4 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollableContainer } from '@/components/common/ScrollableContainer';
+import { ReportSidebar } from '@/components/layout/ReportSidebar';
 
 /**
  * AnnualSpendingSkeleton
@@ -14,8 +16,8 @@ export function AnnualSpendingSkeleton() {
           <Skeleton className="h-4 w-24" />
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border">
-        <div className="overflow-y-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
+        <ScrollableContainer>
           <div className="space-y-4 p-4">
             <div className="space-y-2">
               <Skeleton className="h-10 w-full" />
@@ -25,8 +27,8 @@ export function AnnualSpendingSkeleton() {
               <Skeleton className="h-10 w-full" />
             </div>
           </div>
-        </div>
-        <div className="bg-card border-l border-border overflow-y-auto p-6">
+        </ScrollableContainer>
+        <ReportSidebar>
           <div className="flex flex-col gap-4">
             <Skeleton className="h-7 w-24" />
             <div className="flex flex-col gap-3">
@@ -44,7 +46,7 @@ export function AnnualSpendingSkeleton() {
               </div>
             </div>
           </div>
-        </div>
+        </ReportSidebar>
       </div>
     </div>
   );

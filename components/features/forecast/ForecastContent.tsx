@@ -4,6 +4,8 @@ import { ForecastSummary } from './ForecastSummary';
 import { getForecastData } from '@/actions/forecast';
 import { ForecastService } from '@/lib/services/ForecastService';
 import type { ForecastBill } from '@/lib/services/ForecastService';
+import { ScrollableContainer } from '@/components/common/ScrollableContainer';
+import { ReportSidebar } from '@/components/layout/ReportSidebar';
 
 interface ForecastContentProps {
   month: string;
@@ -55,7 +57,7 @@ export async function ForecastContent({
         />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
-        <div className="overflow-y-auto">
+        <ScrollableContainer>
           <ForecastList
             bills={bills}
             currency={currency}
@@ -63,8 +65,8 @@ export async function ForecastContent({
             month={month}
             tag={tag}
           />
-        </div>
-        <div className="bg-card border-l border-border overflow-y-auto p-6">
+        </ScrollableContainer>
+        <ReportSidebar>
           <ForecastSummary
             billsDueCount={bills.length}
             summary={summary}
@@ -72,7 +74,7 @@ export async function ForecastContent({
             locale={locale}
             month={month}
           />
-        </div>
+        </ReportSidebar>
       </div>
     </div>
   );

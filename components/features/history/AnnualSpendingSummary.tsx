@@ -42,7 +42,7 @@ export function AnnualSpendingSummary({
         </div>
         <div className="flex justify-between items-center pt-2 border-t border-border">
           <span className="font-medium">Amount Paid</span>
-          <span className="font-mono font-bold">
+          <span className="font-mono font-medium">
             {formatMoney(summary.amountPaid, currency, locale)}
           </span>
         </div>

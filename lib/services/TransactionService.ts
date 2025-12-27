@@ -198,6 +198,9 @@ export const TransactionService = {
   /**
    * Fetches all payments for a specific month, optionally filtered by bill tag.
    *
+   * Note: Includes payments from archived bills if the payment date falls within the month.
+   * This ensures complete historical accuracy in Monthly History views.
+   *
    * @param month - Month string in YYYY-MM format
    * @param tag - Optional tag slug for filtering
    * @returns Payments with bill information and category icons, ordered by paidAt descending
@@ -259,6 +262,9 @@ export const TransactionService = {
 
   /**
    * Fetches aggregated payment totals grouped by month for chart visualization.
+   *
+   * Note: Includes payments from archived bills if the payment date falls within the selected date range.
+   * This ensures complete historical accuracy in Monthly History chart views.
    *
    * @param startMonth - Starting month string in YYYY-MM format
    * @param months - Number of months to include in the range
@@ -335,6 +341,9 @@ export const TransactionService = {
 
   /**
    * Fetches all payments for a year, grouped by bill, with aggregated statistics.
+   *
+   * Note: Includes payments from archived bills if the payment date falls within the selected year.
+   * This ensures complete historical accuracy in Annual Spending views.
    *
    * @param year - Year string in YYYY format
    * @returns Array of aggregated bill spending data sorted by totalAmount descending
