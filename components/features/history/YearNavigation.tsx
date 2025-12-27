@@ -1,7 +1,6 @@
 'use client';
 
 import { useQueryState } from 'nuqs';
-import { parse, format, subYears, addYears } from 'date-fns';
 import { Triangle } from 'lucide-react';
 import { cn, getCurrentYear } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
@@ -28,18 +27,16 @@ export function YearNavigation({ currentYear }: YearNavigationProps) {
     shallow: false,
   });
 
-  const yearDate = parse(`${currentYear}-01-01`, 'yyyy-MM-dd', new Date());
-
   const handlePreviousYear = () => {
-    const prevYear = subYears(yearDate, 1);
-    const yearStr = format(prevYear, 'yyyy');
-    setYear(yearStr);
+    const yearNum = parseInt(currentYear, 10);
+    const prevYearStr = (yearNum - 1).toString();
+    setYear(prevYearStr);
   };
 
   const handleNextYear = () => {
-    const nextYear = addYears(yearDate, 1);
-    const yearStr = format(nextYear, 'yyyy');
-    setYear(yearStr);
+    const yearNum = parseInt(currentYear, 10);
+    const nextYearStr = (yearNum + 1).toString();
+    setYear(nextYearStr);
   };
 
   return (
