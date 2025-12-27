@@ -1,6 +1,6 @@
-import { format } from 'date-fns';
 import { formatMoney } from '@/lib/money';
 import { CategoryIcon } from '@/components/features/bills/CategoryIcon';
+import { ClientDate } from '@/components/ui/client-date';
 import type { PaymentWithBill } from '@/lib/types';
 
 interface MonthlyHistoryRowProps {
@@ -36,7 +36,7 @@ export function MonthlyHistoryRow({
         </span>
       </td>
       <td className="text-right">
-        <span>{format(payment.paidAt, 'MMM d, yyyy')}</span>
+        <ClientDate date={payment.paidAt} format="MMM d, yyyy" />
       </td>
     </tr>
   );

@@ -1,5 +1,6 @@
-import { format, parse } from 'date-fns';
+import { parse } from 'date-fns';
 import { MonthlyHistoryRow } from './MonthlyHistoryRow';
+import { ClientDate } from '@/components/ui/client-date';
 import type { PaymentWithBill } from '@/lib/types';
 
 interface MonthlyHistoryListProps {
@@ -26,10 +27,17 @@ export function MonthlyHistoryList({
 }: MonthlyHistoryListProps) {
   if (payments.length === 0) {
     const monthDate = parse(month, 'yyyy-MM', new Date());
-    const monthFormatted = format(monthDate, 'MMMM yyyy');
     const emptyMessage = tag
-      ? `No payments with this tag in ${monthFormatted}`
-      : `No payments in ${monthFormatted}`;
+      ? (
+          <>
+            No payments with this tag in <ClientDate date={monthDate} format="MMMM yyyy" />
+          </>
+        )
+      : (
+          <>
+            No payments in <ClientDate date={monthDate} format="MMMM yyyy" />
+          </>
+        );
     const emptySubtitle = tag
       ? 'Try selecting a different tag or month.'
       : 'Try selecting a different month.';

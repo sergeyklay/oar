@@ -1,7 +1,8 @@
 'use client';
 
-import { format, parse } from 'date-fns';
+import { parse } from 'date-fns';
 import { formatMoney } from '@/lib/money';
+import { ClientDate } from '@/components/ui/client-date';
 import { MonthNavigation } from '@/components/features/forecast/MonthNavigation';
 import type { HistorySummary } from '@/lib/types';
 
@@ -28,12 +29,13 @@ export function MonthlyHistorySummary({
 }: MonthlyHistorySummaryProps) {
   // month is guaranteed valid from historySearchParamsCache (parseAsMonth) or default (getCurrentMonth)
   const monthDate = parse(month, 'yyyy-MM', new Date());
-  const monthLabel = format(monthDate, 'MMMM yyyy');
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">{monthLabel}</h2>
+        <h2 className="text-lg font-semibold">
+          <ClientDate date={monthDate} format="MMMM yyyy" />
+        </h2>
         <MonthNavigation currentMonth={month} />
       </div>
       <div className="flex flex-col gap-3">

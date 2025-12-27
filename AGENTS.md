@@ -197,6 +197,14 @@ User clicks filter
 > - Conversion: Only at UI boundary via `lib/money.ts`
 > - NEVER use `float`, `double`, or `Decimal` for money
 
+### Date & Time Handling
+
+- **Strict Rule:** NEVER use `date-fns`'s `format()` function directly inside JSX/TSX return statements. This causes hydration mismatches (Server UTC vs Client Local).
+- **Solution:** Always use the `<ClientDate />` component for displaying dates.
+  - ✅ Correct: `<ClientDate date={bill.dueDate} format="dd MMM" />`
+  - ❌ Wrong: `<span>{format(bill.dueDate, 'dd MMM')}</span>`
+- **Inputs:** Pass the raw date (string or number from DB) directly to the component. Do not instantiate `new Date()` in Server Components.
+
 ### React Server Components First
 
 - **Default:** Every component is a Server Component unless proven otherwise.
@@ -233,6 +241,7 @@ User clicks filter
 These patterns are explicitly banned. If you see them in existing code, do NOT replicate—flag for refactoring.
 
 - ❌ **Floating-point money:** Never `amount: 49.99`. Always `amount: 4999`.
+- ❌ **Date/time formatting in Server Components:** Never use `date-fns`'s `format()` function directly inside JSX/TSX return statements. Use the `<ClientDate />` component instead.
 - ❌ **Business logic in Server Actions:** Actions validate and delegate. No `if (bill.frequency === 'monthly')` calculations.
 - ❌ **Business logic in Components:** Components render. No `const nextDue = addMonths(bill.dueDate, 1)`.
 - ❌ **External SaaS for core features:** No Plaid, Yodlee, or cloud APIs for bill/payment data.

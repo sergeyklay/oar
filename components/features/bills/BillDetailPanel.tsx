@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryState, parseAsString } from 'nuqs';
@@ -20,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { DueDateService } from '@/lib/services/DueDateService';
+import { ClientDate } from '@/components/ui/client-date';
 import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { BillFormDialog } from './BillFormDialog';
@@ -166,7 +166,7 @@ export function BillDetailPanel({
               {bill.isArchived ? 'Never' : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
             </p>
             <p className={`text-sm ${dateTextColor}`}>
-              {bill.isArchived ? 'Archived' : format(bill.dueDate, 'EEEE, d MMMM yyyy')}
+              {bill.isArchived ? 'Archived' : <ClientDate date={bill.dueDate} format="EEEE, d MMMM yyyy" className={dateTextColor} />}
             </p>
             <p
               className={`text-sm font-bold font-mono ${amountTextColor}`}

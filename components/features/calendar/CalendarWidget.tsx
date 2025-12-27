@@ -6,6 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { getBillDatesForMonth, type DateStatusMap, type PaymentDateMap } from '@/actions/calendar';
 import { useCalendarState } from './useCalendarState';
 import { DayWithDots } from './DayWithDots';
+import { ClientDate } from '@/components/ui/client-date';
 import { parse, format } from 'date-fns';
 
 interface CalendarWidgetProps {
@@ -130,7 +131,9 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, do
       {date && selectedDate && !disableDateFilter && (
         <div className="mt-4 p-3 rounded-lg bg-muted/50">
           <p className="text-sm text-muted-foreground">Showing bills for</p>
-          <p className="font-medium">{format(selectedDate, 'MMMM d, yyyy')}</p>
+          <p className="font-medium">
+            <ClientDate date={selectedDate} format="MMMM d, yyyy" />
+          </p>
           <button
             type="button"
             onClick={clearDate}
