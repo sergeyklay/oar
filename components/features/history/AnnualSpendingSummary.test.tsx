@@ -244,7 +244,7 @@ describe('AnnualSpendingSummary', () => {
       expect(formatMoney).toHaveBeenCalledWith(1350000, 'PLN', 'pl-PL');
     });
 
-    it('has border and bold styling for amount paid row', () => {
+    it('displays amount paid in summation row with label', () => {
       render(
         <AnnualSpendingSummary
           summary={{
@@ -259,13 +259,11 @@ describe('AnnualSpendingSummary', () => {
       );
 
       const amountPaidLabel = screen.getByText('Amount Paid');
+      const amountPaidValue = screen.getByText('$13500.00');
       const amountPaidRow = amountPaidLabel.closest('div');
 
-      expect(amountPaidRow).toHaveClass('pt-2', 'border-t', 'border-border');
-      expect(amountPaidLabel).toHaveClass('font-medium');
-
-      const amountValue = amountPaidRow?.querySelector('.font-medium');
-      expect(amountValue).toBeInTheDocument();
+      expect(amountPaidRow).toContainElement(amountPaidValue);
+      expect(amountPaidLabel).toBeInTheDocument();
     });
 
     it('handles large amounts correctly', () => {

@@ -315,10 +315,10 @@ describe('AnnualSpendingInteractive', () => {
       const summary = screen.getByTestId('annual-spending-summary');
 
       const listParent = list.parentElement;
-      const summaryParent = summary.parentElement?.parentElement;
+      const summaryParent = summary.parentElement;
 
       expect(listParent?.parentElement).toHaveClass('grid');
-      expect(summaryParent?.parentElement).toHaveClass('grid');
+      expect(summaryParent?.parentElement?.parentElement).toHaveClass('grid');
     });
   });
 
