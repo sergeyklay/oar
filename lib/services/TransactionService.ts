@@ -1,6 +1,6 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths, startOfYear, endOfYear } from 'date-fns';
+import { startOfDay, endOfDay, subDays, parse, isValid, startOfMonth, endOfMonth, format, addMonths } from 'date-fns';
 import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 
 /**
@@ -345,9 +345,18 @@ export const TransactionService = {
       return [];
     }
 
-    const yearDate = parse(`${year}-06-15`, 'yyyy-MM-dd', new Date());
-    const yearStart = startOfYear(yearDate);
-    const yearEndDay = endOfYear(yearDate);
+    // Use explicit UTC date construction to ensure consistent behavior
+    // regardless of server timezone.
+    //
+    // To include all payments logged within the calendar year regardless of timezone,
+    // we need to account for payments logged at midnight in timezones ahead of UTC.
+    // A payment logged on Jan 1, 2025 at 00:00:00 in UTC+1 is stored as 2024-12-31T23:00:00.000Z.
+    // So we start from Dec 31, 23:00:00 UTC of the previous year to include these.
+    // This covers timezones up to UTC+1 (most common case).
+    const yearStart = new Date(Date.UTC(yearNum - 1, 11, 31, 23, 0, 0, 0));
+    // End at the last millisecond of Dec 31 in the target year (UTC)
+    const nextYearStart = new Date(Date.UTC(yearNum + 1, 0, 1, 0, 0, 0, 0));
+    const yearEnd = new Date(nextYearStart.getTime() - 1);
 
     const results = await db
       .select({
@@ -359,7 +368,7 @@ export const TransactionService = {
       .from(transactions)
       .innerJoin(bills, eq(transactions.billId, bills.id))
       .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
-      .where(and(gte(transactions.paidAt, yearStart), lte(transactions.paidAt, yearEndDay)))
+      .where(and(gte(transactions.paidAt, yearStart), lte(transactions.paidAt, yearEnd)))
       .orderBy(transactions.billId);
 
     const aggregatedMap = new Map<string, {
