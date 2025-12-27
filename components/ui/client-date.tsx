@@ -29,6 +29,11 @@ export function ClientDate({
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // Mount detection pattern: setState in useEffect is intentional here to prevent hydration
+    // mismatches. This ensures dates only render after client mount, triggering a single re-render
+    // to show the formatted date. This is the standard SSR-safe date rendering pattern.
+    // See ADR-002 for architectural context.
+    //
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
