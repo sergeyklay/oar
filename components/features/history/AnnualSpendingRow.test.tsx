@@ -24,6 +24,30 @@ const mockBill: AggregatedBillSpending = {
   averageAmount: 100000,
 };
 
+function renderRow(props?: {
+  bill?: AggregatedBillSpending;
+  currency?: string;
+  locale?: string;
+  isHighlighted?: boolean;
+  onClick?: () => void;
+}) {
+  const defaultProps = {
+    bill: mockBill,
+    currency: 'USD',
+    locale: 'en-US',
+    isHighlighted: false,
+    ...(props || {}),
+  };
+
+  return render(
+    <table>
+      <tbody>
+        <AnnualSpendingRow {...defaultProps} />
+      </tbody>
+    </table>
+  );
+}
+
 describe('AnnualSpendingRow', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,53 +55,20 @@ describe('AnnualSpendingRow', () => {
 
   describe('rendering', () => {
     it('renders table row with bill data', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       expect(screen.getByText('Rent')).toBeInTheDocument();
       expect(screen.getByText('12')).toBeInTheDocument();
     });
 
     it('displays category icon', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       expect(screen.getByTestId('category-icon-house')).toBeInTheDocument();
     });
 
     it('displays payment count', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       const paymentCount = screen.getByText('12');
       expect(paymentCount).toBeInTheDocument();
@@ -85,52 +76,19 @@ describe('AnnualSpendingRow', () => {
     });
 
     it('formats average amount using formatMoney', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       expect(formatMoney).toHaveBeenCalledWith(100000, 'USD', 'en-US');
     });
 
     it('formats total amount using formatMoney', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       expect(formatMoney).toHaveBeenCalledWith(1200000, 'USD', 'en-US');
     });
 
     it('displays formatted amounts with right alignment', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       const cells = screen.getAllByRole('cell');
       const averageCell = cells.find((cell) => cell.textContent?.includes('$1000.00'));
@@ -141,18 +99,7 @@ describe('AnnualSpendingRow', () => {
     });
 
     it('passes correct currency and locale to formatMoney', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="PLN"
-              locale="pl-PL"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ currency: 'PLN', locale: 'pl-PL' });
 
       expect(formatMoney).toHaveBeenCalledWith(100000, 'PLN', 'pl-PL');
       expect(formatMoney).toHaveBeenCalledWith(1200000, 'PLN', 'pl-PL');
@@ -161,36 +108,14 @@ describe('AnnualSpendingRow', () => {
 
   describe('highlighting', () => {
     it('applies highlight class when highlighted', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={true}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ isHighlighted: true });
 
       const row = screen.getByText('Rent').closest('tr');
       expect(row).toHaveClass('bg-accent');
     });
 
     it('does not apply highlight class when not highlighted', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ isHighlighted: false });
 
       const row = screen.getByText('Rent').closest('tr');
       expect(row).not.toHaveClass('bg-accent');
@@ -202,19 +127,7 @@ describe('AnnualSpendingRow', () => {
       const user = userEvent.setup();
       const mockOnClick = jest.fn();
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-              onClick={mockOnClick}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ onClick: mockOnClick });
 
       const row = screen.getByText('Rent').closest('tr');
       await user.click(row!);
@@ -225,37 +138,14 @@ describe('AnnualSpendingRow', () => {
     it('applies cursor pointer style when onClick is provided', () => {
       const mockOnClick = jest.fn();
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-              onClick={mockOnClick}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ onClick: mockOnClick });
 
       const row = screen.getByText('Rent').closest('tr');
       expect(row).toHaveStyle({ cursor: 'pointer' });
     });
 
     it('does not apply cursor pointer when onClick is not provided', () => {
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       const row = screen.getByText('Rent').closest('tr');
       expect(row).not.toHaveStyle({ cursor: 'pointer' });
@@ -264,18 +154,7 @@ describe('AnnualSpendingRow', () => {
     it('does not call onClick when handler is not provided', async () => {
       const user = userEvent.setup();
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={mockBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow();
 
       const row = screen.getByText('Rent').closest('tr');
       await user.click(row!);
@@ -293,18 +172,7 @@ describe('AnnualSpendingRow', () => {
         averageAmount: 0,
       };
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={zeroBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ bill: zeroBill });
 
       expect(screen.getByText('0')).toBeInTheDocument();
       expect(formatMoney).toHaveBeenCalledWith(0, 'USD', 'en-US');
@@ -318,18 +186,7 @@ describe('AnnualSpendingRow', () => {
         averageAmount: 50000,
       };
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={singlePaymentBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ bill: singlePaymentBill });
 
       expect(screen.getByText('1')).toBeInTheDocument();
       expect(formatMoney).toHaveBeenCalledWith(50000, 'USD', 'en-US');
@@ -342,18 +199,7 @@ describe('AnnualSpendingRow', () => {
         averageAmount: 8333333,
       };
 
-      render(
-        <table>
-          <tbody>
-            <AnnualSpendingRow
-              bill={largeAmountBill}
-              currency="USD"
-              locale="en-US"
-              isHighlighted={false}
-            />
-          </tbody>
-        </table>
-      );
+      renderRow({ bill: largeAmountBill });
 
       expect(formatMoney).toHaveBeenCalledWith(99999999, 'USD', 'en-US');
       expect(formatMoney).toHaveBeenCalledWith(8333333, 'USD', 'en-US');
