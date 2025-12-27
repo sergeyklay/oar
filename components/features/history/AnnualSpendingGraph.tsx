@@ -24,14 +24,6 @@ export function AnnualSpendingGraph({
   highlightedBillId,
   onBillClick,
 }: AnnualSpendingGraphProps) {
-  if (data.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[400px] bg-card border border-border">
-        <div className="w-64 h-64 rounded-full bg-muted" />
-      </div>
-    );
-  }
-
   return (
     <div className="bg-card border border-border">
       <AnnualSpendingChart
