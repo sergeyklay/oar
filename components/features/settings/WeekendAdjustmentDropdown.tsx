@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -32,32 +32,69 @@ const STRATEGY_DESCRIPTIONS: Record<WeekendAdjustmentStrategy, string> = {
   previous_business_day: 'If a bill is due on Saturday or Sunday, show it as due on Friday instead. This ensures you pay before the weekend.',
 };
 
+interface ActionState {
+  value: WeekendAdjustmentStrategy;
+  error: string | null;
+}
+
 export function WeekendAdjustmentDropdown({
   currentValue,
   onUpdate,
 }: WeekendAdjustmentDropdownProps) {
-  const [value, setValue] = useState<WeekendAdjustmentStrategy>(currentValue);
-  const [isPending, startTransition] = useTransition();
+  const updateAction = async (
+    prevState: ActionState,
+    strategy: WeekendAdjustmentStrategy
+  ): Promise<ActionState> => {
+    const result = await onUpdate({ strategy });
+    if (!result.success) {
+      return {
+        value: prevState.value,
+        error: result.error || 'Failed to update setting',
+      };
+    }
+    return {
+      value: strategy,
+      error: null,
+    };
+  };
+
+  const [state, updateStrategy, isPending] = useActionState(updateAction, {
+    value: currentValue,
+    error: null,
+  });
+
+  const prevStateRef = useRef(state);
+
+  useEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
+    if (state.error && !prevState.error) {
+      toast.error('Failed to update setting', {
+        description: state.error,
+      });
+    } else if (
+      state.value !== prevState.value &&
+      !state.error &&
+      !isPending &&
+      state.value !== currentValue
+    ) {
+      toast.success('Setting updated');
+    }
+  }, [state, isPending, currentValue]);
 
   const handleValueChange = (newValue: string) => {
     const strategy = newValue as WeekendAdjustmentStrategy;
-    setValue(strategy);
-    startTransition(async () => {
-      const result = await onUpdate({ strategy });
-      if (!result.success) {
-        toast.error('Failed to update setting', {
-          description: result.error || 'Please try again.',
-        });
-        setValue(currentValue);
-      } else {
-        toast.success('Setting updated');
-      }
-    });
+    updateStrategy(strategy);
   };
 
   return (
     <div className="space-y-2">
-      <Select value={value} onValueChange={handleValueChange} disabled={isPending}>
+      <Select
+        value={state.value}
+        onValueChange={handleValueChange}
+        disabled={isPending}
+      >
         <SelectTrigger className="w-[250px]">
           <SelectValue>
             {isPending ? (
@@ -66,7 +103,7 @@ export function WeekendAdjustmentDropdown({
                 Updating...
               </span>
             ) : (
-              STRATEGY_LABELS[value]
+              STRATEGY_LABELS[state.value]
             )}
           </SelectValue>
         </SelectTrigger>
@@ -79,7 +116,7 @@ export function WeekendAdjustmentDropdown({
         </SelectContent>
       </Select>
       <p className="text-xs text-muted-foreground">
-        {STRATEGY_DESCRIPTIONS[value]}
+        {STRATEGY_DESCRIPTIONS[state.value]}
       </p>
     </div>
   );
