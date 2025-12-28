@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -22,32 +22,62 @@ interface RangeSettingDropdownProps {
   onUpdate: (input: { range: RangeKey }) => Promise<ActionResult<void>>;
 }
 
+interface ActionState {
+  value: string;
+  error: string | null;
+}
+
 export function RangeSettingDropdown({
   currentValue,
   labels,
   onUpdate,
 }: RangeSettingDropdownProps) {
-  const [value, setValue] = useState(currentValue);
-  const [isPending, startTransition] = useTransition();
+  const updateAction = async (
+    prevState: ActionState,
+    range: RangeKey
+  ): Promise<ActionState> => {
+    const result = await onUpdate({ range });
+    if (!result.success) {
+      return {
+        value: prevState.value,
+        error: result.error || 'Failed to update setting',
+      };
+    }
+    return {
+      value: range,
+      error: null,
+    };
+  };
+
+  const [state, updateRange, isPending] = useActionState(updateAction, {
+    value: currentValue,
+    error: null,
+  });
+
+  const prevStateRef = useRef(state);
+
+  useEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
+    if (state.error && !prevState.error) {
+      toast.error('Failed to update setting', {
+        description: state.error,
+      });
+    }
+  }, [state]);
 
   const handleValueChange = (newValue: string) => {
-    setValue(newValue);
-    startTransition(async () => {
-      const result = await onUpdate({
-        range: newValue as RangeKey,
-      });
-      if (!result.success) {
-        toast.error('Failed to update setting', {
-          description: result.error || 'Please try again.',
-        });
-        setValue(currentValue);
-      }
-    });
+    updateRange(newValue as RangeKey);
   };
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={value} onValueChange={handleValueChange} disabled={isPending}>
+      <Select
+        value={state.value}
+        onValueChange={handleValueChange}
+        disabled={isPending}
+      >
         <SelectTrigger className="w-[200px]">
           <SelectValue>
             {isPending ? (
@@ -56,7 +86,7 @@ export function RangeSettingDropdown({
                 Updating...
               </span>
             ) : (
-              labels[value] || value
+              labels[state.value] || state.value
             )}
           </SelectValue>
         </SelectTrigger>

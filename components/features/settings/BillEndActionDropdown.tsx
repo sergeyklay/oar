@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -22,31 +22,68 @@ const OPTIONS = [
   { value: 'archive' as const, label: 'Move to the Archive' },
 ] as const;
 
+interface ActionState {
+  value: 'mark_as_paid' | 'archive';
+  error: string | null;
+}
+
 export function BillEndActionDropdown({
   currentValue,
   onUpdate,
 }: BillEndActionDropdownProps) {
-  const [value, setValue] = useState(currentValue);
-  const [isPending, startTransition] = useTransition();
+  const updateAction = async (
+    prevState: ActionState,
+    value: 'mark_as_paid' | 'archive'
+  ): Promise<ActionState> => {
+    const result = await onUpdate(value);
+    if (!result.success) {
+      return {
+        value: prevState.value,
+        error: result.error || 'Failed to update setting',
+      };
+    }
+    return {
+      value,
+      error: null,
+    };
+  };
+
+  const [state, updateValue, isPending] = useActionState(updateAction, {
+    value: currentValue,
+    error: null,
+  });
+
+  const prevStateRef = useRef(state);
+
+  useEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
+    if (state.error && !prevState.error) {
+      toast.error('Failed to update setting', {
+        description: state.error,
+      });
+    } else if (
+      state.value !== prevState.value &&
+      !state.error &&
+      !isPending &&
+      state.value !== currentValue
+    ) {
+      toast.success('Setting updated');
+    }
+  }, [state, isPending, currentValue]);
 
   const handleValueChange = (newValue: string) => {
-    setValue(newValue as 'mark_as_paid' | 'archive');
-    startTransition(async () => {
-      const result = await onUpdate(newValue as 'mark_as_paid' | 'archive');
-      if (!result.success) {
-        toast.error('Failed to update setting', {
-          description: result.error || 'Please try again.',
-        });
-        setValue(currentValue);
-      } else {
-        toast.success('Setting updated');
-      }
-    });
+    updateValue(newValue as 'mark_as_paid' | 'archive');
   };
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={value} onValueChange={handleValueChange} disabled={isPending}>
+      <Select
+        value={state.value}
+        onValueChange={handleValueChange}
+        disabled={isPending}
+      >
         <SelectTrigger className="w-[200px]">
           <SelectValue>
             {isPending ? (
@@ -55,7 +92,7 @@ export function BillEndActionDropdown({
                 Updating...
               </span>
             ) : (
-              OPTIONS.find((opt) => opt.value === value)?.label || value
+              OPTIONS.find((opt) => opt.value === state.value)?.label || state.value
             )}
           </SelectValue>
         </SelectTrigger>

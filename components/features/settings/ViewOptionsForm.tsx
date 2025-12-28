@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
@@ -27,6 +27,19 @@ interface ViewOptionsFormProps {
   initialWeekStart: number;
 }
 
+interface ViewOptionsState {
+  currency: string;
+  locale: string;
+  weekStart: number;
+  error: string | null;
+  updatingField: FieldKey | null;
+}
+
+interface UpdatePayload {
+  field: FieldKey;
+  value: string;
+}
+
 /**
  * Client component for editing view options settings.
  * Handles currency, locale, and week start day preferences.
@@ -36,53 +49,81 @@ export function ViewOptionsForm({
   initialLocale,
   initialWeekStart,
 }: ViewOptionsFormProps) {
-  const [currency, setCurrency] = useState(initialCurrency);
-  const [locale, setLocale] = useState(initialLocale);
-  const [weekStart, setWeekStart] = useState(String(initialWeekStart));
-  const [isPending, startTransition] = useTransition();
-  const [updatingField, setUpdatingField] = useState<FieldKey | null>(null);
+  const updateAction = async (
+    prevState: ViewOptionsState,
+    payload: UpdatePayload
+  ): Promise<ViewOptionsState> => {
+    const { field, value } = payload;
+    const newCurrency = field === 'currency' ? value : prevState.currency;
+    const newLocale = field === 'locale' ? value : prevState.locale;
+    const newWeekStart = field === 'weekStart' ? parseInt(value, 10) : prevState.weekStart;
 
-  const handleUpdate = (field: FieldKey, value: string) => {
-    const newCurrency = field === 'currency' ? value : currency;
-    const newLocale = field === 'locale' ? value : locale;
-    const newWeekStart = field === 'weekStart' ? value : weekStart;
-
-    if (field === 'currency') setCurrency(value);
-    if (field === 'locale') setLocale(value);
-    if (field === 'weekStart') setWeekStart(value);
-
-    setUpdatingField(field);
-
-    startTransition(async () => {
-      const result = await updateViewOptions({
-        currency: newCurrency,
-        locale: newLocale,
-        weekStart: parseInt(newWeekStart, 10),
-      });
-
-      setUpdatingField(null);
-
-      if (!result.success) {
-        toast.error('Failed to update setting', {
-          description: result.error || 'Please try again.',
-        });
-        if (field === 'currency') setCurrency(initialCurrency);
-        if (field === 'locale') setLocale(initialLocale);
-        if (field === 'weekStart') setWeekStart(String(initialWeekStart));
-      }
+    const result = await updateViewOptions({
+      currency: newCurrency,
+      locale: newLocale,
+      weekStart: newWeekStart,
     });
+
+    if (!result.success) {
+      return {
+        ...prevState,
+        error: result.error || 'Failed to update setting',
+        updatingField: null,
+      };
+    }
+
+    return {
+      currency: newCurrency,
+      locale: newLocale,
+      weekStart: newWeekStart,
+      error: null,
+      updatingField: null,
+    };
   };
 
-  const isCurrencyUpdating = isPending && updatingField === 'currency';
-  const isLocaleUpdating = isPending && updatingField === 'locale';
-  const isWeekStartUpdating = isPending && updatingField === 'weekStart';
+  const updateActionWithField = async (
+    prevState: ViewOptionsState,
+    payload: UpdatePayload
+  ): Promise<ViewOptionsState> => {
+    const stateWithField = { ...prevState, updatingField: payload.field };
+    return updateAction(stateWithField, payload);
+  };
+
+  const [state, updateOptions, isPending] = useActionState(updateActionWithField, {
+    currency: initialCurrency,
+    locale: initialLocale,
+    weekStart: initialWeekStart,
+    error: null,
+    updatingField: null,
+  });
+
+  const prevStateRef = useRef(state);
+
+  useEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
+    if (state.error && !prevState.error) {
+      toast.error('Failed to update setting', {
+        description: state.error,
+      });
+    }
+  }, [state]);
+
+  const handleUpdate = (field: FieldKey, value: string) => {
+    updateOptions({ field, value });
+  };
+
+  const isCurrencyUpdating = isPending && state.updatingField === 'currency';
+  const isLocaleUpdating = isPending && state.updatingField === 'locale';
+  const isWeekStartUpdating = isPending && state.updatingField === 'weekStart';
 
   return (
     <div className="space-y-6">
       <FormItem>
         <Label htmlFor="currency-select">Default Currency</Label>
         <Select
-          value={currency}
+          value={state.currency}
           onValueChange={(value) => handleUpdate('currency', value)}
           disabled={isPending}
         >
@@ -94,7 +135,7 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                CURRENCY_OPTIONS.find((c) => c.code === currency)?.label ?? currency
+                CURRENCY_OPTIONS.find((c) => c.code === state.currency)?.label ?? state.currency
               )}
             </SelectValue>
           </SelectTrigger>
@@ -114,7 +155,7 @@ export function ViewOptionsForm({
       <FormItem>
         <Label htmlFor="locale-select">Default Locale</Label>
         <Select
-          value={locale}
+          value={state.locale}
           onValueChange={(value) => handleUpdate('locale', value)}
           disabled={isPending}
         >
@@ -126,7 +167,7 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                LOCALE_OPTIONS.find((l) => l.code === locale)?.label ?? locale
+                LOCALE_OPTIONS.find((l) => l.code === state.locale)?.label ?? state.locale
               )}
             </SelectValue>
           </SelectTrigger>
@@ -146,7 +187,7 @@ export function ViewOptionsForm({
       <FormItem>
         <Label htmlFor="weekstart-select">Start of Week</Label>
         <Select
-          value={weekStart}
+          value={String(state.weekStart)}
           onValueChange={(value) => handleUpdate('weekStart', value)}
           disabled={isPending}
         >
@@ -158,8 +199,8 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                WEEK_START_OPTIONS.find((w) => w.value === parseInt(weekStart, 10))
-                  ?.label ?? weekStart
+                WEEK_START_OPTIONS.find((w) => w.value === state.weekStart)
+                  ?.label ?? String(state.weekStart)
               )}
             </SelectValue>
           </SelectTrigger>
