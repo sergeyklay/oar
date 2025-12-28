@@ -95,16 +95,17 @@ function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): QueryBou
  *
  * After fetching transactions with extended boundaries, we filter them to exclude
  * payments clearly outside the target month. The filter uses UTC timestamps to
- * determine if a payment could represent the target month in a reasonable timezone.
+ * determine if a payment could represent the target month in UTC+2 timezone.
  *
- * Filter boundaries:
- * - Start: Previous month last day at 22:00 UTC (earliest target month start in UTC+2)
- * - End: Target month last day at 21:59:59.999 UTC (exclusive to avoid overlap with next month)
+ * Filter boundaries (matching the specification):
+ * - Start: Previous month last day at 22:00 UTC (earliest target month start in UTC+2, inclusive)
+ * - End: Target month last day at 21:59:59.999 UTC (latest target month end in UTC+2, exclusive of next month start)
  *
- * The 22:00 UTC boundary accounts for UTC+2 timezone (common in Europe), where
- * midnight local time = 22:00 UTC the previous day. The exclusive end boundary
- * (21:59:59.999 instead of 22:00:00.000) prevents payments from appearing in
- * both the current and next month.
+ * The 22:00 UTC start and 21:59:59.999 UTC end account for UTC+2, where:
+ * - Midnight local time = 22:00 UTC the previous day
+ * - 23:59:59.999 local time = 21:59:59.999 UTC the same day
+ * - This catches payments logged on month boundaries in timezones ahead of UTC
+ *   while excluding payments clearly in adjacent months (e.g., Sept 30 22:00 UTC = Oct 1 in UTC+2, excluded from Sept)
  *
  * @param year - Year number
  * @param month - Month number (1-12)
@@ -118,10 +119,14 @@ function calculateFilterBoundaries(
 ): FilterBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth } = boundaries;
 
-  // 22:00 UTC = 00:00 next day in UTC+2 (common European timezone)
+  // 22:00 UTC = 00:00 next day in UTC+2 (earliest target month start)
   const filterStartUTC = Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 22, 0, 0, 0);
+
+  // Get last day of target month
   const lastDayOfTargetMonth = new Date(year, month, 0).getDate();
-  // Exclusive end: 21:59:59.999 prevents overlap with next month's filter start (22:00:00.000)
+  // 21:59:59.999 UTC = 23:59:59.999 previous day in UTC+2 (latest target month end)
+  // This is one millisecond before 22:00 UTC, which is the start of the next month in UTC+2
+  // Date.UTC months are 0-indexed (0=Jan, 9=Oct, 11=Dec)
   const filterEndUTC = Date.UTC(year, month - 1, lastDayOfTargetMonth, 21, 59, 59, 999);
 
   return { filterStartUTC, filterEndUTC };
@@ -324,7 +329,7 @@ export const TransactionService = {
     month: number,
     year: number
   ): Promise<Transaction[]> {
-    if (month < 1 || month > 12 || isNaN(year)) {
+    if (isNaN(month) || month < 1 || month > 12 || isNaN(year)) {
       return [];
     }
 

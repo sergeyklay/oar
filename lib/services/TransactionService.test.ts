@@ -835,7 +835,7 @@ describe('TransactionService', () => {
         expect(result.find((p) => p.id === 'tx-boundary')).toBeUndefined();
       });
 
-      it('includes payment at month end boundary in UTC-12', async () => {
+      it('includes payment at month end boundary in UTC+2', async () => {
         const endBoundaryPayment: PaymentWithBill = {
           id: 'tx-end-boundary',
           billTitle: 'Rent',
