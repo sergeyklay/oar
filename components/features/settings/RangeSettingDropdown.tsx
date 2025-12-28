@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, startTransition } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -68,7 +68,9 @@ export function RangeSettingDropdown({
   }, [state]);
 
   const handleValueChange = (newValue: string) => {
-    updateRange(newValue as RangeKey);
+    startTransition(() => {
+      updateRange(newValue as RangeKey);
+    });
   };
 
   return (

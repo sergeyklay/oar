@@ -73,6 +73,7 @@ const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => 
   updatedAt: new Date(),
   tags: [],
   categoryIcon: 'zap',
+  weekendAdjustment: null,
   ...overrides,
 });
 

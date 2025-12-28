@@ -1,6 +1,6 @@
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories, settingsSections, settings } from '@/db';
-import { DEFAULT_CATEGORIES, DEFAULT_SECTIONS, DEFAULT_SETTINGS_VALUES } from '@/lib/constants';
+import { DEFAULT_CATEGORIES, DEFAULT_SECTIONS, DEFAULT_SETTINGS_VALUES, DEFAULT_WEEKEND_ADJUSTMENT } from '@/lib/constants';
 import { getLogger } from '@/lib/logger';
 
 jest.mock('@/db');
@@ -644,6 +644,133 @@ describe('SettingsService', () => {
       await SettingsService.setBillEndAction('archive');
 
       expect(db.insert).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('getWeekendAdjustment', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it.each([
+      ['unchanged'],
+      ['next_business_day'],
+      ['previous_business_day'],
+    ])('returns stored value when set to %s', async (strategy) => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: strategy }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getWeekendAdjustment();
+
+      expect(result).toBe(strategy);
+    });
+
+    it('returns default when setting missing', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getWeekendAdjustment();
+
+      expect(result).toBe(DEFAULT_WEEKEND_ADJUSTMENT);
+    });
+
+    it('returns default for invalid value', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ value: 'invalid' }]),
+          }),
+        }),
+      });
+
+      const result = await SettingsService.getWeekendAdjustment();
+
+      expect(result).toBe(DEFAULT_WEEKEND_ADJUSTMENT);
+    });
+  });
+
+  describe('setWeekendAdjustment', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('updates setting when valid strategy provided', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setWeekendAdjustment('next_business_day');
+
+      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(onConflictDoUpdateMock).toHaveBeenCalled();
+    });
+
+    it('throws error when strategy value is invalid', async () => {
+      // @ts-expect-error Testing invalid input
+      await expect(SettingsService.setWeekendAdjustment('invalid')).rejects.toThrow(
+        'Invalid strategy value'
+      );
+    });
+
+    it('throws error when section not found', async () => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([]),
+          }),
+        }),
+      });
+
+      await expect(SettingsService.setWeekendAdjustment('unchanged')).rejects.toThrow(
+        'Behavior Options section not found'
+      );
+    });
+
+    it.each([
+      ['unchanged'],
+      ['next_business_day'],
+      ['previous_business_day'],
+    ])('accepts valid strategy value %s', async (strategy) => {
+      (db.select as jest.Mock).mockReturnValue({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            limit: jest.fn().mockResolvedValue([{ id: 'section-id' }]),
+          }),
+        }),
+      });
+
+      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+      (db.insert as jest.Mock).mockReturnValue({
+        values: jest.fn().mockReturnValue({
+          onConflictDoUpdate: onConflictDoUpdateMock,
+        }),
+      });
+
+      await SettingsService.setWeekendAdjustment(strategy as 'unchanged' | 'next_business_day' | 'previous_business_day');
+
+      expect(db.insert).toHaveBeenCalledWith(settings);
+      expect(onConflictDoUpdateMock).toHaveBeenCalled();
     });
   });
 });

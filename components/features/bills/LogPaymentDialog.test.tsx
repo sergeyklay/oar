@@ -31,6 +31,7 @@ const mockBill: Bill = {
   categoryId: 'cat-1',
   createdAt: new Date(),
   updatedAt: new Date(),
+  weekendAdjustment: null,
 };
 
 interface SetupOptions {

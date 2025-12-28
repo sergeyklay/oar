@@ -65,6 +65,7 @@ const createMockBillWithTags = (overrides: Partial<BillWithTags> = {}): BillWith
   updatedAt: new Date('2025-01-01'),
   tags: [],
   categoryIcon: 'house',
+  weekendAdjustment: null,
   ...overrides,
 });
 
@@ -201,6 +202,49 @@ describe('createBill', () => {
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.isVariable).toBe(true);
+  });
+
+  it('persists weekendAdjustment when provided', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const input = createMockBillInput({
+      title: 'Weekend Bill',
+      amount: '50.00',
+      dueDate: new Date('2025-12-15'),
+      weekendAdjustment: 'next_business_day',
+    });
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(true);
+    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const valuesCall = insertCall.values.mock.calls[0][0];
+    expect(valuesCall.weekendAdjustment).toBe('next_business_day');
+  });
+
+  it('persists null weekendAdjustment when not provided', async () => {
+    (db.insert as jest.Mock).mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+      }),
+    });
+
+    const input = createMockBillInput({
+      title: 'Default Bill',
+      amount: '50.00',
+      dueDate: new Date('2025-12-15'),
+    });
+
+    const result = await createBill(input);
+
+    expect(result.success).toBe(true);
+    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const valuesCall = insertCall.values.mock.calls[0][0];
+    expect(valuesCall.weekendAdjustment).toBeNull();
   });
 
   it('validates all new frequency types', async () => {
@@ -441,6 +485,61 @@ describe('updateBill', () => {
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.isVariable).toBe(false);
+  });
+
+  it('updates weekendAdjustment when provided', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input: UpdateBillInput = {
+      ...createMockBillInput({
+        title: 'Updated Weekend Bill',
+        amount: '50.00',
+        dueDate: new Date('2025-12-15'),
+        weekendAdjustment: 'previous_business_day',
+      }),
+      id: 'bill-1',
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+    expect(setCall.weekendAdjustment).toBe('previous_business_day');
+  });
+
+  it('updates weekendAdjustment to null when not provided', async () => {
+    (db.update as jest.Mock).mockReturnValue({
+      set: jest.fn().mockReturnValue({
+        where: jest.fn().mockResolvedValue(undefined),
+      }),
+    });
+    (db.delete as jest.Mock).mockReturnValue({
+      where: jest.fn().mockResolvedValue(undefined),
+    });
+
+    const input: UpdateBillInput = {
+      ...createMockBillInput({
+        title: 'Reset Weekend Bill',
+        amount: '50.00',
+        dueDate: new Date('2025-12-15'),
+      }),
+      id: 'bill-1',
+    };
+
+    const result = await updateBill(input);
+
+    expect(result.success).toBe(true);
+    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const setCall = updateCall.set.mock.calls[0][0];
+    expect(setCall.weekendAdjustment).toBeNull();
   });
 
   it('does NOT modify amountDue when updating bill (preserves partial payment progress)', async () => {
