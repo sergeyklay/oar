@@ -55,6 +55,11 @@ export function RangeSettingDropdown({
   });
 
   const prevStateRef = useRef(state);
+  const prevCurrentValueRef = useRef(currentValue);
+
+  const displayValue = !isPending && currentValue !== state.value
+    ? currentValue
+    : state.value;
 
   useEffect(() => {
     const prevState = prevStateRef.current;
@@ -67,6 +72,21 @@ export function RangeSettingDropdown({
     }
   }, [state]);
 
+  useEffect(() => {
+    const prevCurrentValue = prevCurrentValueRef.current;
+    prevCurrentValueRef.current = currentValue;
+
+    if (
+      currentValue !== prevCurrentValue &&
+      currentValue !== state.value &&
+      !isPending
+    ) {
+      startTransition(() => {
+        updateRange(currentValue as RangeKey);
+      });
+    }
+  }, [currentValue, state.value, isPending, updateRange]);
+
   const handleValueChange = (newValue: string) => {
     startTransition(() => {
       updateRange(newValue as RangeKey);
@@ -76,7 +96,7 @@ export function RangeSettingDropdown({
   return (
     <div className="flex items-center gap-2">
       <Select
-        value={state.value}
+        value={displayValue}
         onValueChange={handleValueChange}
         disabled={isPending}
       >
@@ -88,7 +108,7 @@ export function RangeSettingDropdown({
                 Updating...
               </span>
             ) : (
-              labels[state.value] || state.value
+              labels[displayValue] || displayValue
             )}
           </SelectValue>
         </SelectTrigger>
