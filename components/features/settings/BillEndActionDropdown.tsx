@@ -54,6 +54,11 @@ export function BillEndActionDropdown({
   });
 
   const prevStateRef = useRef(state);
+  const prevCurrentValueRef = useRef(currentValue);
+
+  const displayValue = !isPending && currentValue !== state.value
+    ? currentValue
+    : state.value;
 
   useEffect(() => {
     const prevState = prevStateRef.current;
@@ -73,6 +78,21 @@ export function BillEndActionDropdown({
     }
   }, [state, isPending, currentValue]);
 
+  useEffect(() => {
+    const prevCurrentValue = prevCurrentValueRef.current;
+    prevCurrentValueRef.current = currentValue;
+
+    if (
+      currentValue !== prevCurrentValue &&
+      currentValue !== state.value &&
+      !isPending
+    ) {
+      startTransition(() => {
+        updateValue(currentValue);
+      });
+    }
+  }, [currentValue, state.value, isPending, updateValue]);
+
   const handleValueChange = (newValue: string) => {
     startTransition(() => {
       updateValue(newValue as 'mark_as_paid' | 'archive');
@@ -82,7 +102,7 @@ export function BillEndActionDropdown({
   return (
     <div className="flex items-center gap-2">
       <Select
-        value={state.value}
+        value={displayValue}
         onValueChange={handleValueChange}
         disabled={isPending}
       >
@@ -94,7 +114,7 @@ export function BillEndActionDropdown({
                 Updating...
               </span>
             ) : (
-              OPTIONS.find((opt) => opt.value === state.value)?.label || state.value
+              OPTIONS.find((opt) => opt.value === displayValue)?.label || displayValue
             )}
           </SelectValue>
         </SelectTrigger>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, startTransition } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -64,6 +64,11 @@ export function WeekendAdjustmentDropdown({
   });
 
   const prevStateRef = useRef(state);
+  const prevCurrentValueRef = useRef(currentValue);
+
+  const displayValue = !isPending && currentValue !== state.value
+    ? currentValue
+    : state.value;
 
   useEffect(() => {
     const prevState = prevStateRef.current;
@@ -83,15 +88,32 @@ export function WeekendAdjustmentDropdown({
     }
   }, [state, isPending, currentValue]);
 
+  useEffect(() => {
+    const prevCurrentValue = prevCurrentValueRef.current;
+    prevCurrentValueRef.current = currentValue;
+
+    if (
+      currentValue !== prevCurrentValue &&
+      currentValue !== state.value &&
+      !isPending
+    ) {
+      startTransition(() => {
+        updateStrategy(currentValue);
+      });
+    }
+  }, [currentValue, state.value, isPending, updateStrategy]);
+
   const handleValueChange = (newValue: string) => {
     const strategy = newValue as WeekendAdjustmentStrategy;
-    updateStrategy(strategy);
+    startTransition(() => {
+      updateStrategy(strategy);
+    });
   };
 
   return (
     <div className="space-y-2">
       <Select
-        value={state.value}
+        value={displayValue}
         onValueChange={handleValueChange}
         disabled={isPending}
       >
@@ -103,7 +125,7 @@ export function WeekendAdjustmentDropdown({
                 Updating...
               </span>
             ) : (
-              STRATEGY_LABELS[state.value]
+              STRATEGY_LABELS[displayValue]
             )}
           </SelectValue>
         </SelectTrigger>
@@ -116,7 +138,7 @@ export function WeekendAdjustmentDropdown({
         </SelectContent>
       </Select>
       <p className="text-xs text-muted-foreground">
-        {STRATEGY_DESCRIPTIONS[state.value]}
+        {STRATEGY_DESCRIPTIONS[displayValue]}
       </p>
     </div>
   );
