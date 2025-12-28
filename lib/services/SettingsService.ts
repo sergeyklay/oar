@@ -465,7 +465,7 @@ export const SettingsService = {
    * Retrieves the global weekend adjustment strategy setting.
    *
    * @returns {Promise<WeekendAdjustmentStrategy>} The weekend adjustment strategy.
-   * Defaults to 'next_business_day' if not set.
+   * Defaults to 'unchanged' if not set.
    */
   async getWeekendAdjustment(): Promise<WeekendAdjustmentStrategy> {
     const [row] = await db
