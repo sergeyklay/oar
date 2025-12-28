@@ -46,6 +46,10 @@ const createBillSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   tagIds: z.array(z.string()).optional().default([]),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional().default(''),
+  weekendAdjustment: z
+    .enum(['unchanged', 'next_business_day', 'previous_business_day'])
+    .optional()
+    .nullable(),
 });
 
 export type CreateBillInput = z.infer<typeof createBillSchema>;
@@ -84,7 +88,9 @@ export async function createBill(
     };
   }
 
-  const { title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes } = parsed.data;
+  const {
+    title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes, weekendAdjustment,
+  } = parsed.data;
 
   try {
     const cleanedAmount = parseMoneyInput(amount);
@@ -105,6 +111,7 @@ export async function createBill(
         categoryId,
         status,
         notes: notes || null,
+        weekendAdjustment: weekendAdjustment ?? null,
       })
       .returning({ id: bills.id });
 
@@ -312,7 +319,7 @@ export async function updateBill(
   }
 
   const {
-    id, title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes,
+    id, title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes, weekendAdjustment,
   } = parsed.data;
 
   try {
@@ -346,6 +353,7 @@ export async function updateBill(
         categoryId,
         status,
         notes: notes || null,
+        weekendAdjustment: weekendAdjustment ?? null,
         updatedAt: now,
       })
       .where(eq(bills.id, id));

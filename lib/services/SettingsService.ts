@@ -7,7 +7,9 @@ import {
   DEFAULT_CATEGORIES,
   DEFAULT_SECTIONS,
   DEFAULT_SETTINGS_VALUES,
+  DEFAULT_WEEKEND_ADJUSTMENT,
 } from '@/lib/constants';
+import type { WeekendAdjustmentStrategy } from '@/lib/types';
 import type { StructuredSettings, SettingsSection } from '@/db/schema';
 import { createId } from '@paralleldrive/cuid2';
 import { getLogger } from '@/lib/logger';
@@ -456,6 +458,75 @@ export const SettingsService = {
       .onConflictDoUpdate({
         target: settings.key,
         set: { value: action, updatedAt: new Date() },
+      });
+  },
+
+  /**
+   * Retrieves the global weekend adjustment strategy setting.
+   *
+   * @returns {Promise<WeekendAdjustmentStrategy>} The weekend adjustment strategy.
+   * Defaults to 'next_business_day' if not set.
+   */
+  async getWeekendAdjustment(): Promise<WeekendAdjustmentStrategy> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'weekendAdjustment'))
+      .limit(1);
+
+    if (!row) {
+      return DEFAULT_WEEKEND_ADJUSTMENT;
+    }
+
+    const value = row.value as WeekendAdjustmentStrategy;
+    if (
+      value === 'unchanged' ||
+      value === 'next_business_day' ||
+      value === 'previous_business_day'
+    ) {
+      return value;
+    }
+
+    return DEFAULT_WEEKEND_ADJUSTMENT;
+  },
+
+  /**
+   * Persists the global weekend adjustment strategy setting to the database.
+   *
+   * @param {WeekendAdjustmentStrategy} strategy - The strategy to use.
+   * @throws {Error} If the "behavior-options" section does not exist.
+   */
+  async setWeekendAdjustment(strategy: WeekendAdjustmentStrategy): Promise<void> {
+    if (
+      strategy !== 'unchanged' &&
+      strategy !== 'next_business_day' &&
+      strategy !== 'previous_business_day'
+    ) {
+      throw new Error(
+        `Invalid strategy value: ${strategy}. Must be 'unchanged', 'next_business_day', or 'previous_business_day'`
+      );
+    }
+
+    const [behaviorOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'behavior-options'))
+      .limit(1);
+
+    if (!behaviorOptionsSection) {
+      throw new Error('Behavior Options section not found');
+    }
+
+    await db
+      .insert(settings)
+      .values({
+        key: 'weekendAdjustment',
+        value: strategy,
+        sectionId: behaviorOptionsSection.id,
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: strategy, updatedAt: new Date() },
       });
   },
 

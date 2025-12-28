@@ -1,0 +1,1 @@
+ALTER TABLE `bills` ADD `weekend_adjustment` text;

@@ -1,6 +1,8 @@
 import type { BillWithTags, BillFrequency } from '@/db/schema';
 import { BillService } from './BillService';
 import { EstimationService } from './EstimationService';
+import { SettingsService } from './SettingsService';
+import { DateAdjustmentService } from './DateAdjustmentService';
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import { eq, and, inArray, ne } from 'drizzle-orm';
 import {
@@ -377,6 +379,9 @@ export const ForecastService = {
     const allBillIds = billsWithCategories.map((b) => b.bill.id);
     const tagsByBillId = await BillService.getTagsForBills(allBillIds);
 
+    // Fetch global weekend adjustment setting once per query (batch operation)
+    const globalStrategy = await SettingsService.getWeekendAdjustment();
+
     // Project occurrences and enrich with forecast data
     const forecastBills: ForecastBill[] = [];
     const variableBillsToEstimate: Array<{ billId: string; forecastBillIndex: number }> = [];
@@ -390,22 +395,34 @@ export const ForecastService = {
         categoryIcon,
       };
 
-      // Project occurrence in target month
-      const projectedDueDate = projectOccurrenceInMonth(
+      // Project occurrence in target month (returns anchor date)
+      const anchorDate = projectOccurrenceInMonth(
         billWithTags,
         targetMonthStart,
         targetMonthEnd
       );
 
       // Skip if no occurrence in target month
-      if (!projectedDueDate) {
+      if (!anchorDate) {
         continue;
       }
 
-      // Create forecast bill with projected due date
+      // Resolve effective weekend adjustment strategy
+      const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
+        bill.weekendAdjustment,
+        globalStrategy
+      );
+
+      // Apply weekend adjustment to anchor date for display
+      const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
+        anchorDate,
+        effectiveStrategy
+      );
+
+      // Create forecast bill with adjusted due date
       const forecastBill: ForecastBill = {
         ...billWithTags,
-        dueDate: projectedDueDate,
+        dueDate: adjustedDueDate,
         displayAmount: bill.amount, // Default to base amount
         isEstimated: false,
         amortizationAmount: null,

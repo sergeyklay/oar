@@ -85,12 +85,16 @@ export const DEFAULT_SETTINGS_VALUES = [
   { key: 'dueSoonRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'paidRecentlyRange', value: '7', sectionSlug: 'behavior-options' },
   { key: 'billEndAction', value: 'mark_as_paid', sectionSlug: 'behavior-options' },
+  { key: 'weekendAdjustment', value: 'unchanged', sectionSlug: 'behavior-options' },
   { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
   { key: 'locale', value: 'en-US', sectionSlug: 'view-options' },
   { key: 'weekStart', value: '0', sectionSlug: 'view-options' },
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
 ] as const;
+
+/** Default weekend adjustment strategy when no global setting is configured. */
+export const DEFAULT_WEEKEND_ADJUSTMENT = 'unchanged' as const;
 
 /** Currency options for the view settings dropdown */
 export const CURRENCY_OPTIONS = [

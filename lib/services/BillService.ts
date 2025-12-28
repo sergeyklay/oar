@@ -1,7 +1,9 @@
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
-import type { BillWithTags, Tag } from '@/db/schema';
+import type { BillWithTags, Tag, Bill } from '@/db/schema';
 import { and, eq, gte, lte, inArray, ne, or, sql } from 'drizzle-orm';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
+import { SettingsService } from './SettingsService';
+import { DateAdjustmentService } from './DateAdjustmentService';
 
 /**
  * Filter options for bill queries.
@@ -319,6 +321,25 @@ export const BillService = {
       tags: tagsByBillId.get(bill.id) ?? [],
       categoryIcon,
     }));
+  },
+
+  /**
+   * Returns the adjusted payment date for a bill.
+   *
+   * Fetches the global weekend adjustment setting, resolves the effective strategy
+   * (bill override if set, otherwise global default), and applies the adjustment to
+   * the bill's anchor date (stored in dueDate).
+   *
+   * @param bill - Bill with weekendAdjustment field (may be null)
+   * @returns Adjusted payment date for display
+   */
+  async getAdjustedDueDate(bill: Pick<Bill, 'dueDate' | 'weekendAdjustment'>): Promise<Date> {
+    const globalStrategy = await SettingsService.getWeekendAdjustment();
+    const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
+      bill.weekendAdjustment,
+      globalStrategy
+    );
+    return DateAdjustmentService.adjustPaymentDate(bill.dueDate, effectiveStrategy);
   },
 };
 

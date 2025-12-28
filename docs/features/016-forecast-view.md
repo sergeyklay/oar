@@ -1,7 +1,7 @@
 # Forecast View
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-26
+- **Last Updated:** 2025-12-27
 
 ## Overview
 
@@ -20,14 +20,15 @@ Oar uses a "generated instances" model. When you create a bill, you define its r
 The Forecast View uses this model to project future months. When you select June 2026, the system:
 
 1. Fetches all active bill definitions (not filtered by date)
-2. For each bill, uses RRule to calculate whether it has an occurrence in June 2026
-3. If an occurrence exists, creates a virtual projection with the calculated due date
-4. Enriches the projection with estimates (for variable bills) and amortization (for long-term bills)
-5. Displays the projected bills as if they were real records
+2. For each bill, uses RRule to calculate whether it has an occurrence in June 2026 (this produces an anchor date)
+3. If an occurrence exists, applies weekend adjustment to the anchor date to get the payment date for display
+4. Creates a virtual projection with the adjusted payment date
+5. Enriches the projection with estimates (for variable bills) and amortization (for long-term bills)
+6. Displays the projected bills as if they were real records
 
-This means you can forecast any month, even years in the future, without the database needing to store every possible occurrence. The projection happens in memory using the same recurrence engine that advances bills after payments.
+This means you can forecast any month, even years in the future, without the database needing to store every possible occurrence. The projection happens in memory using the same recurrence engine that advances bills after payments. Weekend adjustment ensures the forecast shows when payments actually clear, not just when they're scheduled.
 
-**Example:** You have a quarterly bill due March 10. When you select June 2026 in Forecast, the system calculates that the next occurrence after March 10 would be June 10, 2026. It projects a bill with due date June 10, 2026, even though no payment has been logged yet and no database record exists for that date.
+**Example:** You have a quarterly bill due March 10. When you select June 2026 in Forecast, the system calculates that the next occurrence after March 10 would be June 10, 2026 (anchor date). If June 10, 2026 is a Saturday and your strategy is "Move to Next Business Day," the forecast displays June 12, 2026 (Monday) as the payment date. The projection uses the anchor date for recurrence calculations, but displays the adjusted date for accuracy.
 
 ## Viewing forecast data
 
@@ -151,4 +152,5 @@ To confirm the Forecast View works correctly:
 * [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
 * [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
 * [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) - Categorizing bills with tags
+* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
 
