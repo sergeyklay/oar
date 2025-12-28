@@ -936,8 +936,9 @@ describe('BillService.searchByTitle', () => {
       expect(mockBuilder.where).toHaveBeenCalled();
     });
   });
+});
 
-  describe('getAdjustedDueDate', () => {
+describe('BillService.getAdjustedDueDate', () => {
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -1000,4 +1001,3 @@ describe('BillService.searchByTitle', () => {
       expect(result).toEqual(saturday);
     });
   });
-});
