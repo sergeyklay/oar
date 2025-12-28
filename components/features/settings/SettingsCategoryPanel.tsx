@@ -9,7 +9,7 @@ import type { SettingsCategoryPanelProps } from './types';
  */
 export function SettingsCategoryPanel({ category }: SettingsCategoryPanelProps) {
   return (
-    <div className="p-6">
+    <div className="p-8 max-w-5xl">
       <SettingsCategory category={category} />
     </div>
   );
