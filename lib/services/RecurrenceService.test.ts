@@ -22,11 +22,6 @@ jest.mock('@/lib/services/DateAdjustmentService', () => ({
   },
 }));
 
-jest.mock('date-fns', () => {
-  const actual = jest.requireActual('date-fns');
-  return actual;
-});
-
 import { RecurrenceService } from './RecurrenceService';
 import { db } from '@/db';
 import { SettingsService } from './SettingsService';
