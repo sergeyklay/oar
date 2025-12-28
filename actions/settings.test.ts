@@ -225,6 +225,7 @@ describe('updateViewOptions', () => {
       currency: 'EUR',
       locale: 'de-DE',
       weekStart: 1,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(true);
@@ -232,7 +233,10 @@ describe('updateViewOptions', () => {
       currency: 'EUR',
       locale: 'de-DE',
       weekStart: 1,
+      includeAutoPayInDueSoon: true,
     });
+    expect(revalidatePath).toHaveBeenCalledWith('/due-soon');
+    expect(revalidatePath).toHaveBeenCalledWith('/due-this-month');
     expect(revalidatePath).toHaveBeenCalledWith('/');
     expect(revalidatePath).toHaveBeenCalledWith('/settings');
   });
@@ -244,6 +248,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'en-US',
       weekStart: '0' as unknown as number,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(true);
@@ -251,6 +256,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'en-US',
       weekStart: 0,
+      includeAutoPayInDueSoon: true,
     });
   });
 
@@ -259,6 +265,7 @@ describe('updateViewOptions', () => {
       currency: 'US',
       locale: 'en-US',
       weekStart: 0,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(false);
@@ -272,6 +279,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'a',
       weekStart: 0,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(false);
@@ -284,6 +292,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'en-US',
       weekStart: 7,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(false);
@@ -296,6 +305,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'en-US',
       weekStart: -1,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(false);
@@ -311,6 +321,7 @@ describe('updateViewOptions', () => {
       currency: 'USD',
       locale: 'en-US',
       weekStart: 0,
+      includeAutoPayInDueSoon: true,
     });
 
     expect(result.success).toBe(false);
@@ -330,6 +341,7 @@ describe('updateViewOptions', () => {
         currency: 'USD',
         locale: 'en-US',
         weekStart: day,
+        includeAutoPayInDueSoon: true,
       });
 
       expect(result.success).toBe(true);

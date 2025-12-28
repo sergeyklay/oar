@@ -21,13 +21,15 @@ export default async function DueSoonPage({
 }: DueSoonPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
-  const [settings, dueSoonRange, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
-    SettingsService.getAll(),
-    SettingsService.getDueSoonRange(),
-    getTags(),
-    getCategoriesGrouped(),
-    getDefaultCategoryId(),
-  ]);
+  const [settings, dueSoonRange, includeAutoPay, tags, categoriesGrouped, defaultCategoryId] =
+    await Promise.all([
+      SettingsService.getAll(),
+      SettingsService.getDueSoonRange(),
+      SettingsService.getIncludeAutoPayInDueSoon(),
+      getTags(),
+      getCategoriesGrouped(),
+      getDefaultCategoryId(),
+    ]);
   const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   return (
@@ -57,6 +59,7 @@ export default async function DueSoonPage({
             date={date ?? undefined}
             tag={tag ?? undefined}
             selectedBillId={selectedBill}
+            includeAutoPayInDueSoon={includeAutoPay}
           />
         </MainContent>
       </AppShell>

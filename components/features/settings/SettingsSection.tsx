@@ -37,6 +37,7 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
             initialCurrency={userSettings.currency}
             initialLocale={userSettings.locale}
             initialWeekStart={userSettings.weekStart}
+            initialIncludeAutoPayInDueSoon={userSettings.includeAutoPayInDueSoon}
           />
         </CardContent>
       </Card>

@@ -22,8 +22,9 @@ export default async function DueThisMonthPage({
 }: DueThisMonthPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
-  const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
+  const [settings, includeAutoPay, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
     SettingsService.getAll(),
+    SettingsService.getIncludeAutoPayInDueSoon(),
     getTags(),
     getCategoriesGrouped(),
     getDefaultCategoryId(),
@@ -58,6 +59,7 @@ export default async function DueThisMonthPage({
             date={date ?? undefined}
             tag={tag ?? undefined}
             selectedBillId={selectedBill}
+            includeAutoPayInDueSoon={includeAutoPay}
           />
         </MainContent>
       </AppShell>

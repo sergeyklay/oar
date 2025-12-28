@@ -22,6 +22,7 @@ jest.mock('@/lib/services/BillService', () => ({
 jest.mock('@/lib/services/SettingsService', () => ({
   SettingsService: {
     getDueSoonRange: jest.fn(),
+    getIncludeAutoPayInDueSoon: jest.fn().mockResolvedValue(true),
   },
 }));
 jest.mock('@/lib/services/RecurrenceService', () => ({
@@ -1032,7 +1033,11 @@ describe('getBillsForCurrentMonthStats', () => {
     expect(result.count).toBe(3);
     expect(result.total).toBe(113000);
     expect(result.hasVariable).toBe(true);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ month: '2025-12' });
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      month: '2025-12',
+      includeAutoPayInDueSoon: true,
+    });
   });
 
   it('returns zero stats when no bills exist for current month', async () => {
@@ -1045,7 +1050,11 @@ describe('getBillsForCurrentMonthStats', () => {
     expect(result.count).toBe(0);
     expect(result.total).toBe(0);
     expect(result.hasVariable).toBe(false);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ month: '2025-12' });
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      month: '2025-12',
+      includeAutoPayInDueSoon: true,
+    });
   });
 
   it('calculates hasVariable as false when no variable bills exist', async () => {
@@ -1068,6 +1077,7 @@ describe('getBillsForCurrentMonthStats', () => {
     const result = await getBillsForCurrentMonthStats();
 
     expect(result.hasVariable).toBe(false);
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
   });
 
   it('sums amountDue values correctly for total calculation', async () => {
@@ -1099,6 +1109,21 @@ describe('getBillsForCurrentMonthStats', () => {
     const result = await getBillsForCurrentMonthStats();
 
     expect(result.total).toBe(25000);
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes includeAutoPayInDueSoon setting to BillService.getFiltered', async () => {
+    jest.setSystemTime(new Date('2025-12-15'));
+    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(false);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    await getBillsForCurrentMonthStats();
+
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      month: '2025-12',
+      includeAutoPayInDueSoon: false,
+    });
   });
 });
 
@@ -1193,6 +1218,7 @@ describe('getAllBillsStats', () => {
 describe('getBillsForDueSoonStats', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(true);
   });
 
   it('calculates count, total, and hasVariable correctly for due soon bills', async () => {
@@ -1228,7 +1254,11 @@ describe('getBillsForDueSoonStats', () => {
     expect(result.total).toBe(105000);
     expect(result.hasVariable).toBe(true);
     expect(SettingsService.getDueSoonRange).toHaveBeenCalledTimes(1);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 7 });
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      dateRange: 7,
+      includeAutoPayInDueSoon: true,
+    });
   });
 
   it('returns zero stats when no bills exist for due soon range', async () => {
@@ -1240,7 +1270,11 @@ describe('getBillsForDueSoonStats', () => {
     expect(result.count).toBe(0);
     expect(result.total).toBe(0);
     expect(result.hasVariable).toBe(false);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 7 });
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      dateRange: 7,
+      includeAutoPayInDueSoon: true,
+    });
   });
 
   it('calculates hasVariable as false when no variable bills exist', async () => {
@@ -1263,6 +1297,7 @@ describe('getBillsForDueSoonStats', () => {
     const result = await getBillsForDueSoonStats();
 
     expect(result.hasVariable).toBe(false);
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
   });
 
   it('uses configured range from settings', async () => {
@@ -1271,7 +1306,11 @@ describe('getBillsForDueSoonStats', () => {
 
     await getBillsForDueSoonStats();
 
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ dateRange: 14 });
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      dateRange: 14,
+      includeAutoPayInDueSoon: true,
+    });
   });
 
   it('sums amountDue values correctly for total calculation', async () => {
@@ -1303,6 +1342,22 @@ describe('getBillsForDueSoonStats', () => {
     const result = await getBillsForDueSoonStats();
 
     expect(result.total).toBe(25000);
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes includeAutoPayInDueSoon setting to BillService.getFiltered', async () => {
+    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(false);
+    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+
+    await getBillsForDueSoonStats();
+
+    expect(SettingsService.getDueSoonRange).toHaveBeenCalledTimes(1);
+    expect(SettingsService.getIncludeAutoPayInDueSoon).toHaveBeenCalledTimes(1);
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      dateRange: 7,
+      includeAutoPayInDueSoon: false,
+    });
   });
 });
 

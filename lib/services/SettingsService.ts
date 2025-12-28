@@ -59,12 +59,15 @@ export interface UserSettings {
   locale: string;
   /** Day of week the calendar should start on (0=Sunday, 1=Monday, etc.). */
   weekStart: WeekStartDay;
+  /** Whether to include automatic bills in Due Soon and Due This Month views. */
+  includeAutoPayInDueSoon: boolean;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
   currency: DEFAULT_CURRENCY,
   locale: DEFAULT_LOCALE,
   weekStart: 0,
+  includeAutoPayInDueSoon: true,
 };
 
 /**
@@ -93,10 +96,19 @@ export const SettingsService = {
       ? weekStartValue
       : DEFAULT_SETTINGS.weekStart) as WeekStartDay;
 
+    const includeAutoPayInDueSoonValue = settingsMap['includeAutoPayInDueSoon'];
+    const includeAutoPayInDueSoon =
+      includeAutoPayInDueSoonValue === 'true'
+        ? true
+        : includeAutoPayInDueSoonValue === 'false'
+          ? false
+          : DEFAULT_SETTINGS.includeAutoPayInDueSoon;
+
     return {
       currency: settingsMap['currency'] ?? DEFAULT_SETTINGS.currency,
       locale: settingsMap['locale'] ?? DEFAULT_SETTINGS.locale,
       weekStart,
+      includeAutoPayInDueSoon,
     };
   },
 
@@ -138,13 +150,14 @@ export const SettingsService = {
    * Updates multiple view options settings at once.
    * All settings are updated atomically within a single transaction.
    *
-   * @param options - Object containing currency, locale, and weekStart values.
+   * @param options - Object containing currency, locale, weekStart, and includeAutoPayInDueSoon values.
    * @throws {Error} If the "view-options" section does not exist.
    */
   async setViewOptions(options: {
     currency: string;
     locale: string;
     weekStart: number;
+    includeAutoPayInDueSoon: boolean;
   }): Promise<void> {
     const [viewOptionsSection] = await db
       .select()
@@ -160,6 +173,7 @@ export const SettingsService = {
       { key: 'currency', value: options.currency },
       { key: 'locale', value: options.locale },
       { key: 'weekStart', value: String(options.weekStart) },
+      { key: 'includeAutoPayInDueSoon', value: String(options.includeAutoPayInDueSoon) },
     ];
 
     db.transaction((tx) => {
@@ -527,6 +541,70 @@ export const SettingsService = {
       .onConflictDoUpdate({
         target: settings.key,
         set: { value: strategy, updatedAt: new Date() },
+      });
+  },
+
+  /**
+   * Retrieves the "include automatic bills in due soon" setting.
+   *
+   * @returns {Promise<boolean>} True if automatic bills should be included, false otherwise.
+   * Defaults to true if not set.
+   */
+  async getIncludeAutoPayInDueSoon(): Promise<boolean> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'includeAutoPayInDueSoon'))
+      .limit(1);
+
+    if (!row) {
+      return true;
+    }
+
+    if (row.value === 'true') {
+      return true;
+    }
+
+    if (row.value === 'false') {
+      return false;
+    }
+
+    logger.error(
+      {
+        invalidValue: row.value,
+      },
+      'Invalid includeAutoPayInDueSoon value, defaulting to true'
+    );
+    return true;
+  },
+
+  /**
+   * Persists the "include automatic bills in due soon" setting.
+   *
+   * @param {boolean} include - Whether to include automatic bills in due soon views.
+   * @throws {Error} If the "view-options" section does not exist.
+   */
+  async setIncludeAutoPayInDueSoon(include: boolean): Promise<void> {
+    const [viewOptionsSection] = await db
+      .select()
+      .from(settingsSections)
+      .where(eq(settingsSections.slug, 'view-options'))
+      .limit(1);
+
+    if (!viewOptionsSection) {
+      throw new Error('View Options section not found');
+    }
+
+    await db
+      .insert(settings)
+      .values({
+        key: 'includeAutoPayInDueSoon',
+        value: String(include),
+        sectionId: viewOptionsSection.id,
+      })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: String(include), updatedAt: new Date() },
       });
   },
 

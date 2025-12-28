@@ -1,5 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ViewOptionsForm } from './ViewOptionsForm';
+import { updateViewOptions } from '@/actions/settings';
 
 jest.mock('@/actions/settings', () => ({
   updateViewOptions: jest.fn().mockResolvedValue({ success: true }),
@@ -15,6 +17,7 @@ const defaultProps = {
   initialCurrency: 'USD',
   initialLocale: 'en-US',
   initialWeekStart: 0,
+  initialIncludeAutoPayInDueSoon: true,
 };
 
 describe('ViewOptionsForm', () => {
@@ -55,6 +58,17 @@ describe('ViewOptionsForm', () => {
       expect(document.getElementById('currency-description')).toBeInTheDocument();
       expect(document.getElementById('locale-description')).toBeInTheDocument();
       expect(document.getElementById('weekstart-description')).toBeInTheDocument();
+      expect(document.getElementById('include-autopay-description')).toBeInTheDocument();
+    });
+
+    it('associates include auto pay label with switch via htmlFor', () => {
+      render(<ViewOptionsForm {...defaultProps} />);
+
+      const label = screen.getByText('Include automatic bills in bills due soon');
+      const switchElement = document.getElementById('include-autopay-toggle');
+
+      expect(label).toHaveAttribute('for', 'include-autopay-toggle');
+      expect(switchElement).toBeInTheDocument();
     });
   });
 
@@ -83,6 +97,7 @@ describe('ViewOptionsForm', () => {
           initialCurrency="EUR"
           initialLocale="de-DE"
           initialWeekStart={1}
+          initialIncludeAutoPayInDueSoon={true}
         />
       );
 
@@ -107,6 +122,121 @@ describe('ViewOptionsForm', () => {
       expect(screen.getByRole('combobox', { name: /default currency/i })).toBeInTheDocument();
       expect(screen.getByRole('combobox', { name: /default locale/i })).toBeInTheDocument();
       expect(screen.getByRole('combobox', { name: /start of week/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('include auto pay toggle', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('displays initial include auto pay value as checked when true', () => {
+      render(<ViewOptionsForm {...defaultProps} />);
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      expect(switchElement).toHaveAttribute('aria-checked', 'true');
+    });
+
+    it('displays initial include auto pay value as unchecked when false', () => {
+      render(
+        <ViewOptionsForm
+          {...defaultProps}
+          initialIncludeAutoPayInDueSoon={false}
+        />
+      );
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      expect(switchElement).toHaveAttribute('aria-checked', 'false');
+    });
+
+    it('toggles include auto pay setting when switch is clicked', async () => {
+      const user = userEvent.setup();
+      (updateViewOptions as jest.Mock).mockResolvedValue({ success: true });
+
+      render(<ViewOptionsForm {...defaultProps} />);
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      await user.click(switchElement);
+
+      await waitFor(() => {
+        expect(updateViewOptions).toHaveBeenCalledWith({
+          currency: 'USD',
+          locale: 'en-US',
+          weekStart: 0,
+          includeAutoPayInDueSoon: false,
+        });
+      });
+    });
+
+    it('toggles from false to true when switch is clicked', async () => {
+      const user = userEvent.setup();
+      (updateViewOptions as jest.Mock).mockResolvedValue({ success: true });
+
+      render(
+        <ViewOptionsForm
+          {...defaultProps}
+          initialIncludeAutoPayInDueSoon={false}
+        />
+      );
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      await user.click(switchElement);
+
+      await waitFor(() => {
+        expect(updateViewOptions).toHaveBeenCalledWith({
+          currency: 'USD',
+          locale: 'en-US',
+          weekStart: 0,
+          includeAutoPayInDueSoon: true,
+        });
+      });
+    });
+
+    it('shows loading indicator while updating include auto pay setting', async () => {
+      const user = userEvent.setup();
+      let resolveUpdate: (value: { success: boolean }) => void;
+      const updatePromise = new Promise<{ success: boolean }>((resolve) => {
+        resolveUpdate = resolve;
+      });
+      (updateViewOptions as jest.Mock).mockReturnValue(updatePromise);
+
+      render(<ViewOptionsForm {...defaultProps} />);
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      await user.click(switchElement);
+
+      await waitFor(() => {
+        const loader = document.querySelector('.animate-spin');
+        expect(loader).toBeInTheDocument();
+      });
+
+      resolveUpdate!({ success: true });
+      await waitFor(() => {
+        expect(updateViewOptions).toHaveBeenCalled();
+      });
+    });
+
+    it('disables switch while update is pending', async () => {
+      const user = userEvent.setup();
+      let resolveUpdate: (value: { success: boolean }) => void;
+      const updatePromise = new Promise<{ success: boolean }>((resolve) => {
+        resolveUpdate = resolve;
+      });
+      (updateViewOptions as jest.Mock).mockReturnValue(updatePromise);
+
+      render(<ViewOptionsForm {...defaultProps} />);
+
+      const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
+      await user.click(switchElement);
+
+      await waitFor(() => {
+        expect(switchElement).toBeDisabled();
+      });
+
+      resolveUpdate!({ success: true });
+      await waitFor(() => {
+        expect(updateViewOptions).toHaveBeenCalled();
+      });
     });
   });
 });

@@ -240,7 +240,11 @@ export async function getBillsForCurrentMonthStats(): Promise<{
   hasVariable: boolean;
 }> {
   const currentMonth = format(new Date(), 'yyyy-MM');
-  const bills = await BillService.getFiltered({ month: currentMonth });
+  const includeAutoPay = await SettingsService.getIncludeAutoPayInDueSoon();
+  const bills = await BillService.getFiltered({
+    month: currentMonth,
+    includeAutoPayInDueSoon: includeAutoPay,
+  });
 
   const count = bills.length;
   const total = bills.reduce((sum, bill) => sum + bill.amountDue, 0);
@@ -275,8 +279,14 @@ export async function getBillsForDueSoonStats(): Promise<{
   total: number;
   hasVariable: boolean;
 }> {
-  const range = await SettingsService.getDueSoonRange();
-  const bills = await BillService.getFiltered({ dateRange: range });
+  const [range, includeAutoPay] = await Promise.all([
+    SettingsService.getDueSoonRange(),
+    SettingsService.getIncludeAutoPayInDueSoon(),
+  ]);
+  const bills = await BillService.getFiltered({
+    dateRange: range,
+    includeAutoPayInDueSoon: includeAutoPay,
+  });
 
   const count = bills.length;
   const total = bills.reduce((sum, bill) => sum + bill.amountDue, 0);

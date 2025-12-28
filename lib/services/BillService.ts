@@ -25,6 +25,8 @@ export interface GetBillsOptions {
   includeArchived?: boolean;
   /** Return only archived bills (takes precedence over includeArchived) */
   archivedOnly?: boolean;
+  /** Whether to include automatic bills in Due Soon and Due This Month views (default: true) */
+  includeAutoPayInDueSoon?: boolean;
 }
 
 /**
@@ -151,7 +153,15 @@ export const BillService = {
    * @returns Array of bills with tags and category icons
    */
   async getFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
-    const { date, month, dateRange, tag, includeArchived = false, archivedOnly = false } = options;
+    const {
+      date,
+      month,
+      dateRange,
+      tag,
+      includeArchived = false,
+      archivedOnly = false,
+      includeAutoPayInDueSoon = true,
+    } = options;
 
     const conditions = [];
 
@@ -183,6 +193,10 @@ export const BillService = {
 
       conditions.push(lte(bills.dueDate, endDate));
       conditions.push(ne(bills.status, 'paid'));
+
+      if (includeAutoPayInDueSoon === false) {
+        conditions.push(eq(bills.isAutoPay, false));
+      }
     } else if (month) {
       const [year, monthNum] = month.split('-').map(Number);
       const monthDate = new Date(year, monthNum - 1, 1);
@@ -202,6 +216,10 @@ export const BillService = {
         conditions.push(lte(bills.dueDate, monthEnd));
       }
       conditions.push(ne(bills.status, 'paid'));
+
+      if (includeAutoPayInDueSoon === false) {
+        conditions.push(eq(bills.isAutoPay, false));
+      }
     }
 
     if (tag) {

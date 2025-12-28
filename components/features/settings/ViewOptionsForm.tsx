@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useActionState, useEffect, useRef, useState, startTransition } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { updateViewOptions } from '@/actions/settings';
 import {
   CURRENCY_OPTIONS,
@@ -19,18 +20,20 @@ import {
   WEEK_START_OPTIONS,
 } from '@/lib/constants';
 
-type FieldKey = 'currency' | 'locale' | 'weekStart';
+type FieldKey = 'currency' | 'locale' | 'weekStart' | 'includeAutoPayInDueSoon';
 
 interface ViewOptionsFormProps {
   initialCurrency: string;
   initialLocale: string;
   initialWeekStart: number;
+  initialIncludeAutoPayInDueSoon: boolean;
 }
 
 interface ViewOptionsState {
   currency: string;
   locale: string;
   weekStart: number;
+  includeAutoPayInDueSoon: boolean;
   error: string | null;
 }
 
@@ -47,6 +50,7 @@ export function ViewOptionsForm({
   initialCurrency,
   initialLocale,
   initialWeekStart,
+  initialIncludeAutoPayInDueSoon,
 }: ViewOptionsFormProps) {
   const [updatingField, setUpdatingField] = useState<FieldKey | null>(null);
 
@@ -58,11 +62,14 @@ export function ViewOptionsForm({
     const newCurrency = field === 'currency' ? value : prevState.currency;
     const newLocale = field === 'locale' ? value : prevState.locale;
     const newWeekStart = field === 'weekStart' ? parseInt(value, 10) : prevState.weekStart;
+    const newIncludeAutoPayInDueSoon =
+      field === 'includeAutoPayInDueSoon' ? value === 'true' : prevState.includeAutoPayInDueSoon;
 
     const result = await updateViewOptions({
       currency: newCurrency,
       locale: newLocale,
       weekStart: newWeekStart,
+      includeAutoPayInDueSoon: newIncludeAutoPayInDueSoon,
     });
 
     if (!result.success) {
@@ -76,6 +83,7 @@ export function ViewOptionsForm({
       currency: newCurrency,
       locale: newLocale,
       weekStart: newWeekStart,
+      includeAutoPayInDueSoon: newIncludeAutoPayInDueSoon,
       error: null,
     };
   };
@@ -84,6 +92,7 @@ export function ViewOptionsForm({
     currency: initialCurrency,
     locale: initialLocale,
     weekStart: initialWeekStart,
+    includeAutoPayInDueSoon: initialIncludeAutoPayInDueSoon,
     error: null,
   });
 
@@ -117,12 +126,16 @@ export function ViewOptionsForm({
 
   const handleUpdate = (field: FieldKey, value: string) => {
     setUpdatingField(field);
-    updateOptions({ field, value });
+    startTransition(() => {
+      updateOptions({ field, value });
+    });
   };
 
   const isCurrencyUpdating = isPending && updatingField === 'currency';
   const isLocaleUpdating = isPending && updatingField === 'locale';
   const isWeekStartUpdating = isPending && updatingField === 'weekStart';
+  const isIncludeAutoPayInDueSoonUpdating =
+    isPending && updatingField === 'includeAutoPayInDueSoon';
 
   return (
     <div className="space-y-6">
@@ -220,6 +233,26 @@ export function ViewOptionsForm({
         </Select>
         <p id="weekstart-description" className="text-xs text-muted-foreground">
           Sets the first day of the week in the calendar
+        </p>
+      </FormItem>
+
+      <FormItem>
+        <Label htmlFor="include-autopay-toggle">Include automatic bills in bills due soon</Label>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="include-autopay-toggle"
+            checked={state.includeAutoPayInDueSoon}
+            onCheckedChange={(checked) =>
+              handleUpdate('includeAutoPayInDueSoon', String(checked))
+            }
+            disabled={isPending}
+          />
+          {isIncludeAutoPayInDueSoonUpdating && (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          )}
+        </div>
+        <p id="include-autopay-description" className="text-xs text-muted-foreground">
+          Show automatic bills in Due Soon and Due This Month views
         </p>
       </FormItem>
     </div>

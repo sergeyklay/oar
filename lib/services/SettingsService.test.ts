@@ -460,12 +460,13 @@ describe('SettingsService', () => {
         currency: 'EUR',
         locale: 'de-DE',
         weekStart: 1,
+        includeAutoPayInDueSoon: true,
       });
 
       expect(db.transaction).toHaveBeenCalled();
-      expect(txInsertMock).toHaveBeenCalledTimes(3);
+      expect(txInsertMock).toHaveBeenCalledTimes(4);
       expect(txInsertMock).toHaveBeenCalledWith(settings);
-      expect(runMock).toHaveBeenCalledTimes(3);
+      expect(runMock).toHaveBeenCalledTimes(4);
     });
 
     it('throws error when view-options section not found', async () => {
@@ -482,6 +483,7 @@ describe('SettingsService', () => {
           currency: 'USD',
           locale: 'en-US',
           weekStart: 0,
+          includeAutoPayInDueSoon: true,
         })
       ).rejects.toThrow('View Options section not found');
     });
@@ -510,6 +512,7 @@ describe('SettingsService', () => {
         currency: 'USD',
         locale: 'en-US',
         weekStart: 6,
+        includeAutoPayInDueSoon: true,
       });
 
       expect(valuesMock).toHaveBeenCalledWith(

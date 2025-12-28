@@ -117,6 +117,7 @@ const updateViewOptionsSchema = z.object({
   currency: z.string().length(3),
   locale: z.string().min(2),
   weekStart: z.coerce.number().min(0).max(6),
+  includeAutoPayInDueSoon: z.coerce.boolean(),
 });
 
 /**
@@ -140,6 +141,8 @@ export async function updateViewOptions(
 
   try {
     await SettingsService.setViewOptions(parsed.data);
+    revalidatePath('/due-soon');
+    revalidatePath('/due-this-month');
     revalidatePath('/');
     revalidatePath('/settings');
     return { success: true };
