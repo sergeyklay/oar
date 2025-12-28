@@ -76,6 +76,7 @@ jobs:
         run: npm run test:coverage -- --verbose
 
       - name: Upload code coverage
+        if: ${{ !cancelled() && success() }}
         uses: codecov/codecov-action@v5
         with:
           directory: coverage
@@ -85,7 +86,7 @@ jobs:
           verbose: true
 
       - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && success() }}
         uses: codecov/codecov-action@v5
         with:
           report_type: test_results
@@ -94,5 +95,5 @@ jobs:
           verbose: true
 
       - name: Success Reporting
-        if: success()
+        if: ${{ !cancelled() && success() }}
         run: git log --format=fuller -5
