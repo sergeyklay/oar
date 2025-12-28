@@ -30,11 +30,6 @@ jest.mock('./DateAdjustmentService', () => ({
   },
 }));
 
-jest.mock('date-fns', () => {
-  const actual = jest.requireActual('date-fns');
-  return actual;
-});
-
 describe('AutoPayService', () => {
   beforeEach(() => {
     resetDbMocks();
