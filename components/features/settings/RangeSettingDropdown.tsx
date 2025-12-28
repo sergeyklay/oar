@@ -1,7 +1,5 @@
 'use client';
 
-import { useActionState, useEffect, useRef, startTransition } from 'react';
-import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -12,6 +10,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import type { RangeKey } from '@/lib/constants';
 import type { ActionResult } from '@/lib/types';
+import { useSettingDropdown } from './useSettingDropdown';
 
 interface RangeSettingDropdownProps {
   /** Current value as string (e.g., "7") */
@@ -22,76 +21,16 @@ interface RangeSettingDropdownProps {
   onUpdate: (input: { range: RangeKey }) => Promise<ActionResult<void>>;
 }
 
-interface ActionState {
-  value: string;
-  error: string | null;
-}
-
 export function RangeSettingDropdown({
   currentValue,
   labels,
   onUpdate,
 }: RangeSettingDropdownProps) {
-  const updateAction = async (
-    prevState: ActionState,
-    range: RangeKey
-  ): Promise<ActionState> => {
-    const result = await onUpdate({ range });
-    if (!result.success) {
-      return {
-        value: prevState.value,
-        error: result.error || 'Failed to update setting',
-      };
-    }
-    return {
-      value: range,
-      error: null,
-    };
-  };
-
-  const [state, updateRange, isPending] = useActionState(updateAction, {
-    value: currentValue,
-    error: null,
+  const { displayValue, isPending, handleValueChange } = useSettingDropdown<RangeKey>({
+    currentValue: currentValue as RangeKey,
+    onUpdate: (range: RangeKey) => onUpdate({ range }),
+    showSuccessToast: false,
   });
-
-  const prevStateRef = useRef(state);
-  const prevCurrentValueRef = useRef(currentValue);
-
-  const displayValue = !isPending && currentValue !== state.value
-    ? currentValue
-    : state.value;
-
-  useEffect(() => {
-    const prevState = prevStateRef.current;
-    prevStateRef.current = state;
-
-    if (state.error && !prevState.error) {
-      toast.error('Failed to update setting', {
-        description: state.error,
-      });
-    }
-  }, [state]);
-
-  useEffect(() => {
-    const prevCurrentValue = prevCurrentValueRef.current;
-    prevCurrentValueRef.current = currentValue;
-
-    if (
-      currentValue !== prevCurrentValue &&
-      currentValue !== state.value &&
-      !isPending
-    ) {
-      startTransition(() => {
-        updateRange(currentValue as RangeKey);
-      });
-    }
-  }, [currentValue, state.value, isPending, updateRange]);
-
-  const handleValueChange = (newValue: string) => {
-    startTransition(() => {
-      updateRange(newValue as RangeKey);
-    });
-  };
 
   return (
     <div className="flex items-center gap-2">
