@@ -75,6 +75,7 @@ const formSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   tagIds: z.array(z.string()),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
+  weekendAdjustment: z.enum(['unchanged', 'next_business_day', 'previous_business_day']),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -119,6 +120,7 @@ export function BillFormDialog({
       categoryId: defaultCategoryId ?? '',
       tagIds: [],
       notes: '',
+      weekendAdjustment: 'unchanged',
     },
   });
 
@@ -137,6 +139,7 @@ export function BillFormDialog({
           categoryId: defaultCategoryId ?? '',
           tagIds: [],
           notes: bill.notes || '',
+          weekendAdjustment: bill.weekendAdjustment ?? 'unchanged',
         });
 
         // Fetch existing tags for this bill
@@ -163,6 +166,7 @@ export function BillFormDialog({
           tagIds: [],
           notes: '',
           dueDate: undefined,
+          weekendAdjustment: 'unchanged',
         });
       }
     }
@@ -175,6 +179,7 @@ export function BillFormDialog({
       const baseInput = {
         ...values,
         amount: parseMoneyInput(values.amount),
+        weekendAdjustment: values.weekendAdjustment ?? null,
       };
 
       const result = isEditMode
@@ -400,6 +405,32 @@ export function BillFormDialog({
                       placeholder="Add tags..."
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="weekendAdjustment"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>If due date falls on weekend</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="unchanged">Leave Unchanged</SelectItem>
+                      <SelectItem value="next_business_day">Move to Next Business Day</SelectItem>
+                      <SelectItem value="previous_business_day">Move to Previous Business Day</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Choose how to handle this bill when its due date falls on a weekend.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

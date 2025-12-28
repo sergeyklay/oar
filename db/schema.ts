@@ -96,6 +96,21 @@ export const bills = sqliteTable('bills', {
     enum: ['pending', 'paid', 'overdue'],
   }).notNull().default('pending'),
   isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+  /**
+   * Weekend adjustment strategy for this bill.
+   *
+   * Values:
+   * - null: Use global default setting
+   * - 'unchanged': Leave weekend dates as-is (digital subscriptions)
+   * - 'next_business_day': Move Saturday/Sunday to Monday (banking behavior)
+   * - 'previous_business_day': Move Saturday/Sunday to Friday (safe payer)
+   *
+   * Note: The dueDate column stores the "anchor date" (unadjusted) for recurrence
+   * calculations. The adjusted payment date is calculated on-the-fly when displaying.
+   */
+  weekendAdjustment: text('weekend_adjustment', {
+    enum: ['unchanged', 'next_business_day', 'previous_business_day'],
+  }),
   /** Optional user notes for bill context (account numbers, reminders, etc.) */
   notes: text('notes'),
   /** Foreign key to bill_categories */

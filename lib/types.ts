@@ -183,3 +183,31 @@ export interface AnnualSpendingSummary {
   totalPayments: number;
   amountPaid: number;
 }
+
+/**
+ * Weekend adjustment strategy for payment dates that fall on weekends.
+ *
+ * - 'unchanged': Leave weekend dates as-is (for digital subscriptions that process on weekends)
+ * - 'next_business_day': Move Saturday/Sunday to Monday (classic banking behavior)
+ * - 'previous_business_day': Move Saturday/Sunday to Friday (safe payer strategy)
+ */
+export type WeekendAdjustmentStrategy =
+  | 'unchanged'
+  | 'next_business_day'
+  | 'previous_business_day';
+
+/**
+ * Configuration object for weekend adjustment strategy resolution.
+ *
+ * @property {WeekendAdjustmentStrategy} global - Global default strategy from settings
+ * @property {WeekendAdjustmentStrategy | null} billOverride - Bill-specific override (null = use global)
+ * @property {WeekendAdjustmentStrategy} effective - Effective strategy to use (billOverride ?? global)
+ */
+export interface WeekendAdjustmentConfig {
+  /** Global default strategy */
+  global: WeekendAdjustmentStrategy;
+  /** Bill-specific override (null = use global) */
+  billOverride: WeekendAdjustmentStrategy | null;
+  /** Effective strategy (billOverride ?? global) */
+  effective: WeekendAdjustmentStrategy;
+}

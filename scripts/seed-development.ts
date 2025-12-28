@@ -8,6 +8,7 @@ import { type RunResult } from 'better-sqlite3';
 import { type ExtractTablesWithRelations, lt, eq } from 'drizzle-orm';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getLogger } from '@/lib/logger';
+import type { WeekendAdjustmentStrategy, BillFrequency } from '@/lib/types';
 
 const logger = getLogger('SeedScript');
 
@@ -154,7 +155,7 @@ const BILL_AMOUNTS: Record<string, { min: number; max: number; typical?: number 
 interface ScenarioBill {
   title: string;
   slug: string;
-  frequency: 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';
+  frequency: BillFrequency;
   amount: number; // in minor units (cents)
   dueDateMonthsFromNow?: number; // months from now (optional)
   dueDateDaysFromNow?: number; // days from now (optional, takes precedence over months)
@@ -162,6 +163,7 @@ interface ScenarioBill {
   status?: 'pending' | 'paid' | 'overdue';
   isAutoPay?: boolean;
   notes?: string;
+  weekendAdjustment?: WeekendAdjustmentStrategy | null;
 }
 
 const SCENARIO_BILLS: ScenarioBill[] = [
@@ -208,6 +210,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
+    weekendAdjustment: 'previous_business_day', // Safe payer strategy for rent
   },
   {
     title: 'Internet Bill',
@@ -226,6 +229,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
+    weekendAdjustment: 'unchanged', // Digital subscription processes on weekends
   },
   // Scenario E: Non-Standard Frequency (Testing YoY Data Generation)
   // Biweekly bill to test non-standard frequency transaction generation
@@ -248,6 +252,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     dueDateDaysFromNow: 3, // Due in 3 days (within 7-day range)
     status: 'pending',
     isAutoPay: false,
+    weekendAdjustment: 'next_business_day', // Traditional banking behavior
   },
   // Scenario G: Due This Month (Testing current month filter)
   // Bill due in 15 days to test Due This Month view
@@ -261,6 +266,48 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     isAutoPay: false,
   },
 ];
+
+/**
+ * Determines weekend adjustment strategy based on bill characteristics.
+ *
+ * Digital subscriptions process on weekends, so they use 'unchanged'.
+ * Traditional bills use banking behavior ('next_business_day').
+ * Most bills use null to inherit global default.
+ */
+function determineWeekendAdjustment(
+  title: string,
+  slug: string
+): WeekendAdjustmentStrategy | null {
+  // Digital subscriptions process on weekends
+  const digitalSubscriptionKeywords = [
+    'spotify', 'netflix', 'amazon prime', 'discord', 'subscription',
+    'streaming', 'music', 'video', 'cloud', 'icloud', 'aws', 'google',
+    'coursera', 'cursor', 'coderabbit', '1password', 'fastmail'
+  ];
+  const isDigitalSubscription = digitalSubscriptionKeywords.some(
+    keyword => title.toLowerCase().includes(keyword) || slug.includes(keyword)
+  );
+
+  if (isDigitalSubscription) {
+    return 'unchanged';
+  }
+
+  // Traditional bills use banking behavior (70% next_business_day, 30% null for global default)
+  const traditionalBillKeywords = [
+    'rent', 'mortgage', 'insurance', 'electric', 'water', 'gas',
+    'phone', 'internet', 'utilities'
+  ];
+  const isTraditionalBill = traditionalBillKeywords.some(
+    keyword => title.toLowerCase().includes(keyword) || slug.includes(keyword)
+  );
+
+  if (isTraditionalBill) {
+    return faker.datatype.boolean(0.7) ? 'next_business_day' : null;
+  }
+
+  // Most other bills use global default (null)
+  return null;
+}
 
 /**
  * Bill templates for random generation to supplement scenarios.
@@ -590,6 +637,7 @@ function seedBills(
       isArchived: false, // Keep all scenario bills active
       categoryId: category.id,
       notes: scenario.notes ?? null,
+      weekendAdjustment: scenario.weekendAdjustment ?? null,
       createdAt,
       updatedAt: now,
     };
@@ -652,6 +700,7 @@ function seedBills(
       : null;
 
     const isArchived = faker.datatype.boolean(0.15);
+    const weekendAdjustment = determineWeekendAdjustment(template.title, template.slug);
 
     const bill: typeof schema.bills.$inferInsert = {
       id,
@@ -667,6 +716,7 @@ function seedBills(
       isArchived,
       categoryId,
       notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
+      weekendAdjustment,
       createdAt: subDays(dueDate, 30),
       updatedAt: now,
     };
@@ -756,6 +806,7 @@ function seedBills(
       : null;
 
     const isArchived = faker.datatype.boolean(0.15);
+    const weekendAdjustment = determineWeekendAdjustment(billTitle, category.slug);
 
     const id = createId();
 
@@ -773,6 +824,7 @@ function seedBills(
       isArchived,
       categoryId,
       notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : null,
+      weekendAdjustment,
       createdAt: subDays(dueDate, 30),
       updatedAt: now,
     };

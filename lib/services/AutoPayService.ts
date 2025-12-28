@@ -1,7 +1,9 @@
 import { db, bills, transactions } from '@/db';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
+import { SettingsService } from '@/lib/services/SettingsService';
+import { DateAdjustmentService } from '@/lib/services/DateAdjustmentService';
 import { eq, and, lte, ne } from 'drizzle-orm';
-import { endOfDay } from 'date-fns';
+import { endOfDay, addDays } from 'date-fns';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('AutoPayService');
@@ -50,18 +52,23 @@ export const AutoPayService = {
   async processAutoPay(): Promise<AutoPayResult> {
     const today = endOfDay(new Date());
 
-    // Query all unpaid auto-pay bills that are due today or earlier
+    // Fetch global weekend adjustment setting once per batch
+    const globalStrategy = await SettingsService.getWeekendAdjustment();
+
+    // Query all unpaid auto-pay bills that might be eligible
+    // Use anchor date <= today + 2 days to catch "previous_business_day" cases
+    // (Saturday anchor adjusted to Friday, so we need to include Saturday anchors when today is Friday)
     // Uses ne(status, 'paid') instead of eq(status, 'pending') to handle backlog:
     // checkDailyBills() runs at 00:00 and may mark old bills as 'overdue'
     // before auto-pay runs at 00:05. We still want to process those.
-    const eligibleBills = await db
+    const candidateBills = await db
       .select()
       .from(bills)
       .where(
         and(
           eq(bills.isAutoPay, true),
           ne(bills.status, 'paid'),
-          lte(bills.dueDate, today),
+          lte(bills.dueDate, addDays(today, 2)),
           eq(bills.isArchived, false)
         )
       );
@@ -70,11 +77,29 @@ export const AutoPayService = {
     let failed = 0;
     const failedIds: string[] = [];
 
-    for (const bill of eligibleBills) {
+    for (const bill of candidateBills) {
       try {
-        // Calculate next due date for recurring bills
-        const nextDueDate = RecurrenceService.calculateNextDueDate(
-          bill.dueDate,
+        // Resolve effective weekend adjustment strategy
+        const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
+          bill.weekendAdjustment,
+          globalStrategy
+        );
+
+        // Calculate adjusted due date using anchor date from database
+        const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
+          bill.dueDate, // Anchor date
+          effectiveStrategy
+        );
+
+        // Compare today against adjusted date (not anchor date) for eligibility
+        if (adjustedDueDate > today) {
+          // Adjusted date hasn't arrived yet, skip this bill
+          continue;
+        }
+
+        // Calculate next due date using anchor date (prevents drift)
+        const nextAnchorDate = RecurrenceService.calculateNextDueDate(
+          bill.dueDate, // Use anchor, not adjusted
           bill.frequency,
           bill.endDate ?? null
         );
@@ -82,24 +107,24 @@ export const AutoPayService = {
         // Execute atomic transaction
         // better-sqlite3 requires synchronous transactions (no async/await inside)
         db.transaction((tx) => {
-          // 1. Create transaction record
+          // 1. Create transaction record with adjusted date for audit accuracy
           tx.insert(transactions)
             .values({
               billId: bill.id,
               amount: bill.amount,
-              paidAt: bill.dueDate, // Use original due date, not processing date
+              paidAt: adjustedDueDate, // Use adjusted date, not anchor date
               notes: 'Logged by Oar',
             })
             .run();
 
           // 2. Update bill for next cycle
-          if (nextDueDate !== null) {
-            // Recurring bill: advance to next occurrence
-            const newStatus = RecurrenceService.deriveStatus(nextDueDate);
+          if (nextAnchorDate !== null) {
+            // Recurring bill: advance to next occurrence (store anchor date)
+            const newStatus = RecurrenceService.deriveStatus(nextAnchorDate);
 
             tx.update(bills)
               .set({
-                dueDate: nextDueDate,
+                dueDate: nextAnchorDate, // Store next anchor date (prevents drift)
                 status: newStatus,
                 updatedAt: new Date(),
               })

@@ -3,6 +3,9 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '@/db';
 import { bills, type BillFrequency } from '@/db/schema';
 import { getLogger } from '@/lib/logger';
+import { SettingsService } from './SettingsService';
+import { DateAdjustmentService } from './DateAdjustmentService';
+import { startOfDay } from 'date-fns';
 
 const logger = getLogger('RecurrenceService');
 
@@ -140,14 +143,30 @@ export const RecurrenceService = {
         )
       );
 
-    // 2. Track update count
+    // 2. Fetch global weekend adjustment setting once per batch
+    const globalStrategy = await SettingsService.getWeekendAdjustment();
+    const today = startOfDay(new Date());
+
+    // 3. Track update count
     let updated = 0;
 
-    // 3. Check each bill and update if overdue
+    // 4. Check each bill and update if overdue
     for (const bill of candidates) {
-      const newStatus = this.deriveStatus(bill.dueDate);
+      // Resolve effective weekend adjustment strategy
+      const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
+        bill.weekendAdjustment,
+        globalStrategy
+      );
 
-      if (newStatus === 'overdue') {
+      // Calculate adjusted due date using anchor date from database
+      const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
+        bill.dueDate, // Anchor date
+        effectiveStrategy
+      );
+
+      // Compare adjusted date against today for overdue determination
+      // Status determination uses adjusted dates, but stored dueDate remains anchor
+      if (adjustedDueDate < today) {
         try {
           // Use original invariants in WHERE clause to prevent TOCTOU race condition.
           // If bill status changed between SELECT and UPDATE, no rows will be affected.

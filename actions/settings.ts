@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { RANGE_KEYS, type AllowedRangeValue } from '@/lib/constants';
 import type { StructuredSettings } from '@/db/schema';
-import type { ActionResult as BaseActionResult } from '@/lib/types';
+import type { ActionResult as BaseActionResult, WeekendAdjustmentStrategy } from '@/lib/types';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('Actions:Settings');
@@ -181,6 +181,63 @@ export async function updateBillEndAction(
     return {
       success: false,
       error: 'Failed to update setting',
+    };
+  }
+}
+
+const updateWeekendAdjustmentSchema = z.object({
+  strategy: z.enum(['unchanged', 'next_business_day', 'previous_business_day']),
+});
+
+/**
+ * Updates the global weekend adjustment strategy setting.
+ *
+ * @param input - Object containing the weekend adjustment strategy
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateWeekendAdjustment(
+  input: z.infer<typeof updateWeekendAdjustmentSchema>
+): Promise<ActionResult<void>> {
+  const parsed = updateWeekendAdjustmentSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  try {
+    await SettingsService.setWeekendAdjustment(parsed.data.strategy);
+    revalidatePath('/settings');
+    return { success: true };
+  } catch (error) {
+    logger.error(error, 'Failed to update weekend adjustment');
+    return {
+      success: false,
+      error: 'Failed to update setting',
+    };
+  }
+}
+
+/**
+ * Retrieves the global weekend adjustment strategy setting.
+ *
+ * @returns ActionResult with the current weekend adjustment strategy
+ */
+export async function getWeekendAdjustment(): Promise<ActionResult<WeekendAdjustmentStrategy>> {
+  try {
+    const strategy = await SettingsService.getWeekendAdjustment();
+    return {
+      success: true,
+      data: strategy,
+    };
+  } catch (error) {
+    logger.error(error, 'Failed to fetch weekend adjustment');
+    return {
+      success: false,
+      error: 'Failed to load setting',
     };
   }
 }

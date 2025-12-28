@@ -1,7 +1,7 @@
 # Recurrence Engine
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-25
+- **Last Updated:** 2025-12-27
 
 ## Concept
 
@@ -57,6 +57,20 @@ The due date shown in the bill list always reflects the current billing cycle. A
 
 Bill forms and the payment logging modal interact with these services through server actions. The UI never calculates dates directly.
 
+### Anchor dates and weekend adjustment
+
+The system uses "anchor dates" for recurrence calculations to prevent date drift. When a bill's due date falls on a weekend, the system stores the anchor date (the actual weekend date) but displays an adjusted payment date based on your weekend adjustment strategy.
+
+**Example:** A monthly bill due January 15 (Saturday) with "Move to Previous Business Day" strategy:
+- Anchor date stored: January 15 (used for recurrence calculations)
+- Payment date displayed: January 14 (Friday, adjusted for display)
+- After payment, next anchor date: February 15 (preserves the monthly pattern)
+- Next payment date displayed: February 15, adjusted if it falls on a weekend
+
+This separation ensures that monthly bills stay anchored to the same day of the month across all months, regardless of weekend adjustments. The recurrence engine always calculates next due dates using anchor dates, preventing drift over time.
+
+For details on weekend adjustment strategies and configuration, see [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md).
+
 ## Edge cases and constraints
 
 ### Month-end dates
@@ -110,3 +124,4 @@ To confirm the recurrence engine works:
 
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 * [Background Jobs](./006-background-jobs.md) - Automated system tasks
+* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

@@ -1,7 +1,7 @@
 # Background Jobs
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-25
+- **Last Updated:** 2025-12-27
 
 ## Overview
 
@@ -11,9 +11,9 @@ Oar runs two daily tasks in the background that keep your bill statuses accurate
 
 Runs at midnight (00:00 UTC).
 
-This job scans all your pending bills and marks any with past due dates as "overdue." You'll see the status change in the bill list the next time you open the app.
+This job scans all your pending bills and marks any with past due dates as "overdue." The job uses adjusted payment dates (not anchor dates) to determine overdue status, ensuring bills are marked overdue based on when payments actually clear. For example, a bill due Saturday January 15 with "Move to Next Business Day" strategy becomes overdue on Monday January 17, not on Saturday. You'll see the status change in the bill list the next time you open the app.
 
-For details on how bill statuses work, see [Recurrence Engine](./001-recurrence-engine.md).
+For details on how bill statuses work, see [Recurrence Engine](./001-recurrence-engine.md). For details on weekend date adjustment, see [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md).
 
 ## Auto-pay processing
 
@@ -51,4 +51,5 @@ To confirm background jobs are running:
 * [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
 * [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
 
