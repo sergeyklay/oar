@@ -7,9 +7,9 @@ interface SettingsCategoryProps {
 
 export function SettingsCategory({ category }: SettingsCategoryProps) {
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">{category.name}</h2>
-      <div className="space-y-6 pl-4 border-l-2 border-border">
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">{category.name}</h2>
+      <div className="space-y-8">
         {category.sections.map((section) => (
           <SettingsSection key={section.id} section={section} />
         ))}

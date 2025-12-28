@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { updateViewOptions } from '@/actions/settings';
 import {
@@ -78,7 +79,7 @@ export function ViewOptionsForm({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
+      <FormItem>
         <Label htmlFor="currency-select">Default Currency</Label>
         <Select
           value={currency}
@@ -108,9 +109,9 @@ export function ViewOptionsForm({
         <p id="currency-description" className="text-xs text-muted-foreground">
           Default currency for new bills and reports
         </p>
-      </div>
+      </FormItem>
 
-      <div className="space-y-2">
+      <FormItem>
         <Label htmlFor="locale-select">Default Locale</Label>
         <Select
           value={locale}
@@ -140,9 +141,9 @@ export function ViewOptionsForm({
         <p id="locale-description" className="text-xs text-muted-foreground">
           Format for dates, numbers, and currency display
         </p>
-      </div>
+      </FormItem>
 
-      <div className="space-y-2">
+      <FormItem>
         <Label htmlFor="weekstart-select">Start of Week</Label>
         <Select
           value={weekStart}
@@ -173,7 +174,7 @@ export function ViewOptionsForm({
         <p id="weekstart-description" className="text-xs text-muted-foreground">
           Sets the first day of the week in the calendar
         </p>
-      </div>
+      </FormItem>
     </div>
   );
 }

@@ -7,6 +7,9 @@ import { BillEndActionDropdown } from './BillEndActionDropdown';
 import { updateDueSoonRange, updatePaidRecentlyRange, updateBillEndAction } from '@/actions/settings';
 import { FUTURE_RANGE_LABELS, PAST_RANGE_LABELS } from '@/lib/constants';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { FormItem } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 
 interface SettingsSectionProps {
   section: StructuredSettings['categories'][number]['sections'][number];
@@ -21,86 +24,90 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
   if (section.slug === 'view-options') {
     const userSettings = await SettingsService.getAll();
     return (
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-medium">{section.name}</h3>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">{section.name}</CardTitle>
           {section.description && (
-            <p className="text-sm text-muted-foreground">{section.description}</p>
+            <CardDescription>{section.description}</CardDescription>
           )}
-        </div>
-        <ViewOptionsForm
-          initialCurrency={userSettings.currency}
-          initialLocale={userSettings.locale}
-          initialWeekStart={userSettings.weekStart}
-        />
-      </div>
+        </CardHeader>
+        <CardContent>
+          <ViewOptionsForm
+            initialCurrency={userSettings.currency}
+            initialLocale={userSettings.locale}
+            initialWeekStart={userSettings.weekStart}
+          />
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-medium">{section.name}</h3>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold">{section.name}</CardTitle>
         {section.description && (
-          <p className="text-sm text-muted-foreground">{section.description}</p>
+          <CardDescription>{section.description}</CardDescription>
         )}
-      </div>
-      {sectionSettings.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">
-          Settings coming soon
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {sectionSettings.map((setting) => {
-            if (setting.key === 'dueSoonRange') {
-              return (
-                <div key={setting.key} className="space-y-2">
-                  <label className="text-sm font-medium">Due soon means</label>
-                  <RangeSettingDropdown
-                    currentValue={setting.value}
-                    labels={FUTURE_RANGE_LABELS}
-                    onUpdate={updateDueSoonRange}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Configure the time range for the &quot;Due Soon&quot; view
-                  </p>
-                </div>
-              );
-            }
-            if (setting.key === 'paidRecentlyRange') {
-              return (
-                <div key={setting.key} className="space-y-2">
-                  <label className="text-sm font-medium">Paid recently means</label>
-                  <RangeSettingDropdown
-                    currentValue={setting.value}
-                    labels={PAST_RANGE_LABELS}
-                    onUpdate={updatePaidRecentlyRange}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Configure the time range for the &quot;Paid Recently&quot; view
-                  </p>
-                </div>
-              );
-            }
-            if (setting.key === 'billEndAction') {
-              return (
-                <div key={setting.key} className="space-y-2">
-                  <label className="text-sm font-medium">After a Bill Ends</label>
-                  <BillEndActionDropdown
-                    currentValue={setting.value as 'mark_as_paid' | 'archive'}
-                    onUpdate={updateBillEndAction}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    A bill ends when you change its repeat interval to &quot;Never&quot; and then log a payment that fully pays it,
-                    or when the next due date would exceed the End Date set in the bill.
-                  </p>
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-      )}
-    </div>
+      </CardHeader>
+      <CardContent>
+        {sectionSettings.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">
+            Settings coming soon
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {sectionSettings.map((setting) => {
+              if (setting.key === 'dueSoonRange') {
+                return (
+                  <FormItem key={setting.key}>
+                    <Label>Due soon means</Label>
+                    <RangeSettingDropdown
+                      currentValue={setting.value}
+                      labels={FUTURE_RANGE_LABELS}
+                      onUpdate={updateDueSoonRange}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Configure the time range for the &quot;Due Soon&quot; view
+                    </p>
+                  </FormItem>
+                );
+              }
+              if (setting.key === 'paidRecentlyRange') {
+                return (
+                  <FormItem key={setting.key}>
+                    <Label>Paid recently means</Label>
+                    <RangeSettingDropdown
+                      currentValue={setting.value}
+                      labels={PAST_RANGE_LABELS}
+                      onUpdate={updatePaidRecentlyRange}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Configure the time range for the &quot;Paid Recently&quot; view
+                    </p>
+                  </FormItem>
+                );
+              }
+              if (setting.key === 'billEndAction') {
+                return (
+                  <FormItem key={setting.key}>
+                    <Label>After a Bill Ends</Label>
+                    <BillEndActionDropdown
+                      currentValue={setting.value as 'mark_as_paid' | 'archive'}
+                      onUpdate={updateBillEndAction}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      A bill ends when you change its repeat interval to &quot;Never&quot; and then log a payment that fully pays it,
+                      or when the next due date would exceed the End Date set in the bill.
+                    </p>
+                  </FormItem>
+                );
+              }
+              return null;
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
