@@ -1,7 +1,5 @@
 'use client';
 
-import { useActionState, useEffect, useRef, startTransition } from 'react';
-import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -11,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import type { ActionResult } from '@/lib/types';
+import { useSettingDropdown } from './useSettingDropdown';
 
 interface BillEndActionDropdownProps {
   currentValue: 'mark_as_paid' | 'archive';
@@ -22,82 +21,15 @@ const OPTIONS = [
   { value: 'archive' as const, label: 'Move to the Archive' },
 ] as const;
 
-interface ActionState {
-  value: 'mark_as_paid' | 'archive';
-  error: string | null;
-}
-
 export function BillEndActionDropdown({
   currentValue,
   onUpdate,
 }: BillEndActionDropdownProps) {
-  const updateAction = async (
-    prevState: ActionState,
-    value: 'mark_as_paid' | 'archive'
-  ): Promise<ActionState> => {
-    const result = await onUpdate(value);
-    if (!result.success) {
-      return {
-        value: prevState.value,
-        error: result.error || 'Failed to update setting',
-      };
-    }
-    return {
-      value,
-      error: null,
-    };
-  };
-
-  const [state, updateValue, isPending] = useActionState(updateAction, {
-    value: currentValue,
-    error: null,
+  const { displayValue, isPending, handleValueChange } = useSettingDropdown({
+    currentValue,
+    onUpdate,
+    showSuccessToast: true,
   });
-
-  const prevStateRef = useRef(state);
-  const prevCurrentValueRef = useRef(currentValue);
-
-  const displayValue = !isPending && currentValue !== state.value
-    ? currentValue
-    : state.value;
-
-  useEffect(() => {
-    const prevState = prevStateRef.current;
-    prevStateRef.current = state;
-
-    if (state.error && !prevState.error) {
-      toast.error('Failed to update setting', {
-        description: state.error,
-      });
-    } else if (
-      state.value !== prevState.value &&
-      !state.error &&
-      !isPending &&
-      state.value !== currentValue
-    ) {
-      toast.success('Setting updated');
-    }
-  }, [state, isPending, currentValue]);
-
-  useEffect(() => {
-    const prevCurrentValue = prevCurrentValueRef.current;
-    prevCurrentValueRef.current = currentValue;
-
-    if (
-      currentValue !== prevCurrentValue &&
-      currentValue !== state.value &&
-      !isPending
-    ) {
-      startTransition(() => {
-        updateValue(currentValue);
-      });
-    }
-  }, [currentValue, state.value, isPending, updateValue]);
-
-  const handleValueChange = (newValue: string) => {
-    startTransition(() => {
-      updateValue(newValue as 'mark_as_paid' | 'archive');
-    });
-  };
 
   return (
     <div className="flex items-center gap-2">

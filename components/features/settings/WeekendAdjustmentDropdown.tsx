@@ -1,7 +1,5 @@
 'use client';
 
-import { useActionState, useEffect, useRef, startTransition } from 'react';
-import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -12,6 +10,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import type { WeekendAdjustmentStrategy } from '@/lib/types';
 import type { ActionResult } from '@/lib/types';
+import { useSettingDropdown } from './useSettingDropdown';
 
 interface WeekendAdjustmentDropdownProps {
   /** Current value */
@@ -32,83 +31,15 @@ const STRATEGY_DESCRIPTIONS: Record<WeekendAdjustmentStrategy, string> = {
   previous_business_day: 'If a bill is due on Saturday or Sunday, show it as due on Friday instead. This ensures you pay before the weekend.',
 };
 
-interface ActionState {
-  value: WeekendAdjustmentStrategy;
-  error: string | null;
-}
-
 export function WeekendAdjustmentDropdown({
   currentValue,
   onUpdate,
 }: WeekendAdjustmentDropdownProps) {
-  const updateAction = async (
-    prevState: ActionState,
-    strategy: WeekendAdjustmentStrategy
-  ): Promise<ActionState> => {
-    const result = await onUpdate({ strategy });
-    if (!result.success) {
-      return {
-        value: prevState.value,
-        error: result.error || 'Failed to update setting',
-      };
-    }
-    return {
-      value: strategy,
-      error: null,
-    };
-  };
-
-  const [state, updateStrategy, isPending] = useActionState(updateAction, {
-    value: currentValue,
-    error: null,
+  const { displayValue, isPending, handleValueChange } = useSettingDropdown({
+    currentValue,
+    onUpdate: (strategy: WeekendAdjustmentStrategy) => onUpdate({ strategy }),
+    showSuccessToast: true,
   });
-
-  const prevStateRef = useRef(state);
-  const prevCurrentValueRef = useRef(currentValue);
-
-  const displayValue = !isPending && currentValue !== state.value
-    ? currentValue
-    : state.value;
-
-  useEffect(() => {
-    const prevState = prevStateRef.current;
-    prevStateRef.current = state;
-
-    if (state.error && !prevState.error) {
-      toast.error('Failed to update setting', {
-        description: state.error,
-      });
-    } else if (
-      state.value !== prevState.value &&
-      !state.error &&
-      !isPending &&
-      state.value !== currentValue
-    ) {
-      toast.success('Setting updated');
-    }
-  }, [state, isPending, currentValue]);
-
-  useEffect(() => {
-    const prevCurrentValue = prevCurrentValueRef.current;
-    prevCurrentValueRef.current = currentValue;
-
-    if (
-      currentValue !== prevCurrentValue &&
-      currentValue !== state.value &&
-      !isPending
-    ) {
-      startTransition(() => {
-        updateStrategy(currentValue);
-      });
-    }
-  }, [currentValue, state.value, isPending, updateStrategy]);
-
-  const handleValueChange = (newValue: string) => {
-    const strategy = newValue as WeekendAdjustmentStrategy;
-    startTransition(() => {
-      updateStrategy(strategy);
-    });
-  };
 
   return (
     <div className="space-y-2">
