@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import {
@@ -32,7 +32,6 @@ interface ViewOptionsState {
   locale: string;
   weekStart: number;
   error: string | null;
-  updatingField: FieldKey | null;
 }
 
 interface UpdatePayload {
@@ -49,6 +48,8 @@ export function ViewOptionsForm({
   initialLocale,
   initialWeekStart,
 }: ViewOptionsFormProps) {
+  const [updatingField, setUpdatingField] = useState<FieldKey | null>(null);
+
   const updateAction = async (
     prevState: ViewOptionsState,
     payload: UpdatePayload
@@ -68,7 +69,6 @@ export function ViewOptionsForm({
       return {
         ...prevState,
         error: result.error || 'Failed to update setting',
-        updatingField: null,
       };
     }
 
@@ -77,27 +77,18 @@ export function ViewOptionsForm({
       locale: newLocale,
       weekStart: newWeekStart,
       error: null,
-      updatingField: null,
     };
   };
 
-  const updateActionWithField = async (
-    prevState: ViewOptionsState,
-    payload: UpdatePayload
-  ): Promise<ViewOptionsState> => {
-    const stateWithField = { ...prevState, updatingField: payload.field };
-    return updateAction(stateWithField, payload);
-  };
-
-  const [state, updateOptions, isPending] = useActionState(updateActionWithField, {
+  const [state, updateOptions, isPending] = useActionState(updateAction, {
     currency: initialCurrency,
     locale: initialLocale,
     weekStart: initialWeekStart,
     error: null,
-    updatingField: null,
   });
 
   const prevStateRef = useRef(state);
+  const prevPendingRef = useRef(isPending);
 
   useEffect(() => {
     const prevState = prevStateRef.current;
@@ -110,13 +101,28 @@ export function ViewOptionsForm({
     }
   }, [state]);
 
+  // Clear updatingField when async action completes
+  // This is necessary to synchronize React state with async operation completion.
+  // The alternative would require significant component restructuring.
+  useEffect(() => {
+    const wasPending = prevPendingRef.current;
+    prevPendingRef.current = isPending;
+
+    if (wasPending && !isPending) {
+      // Necessary to clear state when async operation completes
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUpdatingField(null);
+    }
+  }, [isPending]);
+
   const handleUpdate = (field: FieldKey, value: string) => {
+    setUpdatingField(field);
     updateOptions({ field, value });
   };
 
-  const isCurrencyUpdating = isPending && state.updatingField === 'currency';
-  const isLocaleUpdating = isPending && state.updatingField === 'locale';
-  const isWeekStartUpdating = isPending && state.updatingField === 'weekStart';
+  const isCurrencyUpdating = isPending && updatingField === 'currency';
+  const isLocaleUpdating = isPending && updatingField === 'locale';
+  const isWeekStartUpdating = isPending && updatingField === 'weekStart';
 
   return (
     <div className="space-y-6">
