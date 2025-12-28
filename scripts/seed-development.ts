@@ -280,7 +280,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
   // Scenario I: Auto-Pay Bill Due This Month
   // Auto-pay bill due in 20 days to test Due This Month view with auto-pay filtering
   {
-    title: 'Phone Bill',
+    title: 'T-Mobile Phone Bill',
     slug: 'cellphone-mobile-service',
     frequency: 'monthly',
     amount: 9000,
