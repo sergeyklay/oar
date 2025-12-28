@@ -1000,4 +1000,4 @@ describe('BillService.getAdjustedDueDate', () => {
       expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'unchanged');
       expect(result).toEqual(saturday);
     });
-  });
+});

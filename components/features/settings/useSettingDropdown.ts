@@ -21,6 +21,20 @@ interface UseSettingDropdownReturn<T> {
   handleValueChange: (newValue: string) => void;
 }
 
+/**
+ * Manages dropdown setting state with optimistic updates and error handling.
+ *
+ * Provides controlled state for settings dropdowns with automatic toast notifications,
+ * error rollback, and synchronization with external prop changes.
+ *
+ * @template T - String literal type for the dropdown values
+ * @param {UseSettingDropdownOptions<T>} options - Configuration object
+ * @param {T} options.currentValue - Current setting value from server
+ * @param {(value: T) => Promise<ActionResult<void>>} options.onUpdate - Async function to persist
+ * @param {boolean} [options.showSuccessToast=true] - Whether to show success toast
+ * @returns {UseSettingDropdownReturn<T>} Object with displayValue, isPending flag, and
+ * handleValueChange callback
+ */
 export function useSettingDropdown<T extends string>({
   currentValue,
   onUpdate,
