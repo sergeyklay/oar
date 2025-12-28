@@ -18,6 +18,8 @@ interface BillListProps {
   includeArchived?: boolean;
   /** Archive mode - indicates bills should be displayed with archive formatting */
   isArchived?: boolean;
+  /** Whether to include automatic bills in Due Soon and Due This Month views (default: true) */
+  includeAutoPayInDueSoon?: boolean;
 }
 
 /**
@@ -78,12 +80,21 @@ function getEmptyStateSubtitle(props: {
   return 'Click "Add Bill" to create your first bill.';
 }
 
-export async function BillList({ date, month, dateRange, tag, selectedBillId, includeArchived, isArchived }: BillListProps) {
+export async function BillList({
+  date,
+  month,
+  dateRange,
+  tag,
+  selectedBillId,
+  includeArchived,
+  isArchived,
+  includeAutoPayInDueSoon = true,
+}: BillListProps) {
   const filterOptions = isArchived
     ? { archivedOnly: true, tag }
     : includeArchived
       ? { includeArchived: true, tag }
-      : { date, month, dateRange, tag };
+      : { date, month, dateRange, tag, includeAutoPayInDueSoon };
 
   const [bills, settings] = await Promise.all([
     getBillsFiltered(filterOptions),

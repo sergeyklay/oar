@@ -61,6 +61,7 @@ Explanations of user-facing functionality and domain logic. Start with the found
 | Document | Description |
 |----------|-------------|
 | [After a Bill Ends](./features/012-after-a-bill-ends-setting.md) | What happens when a bill ends |
+| [Include Automatic Bills Setting](./features/022-include-automatic-bills-setting.md) | Control whether automatic bills appear in Due Soon and Due This Month views |
 | [Weekend Payment Date Adjustment](./features/021-weekend-payment-date-adjustment.md) | How weekend due dates are adjusted for banking reality |
 
 ### Automation

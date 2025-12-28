@@ -9,6 +9,8 @@ The Due Soon view answers one question: "What needs my attention right now?" Whi
 
 The range is configurable. Set it to 3 days for tight weekly reviews, or stretch it to 30 days for monthly planning sessions. This flexibility lets you tune the view to match your personal financial rhythm.
 
+By default, the view shows all unpaid bills within your configured range, including both manual bills and automatic payments. You can control whether automatic bills appear by adjusting the "Include automatic bills in bills due soon" setting in Settings → General → View Options. See [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) for details.
+
 ## How it differs from Due This Month
 
 Both views filter for unpaid bills, but they use different time windows:
@@ -53,6 +55,8 @@ The sidebar menu item shows a summary:
 - **No upcoming bills:** "No bills"
 
 Bills appear sorted by due date, earliest first. The view excludes paid bills; once you log a payment, the bill either disappears (if it advanced past your range) or updates to show its new due date.
+
+By default, the view includes both manual bills and automatic payments. If you've disabled the "Include automatic bills in bills due soon" setting, only bills requiring manual payment appear. The sidebar subtitle reflects this choice, showing counts and totals that match what appears in the view.
 
 ## What counts as "due soon"
 
@@ -127,4 +131,5 @@ To confirm the Due Soon feature works:
 
 * [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
 * [Overview View](./005-overview-view.md) - The main view for managing all bills
+* [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
 

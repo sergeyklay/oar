@@ -173,7 +173,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Car Insurance',
     slug: 'insurance',
     frequency: 'quarterly',
-    amount: 45000, // $450.00 (realistic quarterly car insurance)
+    amount: 45000,
     dueDateMonthsFromNow: 6,
     status: 'pending',
     isAutoPay: false,
@@ -184,7 +184,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Annual Software License',
     slug: 'subscriptions',
     frequency: 'yearly',
-    amount: 120000, // $1200.00
+    amount: 120000,
     dueDateMonthsFromNow: 2,
     status: 'pending',
     isAutoPay: false,
@@ -195,7 +195,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Winter Heating / Gas',
     slug: 'gas',
     frequency: 'monthly',
-    amount: 11000, // $110.00 (average of $100, $120, $110)
+    amount: 11000,
     dueDateMonthsFromNow: 1,
     isVariable: true,
     status: 'pending',
@@ -206,7 +206,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Rent Payment',
     slug: 'home-mortgage-rent',
     frequency: 'monthly',
-    amount: 163200, // $1,632.00 (realistic average rent)
+    amount: 163200,
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -216,7 +216,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Internet Bill',
     slug: 'internet-broadband',
     frequency: 'monthly',
-    amount: 7500, // $75.00 (realistic average)
+    amount: 7500,
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -225,7 +225,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Spotify',
     slug: 'music-subscriptions',
     frequency: 'monthly',
-    amount: 1500, // $15.00
+    amount: 1500,
     dueDateMonthsFromNow: 1,
     status: 'pending',
     isAutoPay: false,
@@ -248,7 +248,7 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Electric Bill',
     slug: 'electric-utilities',
     frequency: 'monthly',
-    amount: 14226, // $142.26 (realistic average)
+    amount: 14226,
     dueDateDaysFromNow: 3, // Due in 3 days (within 7-day range)
     status: 'pending',
     isAutoPay: false,
@@ -260,10 +260,33 @@ const SCENARIO_BILLS: ScenarioBill[] = [
     title: 'Water Bill',
     slug: 'water',
     frequency: 'monthly',
-    amount: 5000, // $50.00 (realistic average)
+    amount: 5000,
     dueDateDaysFromNow: 15, // Due in 15 days (this month, outside 7-day range)
     status: 'pending',
     isAutoPay: false,
+  },
+  // Scenario H: Auto-Pay Bill Due Soon
+  // Auto-pay bill due in 5 days to test Due Soon view with auto-pay filtering
+  {
+    title: 'Netflix Subscription',
+    slug: 'video-streaming-television',
+    frequency: 'monthly',
+    amount: 1800,
+    dueDateDaysFromNow: 5, // Due in 5 days (within 7-day range)
+    status: 'pending',
+    isAutoPay: true,
+    weekendAdjustment: 'unchanged', // Digital subscription processes on weekends
+  },
+  // Scenario I: Auto-Pay Bill Due This Month
+  // Auto-pay bill due in 20 days to test Due This Month view with auto-pay filtering
+  {
+    title: 'Phone Bill',
+    slug: 'cellphone-mobile-service',
+    frequency: 'monthly',
+    amount: 9000,
+    dueDateDaysFromNow: 20, // Due in 20 days (this month, outside 7-day range)
+    status: 'pending',
+    isAutoPay: true,
   },
 ];
 

@@ -5,11 +5,13 @@
 
 ## Overview
 
-The "Due This Month" view shows only unpaid bills due in the current calendar month, including automatic payments. It helps you see your complete financial obligations at a glance and plan cash flow for the month ahead.
+The "Due This Month" view shows only unpaid bills due in the current calendar month, including automatic payments by default. It helps you see your complete financial obligations at a glance and plan cash flow for the month ahead.
 
 Bills you've already paid are automatically excluded, even if their due date falls within the current month. This keeps the view focused on what you still need to pay.
 
 The sidebar navigation displays a summary below the "Due This Month" menu item showing how many unpaid bills are due and the total amount. When variable bills are included, the total shows "(est.)" to indicate the amount may change.
+
+You can control whether automatic bills appear by adjusting the "Include automatic bills in bills due soon" setting in Settings → General → View Options. When disabled, only bills requiring manual payment appear. See [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) for details.
 
 ## How it differs from Overview
 
@@ -64,7 +66,7 @@ The system uses calendar month boundaries and shows only unpaid bills. A bill is
 - Unpaid bills due on the first day of the month
 - Unpaid bills due on the last day of the month
 - Unpaid bills due on any day in between
-- Automatic payments (auto-pay bills) that haven't been paid yet
+- Automatic payments (auto-pay bills) that haven't been paid yet (unless the "Include automatic bills in bills due soon" setting is disabled)
 - Manual payments that haven't been logged yet
 - Bills with status "pending" or "overdue"
 
@@ -110,3 +112,4 @@ To confirm the Due This Month feature works:
 
 * [Overview View](./005-overview-view.md) - The main view for managing all bills
 * [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views

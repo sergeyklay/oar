@@ -89,6 +89,7 @@ export const DEFAULT_SETTINGS_VALUES = [
   { key: 'currency', value: 'USD', sectionSlug: 'view-options' },
   { key: 'locale', value: 'en-US', sectionSlug: 'view-options' },
   { key: 'weekStart', value: '0', sectionSlug: 'view-options' },
+  { key: 'includeAutoPayInDueSoon', value: 'true', sectionSlug: 'view-options' },
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
 ] as const;
