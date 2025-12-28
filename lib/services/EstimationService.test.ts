@@ -256,6 +256,7 @@ describe('EstimationService', () => {
       updatedAt: new Date('2025-01-01'),
       tags: [],
       categoryIcon: 'house',
+      weekendAdjustment: null,
     };
 
     it('returns historical month estimate when available', async () => {

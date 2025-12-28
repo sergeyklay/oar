@@ -1,6 +1,7 @@
 import { ForecastService } from './ForecastService';
 import { BillService } from './BillService';
 import { EstimationService } from './EstimationService';
+import { SettingsService } from './SettingsService';
 import { db } from '@/db';
 import type { BillWithTags } from '@/db/schema';
 import type { ForecastBill } from './ForecastService';
@@ -8,10 +9,16 @@ import type { ForecastBill } from './ForecastService';
 jest.mock('@/db');
 jest.mock('./BillService');
 jest.mock('./EstimationService');
+jest.mock('./SettingsService', () => ({
+  SettingsService: {
+    getWeekendAdjustment: jest.fn(),
+  },
+}));
 
 describe('ForecastService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
   });
 
   const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
@@ -32,6 +39,7 @@ describe('ForecastService', () => {
     updatedAt: new Date('2025-01-01'),
     tags: [],
     categoryIcon: 'house',
+    weekendAdjustment: null,
     ...overrides,
   });
 
@@ -720,6 +728,7 @@ describe('ForecastService', () => {
       displayAmount,
       isEstimated: false,
       amortizationAmount,
+      weekendAdjustment: null,
     });
 
     let getBillsForMonthSpy: jest.SpyInstance;

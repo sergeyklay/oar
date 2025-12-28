@@ -33,6 +33,7 @@ describe('getForecastData', () => {
       displayAmount: 10000,
       isEstimated: false,
       amortizationAmount: null,
+      weekendAdjustment: null,
     },
   ];
 

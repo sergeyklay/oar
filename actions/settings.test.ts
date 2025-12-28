@@ -4,6 +4,8 @@ import {
   updatePaidRecentlyRange,
   updateViewOptions,
   updateBillEndAction,
+  updateWeekendAdjustment,
+  getWeekendAdjustment,
 } from './settings';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
@@ -12,7 +14,17 @@ import { getLogger } from '@/lib/logger';
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
-jest.mock('@/lib/services/SettingsService');
+jest.mock('@/lib/services/SettingsService', () => ({
+  SettingsService: {
+    getStructure: jest.fn(),
+    setDueSoonRange: jest.fn(),
+    setPaidRecentlyRange: jest.fn(),
+    setViewOptions: jest.fn(),
+    setBillEndAction: jest.fn(),
+    setWeekendAdjustment: jest.fn(),
+    getWeekendAdjustment: jest.fn(),
+  },
+}));
 jest.mock('@/db', () => ({
   db: {},
   settings: {},
@@ -373,5 +385,78 @@ describe('updateBillEndAction', () => {
 
     const logger = getLogger('test');
     expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update bill end action');
+  });
+
+  describe('updateWeekendAdjustment', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it.each([
+      ['unchanged'],
+      ['next_business_day'],
+      ['previous_business_day'],
+    ])('updates weekend adjustment setting successfully for %s', async (strategy) => {
+      (SettingsService.setWeekendAdjustment as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await updateWeekendAdjustment({ strategy: strategy as 'unchanged' | 'next_business_day' | 'previous_business_day' });
+
+      expect(result.success).toBe(true);
+      expect(SettingsService.setWeekendAdjustment).toHaveBeenCalledWith(strategy);
+      expect(revalidatePath).toHaveBeenCalledWith('/settings');
+    });
+
+    it('returns validation error for invalid strategy value', async () => {
+      // @ts-expect-error Testing invalid input
+      const result = await updateWeekendAdjustment({ strategy: 'invalid' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Validation failed');
+      expect(result.fieldErrors).toBeDefined();
+      expect(SettingsService.setWeekendAdjustment).not.toHaveBeenCalled();
+      expect(revalidatePath).not.toHaveBeenCalled();
+    });
+
+    it('returns error when service throws', async () => {
+      const error = new Error('Database error');
+      (SettingsService.setWeekendAdjustment as jest.Mock).mockRejectedValue(error);
+
+      const result = await updateWeekendAdjustment({ strategy: 'next_business_day' });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to update setting');
+
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update weekend adjustment');
+    });
+  });
+
+  describe('getWeekendAdjustment', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns success with weekend adjustment strategy', async () => {
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+
+      const result = await getWeekendAdjustment();
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe('next_business_day');
+      expect(SettingsService.getWeekendAdjustment).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns error when service throws', async () => {
+      const error = new Error('Database error');
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockRejectedValue(error);
+
+      const result = await getWeekendAdjustment();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Failed to load setting');
+
+      const logger = getLogger('test');
+      expect(logger.error).toHaveBeenCalledWith(error, 'Failed to fetch weekend adjustment');
+    });
   });
 });

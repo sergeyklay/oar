@@ -1,8 +1,12 @@
 import { BillService } from './BillService';
 import { db, bills, resetDbMocks } from '@/db';
+import { SettingsService } from './SettingsService';
+import { DateAdjustmentService } from './DateAdjustmentService';
 import type { BillWithTags } from '@/db/schema';
 
 jest.mock('@/db');
+jest.mock('./SettingsService');
+jest.mock('./DateAdjustmentService');
 
 describe('BillService.getFiltered', () => {
   beforeEach(() => {
@@ -29,6 +33,7 @@ describe('BillService.getFiltered', () => {
       updatedAt: new Date('2025-01-01'),
       tags: [],
       categoryIcon: 'house',
+      weekendAdjustment: null,
     },
     {
       id: 'bill-2',
@@ -48,6 +53,7 @@ describe('BillService.getFiltered', () => {
       updatedAt: new Date('2025-01-01'),
       tags: [],
       categoryIcon: 'house',
+      weekendAdjustment: null,
     },
     {
       id: 'bill-3',
@@ -67,6 +73,7 @@ describe('BillService.getFiltered', () => {
       updatedAt: new Date('2025-01-01'),
       tags: [],
       categoryIcon: 'house',
+      weekendAdjustment: null,
     },
   ];
 
@@ -927,6 +934,70 @@ describe('BillService.searchByTitle', () => {
 
       expect(db.select).toHaveBeenCalled();
       expect(mockBuilder.where).toHaveBeenCalled();
+    });
+  });
+
+  describe('getAdjustedDueDate', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns adjusted date when bill has override strategy', async () => {
+      const saturday = new Date('2025-01-11');
+      const friday = new Date('2025-01-10');
+      const bill = {
+        dueDate: saturday,
+        weekendAdjustment: 'previous_business_day' as const,
+      };
+
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
+      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
+
+      const result = await BillService.getAdjustedDueDate(bill);
+
+      expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('previous_business_day', 'unchanged');
+      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'previous_business_day');
+      expect(result).toEqual(friday);
+    });
+
+    it('uses global strategy when bill override is null', async () => {
+      const saturday = new Date('2025-01-11');
+      const monday = new Date('2025-01-13');
+      const bill = {
+        dueDate: saturday,
+        weekendAdjustment: null,
+      };
+
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
+      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
+
+      const result = await BillService.getAdjustedDueDate(bill);
+
+      expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(null, 'next_business_day');
+      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'next_business_day');
+      expect(result).toEqual(monday);
+    });
+
+    it('returns unchanged date when strategy is unchanged', async () => {
+      const saturday = new Date('2025-01-11');
+      const bill = {
+        dueDate: saturday,
+        weekendAdjustment: 'unchanged' as const,
+      };
+
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
+      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(saturday);
+
+      const result = await BillService.getAdjustedDueDate(bill);
+
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('unchanged', 'next_business_day');
+      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'unchanged');
+      expect(result).toEqual(saturday);
     });
   });
 });

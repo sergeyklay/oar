@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, startTransition } from 'react';
 import { toast } from 'sonner';
 import {
   Select,
@@ -74,7 +74,9 @@ export function BillEndActionDropdown({
   }, [state, isPending, currentValue]);
 
   const handleValueChange = (newValue: string) => {
-    updateValue(newValue as 'mark_as_paid' | 'archive');
+    startTransition(() => {
+      updateValue(newValue as 'mark_as_paid' | 'archive');
+    });
   };
 
   return (
