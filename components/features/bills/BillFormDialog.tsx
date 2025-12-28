@@ -75,7 +75,10 @@ const formSchema = z.object({
   categoryId: z.string().min(1, 'Category is required'),
   tagIds: z.array(z.string()),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less'),
-  weekendAdjustment: z.enum(['unchanged', 'next_business_day', 'previous_business_day']),
+  weekendAdjustment: z
+    .enum(['unchanged', 'next_business_day', 'previous_business_day'])
+    .optional()
+    .nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -120,7 +123,7 @@ export function BillFormDialog({
       categoryId: defaultCategoryId ?? '',
       tagIds: [],
       notes: '',
-      weekendAdjustment: 'unchanged',
+      weekendAdjustment: null,
     },
   });
 
@@ -139,7 +142,7 @@ export function BillFormDialog({
           categoryId: defaultCategoryId ?? '',
           tagIds: [],
           notes: bill.notes || '',
-          weekendAdjustment: bill.weekendAdjustment ?? 'unchanged',
+          weekendAdjustment: bill.weekendAdjustment ?? null,
         });
 
         // Fetch existing tags for this bill
@@ -166,7 +169,7 @@ export function BillFormDialog({
           tagIds: [],
           notes: '',
           dueDate: undefined,
-          weekendAdjustment: 'unchanged',
+          weekendAdjustment: null,
         });
       }
     }
@@ -179,7 +182,7 @@ export function BillFormDialog({
       const baseInput = {
         ...values,
         amount: parseMoneyInput(values.amount),
-        weekendAdjustment: values.weekendAdjustment ?? null,
+        weekendAdjustment: values.weekendAdjustment,
       };
 
       const result = isEditMode
@@ -416,13 +419,19 @@ export function BillFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>If due date falls on weekend</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value === 'use-global' ? null : value);
+                    }}
+                    value={field.value ?? 'use-global'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select option" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="use-global">Use global default</SelectItem>
                       <SelectItem value="unchanged">Leave Unchanged</SelectItem>
                       <SelectItem value="next_business_day">Move to Next Business Day</SelectItem>
                       <SelectItem value="previous_business_day">Move to Previous Business Day</SelectItem>
