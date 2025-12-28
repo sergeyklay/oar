@@ -158,7 +158,7 @@ function MyComponent() {
 - Enforces correct return types automatically
 - Supports multiple arguments if the handler accepts them
 
-## Date Rendering Standards
+## Date Rendering Standards for React Components
 
 Next.js App Router renders Server Components in the server's timezone (usually UTC). The browser renders in the user's local timezone. Direct string formatting of dates results in "Hydration failed" errors.
 
