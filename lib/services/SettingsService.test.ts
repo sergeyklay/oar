@@ -13,15 +13,6 @@ import { getLogger } from '@/lib/logger';
 jest.mock('@/db');
 jest.mock('@/lib/logger');
 
-const mockLogger = {
-  error: jest.fn(),
-  warn: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
-};
-
-(getLogger as jest.Mock).mockReturnValue(mockLogger);
-
 type QueryBuilder = {
   from: jest.Mock;
   where: jest.Mock;
@@ -35,35 +26,6 @@ type QueryBuilder = {
   onConflictDoNothing: jest.Mock;
   run: jest.Mock;
   then?: (onResolve: (value: unknown[]) => unknown) => Promise<unknown>;
-};
-
-const createSelectBuilder = (result: unknown[]): QueryBuilder => {
-  const resultPromise = Promise.resolve(result);
-  const builder: QueryBuilder = {
-    from: jest.fn().mockReturnValue({
-      where: jest.fn().mockReturnValue({
-        limit: jest.fn().mockResolvedValue(result),
-        orderBy: jest.fn().mockResolvedValue(result),
-        then: resultPromise.then.bind(resultPromise),
-        catch: resultPromise.catch.bind(resultPromise),
-      }),
-      orderBy: jest.fn().mockResolvedValue(result),
-      then: resultPromise.then.bind(resultPromise),
-      catch: resultPromise.catch.bind(resultPromise),
-    }),
-    where: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockResolvedValue(result),
-    orderBy: jest.fn().mockResolvedValue(result),
-    all: jest.fn().mockReturnValue(result),
-    values: jest.fn().mockReturnThis(),
-    returning: jest.fn().mockReturnThis(),
-    get: jest.fn().mockReturnValue(result[0] ?? null),
-    onConflictDoUpdate: jest.fn().mockReturnThis(),
-    onConflictDoNothing: jest.fn().mockReturnThis(),
-    run: jest.fn(),
-    then: resultPromise.then.bind(resultPromise),
-  };
-  return builder;
 };
 
 const createSelectBuilderSync = (result: unknown[]): QueryBuilder => {
@@ -103,9 +65,22 @@ const createSelectBuilderSync = (result: unknown[]): QueryBuilder => {
 };
 
 describe('SettingsService', () => {
+  let mockLogger: {
+    error: jest.Mock;
+    warn: jest.Mock;
+    info: jest.Mock;
+    debug: jest.Mock;
+  };
+
   beforeEach(() => {
     resetDbMocks();
     jest.clearAllMocks();
+    mockLogger = getLogger('SettingsService') as unknown as {
+      error: jest.Mock;
+      warn: jest.Mock;
+      info: jest.Mock;
+      debug: jest.Mock;
+    };
     mockLogger.error.mockClear();
     mockLogger.warn.mockClear();
     mockLogger.info.mockClear();
