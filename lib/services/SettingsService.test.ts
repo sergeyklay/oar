@@ -607,7 +607,10 @@ describe('SettingsService', () => {
       const result = await SettingsService.getDueSoonRange();
 
       expect(result).toBe(7);
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { invalidValue: '99' },
+        'Invalid dueSoonRange value, defaulting to 7'
+      );
     });
   });
 
@@ -976,12 +979,12 @@ describe('SettingsService', () => {
 
       expect(db.transaction).toHaveBeenCalled();
 
-      const insertCalls = (db.insert as jest.Mock).mock.calls;
-      const insertResults = (db.insert as jest.Mock).mock.results;
+      const insertCalls = txInsertMock.mock.calls;
+      const insertResults = txInsertMock.mock.results;
 
       const totalInserts =
         DEFAULT_CATEGORIES.length + DEFAULT_SECTIONS.length + DEFAULT_SETTINGS_VALUES.length;
-      expect(db.insert).toHaveBeenCalledTimes(totalInserts);
+      expect(txInsertMock).toHaveBeenCalledTimes(totalInserts);
 
       let callIndex = 0;
       for (const cat of DEFAULT_CATEGORIES) {
