@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { startOfDay } from 'date-fns';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 import type { Transaction } from '@/db/schema';
@@ -283,13 +284,62 @@ export async function updateTransaction(
       };
     }
 
-    // 4. Check if old transaction affected current cycle
+    // 4. Compare paidAt dates (day precision) to determine if fast path applies
+    const oldPaidAtDay = startOfDay(existingTransaction.paidAt);
+    const newPaidAtDay = startOfDay(paidAt);
+    const dateChanged = oldPaidAtDay.getTime() !== newPaidAtDay.getTime();
+
+    // 5. Fast Path: If date unchanged, preserve cycle and adjust amountDue mathematically
+    if (!dateChanged) {
+      // Calculate amount delta
+      const amountDelta = amount - existingTransaction.amount;
+      // Adjust amountDue: if payment decreased, amountDue increases
+      // For variable bills: if cycle was advanced (amountDue=0), keep it at 0
+      const newAmountDue = bill.isVariable && bill.amountDue === 0
+        ? 0
+        : Math.max(0, bill.amountDue - amountDelta);
+
+      // Atomic transaction: update transaction and bill.amountDue only
+      db.transaction((tx) => {
+        // Update transaction record
+        tx.update(transactions)
+          .set({
+            amount,
+            paidAt,
+            notes: notes || null,
+          })
+          .where(eq(transactions.id, id))
+          .run();
+
+        // Update bill: only amountDue, preserve dueDate and status
+        tx.update(bills)
+          .set({
+            amountDue: newAmountDue,
+            updatedAt: new Date(),
+          })
+          .where(eq(bills.id, bill.id))
+          .run();
+      });
+
+      // Revalidate UI
+      revalidatePath('/');
+
+      return {
+        success: true,
+        data: {
+          transactionId: id,
+        },
+      };
+    }
+
+    // 6. Full Path: Date changed, perform full recalculation
+    // Check if old transaction affected current cycle
     const oldAffectedCycle = PaymentService.doesPaymentAffectCurrentCycle(
       bill,
       existingTransaction
     );
 
-    // 5. Prepare updated transaction object
+    // 7. Prepare updated transaction object
     const updatedTransaction: Transaction = {
       ...existingTransaction,
       amount,
@@ -297,10 +347,10 @@ export async function updateTransaction(
       notes: notes || null,
     };
 
-    // 6. Check if new transaction affects current cycle
+    // 8. Check if new transaction affects current cycle
     const newAffectsCycle = PaymentService.doesPaymentAffectCurrentCycle(bill, updatedTransaction);
 
-    // 7. Pre-fetch all transactions and calculate new bill state if needed
+    // 9. Pre-fetch all transactions and calculate new bill state if needed
     let newBillState: ReturnType<typeof PaymentService.recalculateBillFromPayments> | null = null;
     if (oldAffectedCycle || newAffectsCycle) {
       const allTransactions = await db
@@ -317,7 +367,7 @@ export async function updateTransaction(
       newBillState = PaymentService.recalculateBillFromPayments(bill, updatedTransactions);
     }
 
-    // 8. Atomic transaction: update transaction and bill together
+    // 10. Atomic transaction: update transaction and bill together
     db.transaction((tx) => {
       // Update transaction record
       tx.update(transactions)
