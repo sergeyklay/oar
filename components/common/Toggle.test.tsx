@@ -99,20 +99,11 @@ describe('Toggle', () => {
     expect(loader).not.toBeInTheDocument();
   });
 
-  it('renders horizontal layout correctly', () => {
-    render(<Toggle {...defaultProps} layout="horizontal" />);
-
-    const switchElement = document.getElementById('test-toggle');
-    expect(switchElement).toBeInTheDocument();
-    expect(screen.getByText('Test Toggle')).toBeInTheDocument();
-  });
-
-  it('handles justify-between className for reverse horizontal layout', () => {
+  it('applies custom className to container', () => {
     render(
       <Toggle
         {...defaultProps}
-        layout="horizontal"
-        className="flex flex-row items-center justify-between rounded-lg border p-3"
+        className="rounded-lg border p-3"
       />
     );
 

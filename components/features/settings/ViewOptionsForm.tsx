@@ -250,7 +250,6 @@ export function ViewOptionsForm({
           }
           isLoading={isIncludeAutoPayInDueSoonUpdating}
           disabled={isPending}
-          layout="horizontal"
         />
       </FormItem>
     </div>
