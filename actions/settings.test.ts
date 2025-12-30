@@ -6,6 +6,7 @@ import {
   updateBillEndAction,
   updateWeekendAdjustment,
   getWeekendAdjustment,
+  updateAutoLogAutoPay,
 } from './settings';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
@@ -23,6 +24,7 @@ jest.mock('@/lib/services/SettingsService', () => ({
     setBillEndAction: jest.fn(),
     setWeekendAdjustment: jest.fn(),
     getWeekendAdjustment: jest.fn(),
+    set: jest.fn(),
   },
 }));
 jest.mock('@/db', () => ({
@@ -470,5 +472,53 @@ describe('getWeekendAdjustment', () => {
 
     const logger = getLogger('test');
     expect(logger.error).toHaveBeenCalledWith(error, 'Failed to fetch weekend adjustment');
+  });
+});
+
+describe('updateAutoLogAutoPay', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('updates setting successfully when enabled is true', async () => {
+    (SettingsService.set as jest.Mock).mockResolvedValue(undefined);
+
+    const result = await updateAutoLogAutoPay({ enabled: true });
+
+    expect(result.success).toBe(true);
+    expect(SettingsService.set).toHaveBeenCalledWith('autoLogAutoPay', true);
+    expect(revalidatePath).toHaveBeenCalledWith('/settings');
+  });
+
+  it('updates setting successfully when enabled is false', async () => {
+    (SettingsService.set as jest.Mock).mockResolvedValue(undefined);
+
+    const result = await updateAutoLogAutoPay({ enabled: false });
+
+    expect(result.success).toBe(true);
+    expect(SettingsService.set).toHaveBeenCalledWith('autoLogAutoPay', false);
+    expect(revalidatePath).toHaveBeenCalledWith('/settings');
+  });
+
+  it('returns validation error for invalid input', async () => {
+    const result = await updateAutoLogAutoPay({ enabled: 'invalid' as unknown as boolean });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Validation failed');
+    expect(result.fieldErrors).toBeDefined();
+    expect(SettingsService.set).not.toHaveBeenCalled();
+  });
+
+  it('returns error when service throws', async () => {
+    const error = new Error('Database error');
+    (SettingsService.set as jest.Mock).mockRejectedValue(error);
+
+    const result = await updateAutoLogAutoPay({ enabled: true });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to update setting');
+
+    const logger = getLogger('test');
+    expect(logger.error).toHaveBeenCalledWith(error, 'Failed to update auto-log auto-pay setting');
   });
 });

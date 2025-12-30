@@ -115,7 +115,9 @@ If you need to correct a payment mistake, click any payment row to view its deta
 
 **Bill already paid.** For one-time bills marked as paid, the Log Payment button is disabled.
 
-**Auto-pay bills.** If you've marked a bill as auto-pay, Oar logs payments automatically when the due date arrives. AutoPay eligibility uses adjusted payment dates (not anchor dates) to determine when a bill becomes due. For example, a bill due Saturday January 15 with "Move to Previous Business Day" strategy becomes eligible on Friday January 14. When processed, the transaction records the adjusted date for audit accuracy, but the next due date advances using the anchor date to prevent drift. You'll still see these payments in the bill's history. See [Background Jobs](./006-background-jobs.md) and [Active Payer Signals](./010-active-payer-signals.md) for details.
+**Auto-pay bills.** If you've marked a bill as auto-pay, Oar can log payments automatically when the due date arrives. This behavior is controlled by the "Automatically log automatic bills" setting in Settings → Logging Settings. When enabled (the default), the background job processes auto-pay bills and creates payment records automatically. When disabled, you must manually log payments for auto-pay bills using the Log Payment dialog, giving you full control to verify amounts before recording them.
+
+AutoPay eligibility uses adjusted payment dates (not anchor dates) to determine when a bill becomes due. For example, a bill due Saturday January 15 with "Move to Previous Business Day" strategy becomes eligible on Friday January 14. When processed, the transaction records the adjusted date for audit accuracy, but the next due date advances using the anchor date to prevent drift. You'll still see these payments in the bill's history. See [Background Jobs](./006-background-jobs.md) and [Active Payer Signals](./010-active-payer-signals.md) for details.
 
 ## Verification
 

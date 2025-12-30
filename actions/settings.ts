@@ -192,6 +192,10 @@ const updateWeekendAdjustmentSchema = z.object({
   strategy: z.enum(['unchanged', 'next_business_day', 'previous_business_day']),
 });
 
+const updateAutoLogAutoPaySchema = z.object({
+  enabled: z.boolean(),
+});
+
 /**
  * Updates the global weekend adjustment strategy setting.
  *
@@ -241,6 +245,38 @@ export async function getWeekendAdjustment(): Promise<ActionResult<WeekendAdjust
     return {
       success: false,
       error: 'Failed to load setting',
+    };
+  }
+}
+
+/**
+ * Updates the "automatically log auto-pay bills" setting.
+ *
+ * @param input - Object containing the enabled boolean value
+ * @returns ActionResult indicating success or failure
+ */
+export async function updateAutoLogAutoPay(
+  input: z.infer<typeof updateAutoLogAutoPaySchema>
+): Promise<ActionResult<void>> {
+  const parsed = updateAutoLogAutoPaySchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  try {
+    await SettingsService.set('autoLogAutoPay', parsed.data.enabled);
+    revalidatePath('/settings');
+    return { success: true };
+  } catch (error) {
+    logger.error(error, 'Failed to update auto-log auto-pay setting');
+    return {
+      success: false,
+      error: 'Failed to update setting',
     };
   }
 }

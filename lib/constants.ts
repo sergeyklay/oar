@@ -92,6 +92,7 @@ export const DEFAULT_SETTINGS_VALUES = [
   { key: 'includeAutoPayInDueSoon', value: 'true', sectionSlug: 'view-options' },
   { key: 'theme', value: 'system', sectionSlug: 'view-options' },
   { key: 'notifications_enabled', value: 'true', sectionSlug: 'notification-settings' },
+  { key: 'autoLogAutoPay', value: 'true', sectionSlug: 'logging-settings' },
 ] as const;
 
 /** Default weekend adjustment strategy when no global setting is configured. */

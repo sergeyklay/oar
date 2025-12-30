@@ -95,6 +95,7 @@ describe('SettingsService', () => {
           { key: 'locale', value: 'de-DE' },
           { key: 'weekStart', value: '1' },
           { key: 'includeAutoPayInDueSoon', value: 'false' },
+          { key: 'autoLogAutoPay', value: 'false' },
         ])
       );
 
@@ -104,6 +105,7 @@ describe('SettingsService', () => {
       expect(result.locale).toBe('de-DE');
       expect(result.weekStart).toBe(1);
       expect(result.includeAutoPayInDueSoon).toBe(false);
+      expect(result.autoLogAutoPay).toBe(false);
     });
 
     it('uses defaults when settings are missing', async () => {
@@ -115,6 +117,7 @@ describe('SettingsService', () => {
       expect(result.locale).toBe(DEFAULT_LOCALE);
       expect(result.weekStart).toBe(0);
       expect(result.includeAutoPayInDueSoon).toBe(true);
+      expect(result.autoLogAutoPay).toBe(true);
     });
 
     it('parses weekStart as number', async () => {
@@ -387,13 +390,14 @@ describe('SettingsService', () => {
 
       await SettingsService.initialize();
 
-      expect(db.insert).toHaveBeenCalledTimes(4);
+      expect(db.insert).toHaveBeenCalledTimes(5);
       expect(db.insert).toHaveBeenCalledWith(settings);
     });
 
     it('skips existing settings', async () => {
       (db.select as jest.Mock)
         .mockReturnValueOnce(createSelectBuilderSync([{ key: 'currency', value: 'EUR' }]))
+        .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]));
@@ -407,7 +411,7 @@ describe('SettingsService', () => {
 
       await SettingsService.initialize();
 
-      expect(db.insert).toHaveBeenCalledTimes(3);
+      expect(db.insert).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -911,6 +915,51 @@ describe('SettingsService', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: 'invalid' },
         'Invalid includeAutoPayInDueSoon value, defaulting to true'
+      );
+    });
+  });
+
+  describe('getAutoLogAutoPay', () => {
+    it('returns true when stored value is "true"', async () => {
+      (db.select as jest.Mock).mockReturnValue(
+        createSelectBuilderSync([{ value: 'true' }])
+      );
+
+      const result = await SettingsService.getAutoLogAutoPay();
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false when stored value is "false"', async () => {
+      (db.select as jest.Mock).mockReturnValue(
+        createSelectBuilderSync([{ value: 'false' }])
+      );
+
+      const result = await SettingsService.getAutoLogAutoPay();
+
+      expect(result).toBe(false);
+    });
+
+    it('returns default (true) when setting missing', async () => {
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+
+      const result = await SettingsService.getAutoLogAutoPay();
+
+      expect(result).toBe(true);
+    });
+
+    it('returns default (true) when stored value is invalid', async () => {
+      mockLogger.error.mockClear();
+      (db.select as jest.Mock).mockReturnValue(
+        createSelectBuilderSync([{ value: 'invalid' }])
+      );
+
+      const result = await SettingsService.getAutoLogAutoPay();
+
+      expect(result).toBe(true);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { invalidValue: 'invalid' },
+        'Invalid autoLogAutoPay value, defaulting to true'
       );
     });
   });

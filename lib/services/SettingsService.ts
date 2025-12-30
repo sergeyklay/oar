@@ -61,6 +61,8 @@ export interface UserSettings {
   weekStart: WeekStartDay;
   /** Whether to include automatic bills in Due Soon and Due This Month views. */
   includeAutoPayInDueSoon: boolean;
+  /** Whether to automatically log payments for auto-pay bills when due date arrives. */
+  autoLogAutoPay: boolean;
 }
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -68,6 +70,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   locale: DEFAULT_LOCALE,
   weekStart: 0,
   includeAutoPayInDueSoon: true,
+  autoLogAutoPay: true,
 };
 
 /**
@@ -104,11 +107,20 @@ export const SettingsService = {
           ? false
           : DEFAULT_SETTINGS.includeAutoPayInDueSoon;
 
+    const autoLogAutoPayValue = settingsMap['autoLogAutoPay'];
+    const autoLogAutoPay =
+      autoLogAutoPayValue === 'true'
+        ? true
+        : autoLogAutoPayValue === 'false'
+          ? false
+          : DEFAULT_SETTINGS.autoLogAutoPay;
+
     return {
       currency: settingsMap['currency'] ?? DEFAULT_SETTINGS.currency,
       locale: settingsMap['locale'] ?? DEFAULT_SETTINGS.locale,
       weekStart,
       includeAutoPayInDueSoon,
+      autoLogAutoPay,
     };
   },
 
@@ -574,6 +586,40 @@ export const SettingsService = {
         invalidValue: row.value,
       },
       'Invalid includeAutoPayInDueSoon value, defaulting to true'
+    );
+    return true;
+  },
+
+  /**
+   * Retrieves the "automatically log auto-pay bills" setting.
+   *
+   * @returns {Promise<boolean>} True if auto-pay bills should be automatically logged, false otherwise.
+   * Defaults to true if not set.
+   */
+  async getAutoLogAutoPay(): Promise<boolean> {
+    const [row] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, 'autoLogAutoPay'))
+      .limit(1);
+
+    if (!row) {
+      return true;
+    }
+
+    if (row.value === 'true') {
+      return true;
+    }
+
+    if (row.value === 'false') {
+      return false;
+    }
+
+    logger.error(
+      {
+        invalidValue: row.value,
+      },
+      'Invalid autoLogAutoPay value, defaulting to true'
     );
     return true;
   },

@@ -2,7 +2,7 @@ import { db, bills, transactions } from '@/db';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { DateAdjustmentService } from '@/lib/services/DateAdjustmentService';
-import { eq, and, lte, ne } from 'drizzle-orm';
+import { eq, and, lte, ne, gt } from 'drizzle-orm';
 import { endOfDay, addDays } from 'date-fns';
 import { getLogger } from '@/lib/logger';
 
@@ -52,6 +52,13 @@ export const AutoPayService = {
   async processAutoPay(): Promise<AutoPayResult> {
     const today = endOfDay(new Date());
 
+    // Check if auto-log is enabled
+    const autoLogAutoPay = await SettingsService.getAutoLogAutoPay();
+    if (!autoLogAutoPay) {
+      logger.info('Auto-log disabled, skipping auto-pay processing');
+      return { processed: 0, failed: 0, failedIds: [] };
+    }
+
     // Fetch global weekend adjustment setting once per batch
     const globalStrategy = await SettingsService.getWeekendAdjustment();
 
@@ -69,7 +76,8 @@ export const AutoPayService = {
           eq(bills.isAutoPay, true),
           ne(bills.status, 'paid'),
           lte(bills.dueDate, addDays(today, 2)),
-          eq(bills.isArchived, false)
+          eq(bills.isArchived, false),
+          gt(bills.amountDue, 0)
         )
       );
 

@@ -20,6 +20,7 @@ jest.mock('./RecurrenceService', () => ({
 jest.mock('./SettingsService', () => ({
   SettingsService: {
     getWeekendAdjustment: jest.fn(),
+    getAutoLogAutoPay: jest.fn(),
   },
 }));
 
@@ -74,36 +75,69 @@ describe('AutoPayService', () => {
   };
 
   describe('processAutoPay', () => {
-    it('processes eligible auto-pay bill', async () => {
-      // Setup: Bill with isAutoPay=true, status='pending', dueDate=today
+    beforeEach(() => {
+      (SettingsService.getAutoLogAutoPay as jest.Mock).mockResolvedValue(true);
+    });
+
+    it('returns early when auto-log is disabled', async () => {
+      (SettingsService.getAutoLogAutoPay as jest.Mock).mockResolvedValue(false);
+
+      const result = await AutoPayService.processAutoPay();
+
+      expect(result).toEqual({
+        processed: 0,
+        failed: 0,
+        failedIds: [],
+      });
+      expect(SettingsService.getAutoLogAutoPay).toHaveBeenCalled();
+      expect(db.select).not.toHaveBeenCalled();
+      expect(db.transaction).not.toHaveBeenCalled();
+    });
+
+    it('processes eligible auto-pay bill when auto-log is enabled', async () => {
       const mockBill = createMockBill({
         id: 'bill-monthly',
         dueDate: new Date(),
         frequency: 'monthly',
+        amountDue: 9999,
       });
       mockSelectBills([mockBill]);
 
-      // Mock RecurrenceService to return next month
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
       (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
+      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockImplementation((date) => date);
 
-      // Action
       const result = await AutoPayService.processAutoPay();
 
-      // Assert
       expect(result).toEqual({
         processed: 1,
         failed: 0,
         failedIds: [],
       });
+      expect(SettingsService.getAutoLogAutoPay).toHaveBeenCalled();
       expect(db.transaction).toHaveBeenCalled();
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
         'monthly',
         null
       );
+    });
+
+    it('skips bills with amountDue = 0', async () => {
+      mockSelectBills([]);
+
+      const result = await AutoPayService.processAutoPay();
+
+      expect(result).toEqual({
+        processed: 0,
+        failed: 0,
+        failedIds: [],
+      });
+      expect(db.transaction).not.toHaveBeenCalled();
     });
 
     it('skips non-auto-pay bills', async () => {

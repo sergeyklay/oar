@@ -1,7 +1,7 @@
 # Active Payer Philosophy
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-25
+- **Last Updated:** 2025-12-30
 
 ## Overview
 
@@ -67,7 +67,7 @@ Passive systems encourage you to set it and forget it. Active Payer systems enco
 
 ## Edge cases and constraints
 
-**Auto-pay bills:** Bills marked as auto-pay still require your verification. The system logs payments automatically, but you should check your bank statement to ensure the expected amount was charged. If amounts differ, you can edit the logged payment.
+**Auto-pay bills:** Bills marked as auto-pay still require your verification. When the "Automatically log automatic bills" setting is enabled, the system logs payments automatically, but you should check your bank statement to ensure the expected amount was charged. If amounts differ, you can edit the logged payment. You can also disable auto-logging to manually log each payment, giving you full control to verify amounts before recording them.
 
 **Historical payments:** When onboarding existing bills, you can log past payments without affecting the current billing cycle. The system detects historical payments and records them separately. This lets you build complete payment history while keeping current obligations accurate.
 
