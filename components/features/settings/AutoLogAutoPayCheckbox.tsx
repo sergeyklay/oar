@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { updateAutoLogAutoPay } from '@/actions/settings';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/common/Toggle';
+import { getLogger } from '@/lib/logger';
+
+const logger = getLogger('AutoLogAutoPayCheckbox');
 
 interface AutoLogAutoPayCheckboxProps {
   checked: boolean;
@@ -23,14 +26,21 @@ export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoP
     setIsLoading(true);
     setChecked(newChecked);
 
-    const result = await updateAutoLogAutoPay({ enabled: newChecked });
+    try {
+      const result = await updateAutoLogAutoPay({ enabled: newChecked });
 
-    if (!result.success) {
-      toast.error(result.error || 'Failed to update setting');
+      if (!result.success) {
+        toast.error(result.error || 'Failed to update setting');
+        setChecked(!newChecked);
+      }
+    } catch (error) {
+      toast.error('Failed to update setting');
+      logger.error(error, 'Failed to update auto-log auto-pay setting');
+
       setChecked(!newChecked);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
