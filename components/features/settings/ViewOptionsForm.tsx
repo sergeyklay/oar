@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { SettingCheckbox } from '@/components/common/SettingCheckbox';
 import { updateViewOptions } from '@/actions/settings';
 import {
   CURRENCY_OPTIONS,
@@ -237,23 +237,17 @@ export function ViewOptionsForm({
       </FormItem>
 
       <FormItem>
-        <Label htmlFor="include-autopay-toggle">Include automatic bills in bills due soon</Label>
-        <div className="flex items-center gap-2">
-          <Switch
-            id="include-autopay-toggle"
-            checked={state.includeAutoPayInDueSoon}
-            onCheckedChange={(checked) =>
-              handleUpdate('includeAutoPayInDueSoon', String(checked))
-            }
-            disabled={isPending}
-          />
-          {isIncludeAutoPayInDueSoonUpdating && (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          )}
-        </div>
-        <p id="include-autopay-description" className="text-xs text-muted-foreground">
-          Show automatic bills in Due Soon and Due This Month views
-        </p>
+        <SettingCheckbox
+          id="include-autopay-toggle"
+          label="Include automatic bills in bills due soon"
+          description="Show automatic bills in Due Soon and Due This Month views"
+          checked={state.includeAutoPayInDueSoon}
+          onCheckedChange={(checked) =>
+            handleUpdate('includeAutoPayInDueSoon', String(checked))
+          }
+          isLoading={isIncludeAutoPayInDueSoonUpdating}
+          disabled={isPending}
+        />
       </FormItem>
     </div>
   );

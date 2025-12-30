@@ -1,7 +1,7 @@
 # Background Jobs
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-27
+- **Last Updated:** 2025-12-30
 
 ## Overview
 
@@ -19,20 +19,24 @@ For details on how bill statuses work, see [Recurrence Engine](./001-recurrence-
 
 Runs at 00:05 UTC (five minutes after the status check).
 
-If you've marked a bill as "auto-pay," this job handles the bookkeeping when the due date arrives. It creates a payment record and advances the bill to its next due date.
+If you've marked a bill as "auto-pay," this job can handle the bookkeeping when the due date arrives. It creates a payment record and advances the bill to its next due date. This behavior is controlled by the "Automatically log automatic bills" setting in Settings → Logging Settings. When the setting is disabled, the job skips processing and you must log payments manually.
 
 ### What "auto-pay" means in Oar
 
-Marking a bill as auto-pay tells Oar that your bank handles payment automatically (direct debit, recurring card charge, etc.). Oar doesn't send money anywhere. It logs the payment in your history so you have a complete record, then advances the due date so your bill list stays current.
+Marking a bill as auto-pay tells Oar that your bank handles payment automatically (direct debit, recurring card charge, etc.). Oar doesn't send money anywhere. When auto-logging is enabled, it logs the payment in your history so you have a complete record, then advances the due date so your bill list stays current.
 
-This reduces manual work for bills you've already delegated to your bank. You made the conscious choice to set up auto-pay externally; Oar respects that decision by keeping your records in sync.
+This reduces manual work for bills you've already delegated to your bank. You made the conscious choice to set up auto-pay externally; Oar respects that decision by keeping your records in sync. However, if you prefer to verify each payment amount before logging (especially important for variable bills where estimates may differ from actual charges), you can disable auto-logging and log payments manually.
 
 ### When auto-pay bills get processed
 
-A bill is processed when all these conditions are true:
+The job only processes bills when the "Automatically log automatic bills" setting is enabled. A bill is processed when all these conditions are true:
+- The auto-log setting is enabled
 - You marked it as auto-pay
 - The due date has arrived (today or earlier)
 - It hasn't already been paid
+- The amount due is greater than zero
+
+The amount due check ensures bills that are already fully paid in the current cycle (from partial payments) or variable bills after cycle advance (where amount due resets to zero) are not processed until the next cycle when an amount is due.
 
 Once processed:
 - A payment record appears in the bill's history with the note "Logged by Oar"

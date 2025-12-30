@@ -58,7 +58,9 @@ describe('ViewOptionsForm', () => {
       expect(document.getElementById('currency-description')).toBeInTheDocument();
       expect(document.getElementById('locale-description')).toBeInTheDocument();
       expect(document.getElementById('weekstart-description')).toBeInTheDocument();
-      expect(document.getElementById('include-autopay-description')).toBeInTheDocument();
+      expect(
+        screen.getByText('Show automatic bills in Due Soon and Due This Month views')
+      ).toBeInTheDocument();
     });
 
     it('associates include auto pay label with switch via htmlFor', () => {

@@ -6,6 +6,7 @@ import { ViewOptionsForm } from './ViewOptionsForm';
 import { BillEndActionDropdown } from './BillEndActionDropdown';
 import { WeekendAdjustmentDropdown } from './WeekendAdjustmentDropdown';
 import { updateDueSoonRange, updatePaidRecentlyRange, updateBillEndAction, updateWeekendAdjustment } from '@/actions/settings';
+import { AutoLogAutoPayCheckbox } from './AutoLogAutoPayCheckbox';
 import { FUTURE_RANGE_LABELS, PAST_RANGE_LABELS } from '@/lib/constants';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -113,6 +114,13 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
                       currentValue={setting.value as 'unchanged' | 'next_business_day' | 'previous_business_day'}
                       onUpdate={updateWeekendAdjustment}
                     />
+                  </FormItem>
+                );
+              }
+              if (setting.key === 'autoLogAutoPay') {
+                return (
+                  <FormItem key={setting.key}>
+                    <AutoLogAutoPayCheckbox checked={setting.value === 'true'} />
                   </FormItem>
                 );
               }
