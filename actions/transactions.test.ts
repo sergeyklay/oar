@@ -1202,6 +1202,176 @@ describe('updateTransaction', () => {
     expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith('/');
   });
+
+  it('uses full recalculation for one-time bills even when date unchanged', async () => {
+    const oneTimeBill = {
+      ...mockBill,
+      frequency: 'once' as const,
+      amountDue: 5000,
+      dueDate: new Date('2025-12-25'),
+      status: 'pending' as const,
+    };
+
+    const transaction = {
+      ...mockTransaction,
+      paidAt: new Date('2025-12-20'),
+      amount: 5000,
+    };
+
+    let capturedAmountDue: number | undefined;
+    let capturedStatus: string | undefined;
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 0,
+      status: 'paid' as const,
+      nextDueDate: null,
+    });
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([transaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([oneTimeBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([transaction]),
+          }),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn((data) => {
+            if (data.amountDue !== undefined) {
+              capturedAmountDue = data.amountDue;
+              capturedStatus = data.status;
+            }
+            return {
+              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            };
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 5000,
+      paidAt: new Date('2025-12-20'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
+    const recalculateCall = (PaymentService.recalculateBillFromPayments as jest.Mock).mock.calls[0];
+    expect(recalculateCall[0]).toMatchObject({
+      frequency: 'once',
+      amountDue: 5000,
+    });
+    expect(recalculateCall[1]).toHaveLength(1);
+    expect(recalculateCall[1][0]).toMatchObject({
+      id: 'tx-1',
+      amount: 5000,
+      paidAt: new Date('2025-12-20'),
+    });
+    expect(capturedAmountDue).toBe(0);
+    expect(capturedStatus).toBe('paid');
+  });
+
+  it('updates one-time bill status to pending when amountDue becomes greater than zero', async () => {
+    const oneTimeBill = {
+      ...mockBill,
+      frequency: 'once' as const,
+      amountDue: 0,
+      dueDate: new Date('2025-12-25'),
+      status: 'paid' as const,
+    };
+
+    const transaction = {
+      ...mockTransaction,
+      paidAt: new Date('2025-12-20'),
+      amount: 10000,
+    };
+
+    let capturedAmountDue: number | undefined;
+    let capturedStatus: string | undefined;
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 2000,
+      status: 'pending' as const,
+      nextDueDate: null,
+    });
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([transaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([oneTimeBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([transaction]),
+          }),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn((data) => {
+            if (data.amountDue !== undefined) {
+              capturedAmountDue = data.amountDue;
+              capturedStatus = data.status;
+            }
+            return {
+              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            };
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 8000,
+      paidAt: new Date('2025-12-20'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
+    const recalculateCall = (PaymentService.recalculateBillFromPayments as jest.Mock).mock.calls[0];
+    expect(recalculateCall[0]).toMatchObject({
+      frequency: 'once',
+      amountDue: 0,
+    });
+    expect(recalculateCall[1]).toHaveLength(1);
+    expect(recalculateCall[1][0]).toMatchObject({
+      id: 'tx-1',
+      amount: 8000,
+      paidAt: new Date('2025-12-20'),
+    });
+    expect(capturedAmountDue).toBe(2000);
+    expect(capturedStatus).toBe('pending');
+  });
 });
 
 describe('deleteTransaction', () => {

@@ -290,7 +290,8 @@ export async function updateTransaction(
     const dateChanged = oldPaidAtDay.getTime() !== newPaidAtDay.getTime();
 
     // 5. Fast Path: If date unchanged, preserve cycle and adjust amountDue mathematically
-    if (!dateChanged) {
+    // Exclude one-time bills: status is tied to balance, requires full recalculation
+    if (!dateChanged && bill.frequency !== 'once') {
       // Check if transaction affects current cycle before adjusting amountDue
       const affectsCurrentCycle = PaymentService.doesPaymentAffectCurrentCycle(
         bill,
