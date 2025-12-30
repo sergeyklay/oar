@@ -43,9 +43,11 @@ After saving, the payment list refreshes to show your updated information. How O
 
 **Editing amount or notes without changing the date:**
 
-When you correct the payment amount or notes but keep the same payment date, Oar preserves your billing cycle. The due date stays where it is, and only the amount due adjusts mathematically. This respects your intent: if you marked a bill as paid by advancing the cycle, a small correction to the amount shouldn't undo that progress.
+When you correct the payment amount or notes but keep the same payment date, Oar preserves your billing cycle for recurring bills. The due date stays where it is, and only the amount due adjusts mathematically. This respects your intent: if you marked a bill as paid by advancing the cycle, a small correction to the amount shouldn't undo that progress.
 
 For example: You have a $200 monthly bill. You logged a full payment that advanced the due date to next month. Later, you realize you entered $200 instead of $195. After editing the payment amount to $195, the due date stays advanced, but the amount due increases by $5 to reflect the correction.
+
+**Note:** One-time bills always use full recalculation when editing payments, even if you don't change the date. This ensures the bill's status (paid or pending) stays synchronized with the amount due. If editing a payment causes the amount due to become zero, the status updates to "paid." If the amount due becomes greater than zero, the status updates to "pending."
 
 **Changing the payment date:**
 
@@ -106,7 +108,7 @@ If no payment is selected, the bottom of the payment history section displays a 
 
 **Variable bills and cycle preservation.** Bills marked with variable amounts (like utility bills) behave differently when their cycle advances. When you log a payment that advances a variable bill's cycle, the amount due resets to zero, not the base amount. This reflects that each billing cycle for variable bills is independent; you don't carry residual debt forward. If you later edit that payment's amount without changing the date, the cycle stays advanced and the amount due remains zero. Variable bills only accumulate debt within a single cycle, never across cycles.
 
-**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. Editing such a payment works the same way as recurring bills, but since one-time bills don't have cycles, the recalculation focuses on whether the bill should be marked as paid based on the total payments. If a one-time bill has ended (fully paid), deleting the final payment will reactivate it. The bill's final state (archived or marked as "Never Due") depends on your [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md).
+**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. When editing a one-time bill's payment, Oar always performs a full recalculation (even if you don't change the date) because the bill's status is directly tied to the amount due. If the total payments equal or exceed the bill amount, the status becomes "paid" and the amount due becomes zero. If the total payments are less than the bill amount, the status becomes "pending" and the amount due reflects the difference. This ensures status and amount due stay synchronized. If a one-time bill has ended (fully paid), deleting the final payment will reactivate it. The bill's final state (archived or marked as "Never Due") depends on your [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md).
 
 **Concurrent edits.** Oar is designed for single-user use. If you're editing a payment in one browser tab and delete it in another, the system will reflect the most recent change. For best results, complete one operation before starting another.
 
@@ -173,6 +175,16 @@ To confirm variable bill behavior:
 4. Edit that payment's amount without changing the date
 5. Verify the due date stays advanced and amount due remains zero
 6. Verify the cycle doesn't revert even if the corrected amount is less than the base amount
+
+To confirm one-time bill editing behavior:
+
+1. Find or create a one-time bill
+2. Log a payment that fully pays the bill (amount equals or exceeds bill amount)
+3. Verify the bill's status is "paid" and amount due is zero
+4. Edit that payment's amount (reduce it, keep the same date)
+5. Verify the system performs a full recalculation
+6. Verify the status updates to "pending" if amount due becomes greater than zero
+7. Verify the status updates to "paid" if amount due becomes zero again
 
 ## Related Documents
 
