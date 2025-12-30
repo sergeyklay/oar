@@ -58,6 +58,16 @@ interface LogPaymentDialogProps {
   onPaymentLogged?: () => void;
 }
 
+/**
+ * Render a dialog that lets users record a payment for a bill.
+ *
+ * @param bill - Bill data used to initialize form values and display context.
+ * @param open - Whether the dialog is currently open.
+ * @param onOpenChange - Callback invoked with the new open state when the dialog is opened or closed.
+ * @param currency - Currency code used to format and parse the amount field.
+ * @param onPaymentLogged - Optional callback invoked after a payment is successfully logged.
+ * @returns The dialog UI for logging a payment.
+ */
 export function LogPaymentDialog({
   bill,
   open,
