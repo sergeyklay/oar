@@ -100,6 +100,18 @@ interface BillFormDialogProps {
   defaultCategoryId: string | null;
 }
 
+/**
+ * Render a dialog containing a form to create a new bill or edit an existing bill.
+ *
+ * @param bill - Optional bill to edit; when provided the form is populated for editing.
+ * @param open - Controls whether the dialog is open.
+ * @param onOpenChange - Callback invoked with the new open state when the dialog is opened or closed.
+ * @param currencySymbol - Currency symbol displayed next to the amount field (default: `"zł"`).
+ * @param availableTags - List of tags available for selection in the tags combobox.
+ * @param categoriesGrouped - Grouped category data used by the category selector.
+ * @param defaultCategoryId - Optional default category id used when creating a new bill.
+ * @returns The dialog JSX element that manages form state, validation, and submission for creating or updating a bill.
+ */
 export function BillFormDialog({
   bill,
   open,
@@ -481,4 +493,3 @@ export function BillFormDialog({
     </Dialog>
   );
 }
-

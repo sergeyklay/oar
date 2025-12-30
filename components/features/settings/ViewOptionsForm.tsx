@@ -43,8 +43,11 @@ interface UpdatePayload {
 }
 
 /**
- * Client component for editing view options settings.
- * Handles currency, locale, and week start day preferences.
+ * Renders a form for editing default view options: currency, locale, start-of-week, and whether automatic bills appear in "Due Soon" views.
+ *
+ * Displays controls for selecting currency, locale, and week start, and a toggle for including automatic bills; updates are persisted via the view options update action and per-field loading indicators are shown while changes are applied.
+ *
+ * @returns The form UI for editing view options settings.
  */
 export function ViewOptionsForm({
   initialCurrency,
@@ -253,4 +256,3 @@ export function ViewOptionsForm({
     </div>
   );
 }
-

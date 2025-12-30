@@ -35,14 +35,18 @@ interface ToggleProps {
 }
 
 /**
- * Reusable toggle component for the entire application.
+ * Render a labeled switch control with an optional description in either a vertical (label above) or horizontal (label beside) layout.
  *
- * Provides consistent styling and behavior for boolean controls across settings, forms, and dialogs.
- * Supports both vertical (label above) and horizontal (label beside) layouts.
- * Always uses Switch control for consistent user experience.
- *
- * @param {ToggleProps} props - Component props
- * @returns The rendered toggle component
+ * @param id - Unique identifier used to associate the label with the switch
+ * @param label - Text displayed for the control label
+ * @param description - Optional supplementary text shown beneath the control
+ * @param checked - Current checked state of the switch
+ * @param onCheckedChange - Callback invoked with the new checked state when the switch is toggled
+ * @param isLoading - When true, disables interaction and displays a spinner next to the switch
+ * @param disabled - When true, disables interaction regardless of `isLoading`
+ * @param layout - Layout orientation; `'vertical'` places the label above the switch, `'horizontal'` places it beside
+ * @param className - Optional additional CSS classes applied to the outer container
+ * @returns The rendered toggle element
  */
 export function Toggle({
   id,
@@ -103,4 +107,3 @@ export function Toggle({
     </div>
   );
 }
-
