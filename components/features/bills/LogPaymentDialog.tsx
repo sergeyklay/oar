@@ -22,7 +22,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -34,7 +33,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Switch } from '@/components/ui/switch';
+import { Toggle } from '@/components/common/Toggle';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toMajorUnits, toMinorUnits, parseMoneyInput } from '@/lib/money';
@@ -268,18 +267,16 @@ export function LogPaymentDialog({
                 control={form.control}
                 name="updateDueDate"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Update Due Date</FormLabel>
-                      <FormDescription>
-                        Turn off to log a partial payment without advancing the
-                        billing cycle.
-                      </FormDescription>
-                    </div>
+                  <FormItem>
                     <FormControl>
-                      <Switch
+                      <Toggle
+                        id="updateDueDate"
+                        label="Update Due Date"
+                        description="Turn off to log a partial payment without advancing the billing cycle."
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        layout="horizontal"
+                        className="rounded-lg border p-3"
                       />
                     </FormControl>
                   </FormItem>

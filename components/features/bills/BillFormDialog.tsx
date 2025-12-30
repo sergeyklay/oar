@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Toggle } from '@/components/common/Toggle';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
@@ -268,16 +268,16 @@ export function BillFormDialog({
               control={form.control}
               name="isVariable"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem>
                   <FormControl>
-                    <Checkbox
+                    <Toggle
+                      id="isVariable"
+                      label="Variable amount"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      layout="horizontal"
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Variable amount</FormLabel>
-                  </div>
                 </FormItem>
               )}
             />
@@ -380,16 +380,16 @@ export function BillFormDialog({
               control={form.control}
               name="isAutoPay"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormItem>
                   <FormControl>
-                    <Checkbox
+                    <Toggle
+                      id="isAutoPay"
+                      label="Auto-Pay Enabled"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      layout="horizontal"
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Auto-Pay Enabled</FormLabel>
-                  </div>
                 </FormItem>
               )}
             />

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { updateAutoLogAutoPay } from '@/actions/settings';
 import { toast } from 'sonner';
-import { SettingCheckbox } from '@/components/common/SettingCheckbox';
+import { Toggle } from '@/components/common/Toggle';
 
 interface AutoLogAutoPayCheckboxProps {
   checked: boolean;
@@ -19,9 +19,7 @@ export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoP
 
     const result = await updateAutoLogAutoPay({ enabled: newChecked });
 
-    if (result.success) {
-      toast.success('Setting updated');
-    } else {
+    if (!result.success) {
       toast.error(result.error || 'Failed to update setting');
       setChecked(!newChecked);
     }
@@ -30,13 +28,14 @@ export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoP
   };
 
   return (
-    <SettingCheckbox
+    <Toggle
       id="autoLogAutoPay"
       label="Automatically log automatic bills"
       description="If an automatic bill has an amount due set, Oar will automatically log it on the due date"
       checked={checked}
       onCheckedChange={handleCheckedChange}
       isLoading={isLoading}
+      layout="horizontal"
     />
   );
 }
