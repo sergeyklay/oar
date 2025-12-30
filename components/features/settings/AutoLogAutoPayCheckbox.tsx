@@ -9,6 +9,12 @@ interface AutoLogAutoPayCheckboxProps {
   checked: boolean;
 }
 
+/**
+ * Renders a toggle that enables or disables automatically logging automatic bills and manages optimistic update with rollback on failure.
+ *
+ * @param checked - Initial checked state for the toggle
+ * @returns The Toggle element controlling the automatic logging setting
+ */
 export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoPayCheckboxProps) {
   const [checked, setChecked] = useState(initialChecked);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,4 +45,3 @@ export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoP
     />
   );
 }
-
