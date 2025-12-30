@@ -51,7 +51,6 @@ export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoP
       checked={checked}
       onCheckedChange={handleCheckedChange}
       isLoading={isLoading}
-      layout="horizontal"
     />
   );
 }

@@ -287,7 +287,6 @@ export function BillFormDialog({
                       label="Variable amount"
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      layout="horizontal"
                     />
                   </FormControl>
                 </FormItem>
@@ -399,7 +398,6 @@ export function BillFormDialog({
                       label="Auto-Pay Enabled"
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      layout="horizontal"
                     />
                   </FormControl>
                 </FormItem>

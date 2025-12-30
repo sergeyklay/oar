@@ -285,7 +285,6 @@ export function LogPaymentDialog({
                         description="Turn off to log a partial payment without advancing the billing cycle."
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        layout="horizontal"
                         className="rounded-lg border p-3"
                       />
                     </FormControl>
