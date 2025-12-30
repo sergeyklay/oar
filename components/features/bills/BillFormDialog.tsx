@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { format } from 'date-fns';
+import { ClientDate } from '@/components/ui/client-date';
 import { CalendarIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -329,7 +329,7 @@ export function BillFormDialog({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP')
+                            <ClientDate date={field.value} format="MMM d, yyyy" />
                           ) : (
                             <span>Pick a date</span>
                           )}
