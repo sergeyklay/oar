@@ -887,6 +887,8 @@ describe('updateTransaction', () => {
     let capturedDueDate: Date | undefined;
     let capturedStatus: string | undefined;
 
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+
     (db.select as jest.Mock)
       .mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
@@ -928,7 +930,10 @@ describe('updateTransaction', () => {
     expect(capturedDueDate).toBeUndefined();
     expect(capturedStatus).toBeUndefined();
     expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
-    expect(PaymentService.doesPaymentAffectCurrentCycle).not.toHaveBeenCalled();
+    expect(PaymentService.doesPaymentAffectCurrentCycle).toHaveBeenCalledWith(
+      billWithAdvancedCycle,
+      transactionWithOriginalDate
+    );
   });
 
   it('preserves cycle when editing notes without changing date (fast path)', async () => {
@@ -940,6 +945,8 @@ describe('updateTransaction', () => {
 
     let capturedAmountDue: number | undefined;
     let capturedDueDate: Date | undefined;
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
 
     (db.select as jest.Mock)
       .mockReturnValueOnce({
@@ -1043,6 +1050,8 @@ describe('updateTransaction', () => {
 
     let capturedAmountDue: number | undefined;
 
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+
     (db.select as jest.Mock)
       .mockReturnValueOnce({
         from: jest.fn().mockReturnValue({
@@ -1136,6 +1145,62 @@ describe('updateTransaction', () => {
     expect(result.success).toBe(true);
     expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
     expect(db.update).toHaveBeenCalledWith(bills);
+  });
+
+  it('does not modify bill when editing historical transaction amount (fast path)', async () => {
+    const historicalTransaction = {
+      ...mockTransaction,
+      paidAt: new Date('2025-11-15'),
+      amount: 8000,
+    };
+
+    const currentBill = {
+      ...mockBill,
+      amountDue: 10000,
+      dueDate: new Date('2025-12-25'),
+    };
+
+    const runMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(false);
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([historicalTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([currentBill]),
+        }),
+      });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 9000,
+      paidAt: new Date('2025-11-15'),
+      notes: 'Updated notes',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data?.transactionId).toBe('tx-1');
+    expect(PaymentService.doesPaymentAffectCurrentCycle).toHaveBeenCalledWith(
+      currentBill,
+      historicalTransaction
+    );
+    expect(db.update).toHaveBeenCalledTimes(1);
+    expect(db.update).toHaveBeenCalledWith(transactions);
+    expect(db.update).not.toHaveBeenCalledWith(bills);
+    expect(db.transaction).not.toHaveBeenCalled();
+    expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
+    expect(revalidatePath).toHaveBeenCalledWith('/');
   });
 });
 
