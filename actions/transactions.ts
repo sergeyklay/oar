@@ -393,7 +393,7 @@ export async function updateTransaction(
       }
     });
 
-    // 8. Revalidate UI
+    // 11. Revalidate UI
     revalidatePath('/');
 
     return {

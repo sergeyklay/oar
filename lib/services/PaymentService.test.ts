@@ -957,6 +957,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
         isVariable: true,
       };
 
@@ -984,6 +985,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
         isVariable: true,
       };
 
@@ -1013,6 +1015,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2025-03-01'),
         frequency: 'monthly' as const,
         status: 'pending' as const,
+        endDate: null,
         isVariable: true,
       };
 
