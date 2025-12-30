@@ -300,14 +300,16 @@ export async function updateTransaction(
 
       if (!affectsCurrentCycle) {
         // Historical transaction: only update transaction record, don't touch bill
-        db.update(transactions)
-          .set({
-            amount,
-            paidAt,
-            notes: notes || null,
-          })
-          .where(eq(transactions.id, id))
-          .run();
+        db.transaction((tx) => {
+          tx.update(transactions)
+            .set({
+              amount,
+              paidAt,
+              notes: notes || null,
+            })
+            .where(eq(transactions.id, id))
+            .run();
+        });
 
         revalidatePath('/');
 

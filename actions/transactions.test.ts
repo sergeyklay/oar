@@ -1182,6 +1182,13 @@ describe('updateTransaction', () => {
       set: updateSetMock,
     });
 
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
     const result = await updateTransaction({
       id: 'tx-1',
       amount: 9000,
@@ -1195,10 +1202,9 @@ describe('updateTransaction', () => {
       currentBill,
       historicalTransaction
     );
-    expect(db.update).toHaveBeenCalledTimes(1);
+    expect(db.transaction).toHaveBeenCalledTimes(1);
     expect(db.update).toHaveBeenCalledWith(transactions);
     expect(db.update).not.toHaveBeenCalledWith(bills);
-    expect(db.transaction).not.toHaveBeenCalled();
     expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith('/');
   });
