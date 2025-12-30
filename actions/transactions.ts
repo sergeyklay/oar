@@ -291,7 +291,34 @@ export async function updateTransaction(
 
     // 5. Fast Path: If date unchanged, preserve cycle and adjust amountDue mathematically
     if (!dateChanged) {
-      // Calculate amount delta
+      // Check if transaction affects current cycle before adjusting amountDue
+      const affectsCurrentCycle = PaymentService.doesPaymentAffectCurrentCycle(
+        bill,
+        existingTransaction
+      );
+
+      if (!affectsCurrentCycle) {
+        // Historical transaction: only update transaction record, don't touch bill
+        db.update(transactions)
+          .set({
+            amount,
+            paidAt,
+            notes: notes || null,
+          })
+          .where(eq(transactions.id, id))
+          .run();
+
+        revalidatePath('/');
+
+        return {
+          success: true,
+          data: {
+            transactionId: id,
+          },
+        };
+      }
+
+      // Transaction affects current cycle: adjust amountDue mathematically
       const amountDelta = amount - existingTransaction.amount;
       // Adjust amountDue: if payment decreased, amountDue increases
       // For variable bills: if cycle was advanced (amountDue=0), keep it at 0
