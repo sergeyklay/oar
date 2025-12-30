@@ -870,6 +870,273 @@ describe('updateTransaction', () => {
     expect(result.error).toBe('Bill not found');
     expect(db.transaction).not.toHaveBeenCalled();
   });
+
+  it('preserves cycle when editing amount without changing date (fast path)', async () => {
+    const billWithAdvancedCycle = {
+      ...mockBill,
+      amountDue: 10000,
+      dueDate: new Date('2026-01-25'),
+    };
+
+    const transactionWithOriginalDate = {
+      ...mockTransaction,
+      paidAt: new Date('2025-12-20T10:00:00'),
+    };
+
+    let capturedAmountDue: number | undefined;
+    let capturedDueDate: Date | undefined;
+    let capturedStatus: string | undefined;
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([transactionWithOriginalDate]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn((data) => {
+            if (data.amountDue !== undefined) {
+              capturedAmountDue = data.amountDue;
+              capturedDueDate = data.dueDate;
+              capturedStatus = data.status;
+            }
+            return {
+              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            };
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 9999,
+      paidAt: new Date('2025-12-20T15:30:00'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(capturedAmountDue).toBe(10001);
+    expect(capturedDueDate).toBeUndefined();
+    expect(capturedStatus).toBeUndefined();
+    expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
+    expect(PaymentService.doesPaymentAffectCurrentCycle).not.toHaveBeenCalled();
+  });
+
+  it('preserves cycle when editing notes without changing date (fast path)', async () => {
+    const billWithAdvancedCycle = {
+      ...mockBill,
+      amountDue: 10000,
+      dueDate: new Date('2026-01-25'),
+    };
+
+    let capturedAmountDue: number | undefined;
+    let capturedDueDate: Date | undefined;
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn((data) => {
+            if (data.amountDue !== undefined) {
+              capturedAmountDue = data.amountDue;
+              capturedDueDate = data.dueDate;
+            }
+            return {
+              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            };
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 10000,
+      paidAt: new Date('2025-12-20'),
+      notes: 'Updated notes',
+    });
+
+    expect(result.success).toBe(true);
+    expect(capturedAmountDue).toBe(10000);
+    expect(capturedDueDate).toBeUndefined();
+    expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
+  });
+
+  it('treats same calendar day as unchanged date even with different time', async () => {
+    const billWithAdvancedCycle = {
+      ...mockBill,
+      amountDue: 10000,
+      dueDate: new Date('2026-01-25'),
+    };
+
+    const transactionMorning = {
+      ...mockTransaction,
+      paidAt: new Date('2025-12-20T08:00:00'),
+    };
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([transactionMorning]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn().mockReturnValue({
+            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 9500,
+      paidAt: new Date('2025-12-20T22:30:00'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
+  });
+
+  it('preserves cycle for variable bill when editing amount (fast path)', async () => {
+    const variableBill = {
+      ...mockBill,
+      amountDue: 0,
+      dueDate: new Date('2026-01-25'),
+      isVariable: true,
+    };
+
+    const transactionWithOriginalDate = {
+      ...mockTransaction,
+      paidAt: new Date('2025-12-20'),
+    };
+
+    let capturedAmountDue: number | undefined;
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([transactionWithOriginalDate]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([variableBill]),
+        }),
+      });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: jest.fn().mockReturnValue({
+          set: jest.fn((data) => {
+            if (data.amountDue !== undefined) {
+              capturedAmountDue = data.amountDue;
+            }
+            return {
+              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            };
+          }),
+        }),
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 5000,
+      paidAt: new Date('2025-12-20'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(capturedAmountDue).toBe(0);
+    expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
+  });
+
+  it('triggers full recalculation when date changes', async () => {
+    const runMock = jest.fn();
+    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+
+    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce(true);
+
+    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+      amountDue: 5000,
+      status: 'pending' as const,
+      nextDueDate: new Date('2025-11-25'),
+    });
+
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockBill]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockReturnValue({
+            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+          }),
+        }),
+      });
+
+    (db.update as jest.Mock).mockReturnValue({
+      set: updateSetMock,
+    });
+
+    (db.transaction as jest.Mock).mockImplementation((callback) => {
+      const tx = {
+        update: db.update,
+      };
+      return callback(tx);
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 15000,
+      paidAt: new Date('2025-12-19'),
+    });
+
+    expect(result.success).toBe(true);
+    expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
+    expect(db.update).toHaveBeenCalledWith(bills);
+  });
 });
 
 describe('deleteTransaction', () => {

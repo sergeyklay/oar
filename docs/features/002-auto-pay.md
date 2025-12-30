@@ -1,7 +1,7 @@
 # Logging Payments
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-27
+- **Last Updated:** 2025-12-30
 
 ## Overview
 
@@ -29,10 +29,12 @@ The "Update Due Date" toggle determines how your payment affects the bill:
 
 **Toggle ON (full payment).** This is the standard flow. After logging:
 - The due date advances to the next cycle based on the bill's repeat interval
-- The amount due resets to the base bill amount
+- The amount due resets to the base bill amount (or zero for variable bills)
 - The bill stays active for the next cycle
 
 For example: a $150 monthly bill due March 1. You log a payment with the toggle on. The due date moves to April 1, and the amount due resets to $150.
+
+For variable bills (like utility bills), the amount due resets to zero when the cycle advances, not the base amount. This reflects that each billing cycle for variable bills is independent; you don't carry residual debt forward. For example: an electric bill with a $100 estimate. You log a $95 payment with the toggle on. The due date moves to next month, and the amount due resets to zero, ready for the next cycle's estimate.
 
 **Toggle OFF (partial payment).** Use this when you're paying part of a bill now and the rest later:
 - The due date stays the same

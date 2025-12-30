@@ -21,26 +21,14 @@ Output schema: Structured template containing modification classification, chara
 
 <template>
 **Rank [1-3] (2-word max description of the rewrite)**
-```
-## Role & Persona
-[Role description and persona statement here]
 
-## Goal
+```
 [Goal statement here]
-
-## Context
-[Context description here]
-
-## Task
 [Actionable, specific verb-driven task description, step-by-step instructions]
-
-## Output
-[Output statement here]
-
-## Constraints
-[Constraints statement here]
 ```
-Assumption Matrix:
+
+**Assumption Matrix:**
+
 [a list of assumptions made to complete the task, with salience/plausibility metrics]
 </template>
 

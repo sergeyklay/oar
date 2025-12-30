@@ -37,6 +37,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is within current cycle (Feb 15 - Mar 1)
@@ -66,6 +67,7 @@ describe('PaymentService', () => {
         frequency: 'yearly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is within current cycle
@@ -78,6 +80,53 @@ describe('PaymentService', () => {
       expect(result.isHistorical).toBe(false);
     });
 
+    it('resets amountDue to zero for variable bill when cycle advances', () => {
+      const nextMonth = new Date('2025-04-01');
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+        endDate: null,
+        isVariable: true,
+      };
+
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 5000, paidAt, true);
+
+      expect(result.nextDueDate).toEqual(nextMonth);
+      expect(result.newAmountDue).toBe(0);
+      expect(result.newStatus).toBe('pending');
+      expect(result.isHistorical).toBe(false);
+    });
+
+    it('resets amountDue to zero for variable bill even when payment is less than base amount', () => {
+      const nextMonth = new Date('2025-04-01');
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+        endDate: null,
+        isVariable: true,
+      };
+
+      const paidAt = new Date('2025-02-28');
+      const result = PaymentService.processPayment(bill, 15000, paidAt, true);
+
+      expect(result.nextDueDate).toEqual(nextMonth);
+      expect(result.newAmountDue).toBe(0);
+      expect(result.newStatus).toBe('pending');
+    });
+
     it('marks one-time bill as paid with zero amountDue', () => {
       (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
 
@@ -88,6 +137,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is on or after dueDate (current payment)
@@ -113,6 +163,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -134,6 +185,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'overdue' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is within current cycle
@@ -157,6 +209,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -178,6 +231,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -197,6 +251,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'overdue' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is within current cycle (Dec 1 - Jan 1)
@@ -218,6 +273,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -237,6 +293,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -262,6 +319,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is on the due date (current payment for once bills)
@@ -282,6 +340,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is on the due date (current payment for once bills)
@@ -313,6 +372,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-14');
@@ -339,6 +399,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-15');
@@ -360,6 +421,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-15');
@@ -384,6 +446,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-14');
@@ -407,6 +470,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-14');
@@ -426,6 +490,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-03-14');
@@ -448,6 +513,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -467,6 +533,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -486,6 +553,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const paidAt = new Date('2025-02-28');
@@ -505,6 +573,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is 3 months before dueDate (clearly before cycle start of Feb 1)
@@ -528,6 +597,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is within current cycle (Feb 1 - Mar 1)
@@ -548,6 +618,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is before dueDate - early payment should still mark as paid
@@ -569,6 +640,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is on dueDate
@@ -587,6 +659,7 @@ describe('PaymentService', () => {
         frequency: 'weekly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       // paidAt is 2 weeks before dueDate (before cycle start of Mar 8)
@@ -608,6 +681,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns: Transaction[] = [];
@@ -631,6 +705,7 @@ describe('PaymentService', () => {
         frequency: 'yearly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns: Transaction[] = [];
@@ -652,6 +727,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2027-12-23'),
         frequency: 'yearly' as const,
         status: 'pending' as const,
+        isVariable: false,
       };
 
       const txns: Transaction[] = [
@@ -676,6 +752,7 @@ describe('PaymentService', () => {
         dueDate: new Date('2027-12-23'),
         frequency: 'yearly' as const,
         status: 'pending' as const,
+        isVariable: false,
       };
 
       const txns: Transaction[] = [
@@ -702,6 +779,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -733,6 +811,7 @@ describe('PaymentService', () => {
         frequency: 'once' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -760,6 +839,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -788,6 +868,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -818,6 +899,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -848,6 +930,7 @@ describe('PaymentService', () => {
         frequency: 'monthly' as const,
         status: 'pending' as const,
         endDate: null,
+        isVariable: false,
       };
 
       const txns = [
@@ -861,6 +944,85 @@ describe('PaymentService', () => {
       const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
 
       expect(result.amountDue).toBe(0);
+    });
+
+    it('forces amountDue to zero for variable bill when cycle advances', () => {
+      const nextDueDate = new Date('2025-04-01');
+      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 20000,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+        isVariable: true,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 20000,
+          paidAt: new Date('2025-02-28'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(0);
+      expect(result.nextDueDate).toEqual(nextDueDate);
+      expect(result.status).toBe('pending');
+    });
+
+    it('preserves cycle for variable bill when previous cycle had payments', () => {
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 0,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+        isVariable: true,
+      };
+
+      const txns = [
+        {
+          id: 'tx-1',
+          amount: 5000,
+          paidAt: new Date('2025-01-15'),
+        },
+      ];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns as Transaction[]);
+
+      expect(result.amountDue).toBe(0);
+      expect(result.nextDueDate).toBeNull();
+      expect(result.status).toBe('pending');
+      expect(RecurrenceService.deriveStatus).toHaveBeenCalledWith(bill.dueDate);
+    });
+
+    it('reverts variable bill cycle only when previous cycle had no payments', () => {
+      const previousDueDate = new Date('2025-02-01');
+      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+
+      const bill = {
+        amount: 20000,
+        amountDue: 0,
+        dueDate: new Date('2025-03-01'),
+        frequency: 'monthly' as const,
+        status: 'pending' as const,
+        isVariable: true,
+      };
+
+      const txns: Transaction[] = [];
+
+      const result = PaymentService.recalculateBillFromPayments(bill, txns);
+
+      expect(result.amountDue).toBe(20000);
+      expect(result.nextDueDate).toEqual(previousDueDate);
+      expect(result.status).toBe('pending');
     });
   });
 

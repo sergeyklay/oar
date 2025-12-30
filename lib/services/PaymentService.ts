@@ -77,7 +77,8 @@ export const PaymentService = {
    *
    * 2. When updateDueDate=true (Full Payment):
    *    - Advance dueDate to next cycle via RecurrenceService
-   *    - Reset amountDue to base amount
+   *    - Reset amountDue to base amount (or 0 for variable bills)
+   *    - For variable bills: reset amountDue to 0 (each cycle is independent)
    *    - For one-time bills: mark as 'paid', amountDue=0
    *
    * 3. When updateDueDate=false (Partial Payment):
@@ -92,7 +93,7 @@ export const PaymentService = {
    * @returns PaymentResult with new bill state values
    */
   processPayment(
-    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'endDate'>,
+    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'endDate' | 'isVariable'>,
     paymentAmount: number,
     paidAt: Date,
     updateDueDate: boolean
@@ -132,7 +133,20 @@ export const PaymentService = {
         };
       }
 
-      // Recurring bill: advance cycle, reset amount due to base
+      // Variable bills: any payment that advances cycle resets amountDue to 0
+      // Each cycle is independent, no residual debt carried forward
+      if (bill.isVariable) {
+        const newStatus = RecurrenceService.deriveStatus(nextDueDate);
+        return {
+          nextDueDate,
+          newAmountDue: 0,
+          newStatus,
+          isHistorical: false,
+          billEnded: false,
+        };
+      }
+
+      // Fixed recurring bill: advance cycle, reset amount due to base
       const newStatus = RecurrenceService.deriveStatus(nextDueDate);
       return {
         nextDueDate,
@@ -178,8 +192,10 @@ export const PaymentService = {
    * 1. Filter transactions to current cycle only (exclude historical)
    * 2. If no current cycle payments: check if we need to REVERT to previous cycle
    * 3. If reverting: check previous cycle for payments and recalculate accordingly
+   *    - For variable bills: if cycle advanced, preserve it (amountDue=0), don't revert based on amount mismatch
    * 4. Calculate total paid in current cycle
    * 5. If total paid >= amountDue: advance cycle (or mark one-time as paid)
+   *    - For variable bills: when cycle advances, amountDue is forced to 0
    * 6. If total paid < amountDue: reduce amount due by total paid
    *
    * @param bill - Current bill state
@@ -187,7 +203,7 @@ export const PaymentService = {
    * @returns BillState with recalculated amountDue, status, and nextDueDate
    */
   recalculateBillFromPayments(
-    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status'>,
+    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'isVariable'>,
     transactions: Transaction[]
   ): BillState {
     // Filter transactions to current cycle only
@@ -222,6 +238,26 @@ export const PaymentService = {
           0
         );
 
+        // Variable bills: if cycle advanced (totalPaid > 0), preserve current cycle
+        // Don't revert based on amount mismatch - each cycle is independent
+        if (bill.isVariable) {
+          if (totalPaid > 0) {
+            // Cycle was advanced, preserve it with amountDue = 0
+            return {
+              amountDue: 0,
+              status: RecurrenceService.deriveStatus(bill.dueDate),
+              nextDueDate: null,
+            };
+          }
+          // No payments in previous cycle, revert to previous due date
+          return {
+            amountDue: bill.amount,
+            status: RecurrenceService.deriveStatus(previousDueDate),
+            nextDueDate: previousDueDate,
+          };
+        }
+
+        // Fixed bills: compare total paid to bill amount
         if (totalPaid >= bill.amount) {
           // Previous cycle was fully paid, keep current cycle
           return {
@@ -270,7 +306,16 @@ export const PaymentService = {
         };
       }
 
-      // Recurring bill, advance cycle
+      // Variable bills: when cycle advances, amountDue is forced to 0
+      if (bill.isVariable) {
+        return {
+          amountDue: 0,
+          status: RecurrenceService.deriveStatus(nextDueDate),
+          nextDueDate,
+        };
+      }
+
+      // Fixed recurring bill, advance cycle
       return {
         amountDue: bill.amount,
         status: RecurrenceService.deriveStatus(nextDueDate),
