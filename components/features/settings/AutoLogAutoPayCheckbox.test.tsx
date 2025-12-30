@@ -45,7 +45,7 @@ describe('AutoLogAutoPayCheckbox', () => {
     expect(switchElement).toHaveAttribute('aria-checked', 'false');
   });
 
-  it('calls updateAutoLogAutoPay and shows success toast when toggled to enabled', async () => {
+  it('calls updateAutoLogAutoPay when toggled to enabled', async () => {
     const user = userEvent.setup();
     (updateAutoLogAutoPay as jest.Mock).mockResolvedValue({ success: true });
 
@@ -56,11 +56,11 @@ describe('AutoLogAutoPayCheckbox', () => {
 
     await waitFor(() => {
       expect(updateAutoLogAutoPay).toHaveBeenCalledWith({ enabled: true });
-      expect(toast.success).toHaveBeenCalledWith('Setting updated');
+      expect(toast.success).not.toHaveBeenCalled();
     });
   });
 
-  it('calls updateAutoLogAutoPay and shows success toast when toggled to disabled', async () => {
+  it('calls updateAutoLogAutoPay when toggled to disabled', async () => {
     const user = userEvent.setup();
     (updateAutoLogAutoPay as jest.Mock).mockResolvedValue({ success: true });
 
@@ -71,7 +71,7 @@ describe('AutoLogAutoPayCheckbox', () => {
 
     await waitFor(() => {
       expect(updateAutoLogAutoPay).toHaveBeenCalledWith({ enabled: false });
-      expect(toast.success).toHaveBeenCalledWith('Setting updated');
+      expect(toast.success).not.toHaveBeenCalled();
     });
   });
 

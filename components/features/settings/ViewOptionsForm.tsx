@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { SettingCheckbox } from '@/components/common/SettingCheckbox';
+import { Toggle } from '@/components/common/Toggle';
 import { updateViewOptions } from '@/actions/settings';
 import {
   CURRENCY_OPTIONS,
@@ -146,7 +146,7 @@ export function ViewOptionsForm({
           onValueChange={(value) => handleUpdate('currency', value)}
           disabled={isPending}
         >
-          <SelectTrigger id="currency-select" className="w-[200px]">
+          <SelectTrigger id="currency-select" className="w-[200px]" suppressHydrationWarning>
             <SelectValue>
               {isCurrencyUpdating ? (
                 <span className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export function ViewOptionsForm({
           onValueChange={(value) => handleUpdate('locale', value)}
           disabled={isPending}
         >
-          <SelectTrigger id="locale-select" className="w-[250px]">
+          <SelectTrigger id="locale-select" className="w-[250px]" suppressHydrationWarning>
             <SelectValue>
               {isLocaleUpdating ? (
                 <span className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function ViewOptionsForm({
           onValueChange={(value) => handleUpdate('weekStart', value)}
           disabled={isPending}
         >
-          <SelectTrigger id="weekstart-select" className="w-[200px]">
+          <SelectTrigger id="weekstart-select" className="w-[200px]" suppressHydrationWarning>
             <SelectValue>
               {isWeekStartUpdating ? (
                 <span className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export function ViewOptionsForm({
       </FormItem>
 
       <FormItem>
-        <SettingCheckbox
+        <Toggle
           id="include-autopay-toggle"
           label="Include automatic bills in bills due soon"
           description="Show automatic bills in Due Soon and Due This Month views"
@@ -247,6 +247,7 @@ export function ViewOptionsForm({
           }
           isLoading={isIncludeAutoPayInDueSoonUpdating}
           disabled={isPending}
+          layout="horizontal"
         />
       </FormItem>
     </div>
