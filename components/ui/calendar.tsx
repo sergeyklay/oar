@@ -107,8 +107,11 @@ function Calendar({
   endMonth,
   ...props
 }: CalendarProps) {
-  // Support uncontrolled mode with internal state
-  const [internalMonth, setInternalMonth] = React.useState(new Date());
+  // Support uncontrolled mode with internal state (normalized to first of month)
+  const [internalMonth, setInternalMonth] = React.useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   const isControlled = controlledMonth !== undefined;
   const displayMonth = isControlled ? controlledMonth : internalMonth;
@@ -132,14 +135,12 @@ function Calendar({
     : true;
 
   const handlePreviousMonth = () => {
-    const prevMonth = new Date(displayMonth);
-    prevMonth.setMonth(prevMonth.getMonth() - 1);
+    const prevMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1);
     handleMonthChange(prevMonth);
   };
 
   const handleNextMonth = () => {
-    const nextMonthDate = new Date(displayMonth);
-    nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+    const nextMonthDate = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1);
     handleMonthChange(nextMonthDate);
   };
 
@@ -147,7 +148,8 @@ function Calendar({
     if (onGoToToday) {
       onGoToToday();
     } else {
-      handleMonthChange(new Date());
+      const now = new Date();
+      handleMonthChange(new Date(now.getFullYear(), now.getMonth(), 1));
     }
   };
 
