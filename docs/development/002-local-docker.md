@@ -1,7 +1,7 @@
 # Local Docker deployment
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-27
+- **Last Updated:** 2025-12-31
 
 ## 1. Goal
 
@@ -40,7 +40,7 @@ cp .env.example .env
 
 Edit `.env` and optionally set your Server Actions encryption key:
 
-**Option A: With encryption key (recommended for local builds)**
+### Option A: With encryption key (recommended for local builds)
 
 This ensures Server Action IDs remain stable across builds, preventing version skew errors:
 
@@ -57,7 +57,7 @@ DATABASE_URL=/app/data/oar.db
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 ```
 
-**Option B: Without encryption key (for pre-built public images)**
+### Option B: Without encryption key (for pre-built public images)
 
 If you're using a pre-built image from a public registry, you can leave `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` empty:
 
@@ -73,7 +73,7 @@ The `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` is used by Next.js to generate stable i
 
 - **With key (local/private builds):** Ensures Server Action IDs remain consistent across builds. This prevents "Failed to find Server Action" errors when users have old pages open after a redeploy. Recommended for local development and private deployments.
 
-- **Without key (public images):** Next.js generates a random key at build time. The image works without requiring users to know the key, but users may see version skew errors if they have old pages open after redeploy (solution: refresh the page). This is the only practical option for pre-built public images.
+- **Without key (public images):** Next.js generates a random key during the build and embeds it in the image. The image works without requiring users to know the key, but users may see version skew errors if they have old pages open after redeploy. This happens because each new build gets a different random key, so old pages encrypted with the previous build's key can't work with the new build's key. Refreshing the page fixes it because the new page load uses the current build's key. This is the only practical option for pre-built public images.
 
 **Security:** When using BuildKit secrets, the encryption key is never stored in image layers or build logs. The key is securely passed during build and only available at runtime via environment variables.
 
@@ -119,26 +119,26 @@ openssl rand -base64 32
 
 Save this key; you'll need it for both build and runtime if you choose to use it.
 
-**Note:** You can skip this step if you're building a public image or don't need consistent Server Action IDs. Next.js will generate a random key automatically.
+**Note:** You can skip this step if you're building a public image or don't need consistent Server Action IDs. Next.js will generate a random key automatically during the build.
 
 ### Step 2: Build the Docker image
 
 Build the image with or without the encryption key:
 
-**Option A: With encryption key (for consistent builds)**
+### Option A: With encryption key (for consistent builds)
 
 ```bash
 export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 docker build --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY -t oar .
 ```
 
-**Option B: Without encryption key (for public images)**
+### Option B: Without encryption key (for public images)
 
 ```bash
 docker build -t oar .
 ```
 
-**Note:** Using BuildKit secrets (Option A) ensures the key never appears in image layers or build history, providing better security than build args. If you don't provide a secret, the build will proceed normally and Next.js will generate a random key.
+**Note:** Using BuildKit secrets (Option A) ensures the key never appears in image layers or build history, providing better security than build args. If you don't provide a secret, the build will proceed normally and Next.js will generate a random key during the build, embedding it in the image.
 
 **Expected output:** The build completes with `Building 45.1s (23/23) FINISHED` (example).
 
@@ -187,7 +187,7 @@ You should see `oar_app` listed with status `Up`.
 |----------|---------|-------------|
 | `DATABASE_URL` | `/app/data/oar.db` | Absolute or relative path to the SQLite database file |
 | `PORT` | `8080` | Port the application listens on |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Optional | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). If set, must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). If not set, Next.js generates a random key automatically. |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Optional | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). If set, must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). If not set, Next.js generates a random key during the build and embeds it in the image. |
 | `OAR_MEMORY_LIMIT` | `128MiB` | Memory limit for the container (docker-compose only) |
 
 ### Database path handling
@@ -198,14 +198,14 @@ The application automatically resolves relative paths to absolute paths and crea
 
 The named volume `oar_data` stores your SQLite database. Removing the container does not delete this volume. Your data persists across container restarts and rebuilds.
 
-**With docker-compose:**
+#### With docker-compose
 
 ```bash
 docker compose down -v  # Removes container, network, and volumes
 docker compose down     # Removes container and network keeping data
 ```
 
-**With manual Docker:**
+#### With manual Docker
 
 ```bash
 docker volume rm oar_data
@@ -219,13 +219,13 @@ You should see the Oar dashboard. Create a test bill to confirm database writes 
 
 **Container logs check:**
 
-**With docker-compose:**
+#### With docker-compose
 
 ```bash
 docker compose logs
 ```
 
-**With manual Docker:**
+#### With manual Docker
 
 ```bash
 docker logs oar_app
@@ -260,13 +260,13 @@ Then access the app at `http://localhost:3000`.
 
 **Debug:** Check logs for errors:
 
-**With docker-compose:**
+#### With docker-compose
 
 ```bash
 docker compose logs
 ```
 
-**With manual Docker:**
+#### With manual Docker
 
 ```bash
 docker logs oar_app
@@ -287,8 +287,8 @@ This error occurs when there's a mismatch between the Server Action IDs generate
 
 If you pulled an image from a public registry and didn't set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`:
 
-- **Cause:** The image was built with a random key, and Next.js generated a different random key at runtime.
-- **Solution:** Simply refresh your browser page. The error occurs because you have an old page open from before the container started. After refresh, the page will use the new Server Action IDs.
+- **Cause:** The image was built with a random key embedded during build. If you redeploy a new version, that new build has a different random key. Your browser tab still has Server Action payloads encrypted with the old build's key, but the container is now using the new build's key.
+- **Solution:** Refresh your browser page. The new page load fetches Server Actions encrypted with the current build's key, matching what the container expects.
 
 **Scenario 2: Built locally with encryption key, but key mismatch**
 
@@ -297,7 +297,7 @@ If you built the image locally with a key but there's a mismatch:
 - **Cause:** The key used at build-time doesn't match the key used at runtime.
 - **Solution:**
   1. **For docker-compose:** Verify the same key value is set in `.env` and used for both the build secret (via `secrets.next_key.environment`) and `environment` section in `docker-compose.yml`
-  2. **For manual Docker:** Ensure the exact same key value is passed via `--secret` during build and `-e` at runtime
+  2. **For manual Docker:** Ensure the same key value is passed via `--secret` during build and `-e` at runtime
   3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
   4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
 
@@ -305,10 +305,10 @@ If you built the image locally with a key but there's a mismatch:
 
 If you redeployed a new version of the image:
 
-- **Cause:** Users have old pages open with Server Action IDs from the previous build.
+- **Cause:** Users have old pages open with Server Action payloads encrypted with the previous build's key. The new build has a different key embedded in it.
 - **Solution:**
-  - If you used an encryption key: The IDs should remain stable, so this shouldn't happen. Verify the key matches.
-  - If you didn't use a key: Users need to refresh their browser pages. This is expected behavior for public images without encryption keys.
+  - If you used an encryption key: The key remains the same across builds, so Server Action IDs stay stable. This shouldn't happen unless the key changed. Verify the key matches between builds.
+  - If you didn't use a key: Each build gets a new random key, so old pages can't decrypt with the new build's key. Users need to refresh their browser pages to get pages encrypted with the current build's key. This is expected behavior for public images without encryption keys.
 
 ### Database directory does not exist
 
@@ -333,14 +333,14 @@ Without the volume mount, data lives only in the container's ephemeral filesyste
 
 ### Rebuilding after code changes
 
-**With docker-compose:**
+#### With docker-compose
 
 ```bash
 docker compose down
 docker compose up --build -d
 ```
 
-**With manual Docker:**
+#### With manual Docker
 
 ```bash
 docker stop oar_app
@@ -373,9 +373,9 @@ docker run -d \
 
 **Important notes for pre-built images:**
 
-1. **No encryption key required:** Pre-built images work without `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`. Next.js generates a random key at runtime.
+1. **No encryption key required:** Pre-built images work without `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`. When you don't provide the key at build time, Next.js generates a random key during the build and embeds it in the image. That key is fixed in the build output and doesn't change at runtime.
 
-2. **Version skew behavior:** If you redeploy a new version of the image, users with old browser tabs open may see "Failed to find Server Action" errors. This is expected. The solution is simple: refresh the browser page.
+2. **Version skew behavior:** If you redeploy a new version of the image, users with old browser tabs open may see "Failed to find Server Action" errors. This happens because each build generates a different random key and embeds it in the image. The old page has Server Action payloads encrypted with the previous build's key, but the new container uses the new build's key. Refreshing the browser page fixes it because the new page load uses the current key from the running container.
 
 3. **Why this design?** Pre-built public images can't require users to know a secret that was used during build. Making the encryption key optional allows anyone to use the image without additional configuration, at the cost of potential version skew errors (which are easily resolved by refreshing the page).
 
