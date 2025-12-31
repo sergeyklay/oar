@@ -82,6 +82,11 @@ It is the "Constitution" for all AI agents working on this project.
 │  │   • AutoPayService: Auto-pay bill processing             │   │
 │  │   • SchedulerService: Background cron jobs               │   │
 │  │   • SettingsService: User preferences                    │   │
+│  │   • ForecastService: Cash flow projections               │   │
+│  │   • HistoryService: Historical spending analysis         │   │
+│  │   • DateAdjustmentService: Date normalization            │   │
+│  │   • EstimationService: Bill amount estimation            │   │
+│  │   • StartupCatchUpService: Missed payment recovery       │   │
 │  └─────────────────────────┬────────────────────────────────┘   │
 │                            │                                    │
 │  ┌──────────────────────────────────────────────────────────┐   │
@@ -266,8 +271,12 @@ oar/
 │   ├── layout.tsx               ← SACRED (root providers, fonts)
 │   ├── globals.css              ← SACRED (design tokens)
 │   ├── page.tsx                 ← Home route (Overview)
+│   ├── annual-spending/         ← Yearly spending analysis
+│   ├── archive/                 ← Archived bills view
 │   ├── due-soon/                ← Bills due within range
 │   ├── due-this-month/          ← Monthly due bills
+│   ├── forecast/                ← Cash flow forecast view
+│   ├── monthly-history/         ← Monthly spending history
 │   ├── paid-recently/           ← Recent payments view
 │   └── settings/                ← User preferences
 │
@@ -275,6 +284,8 @@ oar/
 │   ├── bills.ts                 ← Bill CRUD operations
 │   ├── calendar.ts              ← Calendar data queries
 │   ├── categories.ts            ← Bill category management
+│   ├── forecast.ts              ← Cash flow forecast queries
+│   ├── history.ts               ← Historical spending queries
 │   ├── settings.ts              ← User settings operations
 │   ├── tags.ts                  ← Tag management
 │   └── transactions.ts          ← Payment history
@@ -283,15 +294,22 @@ oar/
 │   ├── services/                ← Business Logic (THE LAW)
 │   │   ├── AutoPayService.ts    ← Auto-pay processing
 │   │   ├── BillService.ts       ← Bill domain operations
+│   │   ├── DateAdjustmentService.ts ← Date normalization logic
 │   │   ├── DueDateService.ts    ← Due date queries
+│   │   ├── EstimationService.ts ← Bill amount estimation
+│   │   ├── ForecastService.ts   ← Cash flow projections
+│   │   ├── HistoryService.ts    ← Historical spending analysis
 │   │   ├── PaymentService.ts    ← Payment handling
 │   │   ├── RecurrenceService.ts ← Due date calculations
 │   │   ├── SchedulerService.ts  ← Background cron jobs
 │   │   ├── SettingsService.ts   ← User preferences
+│   │   ├── StartupCatchUpService.ts ← Missed payment recovery
 │   │   └── TransactionService.ts← Transaction queries
 │   ├── billing-cycle.ts         ← Cycle advancement logic
 │   ├── constants.ts             ← App-wide constants
+│   ├── logger.ts                ← Pino logger configuration
 │   ├── money.ts                 ← Currency conversion (integers!)
+│   ├── search-params.ts         ← URL search param utilities
 │   ├── types.ts                 ← Shared types (ActionResult<T>)
 │   └── utils.ts                 ← Pure utilities
 │
@@ -311,6 +329,8 @@ oar/
 │   └── features/                ← Feature-specific components
 │       ├── bills/               ← Bill list, forms, detail panel
 │       ├── calendar/            ← Calendar widget
+│       ├── forecast/            ← Forecast charts and views
+│       ├── history/             ← Historical spending views
 │       ├── payments/            ← Payment history views
 │       └── settings/            ← Settings page components
 │
@@ -361,6 +381,6 @@ When encountering legacy or inconsistent code:
 > Leave code *you touched* cleaner than you found it. Leave code *you didn't touch* alone.
 
 ---
-Last Updated: 2025-12-27
+Last Updated: 2025-12-31
 
 Maintained by: AI Agents under human supervision
