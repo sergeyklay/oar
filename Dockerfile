@@ -56,12 +56,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Server Actions encryption key (optional at runtime)
-# If the image was built with a key, provide the same key at runtime to avoid
-# "Failed to find Server Action" errors. If no key was used during build, Next.js
-# will generate one automatically at runtime. For pre-built public images, you
-# typically don't need to set this - just refresh your browser after redeploy.
-
 # Install sqlite3 for debugging, fixing and backup purposes
 RUN apt-get update && apt-get install -y --no-install-recommends sqlite3 \
     && rm -rf /var/lib/apt/lists/*
