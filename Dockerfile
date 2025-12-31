@@ -43,7 +43,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Generate a key with: openssl rand -base64 32
 RUN --mount=type=secret,id=next_key,required=false \
     if [ -f /run/secrets/next_key ]; then \
-      export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(cat /run/secrets/next_key); \
+    export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(cat /run/secrets/next_key); \
     fi && \
     npm run build
 
