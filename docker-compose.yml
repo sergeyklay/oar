@@ -4,8 +4,8 @@ services:
   oar:
     build:
       context: .
-      args:
-        NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+      secrets:
+        - next_key
     container_name: oar
     restart: unless-stopped
     mem_limit: ${OAR_MEMORY_LIMIT:-128MiB}
@@ -23,6 +23,10 @@ services:
 volumes:
   oar_data:
     driver: local
+
+secrets:
+  next_key:
+    environment: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 
 networks:
   oar-network:
