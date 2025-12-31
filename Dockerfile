@@ -35,17 +35,16 @@ ENV DATABASE_URL=":memory:"
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Server Actions encryption key (required for consistent builds)
-# Must be provided via --build-arg NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<key>
+# Uses BuildKit secrets for secure key handling - key is never stored in image layers
+# Secret must be provided via --secret id=next_key,src=<file>
+# or --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 # Generate a key with: openssl rand -base64 32
-ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
-ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
-
-# Validate that the encryption key was provided
-RUN test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
-    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required. Generate one with: openssl rand -base64 32" && exit 1)
-
-# Build the Next.js application (standalone output)
-RUN npm run build
+# The key is read from the secret mount and exported as an environment variable only during build
+RUN --mount=type=secret,id=next_key \
+    export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(cat /run/secrets/next_key) && \
+    test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
+    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required. Generate one with: openssl rand -base64 32" && exit 1) && \
+    npm run build
 
 # =============================================================================
 # RUNNER STAGE (Production)
@@ -56,12 +55,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Server Actions encryption key (required at build time)
+# Server Actions encryption key (required at runtime)
 # The runtime NEXT_SERVER_ACTIONS_ENCRYPTION_KEY (passed via -e or docker-compose
-# environment) must exactly match the build-time --build-arg value. Mismatched keys will
+# environment) must exactly match the build-time secret value. Mismatched keys will
 # cause "Failed to find Server Action" errors. If you need a different key, rebuild the
-# image with the new --build-arg value and use the same key at runtime.
-ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+# image with the new secret value and use the same key at runtime.
 
 # Install sqlite3 for debugging, fixing and backup purposes
 RUN apt-get update && apt-get install -y --no-install-recommends sqlite3 \

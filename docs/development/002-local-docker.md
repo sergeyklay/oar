@@ -11,6 +11,7 @@ Run Oar as a Docker container on your local machine with persistent data storage
 
 - **Docker Engine** installed and running (version 20.10 or later)
 - **Docker Compose** (version 2.0 or later, included with Docker Desktop)
+- **Docker BuildKit** enabled (default in Docker 23.0+, or set `DOCKER_BUILDKIT=1`)
 - Terminal access with Docker CLI available
 - Access to the Oar project root directory
 
@@ -20,6 +21,8 @@ Verify Docker is available:
 docker --version
 docker compose version
 ```
+
+**Note:** This guide uses Docker BuildKit secrets for secure handling of the Server Actions encryption key. BuildKit is enabled by default in Docker 23.0+. For older versions, ensure `DOCKER_BUILDKIT=1` is set in your environment.
 
 ## 3. Method 1: Docker Compose (Recommended)
 
@@ -48,7 +51,9 @@ DATABASE_URL=/app/data/oar.db
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 ```
 
-**Note:** The encryption key is required for Next.js Server Actions to work correctly in Docker. The runtime `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (set in `.env` and passed via docker-compose environment) must exactly match the build-time key (passed via docker-compose build args). If they differ, Server Actions will fail with "Failed to find Server Action" errors. Always use the same key value for both build-time and runtime.
+**Note:** The encryption key is required for Next.js Server Actions to work correctly in Docker. The runtime `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (set in `.env` and passed via docker-compose environment) must exactly match the build-time secret value. If they differ, Server Actions will fail with "Failed to find Server Action" errors. Always use the same key value for both build-time and runtime.
+
+**Security:** This setup uses Docker BuildKit secrets, which ensures the encryption key is never stored in image layers or build logs. The key is securely passed during build and only available at runtime via environment variables.
 
 ### Step 2: Build and start the container
 
@@ -59,7 +64,7 @@ docker compose up --build -d
 ```
 
 This command:
-- Builds the Docker image with the encryption key from your `.env` file
+- Builds the Docker image using BuildKit secrets (key from `.env` is securely passed during build)
 - Creates the necessary volumes and networks
 - Starts the container in detached mode
 
@@ -88,17 +93,28 @@ Generate a Server Actions encryption key:
 openssl rand -base64 32
 ```
 
-Save this key; you'll need it for both build and runtime. The same exact key value must be used for both `--build-arg` during build and `-e` at runtime. Mismatched keys will break Server Actions decryption.
+Save this key; you'll need it for both build and runtime. The same exact key value must be used for both the build secret and `-e` at runtime. Mismatched keys will break Server Actions decryption.
 
 ### Step 2: Build the Docker image
 
-Build the image with the encryption key:
+Build the image with the encryption key using BuildKit secrets. You can pass the secret in two ways:
+
+**Option A: From environment variable (recommended)**
 
 ```bash
-docker build \
-  --build-arg NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here" \
-  -t oar .
+export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
+docker build --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY -t oar .
 ```
+
+**Option B: From file**
+
+```bash
+echo "your-generated-key-here" > /tmp/next_key
+docker build --secret id=next_key,src=/tmp/next_key -t oar .
+rm /tmp/next_key
+```
+
+**Note:** Using BuildKit secrets ensures the key never appears in image layers or build history, providing better security than build args.
 
 **Expected output:** The build completes with `Building 45.1s (23/23) FINISHED` (example).
 
@@ -147,7 +163,7 @@ You should see `oar_app` listed with status `Up`.
 |----------|---------|-------------|
 | `DATABASE_URL` | `/app/data/oar.db` | Absolute or relative path to the SQLite database file |
 | `PORT` | `8080` | Port the application listens on |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Required | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). Must match exactly between build-time (`--build-arg`) and runtime (`-e` or docker-compose environment). |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Required | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). Must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). |
 | `OAR_MEMORY_LIMIT` | `128MiB` | Memory limit for the container (docker-compose only) |
 
 ### Database path handling
@@ -197,7 +213,7 @@ Look for:
 - `Ready in XXms` indicating the server started successfully
 - `Local: http://localhost:8080` confirming the port
 
-If you see errors about "Failed to find Server Action", verify that `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` matches between build-time and runtime.
+If you see errors about "Failed to find Server Action", verify that `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` matches between build-time (secret) and runtime (environment variable).
 
 ## 7. Troubleshooting
 
@@ -243,8 +259,8 @@ Common causes:
 
 **Fix:** The encryption key used at build-time must exactly match the key used at runtime. This is a hard constraint - mismatched keys will break Server Actions decryption. Verify:
 
-1. **For docker-compose:** The same key value is set in `.env` and used for both `build.args` and `environment` sections in `docker-compose.yml`
-2. **For manual Docker:** The exact same key value is passed via `--build-arg` during build and `-e` at runtime
+1. **For docker-compose:** The same key value is set in `.env` and used for both the build secret (via `secrets.next_key.environment`) and `environment` section in `docker-compose.yml`
+2. **For manual Docker:** The exact same key value is passed via `--secret` during build and `-e` at runtime
 3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
 4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
 
@@ -283,7 +299,8 @@ docker compose up --build -d
 ```bash
 docker stop oar_app
 docker rm oar_app
-docker build --build-arg NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-key" -t oar .
+export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-key"
+docker build --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY -t oar .
 docker run -d -p 8080:8080 -v oar_data:/app/data -e NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-key" --name oar_app oar
 ```
 
