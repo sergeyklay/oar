@@ -219,13 +219,13 @@ You should see the Oar dashboard. Create a test bill to confirm database writes 
 
 **Container logs check:**
 
-#### With docker-compose
+### With docker-compose
 
 ```bash
 docker compose logs
 ```
 
-#### With manual Docker
+### With manual Docker
 
 ```bash
 docker logs oar_app
@@ -283,14 +283,14 @@ Common causes:
 
 This error occurs when there's a mismatch between the Server Action IDs generated at build time and those expected at runtime. Here are the scenarios and solutions:
 
-**Scenario 1: Using a pre-built public image (no encryption key)**
+#### Scenario 1: Using a pre-built public image (no encryption key)
 
 If you pulled an image from a public registry and didn't set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`:
 
 - **Cause:** The image was built with a random key embedded during build. If you redeploy a new version, that new build has a different random key. Your browser tab still has Server Action payloads encrypted with the old build's key, but the container is now using the new build's key.
 - **Solution:** Refresh your browser page. The new page load fetches Server Actions encrypted with the current build's key, matching what the container expects.
 
-**Scenario 2: Built locally with encryption key, but key mismatch**
+#### Scenario 2: Built locally with encryption key, but key mismatch
 
 If you built the image locally with a key but there's a mismatch:
 
@@ -301,7 +301,7 @@ If you built the image locally with a key but there's a mismatch:
   3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
   4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
 
-**Scenario 3: Version skew after redeploy**
+#### Scenario 3: Version skew after redeploy
 
 If you redeployed a new version of the image:
 
