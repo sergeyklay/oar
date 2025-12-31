@@ -34,16 +34,17 @@ COPY . .
 ENV DATABASE_URL=":memory:"
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Server Actions encryption key (required for consistent builds)
-# Uses BuildKit secrets for secure key handling - key is never stored in image layers
-# Secret must be provided via --secret id=next_key,src=<file>
+# Server Actions encryption key (optional - for consistent builds)
+# If provided via BuildKit secret, ensures Server Action IDs remain stable across builds.
+# If not provided, Next.js generates a random key (may cause version skew after redeploy).
+# This allows pre-built images to work without requiring users to know the build-time secret.
+# Secret can be provided via --secret id=next_key,src=<file>
 # or --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 # Generate a key with: openssl rand -base64 32
-# The key is read from the secret mount and exported as an environment variable only during build
-RUN --mount=type=secret,id=next_key \
-    export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(cat /run/secrets/next_key) && \
-    test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || \
-    (echo "ERROR: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is required. Generate one with: openssl rand -base64 32" && exit 1) && \
+RUN --mount=type=secret,id=next_key,required=false \
+    if [ -f /run/secrets/next_key ]; then \
+      export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$(cat /run/secrets/next_key); \
+    fi && \
     npm run build
 
 # =============================================================================
@@ -55,11 +56,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Server Actions encryption key (required at runtime)
-# The runtime NEXT_SERVER_ACTIONS_ENCRYPTION_KEY (passed via -e or docker-compose
-# environment) must exactly match the build-time secret value. Mismatched keys will
-# cause "Failed to find Server Action" errors. If you need a different key, rebuild the
-# image with the new secret value and use the same key at runtime.
+# Server Actions encryption key (optional at runtime)
+# If the image was built with a key, provide the same key at runtime to avoid
+# "Failed to find Server Action" errors. If no key was used during build, Next.js
+# will generate one automatically at runtime. For pre-built public images, you
+# typically don't need to set this - just refresh your browser after redeploy.
 
 # Install sqlite3 for debugging, fixing and backup purposes
 RUN apt-get update && apt-get install -y --no-install-recommends sqlite3 \

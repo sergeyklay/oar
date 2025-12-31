@@ -12,7 +12,10 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: ${DATABASE_URL:-/app/data/oar.db}
-      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY}
+      # NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is optional
+      # If set in .env, it will be used for consistent builds
+      # If not set, Next.js generates a key automatically
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-}
     volumes:
       - oar_data:/app/data
     networks:
