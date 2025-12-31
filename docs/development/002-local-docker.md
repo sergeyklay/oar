@@ -1,11 +1,13 @@
 # Local Docker deployment
 
 - **Status:** Draft
-- **Last Updated:** 2025-12-16
+- **Last Updated:** 2025-12-27
 
 ## 1. Goal
 
 Run Oar as a Docker container on your local machine with persistent data storage. This guide covers two methods: docker-compose (recommended) and manual Docker commands.
+
+**Important:** This guide covers building images locally. If you're using a pre-built image from a public registry, see the "Using Pre-built Images" section below.
 
 ## 2. Prerequisites
 
@@ -36,7 +38,11 @@ Copy the example environment file and edit it:
 cp .env.example .env
 ```
 
-Edit `.env` and set your Server Actions encryption key:
+Edit `.env` and optionally set your Server Actions encryption key:
+
+**Option A: With encryption key (recommended for local builds)**
+
+This ensures Server Action IDs remain stable across builds, preventing version skew errors:
 
 ```bash
 # Generate a secure encryption key
@@ -51,9 +57,25 @@ DATABASE_URL=/app/data/oar.db
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 ```
 
-**Note:** The encryption key is required for Next.js Server Actions to work correctly in Docker. The runtime `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (set in `.env` and passed via docker-compose environment) must exactly match the build-time secret value. If they differ, Server Actions will fail with "Failed to find Server Action" errors. Always use the same key value for both build-time and runtime.
+**Option B: Without encryption key (for pre-built public images)**
 
-**Security:** This setup uses Docker BuildKit secrets, which ensures the encryption key is never stored in image layers or build logs. The key is securely passed during build and only available at runtime via environment variables.
+If you're using a pre-built image from a public registry, you can leave `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` empty:
+
+```bash
+OAR_MEMORY_LIMIT=128MiB
+DATABASE_URL=/app/data/oar.db
+# NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is optional - leave empty for public images
+```
+
+**Understanding the encryption key:**
+
+The `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` is used by Next.js to generate stable identifiers for Server Actions. Here's when to use it:
+
+- **With key (local/private builds):** Ensures Server Action IDs remain consistent across builds. This prevents "Failed to find Server Action" errors when users have old pages open after a redeploy. Recommended for local development and private deployments.
+
+- **Without key (public images):** Next.js generates a random key at build time. The image works without requiring users to know the key, but users may see version skew errors if they have old pages open after redeploy (solution: refresh the page). This is the only practical option for pre-built public images.
+
+**Security:** When using BuildKit secrets, the encryption key is never stored in image layers or build logs. The key is securely passed during build and only available at runtime via environment variables.
 
 ### Step 2: Build and start the container
 
@@ -64,9 +86,11 @@ docker compose up --build -d
 ```
 
 This command:
-- Builds the Docker image using BuildKit secrets (key from `.env` is securely passed during build)
+- Builds the Docker image using BuildKit secrets (if `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` is set in `.env`, it's securely passed during build)
 - Creates the necessary volumes and networks
 - Starts the container in detached mode
+
+**Note:** If you didn't set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` in `.env`, the build will proceed without it. Next.js will generate a random key during build, and the image will work normally.
 
 **Expected output:** Container starts and shows `oar` as running.
 
@@ -84,37 +108,37 @@ You should see `oar` listed with status `Up`.
 
 If you prefer manual control or don't have Docker Compose, use these commands.
 
-### Step 1: Generate encryption key
+### Step 1: (Optional) Generate encryption key
 
-Generate a Server Actions encryption key:
+If you want consistent Server Action IDs across builds, generate an encryption key:
 
 ```bash
 # Run this once to generate a key, and save it for later use
 openssl rand -base64 32
 ```
 
-Save this key; you'll need it for both build and runtime. The same exact key value must be used for both the build secret and `-e` at runtime. Mismatched keys will break Server Actions decryption.
+Save this key; you'll need it for both build and runtime if you choose to use it.
+
+**Note:** You can skip this step if you're building a public image or don't need consistent Server Action IDs. Next.js will generate a random key automatically.
 
 ### Step 2: Build the Docker image
 
-Build the image with the encryption key using BuildKit secrets. You can pass the secret in two ways:
+Build the image with or without the encryption key:
 
-**Option A: From environment variable (recommended)**
+**Option A: With encryption key (for consistent builds)**
 
 ```bash
 export NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="your-generated-key-here"
 docker build --secret id=next_key,env=NEXT_SERVER_ACTIONS_ENCRYPTION_KEY -t oar .
 ```
 
-**Option B: From file**
+**Option B: Without encryption key (for public images)**
 
 ```bash
-echo "your-generated-key-here" > /tmp/next_key
-docker build --secret id=next_key,src=/tmp/next_key -t oar .
-rm /tmp/next_key
+docker build -t oar .
 ```
 
-**Note:** Using BuildKit secrets ensures the key never appears in image layers or build history, providing better security than build args.
+**Note:** Using BuildKit secrets (Option A) ensures the key never appears in image layers or build history, providing better security than build args. If you don't provide a secret, the build will proceed normally and Next.js will generate a random key.
 
 **Expected output:** The build completes with `Building 45.1s (23/23) FINISHED` (example).
 
@@ -163,7 +187,7 @@ You should see `oar_app` listed with status `Up`.
 |----------|---------|-------------|
 | `DATABASE_URL` | `/app/data/oar.db` | Absolute or relative path to the SQLite database file |
 | `PORT` | `8080` | Port the application listens on |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Required | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). Must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Optional | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). If set, must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). If not set, Next.js generates a random key automatically. |
 | `OAR_MEMORY_LIMIT` | `128MiB` | Memory limit for the container (docker-compose only) |
 
 ### Database path handling
@@ -213,7 +237,7 @@ Look for:
 - `Ready in XXms` indicating the server started successfully
 - `Local: http://localhost:8080` confirming the port
 
-If you see errors about "Failed to find Server Action", verify that `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` matches between build-time (secret) and runtime (environment variable).
+If you see errors about "Failed to find Server Action", see the troubleshooting section below.
 
 ## 7. Troubleshooting
 
@@ -257,12 +281,34 @@ Common causes:
 
 **Error:** `Failed to find Server Action "..."`
 
-**Fix:** The encryption key used at build-time must exactly match the key used at runtime. This is a hard constraint - mismatched keys will break Server Actions decryption. Verify:
+This error occurs when there's a mismatch between the Server Action IDs generated at build time and those expected at runtime. Here are the scenarios and solutions:
 
-1. **For docker-compose:** The same key value is set in `.env` and used for both the build secret (via `secrets.next_key.environment`) and `environment` section in `docker-compose.yml`
-2. **For manual Docker:** The exact same key value is passed via `--secret` during build and `-e` at runtime
-3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
-4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
+**Scenario 1: Using a pre-built public image (no encryption key)**
+
+If you pulled an image from a public registry and didn't set `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`:
+
+- **Cause:** The image was built with a random key, and Next.js generated a different random key at runtime.
+- **Solution:** Simply refresh your browser page. The error occurs because you have an old page open from before the container started. After refresh, the page will use the new Server Action IDs.
+
+**Scenario 2: Built locally with encryption key, but key mismatch**
+
+If you built the image locally with a key but there's a mismatch:
+
+- **Cause:** The key used at build-time doesn't match the key used at runtime.
+- **Solution:**
+  1. **For docker-compose:** Verify the same key value is set in `.env` and used for both the build secret (via `secrets.next_key.environment`) and `environment` section in `docker-compose.yml`
+  2. **For manual Docker:** Ensure the exact same key value is passed via `--secret` during build and `-e` at runtime
+  3. If you changed the key, rebuild the image with the new key and ensure runtime uses the same value
+  4. Never override `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` at runtime with a different value than what was used at build time
+
+**Scenario 3: Version skew after redeploy**
+
+If you redeployed a new version of the image:
+
+- **Cause:** Users have old pages open with Server Action IDs from the previous build.
+- **Solution:**
+  - If you used an encryption key: The IDs should remain stable, so this shouldn't happen. Verify the key matches.
+  - If you didn't use a key: Users need to refresh their browser pages. This is expected behavior for public images without encryption keys.
 
 ### Database directory does not exist
 
@@ -305,3 +351,55 @@ docker run -d -p 8080:8080 -v oar_data:/app/data -e NEXT_SERVER_ACTIONS_ENCRYPTI
 ```
 
 Your data persists because the volume remains intact.
+
+## 8. Using Pre-built Images from Public Registry
+
+If you're using a pre-built Oar image from a public Docker registry (e.g., Docker Hub, GitHub Container Registry), you don't need to build the image yourself.
+
+### Pulling and running a pre-built image
+
+```bash
+# Pull the image
+docker pull your-registry/oar:latest
+
+# Run the container (no encryption key needed)
+docker run -d \
+  -p 8080:8080 \
+  -v oar_data:/app/data \
+  -e DATABASE_URL="/app/data/oar.db" \
+  --name oar_app \
+  your-registry/oar:latest
+```
+
+**Important notes for pre-built images:**
+
+1. **No encryption key required:** Pre-built images work without `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`. Next.js generates a random key at runtime.
+
+2. **Version skew behavior:** If you redeploy a new version of the image, users with old browser tabs open may see "Failed to find Server Action" errors. This is expected. The solution is simple: refresh the browser page.
+
+3. **Why this design?** Pre-built public images can't require users to know a secret that was used during build. Making the encryption key optional allows anyone to use the image without additional configuration, at the cost of potential version skew errors (which are easily resolved by refreshing the page).
+
+4. **For production deployments:** If you're deploying to production and want to avoid version skew errors, consider:
+   - Building the image yourself with a known encryption key
+   - Using a private registry where you can document the key
+   - Accepting that users may need to refresh after redeploy (which is often acceptable)
+
+### Docker Compose with pre-built image
+
+If you want to use docker-compose with a pre-built image, modify `docker-compose.yml`:
+
+```yaml
+services:
+  oar:
+    image: your-registry/oar:latest
+    container_name: oar
+    # ... rest of configuration ...
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-/app/data/oar.db}
+```
+
+Then run:
+
+```bash
+docker compose up -d
+```
