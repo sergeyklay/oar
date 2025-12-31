@@ -1,9 +1,20 @@
 import { DueDateService } from './DueDateService';
 import { addDays, subDays, addMonths } from 'date-fns';
 
+const MOCK_DATE = new Date('2025-06-15T12:00:00.000Z');
+
 describe('DueDateService', () => {
+  beforeAll(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(MOCK_DATE);
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   describe('formatRelativeDueDate', () => {
-    const today = new Date();
+    const today = MOCK_DATE;
 
     describe('paid status', () => {
       it('returns "Paid" regardless of due date', () => {

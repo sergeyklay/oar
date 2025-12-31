@@ -8,7 +8,18 @@ jest.mock('lucide-react', () => ({
   Circle: ({ className }: { className: string }) => <span data-testid="circle-icon" className={className} />,
 }));
 
+const MOCK_DATE = new Date('2025-06-15T12:00:00.000Z');
+
 describe('Calendar UI Component', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ advanceTimers: true });
+    jest.setSystemTime(MOCK_DATE);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   const currentMonth = new Date(2025, 11); // December 2025
 
   it('renders month and year title correctly', () => {
@@ -34,8 +45,7 @@ describe('Calendar UI Component', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
 
-    const expectedDate = new Date(currentMonth);
-    expectedDate.setMonth(expectedDate.getMonth() - 1);
+    const expectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
     expect(onMonthChange).toHaveBeenCalledWith(expectedDate);
   });
 
@@ -45,8 +55,7 @@ describe('Calendar UI Component', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /next month/i }));
 
-    const expectedDate = new Date(currentMonth);
-    expectedDate.setMonth(expectedDate.getMonth() + 1);
+    const expectedDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
     expect(onMonthChange).toHaveBeenCalledWith(expectedDate);
   });
 
