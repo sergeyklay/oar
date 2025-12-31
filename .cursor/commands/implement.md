@@ -23,8 +23,8 @@ You must analyze which file you are editing and apply the correct architectural 
 ### 1. IF editing `app/**/*.tsx` or `components/**/*.tsx` (Presentation Layer)
 
 - **Context:** React Server Components by default, Client Components only when necessary.
-- ✅ **ALLOWED:** JSX, Server Actions (via form/mutation), URL state (nuqs), props, `date-fns` for display formatting.
-- ❌ **FORBIDDEN:** Direct DB imports (`@/db`), `useState`/`useEffect` in RSC, business logic calculations, complex conditionals.
+- ✅ **ALLOWED:** JSX, Server Actions (via form/mutation), URL state (nuqs), props, `<ClientDate />` for date display.
+- ❌ **FORBIDDEN:** Direct DB imports (`@/db`), `useState`/`useEffect` in RSC, business logic calculations, complex conditionals, `format()` from `date-fns` in JSX (causes hydration mismatch).
 - **Rule:** Default to Server Components. Add `'use client'` ONLY when component requires hooks, event handlers, or browser APIs. Push `'use client'` to leaf nodes.
 
 ### 2. IF editing `actions/*.ts` (Orchestration Layer)
@@ -105,9 +105,28 @@ db.insert(bills).values({ amount: amount * 100 });  // Floating point errors!
 
 ---
 
+## Critical Gotcha: Date Display Uses ClientDate Component
+
+Never use `format()` from `date-fns` directly in JSX. Server renders in UTC, client in local timezone, causing hydration mismatch.
+
+```typescript
+// ✅ CORRECT: Use ClientDate component
+import { ClientDate } from '@/components/ui/client-date';
+
+<ClientDate date={bill.dueDate} format="dd MMM yyyy" />
+
+// ❌ WRONG: Direct format() in JSX (HYDRATION ERROR)
+import { format } from 'date-fns';
+
+<span>{format(bill.dueDate, 'dd MMM yyyy')}</span>
+```
+
+---
+
 ## Coding Standards
 
 - **Language:** English only for comments, variables, and logs.
+- **Logging:** Use `getLogger()` from `@/lib/logger`. No `console.log` (ESLint enforced).
 - **Style:** Airbnb style, 2 spaces, semicolons, single quotes.
 - **Exports:** One export per file (unless utility module).
 - **Typing:** Strict typing, no `any`. Use `interface` for data models, `type` for unions.
@@ -127,6 +146,7 @@ db.insert(bills).values({ amount: amount * 100 });  // Floating point errors!
 
 - **CRITICAL:** Strictly follow @AGENTS.md
 - **TypeScript/React:** Follow @.cursor/rules/typescript.mdc
+- **Logging:** Follow @.cursor/rules/logging.mdc
 - **Testing:** Follow @.cursor/rules/testing.mdc
 - **Preservation:** Follow @.cursor/rules/preservation.mdc
 
@@ -236,3 +256,7 @@ npm run test -- --testPathPatterns="[AffectedFile]" --no-coverage 2>&1
 
 **Do not ask the user to test it. YOU test it.**
 
+---
+Last Updated: 2025-12-31
+
+Maintained by: AI Agents under human supervision

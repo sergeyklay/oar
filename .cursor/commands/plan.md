@@ -99,7 +99,7 @@ Produce a Markdown checklist in `.plans/Plan-{TASK_NAME}.md`. Group steps into L
 - [ ] `[UI]` Integrate into page route
   - **File:** `app/{route}/page.tsx`
   - **Pattern:** RSC fetches data → passes to child components
-- [ ] **Isolation Rule:** Components must NOT import from `@/db`. Components must NOT contain domain logic like date calculations or money math.
+- [ ] **Isolation Rule:** Components must NOT import from `@/db`. Components must NOT contain domain logic like date calculations or money math. All date displays MUST use `<ClientDate />` component.
 
 ---
 
@@ -122,6 +122,7 @@ Produce a Markdown checklist in `.plans/Plan-{TASK_NAME}.md`. Group steps into L
 - **Server Components First:** Default to RSC. Push `'use client'` to the smallest leaf nodes.
 - **No External SaaS:** Core features must work offline with zero external API calls.
 - **No Global State:** No Zustand, Redux, or Context for app state. Use URL state (nuqs), form state (react-hook-form), or server state.
+- **No console.log:** Use `getLogger()` from `@/lib/logger` for all logging. ESLint enforces this.
 
 ## Philosophy Checklist
 
@@ -132,6 +133,7 @@ Before finalizing the plan, verify:
 - [ ] Is this the minimum viable solution? (No premature abstractions or over-engineering)
 - [ ] Is domain logic isolated in `lib/services/`? (Actions validate and delegate, Components render)
 - [ ] Are Client Components pushed to the smallest leaf nodes?
+- [ ] Do all date displays use `<ClientDate />` component? (No direct `format()` in JSX)
 
 ## Example Phase Structure
 
@@ -164,3 +166,7 @@ For a feature adding "payment reminders":
 - [ ] Manual test: Verify reminders display for bills due within X days
 ```
 
+---
+Last Updated: 2025-12-31
+
+Maintained by: AI Agents under human supervision

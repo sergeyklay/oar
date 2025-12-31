@@ -45,6 +45,7 @@ Before designing, you must analyze:
 
 - Are all monetary values handled as integers (minor units)?
 - Are all dates stored as timestamps in milliseconds?
+- Are all date displays using `<ClientDate />` component (never `format()` in JSX)?
 - Are all inputs validated with Zod schemas at the Server Action boundary?
 - If schema changes are needed, are they backward-compatible with existing data?
 
@@ -77,8 +78,9 @@ Before designing, you must analyze:
 6. ❌ **NO EXTERNAL DEPENDENCIES:** Do NOT propose adding external SaaS, cloud APIs, or third-party services for core features.
 7. ❌ **NO GLOBAL STATE:** Do NOT propose Redux, Zustand, Context, or any global client state store.
 8. ❌ **NO FLOATING-POINT MONEY:** Any monetary value in the spec MUST be documented as integer (minor units).
-9. ✅ **COMPONENT RENDER MODE:** Explicitly justify whether each component is Server or Client.
-10. ✅ **SERVICE OWNERSHIP:** Specify which Service (existing or new) owns each piece of business logic.
+9. ❌ **NO DIRECT DATE FORMATTING:** Any date display MUST use `<ClientDate />` component, never `format()` in JSX.
+10. ✅ **COMPONENT RENDER MODE:** Explicitly justify whether each component is Server or Client.
+11. ✅ **SERVICE OWNERSHIP:** Specify which Service (existing or new) owns each piece of business logic.
 
 ## Output Format
 
@@ -239,6 +241,7 @@ oar/
 Before submitting the spec, verify:
 
 - [ ] No floating-point money anywhere in the spec
+- [ ] All date displays use `<ClientDate />` component
 - [ ] All business logic assigned to a Service, not an Action or Component
 - [ ] All Server Actions have complete Zod schemas
 - [ ] All components have explicit render mode justification
@@ -247,3 +250,7 @@ Before submitting the spec, verify:
 - [ ] Sacred Files modifications (if any) are justified and documented
 - [ ] Implementation steps are ordered by dependency
 
+---
+Last Updated: 2025-12-31
+
+Maintained by: AI Agents under human supervision
