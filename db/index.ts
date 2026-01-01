@@ -1,22 +1,11 @@
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { resolve, dirname, isAbsolute } from 'path';
+import { dirname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import * as schema from './schema';
+import { resolveDatabasePath } from '@/lib/utils';
 
-// Database file location (relative to project root or absolute path)
-let dbPath = process.env.DATABASE_URL ?? './data/oar.db';
-
-// Resolve relative paths to absolute paths
-if (!isAbsolute(dbPath) && !dbPath.startsWith('file:') && dbPath !== ':memory:') {
-  // Resolve relative to process.cwd() (project root in production, or current directory)
-  dbPath = resolve(process.cwd(), dbPath);
-}
-
-// Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
-if (dbPath.startsWith('file:')) {
-  dbPath = dbPath.slice(5);
-}
+const dbPath = resolveDatabasePath();
 
 // Ensure the directory exists before creating the database (skip for in-memory)
 if (dbPath !== ':memory:') {

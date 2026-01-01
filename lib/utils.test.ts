@@ -1,4 +1,6 @@
-import { cn, generateSlug, clampToEndOfMonth } from './utils';
+import { resolve } from 'path';
+import { cn, generateSlug, clampToEndOfMonth, resolveDatabasePath } from './utils';
+import { DEFAULT_DATABASE_PATH } from './constants';
 
 describe('cn', () => {
   it('merges tailwind classes', () => {
@@ -230,10 +232,13 @@ describe('clampToEndOfMonth', () => {
     expect(result.getMilliseconds()).toBe(999);
   });
 
-  it('handles all 30-day months correctly', () => {
-    const months30Days = [3, 5, 8, 10];
-
-    months30Days.forEach((month) => {
+  describe.each([
+    { month: 3, name: 'April' },
+    { month: 5, name: 'June' },
+    { month: 8, name: 'September' },
+    { month: 10, name: 'November' },
+  ])('30-day month: $name', ({ month }) => {
+    it('clamps 31st to 30th', () => {
       const targetMonth = new Date(2025, month, 1);
       const originalTime = new Date(2025, 0, 31, 12, 0, 0, 0);
 
@@ -256,5 +261,105 @@ describe('clampToEndOfMonth', () => {
       expect(result.getMonth()).toBe(month);
       expect(result.getDate()).toBe(31);
     });
+  });
+});
+
+describe('resolveDatabasePath', () => {
+  const originalEnv = process.env.DATABASE_URL;
+  const originalCwd = process.cwd;
+
+  beforeEach(() => {
+    delete process.env.DATABASE_URL;
+    process.cwd = jest.fn(() => '/home/user/project');
+  });
+
+  afterEach(() => {
+    process.env.DATABASE_URL = originalEnv;
+    process.cwd = originalCwd;
+  });
+
+  it('returns absolute path when DATABASE_URL is set to absolute path', () => {
+    process.env.DATABASE_URL = '/absolute/path/to/db.sqlite';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/absolute/path/to/db.sqlite');
+  });
+
+  it('resolves relative path when DATABASE_URL is set to relative path', () => {
+    process.env.DATABASE_URL = './data/custom.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe(resolve('/home/user/project', './data/custom.db'));
+  });
+
+  it('strips file: protocol from absolute path', () => {
+    process.env.DATABASE_URL = 'file:/absolute/path/to/db.sqlite';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/absolute/path/to/db.sqlite');
+  });
+
+  it('strips file: protocol from relative path without resolving it', () => {
+    process.env.DATABASE_URL = 'file:./data/custom.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('./data/custom.db');
+  });
+
+  it('returns :memory: unchanged when DATABASE_URL is set to :memory:', () => {
+    process.env.DATABASE_URL = ':memory:';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe(':memory:');
+  });
+
+  it('returns :memory: when DATABASE_URL is not set but :memory: is used', () => {
+    const result = resolveDatabasePath(':memory:');
+
+    expect(result).toBe(':memory:');
+  });
+
+  it('uses DEFAULT_DATABASE_PATH when DATABASE_URL is not set', () => {
+    const result = resolveDatabasePath();
+
+    expect(result).toBe(resolve('/home/user/project', DEFAULT_DATABASE_PATH));
+  });
+
+  it('handles nested relative paths correctly', () => {
+    process.env.DATABASE_URL = '../../other-project/data.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe(resolve('/home/user/project', '../../other-project/data.db'));
+  });
+
+  it('handles file: protocol with absolute Windows path', () => {
+    process.env.DATABASE_URL = 'file:C:\\Users\\test\\db.sqlite';
+    process.cwd = jest.fn(() => 'C:\\Users\\test');
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('C:\\Users\\test\\db.sqlite');
+  });
+
+  it('strips file: protocol from parent-relative path without resolving it', () => {
+    process.env.DATABASE_URL = 'file:../data/test.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('../data/test.db');
+  });
+
+  it('preserves absolute path with file: protocol when path is already absolute', () => {
+    process.env.DATABASE_URL = 'file:/usr/local/data/db.sqlite';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/usr/local/data/db.sqlite');
   });
 });
