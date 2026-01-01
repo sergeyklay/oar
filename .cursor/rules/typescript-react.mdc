@@ -104,6 +104,108 @@ function fix(data: any) {
 
 **Note:** Apply the following rules when working with `.tsx` files and React components.
 
+### React Server Components (RSC) First
+
+**Rule:** Components are Server Components by default. Add `'use client'` ONLY for: hooks, event handlers, browser APIs, client-only libraries.
+
+**Leaf Node Rule:** Push `'use client'` to smallest possible components.
+
+```tsx
+// ✅ CORRECT: Server page → Server wrapper → Client leaf
+// app/page.tsx (Server Component)
+export default async function DashboardPage() {
+  const tags = await getTags();
+  return <BillList tags={tags} />;
+}
+
+// BillList.tsx (Server)
+export function BillList({ tags }) {
+  return <BillListClient tags={tags} />;
+}
+
+// BillListClient.tsx
+'use client';
+export function BillListClient({ tags }) {
+  const [selected, setSelected] = useState(null);
+  return <div onClick={() => setSelected(tag)}>...</div>;
+}
+
+// ❌ WRONG: Client at page level
+'use client';
+export default function DashboardPage() { ... }
+```
+
+**Code Smells:**
+- ❌ `'use client'` in `app/**/page.tsx`
+- ❌ `useEffect` for data fetching when Server Component can do it
+- [ ] No `'use client'` at page/route level
+- [ ] Interactive parts split into separate Client Components
+
+### Form Validation with Zod Schemas
+
+**Rule:** Export Zod schemas from Server Actions. Reuse in Client Components with `zodResolver`.
+
+```typescript
+// ✅ CORRECT: Server Action exports schema
+// actions/transactions.ts
+'use server';
+export const logPaymentSchema = z.object({
+  billId: z.string().min(1),
+  amount: z.coerce.number().int().positive(),
+  paidAt: z.coerce.date(),
+});
+export type LogPaymentInput = z.infer<typeof logPaymentSchema>;
+
+export async function logPayment(input: LogPaymentInput): Promise<ActionResult> {
+  const parsed = logPaymentSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+  return await PaymentService.logPayment(parsed.data);
+}
+
+// ✅ CORRECT: Client imports and reuses schema
+'use client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { logPayment, logPaymentSchema } from '@/actions/transactions';
+
+export function LogPaymentDialog({ bill }) {
+  const form = useForm({
+    resolver: zodResolver(logPaymentSchema), // ✅ Shared validation
+    defaultValues: { billId: bill.id, amount: bill.amountDue },
+  });
+
+  const { execute } = useAsyncAction({
+    action: (values) => logPayment(values),
+    onError: (_, result) => {
+      if (result.fieldErrors) {
+        Object.entries(result.fieldErrors).forEach(([field, msgs]) => {
+          form.setError(field, { message: msgs?.[0] });
+        });
+      }
+    },
+  });
+
+  return <form onSubmit={form.handleSubmit(execute)}>...</form>;
+}
+
+// ❌ WRONG: Schema only in client
+'use client';
+const schema = z.object({ ... }); // Not exported from Server Action
+useForm({ resolver: zodResolver(schema) }); // Different from server
+
+// ❌ WRONG: No validation in Server Action
+export async function myAction(input: any) { ... } // No safeParse
+```
+
+**Code Smells:**
+- ❌ `useForm()` without `resolver` option
+- ❌ Server Action parameter typed as `any`
+- ❌ Schema not exported from Server Action file
+- [ ] Schema exported from Server Action
+- [ ] `zodResolver(schema)` in client form
+- [ ] Field errors mapped via `onError`
+
 ### Event Handler Type Extraction
 
 **Rule:** Always use `Prop<Component, 'eventPropName'>` when extracting event handlers. Never manually type event parameters or use `any`.
@@ -381,15 +483,28 @@ import type { UserProfile } from '@/types/user';
 
 Before submitting code:
 
+**TypeScript:**
 - [ ] All variables/functions have explicit types, no `any`
 - [ ] Public APIs documented with JSDoc
 - [ ] Airbnb style (semicolons, single quotes, 2-space indent)
 - [ ] `const` over `let`, arrow functions where appropriate
 - [ ] No obvious comments
-- [ ] Event handlers use `Prop` utility type (React/TSX)
-- [ ] Dates rendered with `<ClientDate />` (React/TSX)
-- [ ] Async actions use `useAsyncAction` when 2+ similar patterns
-- [ ] Errors handled with meaningful messages in English
 - [ ] One export per file
 - [ ] DRY and YAGNI principles applied
 - [ ] Code in English (names, comments, logs)
+
+**React/Next.js:**
+- [ ] Components are Server Components by default (no `'use client'` unless needed)
+- [ ] `'use client'` only at leaf nodes (hooks, event handlers, browser APIs)
+- [ ] No `'use client'` at page/route level
+- [ ] Zod schemas exported from Server Actions and reused in forms
+- [ ] Forms use `zodResolver(schema)` for validation
+- [ ] Server Actions validate with `schema.safeParse()`
+- [ ] Event handlers use `Prop` utility type
+- [ ] Dates rendered with `<ClientDate />` component
+- [ ] Async actions use `useAsyncAction` when 2+ similar patterns
+- [ ] Field errors from server mapped to form state via `onError`
+
+**Error Handling:**
+- [ ] Errors handled with meaningful messages in English
+- [ ] No silent failures
