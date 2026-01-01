@@ -88,7 +88,9 @@ describe('AutoLogAutoPayCheckbox', () => {
     await user.click(switchElement);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Update failed');
+      expect(toast.error).toHaveBeenCalledWith('Failed to update setting', {
+        description: 'Update failed',
+      });
       expect(switchElement).toHaveAttribute('aria-checked', 'true');
     });
   });

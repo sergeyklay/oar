@@ -164,7 +164,9 @@ describe('BillDetailPanel', () => {
 
       expect(skipPayment).toHaveBeenCalledWith({ billId: bill.id });
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Payment skipped for "Skip Me"');
+        expect(toast.success).toHaveBeenCalledWith('Payment skipped for "Skip Me"', {
+          description: undefined,
+        });
       });
     });
 
@@ -193,7 +195,10 @@ describe('BillDetailPanel', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /archive/i }));
 
-      expect(archiveBill).toHaveBeenCalledWith(bill.id, true);
+      await waitFor(() => {
+        expect(archiveBill).toHaveBeenCalledWith(bill.id, true);
+      });
+
       await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Bill archived', expect.any(Object));
         expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
@@ -217,13 +222,14 @@ describe('BillDetailPanel', () => {
       const bill = createMockBill({ title: 'Delete Me' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
-      // Click Delete to open confirmation
       fireEvent.click(screen.getByRole('button', { name: /delete/i }));
 
-      // Click Delete in confirmation dialog
       fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
 
-      expect(deleteBill).toHaveBeenCalledWith(bill.id);
+      await waitFor(() => {
+        expect(deleteBill).toHaveBeenCalledWith(bill.id);
+      });
+
       await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Bill deleted', expect.any(Object));
         expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
@@ -337,6 +343,9 @@ describe('BillDetailPanel', () => {
 
       await waitFor(() => {
         expect(archiveBill).toHaveBeenCalledWith(archivedBill.id, false);
+      });
+
+      await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Bill unarchived', expect.any(Object));
         expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
       });
@@ -357,6 +366,9 @@ describe('BillDetailPanel', () => {
 
       await waitFor(() => {
         expect(archiveBill).toHaveBeenCalledWith(activeBill.id, true);
+      });
+
+      await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('Bill archived', expect.any(Object));
         expect(mockSetSelectedBill).toHaveBeenCalledWith(null);
       });
