@@ -89,10 +89,8 @@ it.each([
   { month: 5, name: 'June' },
   { month: 8, name: 'September' },
   { month: 10, name: 'November' },
-])('30-day month: $name', ({ month }) => {
-  it('clamps 31st to 30th', () => {
-    // ...
-  });
+])('clamps 31st to 30th for 30-day month: $name', ({ month }) => {
+  // ...
 });
 ```
 
