@@ -24,8 +24,18 @@ const ROOT_DIR = join(__dirname, '..');
 
 // Read database path from environment or use default
 const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
-// Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
-let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
+
+// Convert file:// URLs to platform-specific paths using fileURLToPath
+// fileURLToPath handles proper file:// URLs (file:///path) correctly
+// For file: prefix (not file://), we strip it manually to preserve relative paths
+let dbPath;
+if (rawUrl.startsWith('file://')) {
+  dbPath = fileURLToPath(rawUrl);
+} else if (rawUrl.startsWith('file:')) {
+  dbPath = rawUrl.slice(5);
+} else {
+  dbPath = rawUrl;
+}
 
 if (dbPath === ':memory:') {
   logger.fatal('In-memory database not supported for seeding');
