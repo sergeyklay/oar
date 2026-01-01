@@ -362,4 +362,50 @@ describe('resolveDatabasePath', () => {
 
     expect(result).toBe('/usr/local/data/db.sqlite');
   });
+
+  it('converts file:// URL with absolute POSIX path using fileURLToPath', () => {
+    process.env.DATABASE_URL = 'file:///absolute/path/to/db.sqlite';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/absolute/path/to/db.sqlite');
+  });
+
+  it('converts file:// URL with Windows path using fileURLToPath', () => {
+    process.env.DATABASE_URL = 'file:///C:/Users/test/db.sqlite';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/C:/Users/test/db.sqlite');
+  });
+
+  it('converts file:// URL with percent-encoded characters', () => {
+    process.env.DATABASE_URL = 'file:///path/to/hello%20world.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/path/to/hello world.db');
+  });
+
+  it('converts file:// URL with Unicode characters', () => {
+    process.env.DATABASE_URL = 'file:///path/to/你好.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/path/to/你好.db');
+  });
+
+  it('converts file:// URL with special characters in path', () => {
+    process.env.DATABASE_URL = 'file:///path/to/file%231.db';
+
+    const result = resolveDatabasePath();
+
+    expect(result).toBe('/path/to/file#1.db');
+  });
+
+  it('handles file:// URL passed as parameter', () => {
+    const result = resolveDatabasePath('file:///custom/path/db.sqlite');
+
+    expect(result).toBe('/custom/path/db.sqlite');
+  });
 });
