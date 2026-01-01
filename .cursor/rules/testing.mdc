@@ -64,13 +64,10 @@ npm run test -- path/to/Component.test.tsx 2>&1
 Always use `describe.each` or `it.each` when testing multiple scenarios:
 
 ```typescript
-// ❌ WRONG: Use it.each for multiple scenarios
+// ❌ WRONG: Use describe.each or it.each for multiple scenarios
 it('handles all 30-day months correctly', () => {
-  const months30Days = [3, 5, 8, 10];
-  months30Days.forEach((month) => {
-    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
-    expect(result.getMonth()).toBe(month);
-    expect(result.getDate()).toBe(30);
+  [3, 5, 8, 10].forEach((month) => {
+    // ...
   });
 });
 
@@ -82,9 +79,7 @@ describe.each([
   { month: 10, name: 'November' },
 ])('30-day month: $name', ({ month }) => {
   it('clamps 31st to 30th', () => {
-    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
-    expect(result.getMonth()).toBe(month);
-    expect(result.getDate()).toBe(30);
+    // ...
   });
 });
 
@@ -96,13 +91,10 @@ it.each([
   { month: 10, name: 'November' },
 ])('30-day month: $name', ({ month }) => {
   it('clamps 31st to 30th', () => {
-    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
-    expect(result.getMonth()).toBe(month);
-    expect(result.getDate()).toBe(30);
+    // ...
   });
 });
 ```
-
 
 ## Forbidden
 
