@@ -59,6 +59,51 @@ npm run test -- --testPathPatterns="ComponentName" --no-coverage 2>&1
 npm run test -- path/to/Component.test.tsx 2>&1
 ```
 
+## Use describe.each or it.each for multiple scenarios
+
+Always use `describe.each` or `it.each` when testing multiple scenarios:
+
+```typescript
+// ❌ WRONG: Use it.each for multiple scenarios
+it('handles all 30-day months correctly', () => {
+  const months30Days = [3, 5, 8, 10];
+  months30Days.forEach((month) => {
+    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
+    expect(result.getMonth()).toBe(month);
+    expect(result.getDate()).toBe(30);
+  });
+});
+
+// ✅ CORRECT: Use describe.each for multiple scenarios
+describe.each([
+  { month: 3, name: 'April' },
+  { month: 5, name: 'June' },
+  { month: 8, name: 'September' },
+  { month: 10, name: 'November' },
+])('30-day month: $name', ({ month }) => {
+  it('clamps 31st to 30th', () => {
+    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
+    expect(result.getMonth()).toBe(month);
+    expect(result.getDate()).toBe(30);
+  });
+});
+
+// ✅ CORRECT: Use it.each for multiple scenarios
+it.each([
+  { month: 3, name: 'April' },
+  { month: 5, name: 'June' },
+  { month: 8, name: 'September' },
+  { month: 10, name: 'November' },
+])('30-day month: $name', ({ month }) => {
+  it('clamps 31st to 30th', () => {
+    const result = clampToEndOfMonth(new Date(2025, month, 1), 31, new Date(2025, 0, 31));
+    expect(result.getMonth()).toBe(month);
+    expect(result.getDate()).toBe(30);
+  });
+});
+```
+
+
 ## Forbidden
 
 - ❌ **Snapshot Testing** for complex UI (too brittle). Use specific assertions instead.
