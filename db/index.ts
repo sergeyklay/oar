@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import { dirname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import * as schema from './schema';
-import { resolveDatabasePath } from '@/lib/utils';
+import { resolveDatabasePath } from '@/lib/db.mjs';
 
 const dbPath = resolveDatabasePath();
 

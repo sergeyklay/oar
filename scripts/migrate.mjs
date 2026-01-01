@@ -10,39 +10,23 @@
 
 import Database from 'better-sqlite3';
 import { readFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname, resolve, isAbsolute } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getLogger } from './logger.mjs';
+import { resolveDatabasePath } from '../lib/db.mjs';
 
 const logger = getLogger('MigrationScript');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
-// Read database path from environment or use default
-const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
-
-// Convert file:// URLs to platform-specific paths using fileURLToPath
-// fileURLToPath handles proper file:// URLs (file:///path) correctly
-// For file: prefix (not file://), we strip it manually to preserve relative paths
-let dbPath;
-if (rawUrl.startsWith('file://')) {
-  dbPath = fileURLToPath(rawUrl);
-} else if (rawUrl.startsWith('file:')) {
-  dbPath = rawUrl.slice(5);
-} else {
-  dbPath = rawUrl;
-}
+// Resolve database path using shared utility
+const dbPath = resolveDatabasePath(undefined, ROOT_DIR);
 
 // Handle in-memory database (should not happen in production, but handle gracefully)
 if (dbPath === ':memory:') {
   logger.fatal('In-memory database not supported for migrations');
   process.exit(1);
-}
-
-// Resolve relative paths to absolute paths
-if (!isAbsolute(dbPath)) {
-  dbPath = resolve(ROOT_DIR, dbPath);
 }
 
 // Ensure the directory exists before creating the database

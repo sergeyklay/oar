@@ -1,9 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, endOfMonth, getDate, setDate } from 'date-fns';
-import { resolve, isAbsolute } from 'path';
-import { fileURLToPath } from 'url';
-import { DEFAULT_DATABASE_PATH } from '@/lib/constants';
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -98,39 +95,4 @@ export function clampToEndOfMonth(
   );
 
   return clampedDate;
-}
-
-/**
- * Resolves the database path from the environment or the default path.
- *
- * @param envPath - The path from the environment variable.
- * @returns The resolved database path.
- */
-export function resolveDatabasePath(envPath = process.env.DATABASE_URL): string {
-  let dbPath = envPath ?? DEFAULT_DATABASE_PATH;
-
-  // Convert file:// URLs to platform-specific paths using fileURLToPath
-  // fileURLToPath handles proper file:// URLs (file:///path) correctly
-  if (dbPath.startsWith('file://')) {
-    dbPath = fileURLToPath(dbPath);
-  }
-
-  // Handle in-memory database
-  if (dbPath === ':memory:') {
-    return dbPath;
-  }
-
-  // Resolve relative paths to absolute paths
-  // Note: file: prefix (not file://) is excluded from resolution to preserve relative paths
-  if (!isAbsolute(dbPath) && !dbPath.startsWith('file:') && dbPath !== ':memory:') {
-    dbPath = resolve(process.cwd(), dbPath);
-  }
-
-  // Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
-  // This preserves relative paths that had file: prefix
-  if (dbPath.startsWith('file:')) {
-    dbPath = dbPath.slice(5);
-  }
-
-  return dbPath;
 }

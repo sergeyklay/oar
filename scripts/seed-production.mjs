@@ -12,38 +12,23 @@
  */
 
 import Database from 'better-sqlite3';
-import { dirname, resolve, isAbsolute, join } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createId } from '@paralleldrive/cuid2';
 import { getLogger } from './logger.mjs';
+import { resolveDatabasePath } from '../lib/db.mjs';
 
 const logger = getLogger('SeedScript');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
-// Read database path from environment or use default
-const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
-
-// Convert file:// URLs to platform-specific paths using fileURLToPath
-// fileURLToPath handles proper file:// URLs (file:///path) correctly
-// For file: prefix (not file://), we strip it manually to preserve relative paths
-let dbPath;
-if (rawUrl.startsWith('file://')) {
-  dbPath = fileURLToPath(rawUrl);
-} else if (rawUrl.startsWith('file:')) {
-  dbPath = rawUrl.slice(5);
-} else {
-  dbPath = rawUrl;
-}
+// Resolve database path using shared utility
+const dbPath = resolveDatabasePath(undefined, ROOT_DIR);
 
 if (dbPath === ':memory:') {
   logger.fatal('In-memory database not supported for seeding');
   process.exit(1);
-}
-
-if (!isAbsolute(dbPath)) {
-  dbPath = resolve(ROOT_DIR, dbPath);
 }
 
 logger.info({ dbPath }, 'Database path');

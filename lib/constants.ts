@@ -37,9 +37,6 @@ export const PAST_RANGE_LABELS: Record<string, string> = {
 /** Default settings category slug for URL state. */
 export const DEFAULT_SETTINGS_CATEGORY = 'general';
 
-/** Default database file path. */
-export const DEFAULT_DATABASE_PATH = './data/oar.db';
-
 export const DEFAULT_CATEGORIES = [
   { slug: 'general', name: 'General', displayOrder: 1 },
   { slug: 'notification', name: 'Notification', displayOrder: 2 },
