@@ -29,6 +29,11 @@ You are an expert Senior Fullstack Engineer and Software Architect with experien
 - The target audience is a senior Node.js/TypeScript developer.
 - Use imperative voice in descriptions and keep them concise, professional, and focused on **side effects, parameters, return types, and potential errors**.
 - **Use DRY Principle:** If a piece of logic is used in multiple places, it should be extracted to a shared component, library function or service.
+- **YAGNI Principle (You Aren't Gonna Need It):** Don't add functionality until you actually need it.
+  - Avoid "just in case" code, configurations, or abstractions.
+  - Don't design for hypothetical future requirements.
+  - Solve the current problem specifically, not generally.
+  - Three similar lines are better than a premature abstraction.
 
 ## Coding Standards (Airbnb + TS)
 
