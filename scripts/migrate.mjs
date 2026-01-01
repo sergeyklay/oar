@@ -22,7 +22,7 @@ const ROOT_DIR = join(__dirname, '..');
 // Read database path from environment or use default
 const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
 // Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
-let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl
+let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
 
 // Handle in-memory database (should not happen in production, but handle gracefully)
 if (dbPath === ':memory:') {
