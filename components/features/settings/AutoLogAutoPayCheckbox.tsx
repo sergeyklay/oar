@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { updateAutoLogAutoPay } from '@/actions/settings';
-import { toast } from 'sonner';
 import { Toggle } from '@/components/common/Toggle';
 import { getLogger } from '@/lib/logger';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 
 const logger = getLogger('AutoLogAutoPayCheckbox');
 
@@ -20,27 +20,25 @@ interface AutoLogAutoPayCheckboxProps {
  */
 export function AutoLogAutoPayCheckbox({ checked: initialChecked }: AutoLogAutoPayCheckboxProps) {
   const [checked, setChecked] = useState(initialChecked);
-  const [isLoading, setIsLoading] = useState(false);
+  const previousCheckedRef = useRef(checked);
 
-  const handleCheckedChange = async (newChecked: boolean) => {
-    setIsLoading(true);
+  const { execute, isPending: isLoading } = useAsyncAction({
+    action: (enabled: boolean) => updateAutoLogAutoPay({ enabled }),
+    errorMessage: 'Failed to update setting',
+    showSuccessToast: false,
+    onError: () => {
+      setChecked(previousCheckedRef.current);
+    },
+  });
+
+  const handleCheckedChange = (newChecked: boolean) => {
+    previousCheckedRef.current = checked;
     setChecked(newChecked);
 
-    try {
-      const result = await updateAutoLogAutoPay({ enabled: newChecked });
-
-      if (!result.success) {
-        toast.error(result.error || 'Failed to update setting');
-        setChecked(!newChecked);
-      }
-    } catch (error) {
-      toast.error('Failed to update setting');
+    execute(newChecked).catch((error) => {
       logger.error(error, 'Failed to update auto-log auto-pay setting');
-
-      setChecked(!newChecked);
-    } finally {
-      setIsLoading(false);
-    }
+      setChecked(previousCheckedRef.current);
+    });
   };
 
   return (

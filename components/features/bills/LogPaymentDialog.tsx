@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -38,6 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { toMajorUnits, toMinorUnits, parseMoneyInput } from '@/lib/money';
 import { logPayment } from '@/actions/transactions';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import type { Bill } from '@/lib/types';
 
 const formSchema = z.object({
@@ -75,8 +76,6 @@ export function LogPaymentDialog({
   currency,
   onPaymentLogged,
 }: LogPaymentDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -119,25 +118,22 @@ export function LogPaymentDialog({
     onOpenChange(newOpen);
   };
 
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true);
-
-    // Convert user input to integer minor units before sending to action
-    const amountInMinorUnits = toMinorUnits(parseMoneyInput(values.amount));
-
-    const result = await logPayment({
-      billId: bill.id,
-      amount: amountInMinorUnits,
-      paidAt: values.paidAt,
-      notes: values.notes,
-      updateDueDate: values.updateDueDate,
-    });
-
-    setIsSubmitting(false);
-
-    if (result.success) {
+  const { execute, isPending: isSubmitting } = useAsyncAction({
+    action: (values: FormValues) => {
+      const amountInMinorUnits = toMinorUnits(parseMoneyInput(values.amount));
+      return logPayment({
+        billId: bill.id,
+        amount: amountInMinorUnits,
+        paidAt: values.paidAt,
+        notes: values.notes,
+        updateDueDate: values.updateDueDate,
+      });
+    },
+    showSuccessToast: false,
+    errorMessage: 'Failed to log payment',
+    onSuccess: (data) => {
       onPaymentLogged?.();
-      if (result.data?.isHistorical) {
+      if (data?.isHistorical) {
         toast.success('Historical payment logged', {
           description: `Payment for "${bill.title}" has been recorded without changing the due date.`,
         });
@@ -147,20 +143,23 @@ export function LogPaymentDialog({
         });
       }
       handleOpenChange(false);
-    } else {
-      toast.error('Failed to log payment', {
-        description: result.error ?? 'Please try again.',
-      });
-
-      // Set field-level errors if any
-      if (result.fieldErrors) {
-        Object.entries(result.fieldErrors).forEach(([field, messages]) => {
+    },
+    onError: (error, result) => {
+      const resultWithFieldErrors = result as typeof result & {
+        fieldErrors?: Record<string, string[]>;
+      };
+      if (resultWithFieldErrors.fieldErrors) {
+        Object.entries(resultWithFieldErrors.fieldErrors).forEach(([field, messages]) => {
           form.setError(field as keyof FormValues, {
             message: messages?.[0],
           });
         });
       }
-    }
+    },
+  });
+
+  async function onSubmit(values: FormValues) {
+    await execute(values);
   }
 
   return (
