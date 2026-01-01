@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,6 +45,7 @@ import {
   type CreateBillInput,
   type UpdateBillInput,
 } from '@/actions/bills';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { isValidMoneyInput, parseMoneyInput, toMajorUnits } from '@/lib/money';
 import type { Bill, Tag, BillCategoryGroupWithCategories, BillFrequency } from '@/lib/types';
 import { FREQUENCY_DISPLAY_LABELS } from '@/lib/constants';
@@ -121,7 +122,6 @@ export function BillFormDialog({
   categoriesGrouped,
   defaultCategoryId,
 }: BillFormDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!bill;
 
   const form = useForm<FormValues>({
@@ -187,46 +187,51 @@ export function BillFormDialog({
     }
   }, [bill, open, form, defaultCategoryId]);
 
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true);
+  const submittedValuesRef = useRef<FormValues | null>(null);
 
-    try {
+  const { execute, isPending: isSubmitting } = useAsyncAction({
+    action: (values: FormValues) => {
       const baseInput = {
         ...values,
         amount: parseMoneyInput(values.amount),
         weekendAdjustment: values.weekendAdjustment,
       };
 
-      const result = isEditMode
-        ? await updateBill({ ...baseInput, id: bill.id } as UpdateBillInput)
-        : await createBill(baseInput as CreateBillInput);
-
-      if (result.success) {
+      return isEditMode
+        ? updateBill({ ...baseInput, id: bill.id } as UpdateBillInput)
+        : createBill(baseInput as CreateBillInput);
+    },
+    showSuccessToast: false,
+    errorMessage: isEditMode ? 'Failed to update bill' : 'Failed to create bill',
+    onSuccess: () => {
+      const values = submittedValuesRef.current;
+      if (values) {
         toast.success(isEditMode ? 'Bill updated' : 'Bill created', {
           description: `"${values.title}" has been ${isEditMode ? 'updated' : 'created'}.`,
         });
-        form.reset();
-        onOpenChange(false);
-      } else {
-        toast.error(isEditMode ? 'Failed to update bill' : 'Failed to create bill', {
-          description: result.error ?? 'Please try again.',
-        });
-
-        if (result.fieldErrors) {
-          Object.entries(result.fieldErrors).forEach(([field, errors]) => {
-            if (errors?.[0]) {
-              form.setError(field as keyof FormValues, { message: errors[0] });
-            }
-          });
-        }
       }
-    } catch (error) {
-      toast.error(isEditMode ? 'Failed to update bill' : 'Failed to create bill', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+      form.reset();
+      onOpenChange(false);
+      submittedValuesRef.current = null;
+    },
+    onError: (error, result) => {
+      const resultWithFieldErrors = result as typeof result & {
+        fieldErrors?: Record<string, string[]>;
+      };
+      if (resultWithFieldErrors.fieldErrors) {
+        Object.entries(resultWithFieldErrors.fieldErrors).forEach(([field, errors]) => {
+          if (errors?.[0]) {
+            form.setError(field as keyof FormValues, { message: errors[0] });
+          }
+        });
+      }
+      submittedValuesRef.current = null;
+    },
+  });
+
+  async function onSubmit(values: FormValues) {
+    submittedValuesRef.current = values;
+    await execute(values);
   }
 
   return (
@@ -242,6 +247,7 @@ export function BillFormDialog({
         </DialogHeader>
 
         <Form {...form}>
+          {/* eslint-disable-next-line react-hooks/refs */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}

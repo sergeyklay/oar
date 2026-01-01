@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
-import { toast } from 'sonner';
 import { useQueryState, parseAsString } from 'nuqs';
 
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,7 @@ import { formatMoney, getCurrencySymbol } from '@/lib/money';
 import { DueDateService } from '@/lib/services/DueDateService';
 import { ClientDate } from '@/components/ui/client-date';
 import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
+import { useAsyncAction } from '@/lib/hooks/useAsyncAction';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { BillFormDialog } from './BillFormDialog';
 import { CloseDetailButton } from './CloseDetailButton';
@@ -63,9 +63,6 @@ export function BillDetailPanel({
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isSkipping, setIsSkipping] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
@@ -81,54 +78,28 @@ export function BillDetailPanel({
     setHistoryRefreshKey((prev) => prev + 1);
   };
 
-  const handleSkip = async () => {
-    setIsSkipping(true);
-    const result = await skipPayment({ billId: bill.id });
-    setIsSkipping(false);
+  const { execute: handleSkip, isPending: isSkipping } = useAsyncAction({
+    action: () => skipPayment({ billId: bill.id }),
+    successMessage: `Payment skipped for "${bill.title}"`,
+    errorMessage: 'Failed to skip payment',
+  });
 
-    if (result.success) {
-      toast.success(`Payment skipped for "${bill.title}"`);
-    } else {
-      toast.error('Failed to skip payment', {
-        description: result.error ?? 'Please try again.',
-      });
-    }
-  };
+  const { execute: handleArchive, isPending: isArchiving } = useAsyncAction({
+    action: (isArchived: boolean) => archiveBill(bill.id, isArchived),
+    successMessage: bill.isArchived ? 'Bill unarchived' : 'Bill archived',
+    successDescription: `"${bill.title}" has been ${bill.isArchived ? 'unarchived' : 'archived'}.`,
+    errorMessage: `Failed to ${bill.isArchived ? 'unarchive' : 'archive'} bill`,
+    onSuccess: () => setSelectedBill(null),
+  });
 
-  const handleArchive = async () => {
-    setIsArchiving(true);
-    const result = await archiveBill(bill.id, !bill.isArchived);
-    setIsArchiving(false);
-
-    if (result.success) {
-      toast.success(bill.isArchived ? 'Bill unarchived' : 'Bill archived', {
-        description: `"${bill.title}" has been ${bill.isArchived ? 'unarchived' : 'archived'}.`,
-      });
-      setSelectedBill(null);
-    } else {
-      toast.error(`Failed to ${bill.isArchived ? 'unarchive' : 'archive'} bill`, {
-        description: result.error ?? 'Please try again.',
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    const result = await deleteBill(bill.id);
-    setIsDeleting(false);
-    setDeleteDialogOpen(false);
-
-    if (result.success) {
-      toast.success('Bill deleted', {
-        description: `"${bill.title}" has been removed.`,
-      });
-      setSelectedBill(null);
-    } else {
-      toast.error('Failed to delete bill', {
-        description: result.error ?? 'Please try again.',
-      });
-    }
-  };
+  const { execute: handleDelete, isPending: isDeleting } = useAsyncAction({
+    action: () => deleteBill(bill.id),
+    successMessage: 'Bill deleted',
+    successDescription: `"${bill.title}" has been removed.`,
+    errorMessage: 'Failed to delete bill',
+    onSuccess: () => setSelectedBill(null),
+    onSettled: () => setDeleteDialogOpen(false),
+  });
 
   const headerBgColor = bill.isArchived
     ? 'bg-muted'
@@ -260,7 +231,7 @@ export function BillDetailPanel({
           <Button
             variant="secondary"
             size="sm"
-            onClick={handleArchive}
+            onClick={() => handleArchive(!bill.isArchived)}
             disabled={isArchiving || isDeleting}
           >
             {isArchiving ? (bill.isArchived ? 'Unarchiving...' : 'Archiving...') : (bill.isArchived ? 'Unarchive' : 'Archive')}
@@ -323,7 +294,7 @@ export function BillDetailPanel({
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
