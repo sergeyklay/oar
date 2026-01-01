@@ -168,8 +168,8 @@ export function useAsyncAction<TData = void, TInput extends unknown[] = []>(
             });
           }
 
-          if (options.onSuccess && result.data !== undefined) {
-            options.onSuccess(result.data);
+          if (options.onSuccess) {
+            options.onSuccess(result.data as TData);
           }
         } else {
           const errorMsg = result.error ?? 'Action failed';

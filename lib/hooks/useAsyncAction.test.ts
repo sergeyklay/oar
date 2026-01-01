@@ -203,7 +203,7 @@ describe('useAsyncAction', () => {
       expect(onSuccess).toHaveBeenCalledWith({ id: '123' });
     });
 
-    it('does not call onSuccess when result.data is undefined', async () => {
+    it('calls onSuccess with undefined when result.data is undefined', async () => {
       const mockAction = jest.fn().mockResolvedValue({
         success: true,
       });
@@ -220,7 +220,7 @@ describe('useAsyncAction', () => {
         await result.current.execute();
       });
 
-      expect(onSuccess).not.toHaveBeenCalled();
+      expect(onSuccess).toHaveBeenCalledWith(undefined);
     });
   });
 
