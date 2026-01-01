@@ -16,4 +16,3 @@ export declare function resolveDatabasePath(
   envPath?: string | undefined,
   baseDir?: string
 ): string;
-

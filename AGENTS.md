@@ -251,7 +251,11 @@ These patterns are explicitly banned. If you see them in existing code, do NOT r
 - ❌ **`use client` at route level:** Never make a page component a client component.
 - ❌ **Direct DB access in components:** Components never import from `@/db`.
 - ❌ **Raw SQL:** Use Drizzle's query builder. Raw SQL only for migrations.
-- ❌ **Premature abstraction:** Don't create helpers/utils for one-time operations.
+- ❌ **YAGNI violations (You Aren't Gonna Need It):** Don't add functionality until it's actually needed.
+  - No "just in case" features, configurations, or abstractions
+  - No future-proofing for hypothetical requirements
+  - No generic solutions when a specific one solves the current problem
+  - Three similar lines of code is better than premature abstraction
 - ❌ **Optional chaining avalanche:** Fix the type, don't chain `?.` five levels deep.
 
 ---
