@@ -145,7 +145,7 @@ import { format } from 'date-fns';
 ### Rule Files to Follow
 
 - **CRITICAL:** Strictly follow @AGENTS.md
-- **TypeScript/React:** Follow @.cursor/rules/typescript.mdc
+- **TypeScript/React:** Follow @.cursor/rules/typescript-react.mdc
 - **Logging:** Follow @.cursor/rules/logging.mdc
 - **Testing:** Follow @.cursor/rules/testing.mdc
 - **Preservation:** Follow @.cursor/rules/preservation.mdc
