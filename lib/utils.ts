@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { format, endOfMonth, getDate, setDate } from 'date-fns';
+import { resolve, isAbsolute } from 'path';
+import { DEFAULT_DATABASE_PATH } from '@/lib/constants';
 
 /**
  * Merge Tailwind CSS classes with clsx
@@ -95,4 +97,25 @@ export function clampToEndOfMonth(
   );
 
   return clampedDate;
+}
+
+/**
+ * Resolves the database path from the environment or the default path.
+ *
+ * @param envPath - The path from the environment variable.
+ * @returns The resolved database path.
+ */
+export function resolveDatabasePath(envPath = process.env.DATABASE_URL): string {
+  let dbPath = envPath ?? DEFAULT_DATABASE_PATH;
+
+  if (!isAbsolute(dbPath) && !dbPath.startsWith('file:') && dbPath !== ':memory:') {
+    dbPath = resolve(process.cwd(), dbPath);
+  }
+
+  // Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
+  if (dbPath.startsWith('file:')) {
+    dbPath = dbPath.slice(5);
+  }
+
+  return dbPath;
 }

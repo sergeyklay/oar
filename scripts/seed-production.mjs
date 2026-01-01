@@ -22,8 +22,7 @@ const logger = getLogger('SeedScript');
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
-const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
-let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl;
+const dbPath = resolveDatabasePath();
 
 if (dbPath === ':memory:') {
   logger.fatal('In-memory database not supported for seeding');
