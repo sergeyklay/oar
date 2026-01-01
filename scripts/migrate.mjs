@@ -13,14 +13,16 @@ import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname, resolve, isAbsolute } from 'path';
 import { fileURLToPath } from 'url';
 import { getLogger } from './logger.mjs';
-import { resolveDatabasePath } from '@/lib/utils';
 
 const logger = getLogger('MigrationScript');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
 
-const dbPath = resolveDatabasePath();
+// Read database path from environment or use default
+const rawUrl = process.env.DATABASE_URL ?? './data/oar.db';
+// Strip 'file:' protocol if present (better-sqlite3 expects plain file paths)
+let dbPath = rawUrl.startsWith('file:') ? rawUrl.slice(5) : rawUrl
 
 // Handle in-memory database (should not happen in production, but handle gracefully)
 if (dbPath === ':memory:') {
