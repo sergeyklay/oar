@@ -694,6 +694,86 @@ describe('AutoPayService', () => {
 
       jest.useRealTimers();
     });
+
+    describe('timezone-agnostic eligibility (regression: premature processing bug)', () => {
+      beforeEach(() => {
+        jest.useFakeTimers();
+        (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
+        (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
+        (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockImplementation((date) => date);
+        (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(new Date('2026-02-02T23:00:00.000Z'));
+        (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it.each([
+        {
+          timezone: 'Poland (UTC+1)',
+          dueDateUTC: '2026-01-01T23:00:00.000Z',
+          cronTimeUTC: '2026-01-01T00:05:00.000Z',
+          shouldProcess: false,
+          description: 'Jan 2 00:00 Poland at Jan 1 00:05 UTC',
+        },
+        {
+          timezone: 'Poland (UTC+1)',
+          dueDateUTC: '2026-01-01T23:00:00.000Z',
+          cronTimeUTC: '2026-01-02T00:05:00.000Z',
+          shouldProcess: true,
+          description: 'Jan 2 00:00 Poland at Jan 2 00:05 UTC',
+        },
+        {
+          timezone: 'Japan (UTC+9)',
+          dueDateUTC: '2026-01-01T15:00:00.000Z',
+          cronTimeUTC: '2026-01-01T00:05:00.000Z',
+          shouldProcess: false,
+          description: 'Jan 2 00:00 Japan at Jan 1 00:05 UTC',
+        },
+        {
+          timezone: 'Japan (UTC+9)',
+          dueDateUTC: '2026-01-01T15:00:00.000Z',
+          cronTimeUTC: '2026-01-01T16:00:00.000Z',
+          shouldProcess: true,
+          description: 'Jan 2 00:00 Japan at Jan 1 16:00 UTC',
+        },
+        {
+          timezone: 'New York (UTC-5)',
+          dueDateUTC: '2026-01-02T05:00:00.000Z',
+          cronTimeUTC: '2026-01-02T00:05:00.000Z',
+          shouldProcess: false,
+          description: 'Jan 2 00:00 New York at Jan 2 00:05 UTC',
+        },
+        {
+          timezone: 'New York (UTC-5)',
+          dueDateUTC: '2026-01-02T05:00:00.000Z',
+          cronTimeUTC: '2026-01-02T06:00:00.000Z',
+          shouldProcess: true,
+          description: 'Jan 2 00:00 New York at Jan 2 06:00 UTC',
+        },
+      ])(
+        '$timezone: $description → $shouldProcess',
+        async ({ dueDateUTC, cronTimeUTC, shouldProcess }) => {
+          jest.setSystemTime(new Date(cronTimeUTC));
+
+          const mockBill = createMockBill({
+            id: 'bill-tz-test',
+            dueDate: new Date(dueDateUTC),
+          });
+          mockSelectBills([mockBill]);
+
+          const result = await AutoPayService.processAutoPay();
+
+          if (shouldProcess) {
+            expect(result.processed).toBe(1);
+            expect(db.transaction).toHaveBeenCalled();
+          } else {
+            expect(result.processed).toBe(0);
+            expect(db.transaction).not.toHaveBeenCalled();
+          }
+        }
+      );
+    });
   });
 });
-

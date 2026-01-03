@@ -50,7 +50,10 @@ export const AutoPayService = {
    * @returns Summary of processing results
    */
   async processAutoPay(): Promise<AutoPayResult> {
+    // Use endOfDay for broad candidate query (catches weekend adjustments)
     const today = endOfDay(new Date());
+    // Use current moment for eligibility check (timezone-agnostic)
+    const now = new Date();
 
     // Check if auto-log is enabled
     const autoLogAutoPay = await SettingsService.getAutoLogAutoPay();
@@ -99,9 +102,15 @@ export const AutoPayService = {
           effectiveStrategy
         );
 
-        // Compare today against adjusted date (not anchor date) for eligibility
-        if (adjustedDueDate > today) {
+        // Compare current moment against adjusted date (not anchor date) for eligibility
+        // The due date timestamp encodes when the date starts in user's timezone
+        // We only process after that moment has passed (timezone-agnostic)
+        if (adjustedDueDate > now) {
           // Adjusted date hasn't arrived yet, skip this bill
+          logger.debug(
+            { billId: bill.id, adjustedDueDate: adjustedDueDate.toISOString(), now: now.toISOString() },
+            'Skipping bill: due date not yet reached'
+          );
           continue;
         }
 
