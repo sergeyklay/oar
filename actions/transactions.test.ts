@@ -1551,7 +1551,7 @@ describe('getRecentPaymentsStats', () => {
     await getRecentPaymentsStats();
 
     expect(SettingsService.getPaidRecentlyRange).toHaveBeenCalled();
-    expect(TransactionService.getRecentPayments).toHaveBeenCalledWith(14);
+    expect(TransactionService.getRecentPayments).toHaveBeenCalledWith(14, undefined, 0);
   });
 
   it('returns zero count and total when no payments', async () => {

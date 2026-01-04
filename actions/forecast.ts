@@ -8,6 +8,7 @@ import {
   type MonthlyForecastTotal,
 } from '@/lib/services/ForecastService';
 import { getLogger } from '@/lib/logger';
+import { getUserTimezoneOffset } from '@/lib/timezone';
 
 const logger = getLogger('Actions:Forecast');
 
@@ -48,9 +49,11 @@ export async function getForecastData(
   }
 
   try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
     const bills = await ForecastService.getBillsForMonth(
       parsed.data.month,
-      parsed.data.tag
+      parsed.data.tag,
+      userTimezoneOffset
     );
     return {
       success: true,
@@ -83,10 +86,12 @@ export async function getForecastDataForRange(
   }
 
   try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
     const monthlyTotals = await ForecastService.getBillsForMonthRange(
       parsed.data.startMonth,
       parsed.data.months,
-      parsed.data.tag
+      parsed.data.tag,
+      userTimezoneOffset
     );
     return {
       success: true,

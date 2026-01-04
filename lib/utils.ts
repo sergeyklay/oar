@@ -65,30 +65,110 @@ export function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): Q
 }
 
 /**
- * Calculate precise filter boundaries for post-query filtering (UTC+2 aligned).
+ * Calculate precise filter boundaries for post-query filtering.
  *
- * Filter start: Previous month last day at 22:00 UTC.
- * Filter end: Target month last day at 21:59:59.999 UTC.
+ * Filter boundaries determine which timestamps belong to a given calendar month
+ * in the user's local timezone. The boundaries are calculated by offsetting
+ * UTC midnight to match midnight in the user's timezone.
  *
  * @param year - Year number
  * @param month - Month number (1-12)
  * @param boundaries - Month boundary metadata from calculateMonthBoundaries()
+ * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
+ *                          Positive for east (e.g., 1 for UTC+1 Poland)
+ *                          Negative for west (e.g., -5 for UTC-5 New York)
  * @returns Filter boundaries as UTC timestamps (milliseconds)
+ *
+ * @example
+ * // For a user in Poland (UTC+1) viewing January 2026:
+ * const boundaries = calculateMonthBoundaries(2026, 1);
+ * const filter = calculateFilterBoundaries(2026, 1, boundaries, 1);
+ * // filter.filterStartUTC = Dec 31, 2025 23:00:00 UTC (= Jan 1 00:00 Poland)
+ * // filter.filterEndUTC = Jan 31, 2026 22:59:59.999 UTC (= Jan 31 23:59:59.999 Poland)
  */
 export function calculateFilterBoundaries(
   year: number,
   month: number,
-  boundaries: MonthBoundaries
+  boundaries: MonthBoundaries,
+  userOffsetHours: number = 0
 ): FilterBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth } = boundaries;
 
-  // 22:00 UTC = 00:00 next day in UTC+2 (earliest target month start)
-  const filterStartUTC = Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 22, 0, 0, 0);
+  // Calculate the hour in UTC that corresponds to midnight in user's timezone
+  // For UTC+1: midnight local = 23:00 UTC previous day
+  // For UTC-5: midnight local = 05:00 UTC same day
+  // Formula: UTC hour = 24 - offset (mod 24)
+  const midnightUTCHour = (24 - userOffsetHours) % 24;
+
+  // Determine if we need to adjust the date for the start boundary
+  // For positive offsets (east of UTC), midnight local is on previous UTC day
+  // For negative offsets (west of UTC), midnight local is on same or next UTC day
+  let startDay: number;
+  let startMonth: number;
+  let startYear: number;
+
+  if (userOffsetHours > 0) {
+    // East of UTC: target month's midnight is on previous UTC day
+    // e.g., Jan 1 00:00 in UTC+1 = Dec 31 23:00 UTC
+    startDay = lastDayOfPrevMonth;
+    startMonth = prevMonth;
+    startYear = prevMonthYear;
+  } else {
+    // UTC or west of UTC: target month's midnight is on same or later UTC day
+    // e.g., Jan 1 00:00 in UTC-5 = Jan 1 05:00 UTC
+    startDay = 1;
+    startMonth = month;
+    startYear = year;
+  }
+
+  // filterStartUTC: midnight of target month's first day in user's timezone
+  const filterStartUTC = Date.UTC(startYear, startMonth - 1, startDay, midnightUTCHour, 0, 0, 0);
 
   // Get last day of target month
   const lastDayOfTargetMonth = new Date(year, month, 0).getDate();
-  // 21:59:59.999 UTC = 23:59:59.999 previous day in UTC+2 (latest target month end)
-  const filterEndUTC = Date.UTC(year, month - 1, lastDayOfTargetMonth, 21, 59, 59, 999);
+
+  // filterEndUTC: 23:59:59.999 of target month's last day in user's timezone
+  // This is midnightUTCHour - 1 hour (or 23 if midnightUTCHour is 0), minus 1ms
+  let endHour: number;
+  let endDay: number;
+  let endMonth: number;
+  let endYear: number;
+
+  if (userOffsetHours > 0) {
+    // East of UTC: last moment of month is on same UTC day but earlier hour
+    // e.g., Jan 31 23:59:59.999 in UTC+1 = Jan 31 22:59:59.999 UTC
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+    }
+    endDay = lastDayOfTargetMonth;
+    endMonth = month;
+    endYear = year;
+  } else if (userOffsetHours < 0) {
+    // West of UTC: last moment of month spills into next UTC day
+    // e.g., Jan 31 23:59:59.999 in UTC-5 = Feb 1 04:59:59.999 UTC
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+      // Still on same day
+      endDay = lastDayOfTargetMonth;
+      endMonth = month;
+      endYear = year;
+    } else {
+      // Spills into next day
+      endDay = 1;
+      endMonth = boundaries.nextMonth;
+      endYear = boundaries.nextMonthYear;
+    }
+  } else {
+    // UTC: straightforward
+    endHour = 23;
+    endDay = lastDayOfTargetMonth;
+    endMonth = month;
+    endYear = year;
+  }
+
+  const filterEndUTC = Date.UTC(endYear, endMonth - 1, endDay, endHour, 59, 59, 999);
 
   return { filterStartUTC, filterEndUTC };
 }
@@ -103,6 +183,146 @@ export function calculateFilterBoundaries(
 export function isTimestampInMonth(timestamp: Date | number, filterBoundaries: FilterBoundaries): boolean {
   const ts = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   return ts >= filterBoundaries.filterStartUTC && ts <= filterBoundaries.filterEndUTC;
+}
+
+/**
+ * Calculate day filter boundaries for a specific date in the user's timezone.
+ *
+ * This function calculates the UTC timestamps that represent the start and end
+ * of a given day in the user's local timezone. Used for filtering payments
+ * or bills that fall on a specific date.
+ *
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
+ * @returns Object with startUTC and endUTC timestamps in milliseconds
+ *
+ * @example
+ * // For a user in Poland (UTC+1) viewing January 15, 2026:
+ * const boundaries = calculateDayFilterBoundaries('2026-01-15', 1);
+ * // boundaries.startUTC = Jan 14, 2026 23:00:00 UTC (= Jan 15 00:00 Poland)
+ * // boundaries.endUTC = Jan 15, 2026 22:59:59.999 UTC (= Jan 15 23:59:59.999 Poland)
+ */
+export function calculateDayFilterBoundaries(
+  dateStr: string,
+  userOffsetHours: number = 0
+): FilterBoundaries {
+  const [yearStr, monthStr, dayStr] = dateStr.split('-');
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10);
+  const day = parseInt(dayStr, 10);
+
+  // Calculate the hour in UTC that corresponds to midnight in user's timezone
+  const midnightUTCHour = (24 - userOffsetHours) % 24;
+
+  let startDay = day;
+  let startMonth = month;
+  let startYear = year;
+
+  if (userOffsetHours > 0) {
+    // East of UTC: target day's midnight is on previous UTC day
+    // e.g., Jan 15 00:00 in UTC+1 = Jan 14 23:00 UTC
+    if (day === 1) {
+      // Roll back to previous month
+      const prevMonthDate = new Date(year, month - 2, 1); // month-2 because Date uses 0-indexed months
+      startYear = prevMonthDate.getFullYear();
+      startMonth = prevMonthDate.getMonth() + 1;
+      startDay = new Date(year, month - 1, 0).getDate(); // Last day of previous month
+    } else {
+      startDay = day - 1;
+    }
+  }
+
+  const filterStartUTC = Date.UTC(startYear, startMonth - 1, startDay, midnightUTCHour, 0, 0, 0);
+
+  // End is 23:59:59.999 of the target day in user's timezone
+  let endHour: number;
+  let endDay = day;
+  let endMonth = month;
+  let endYear = year;
+
+  if (userOffsetHours > 0) {
+    // East of UTC: last moment of day is on same UTC day but earlier hour
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+    }
+  } else if (userOffsetHours < 0) {
+    // West of UTC: last moment of day spills into next UTC day
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+    } else {
+      // Spills into next day
+      const nextDayDate = new Date(year, month - 1, day + 1);
+      endDay = nextDayDate.getDate();
+      endMonth = nextDayDate.getMonth() + 1;
+      endYear = nextDayDate.getFullYear();
+    }
+  } else {
+    // UTC: straightforward
+    endHour = 23;
+  }
+
+  const filterEndUTC = Date.UTC(endYear, endMonth - 1, endDay, endHour, 59, 59, 999);
+
+  return { filterStartUTC, filterEndUTC };
+}
+
+/**
+ * Calculate year filter boundaries for the user's timezone.
+ *
+ * @param year - Year number (e.g., 2025)
+ * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
+ * @returns Object with startUTC and endUTC timestamps in milliseconds
+ */
+export function calculateYearFilterBoundaries(
+  year: number,
+  userOffsetHours: number = 0
+): FilterBoundaries {
+  // Calculate midnight UTC hour for user's timezone
+  const midnightUTCHour = (24 - userOffsetHours) % 24;
+
+  let startYear = year;
+  let startMonth = 1;
+  let startDay = 1;
+
+  if (userOffsetHours > 0) {
+    // East of UTC: Jan 1 00:00 local = Dec 31 previous year in UTC
+    startYear = year - 1;
+    startMonth = 12;
+    startDay = 31;
+  }
+
+  const filterStartUTC = Date.UTC(startYear, startMonth - 1, startDay, midnightUTCHour, 0, 0, 0);
+
+  // End is Dec 31 23:59:59.999 of target year
+  let endYear = year;
+  let endMonth = 12;
+  let endDay = 31;
+  let endHour: number;
+
+  if (userOffsetHours > 0) {
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+    }
+  } else if (userOffsetHours < 0) {
+    endHour = midnightUTCHour - 1;
+    if (endHour < 0) {
+      endHour = 23;
+    } else {
+      // Spills into next year
+      endYear = year + 1;
+      endMonth = 1;
+      endDay = 1;
+    }
+  } else {
+    endHour = 23;
+  }
+
+  const filterEndUTC = Date.UTC(endYear, endMonth - 1, endDay, endHour, 59, 59, 999);
+
+  return { filterStartUTC, filterEndUTC };
 }
 
 /**

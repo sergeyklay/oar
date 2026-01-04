@@ -15,6 +15,16 @@ global.console = {
 };
 
 /**
+ * Mock the timezone module to avoid calling cookies() outside request scope.
+ * Returns UTC (offset=0) by default. Tests can override using jest.mocked().
+ */
+jest.mock('@/lib/timezone', () => ({
+  TIMEZONE_COOKIE_NAME: 'oar-tz-offset',
+  DEFAULT_TIMEZONE_OFFSET_HOURS: 0,
+  getUserTimezoneOffset: jest.fn().mockResolvedValue(0),
+}));
+
+/**
  * Mock ResizeObserver for Radix UI components and other UI libraries.
  */
 global.ResizeObserver = class ResizeObserver {

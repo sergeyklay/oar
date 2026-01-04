@@ -760,7 +760,7 @@ describe('ForecastService', () => {
       expect(result[0].totalToSave).toBe(5000);
       expect(result[0].grandTotal).toBe(35000);
       expect(getBillsForMonthSpy).toHaveBeenCalledTimes(1);
-      expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', undefined);
+      expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', undefined, 0);
     });
 
     it('returns monthly totals for 12 months', async () => {
@@ -795,7 +795,7 @@ describe('ForecastService', () => {
 
       await ForecastService.getBillsForMonthRange('2025-03', 1, 'utilities');
 
-      expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', 'utilities');
+      expect(getBillsForMonthSpy).toHaveBeenCalledWith('2025-03', 'utilities', 0);
     });
 
     it('handles year boundary correctly', async () => {
