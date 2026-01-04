@@ -269,7 +269,7 @@ export function calculateDayFilterBoundaries(
 }
 
 /**
- * Calculate year filter boundaries for the user's timezone.
+ * Calculate the year filter boundaries for the user's timezone.
  *
  * @param year - Year number (e.g., 2025)
  * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
