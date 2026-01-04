@@ -5,9 +5,6 @@ import {
   DEFAULT_TIMEZONE_OFFSET_HOURS,
 } from './constants';
 
-// Re-export constants for backwards compatibility
-export { TIMEZONE_COOKIE_NAME, DEFAULT_TIMEZONE_OFFSET_HOURS };
-
 /**
  * Get the user's timezone offset from the cookie.
  *
