@@ -2,149 +2,12 @@ import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
 import { startOfDay, endOfDay, subDays, parse, isValid, format, addMonths, parseISO } from 'date-fns';
 import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
-
-/**
- * Helper functions for timezone-aware month boundary calculations.
- *
- * These functions implement a two-phase approach to handle timezone boundaries:
- * 1. Extended query boundaries: Fetch a wide range of transactions that could
- *    potentially belong to the target month in any timezone (UTC-12 to UTC+14)
- * 2. Post-query filtering: Filter results to include only payments that truly
- *    fall within the target month's boundaries
- *
- * This approach ensures payments logged at month boundaries (e.g., Oct 1 00:00
- * in UTC+2 = Sept 30 22:00 UTC) appear in the correct month regardless of
- * server timezone.
- */
-
-interface MonthBoundaries {
-  prevMonth: number;
-  prevMonthYear: number;
-  nextMonth: number;
-  nextMonthYear: number;
-  lastDayOfPrevMonth: number;
-}
-
-interface QueryBoundaries {
-  queryStart: Date;
-  queryEnd: Date;
-}
-
-interface FilterBoundaries {
-  filterStartUTC: number;
-  filterEndUTC: number;
-}
-
-/**
- * Calculates month boundary metadata for a given year and month.
- *
- * Handles year boundaries (January wraps to previous year, December wraps to next year)
- * and calculates the last day of the previous month (handles leap years and variable
- * month lengths).
- *
- * @param year - Year number (e.g., 2025)
- * @param month - Month number (1-12, where 1 = January, 12 = December)
- * @returns Month boundary metadata including previous/next month info
- */
-function calculateMonthBoundaries(year: number, month: number): MonthBoundaries {
-  const prevMonth = month === 1 ? 12 : month - 1;
-  const prevMonthYear = month === 1 ? year - 1 : year;
-  const nextMonth = month === 12 ? 1 : month + 1;
-  const nextMonthYear = month === 12 ? year + 1 : year;
-  const lastDayOfPrevMonth = new Date(prevMonthYear, prevMonth, 0).getDate();
-
-  return {
-    prevMonth,
-    prevMonthYear,
-    nextMonth,
-    nextMonthYear,
-    lastDayOfPrevMonth,
-  };
-}
-
-/**
- * Calculates extended query boundaries to catch all timezone offsets.
- *
- * Uses UTC boundaries that account for the maximum possible timezone offsets:
- * - UTC+14 (Line Islands, Kiribati): 1st of target month 00:00:00 local =
- *   last day of previous month 10:00:00 UTC
- * - UTC-12 (Baker Island, Howland Island): Last day of target month 23:59:59 local =
- *   1st of next month 11:59:59.999 UTC
- *
- * This ensures we fetch all transactions that could potentially belong to the
- * target month in any timezone, then filter them in memory.
- *
- * @param boundaries - Month boundary metadata
- * @returns Extended query boundaries as UTC Date objects
- */
-function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): QueryBoundaries {
-  const { prevMonthYear, prevMonth, lastDayOfPrevMonth, nextMonthYear, nextMonth } = boundaries;
-
-  const queryStart = parseISO(
-    `${prevMonthYear}-${String(prevMonth).padStart(2, '0')}-${String(lastDayOfPrevMonth).padStart(2, '0')}T10:00:00.000Z`
-  );
-  const queryEnd = parseISO(
-    `${nextMonthYear}-${String(nextMonth).padStart(2, '0')}-01T11:59:59.999Z`
-  );
-
-  return { queryStart, queryEnd };
-}
-
-/**
- * Calculates precise filter boundaries for post-query filtering.
- *
- * After fetching transactions with extended boundaries, we filter them to exclude
- * payments clearly outside the target month. The filter uses UTC timestamps to
- * determine if a payment could represent the target month in UTC+2 timezone.
- *
- * Filter boundaries (matching the specification):
- * - Start: Previous month last day at 22:00 UTC (earliest target month start in UTC+2, inclusive)
- * - End: Target month last day at 21:59:59.999 UTC (latest target month end in UTC+2, exclusive of next month start)
- *
- * The 22:00 UTC start and 21:59:59.999 UTC end account for UTC+2, where:
- * - Midnight local time = 22:00 UTC the previous day
- * - 23:59:59.999 local time = 21:59:59.999 UTC the same day
- * - This catches payments logged on month boundaries in timezones ahead of UTC
- *   while excluding payments clearly in adjacent months (e.g., Sept 30 22:00 UTC = Oct 1 in UTC+2, excluded from Sept)
- *
- * @param year - Year number
- * @param month - Month number (1-12)
- * @param boundaries - Month boundary metadata
- * @returns Filter boundaries as UTC timestamps (milliseconds)
- */
-function calculateFilterBoundaries(
-  year: number,
-  month: number,
-  boundaries: MonthBoundaries
-): FilterBoundaries {
-  const { prevMonthYear, prevMonth, lastDayOfPrevMonth } = boundaries;
-
-  // 22:00 UTC = 00:00 next day in UTC+2 (earliest target month start)
-  const filterStartUTC = Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 22, 0, 0, 0);
-
-  // Get last day of target month
-  const lastDayOfTargetMonth = new Date(year, month, 0).getDate();
-  // 21:59:59.999 UTC = 23:59:59.999 previous day in UTC+2 (latest target month end)
-  // This is one millisecond before 22:00 UTC, which is the start of the next month in UTC+2
-  // Date.UTC months are 0-indexed (0=Jan, 9=Oct, 11=Dec)
-  const filterEndUTC = Date.UTC(year, month - 1, lastDayOfTargetMonth, 21, 59, 59, 999);
-
-  return { filterStartUTC, filterEndUTC };
-}
-
-/**
- * Checks if a payment timestamp falls within the target month's filter boundaries.
- *
- * Handles both Date objects and numeric timestamps (milliseconds since epoch).
- *
- * @param paidAt - Payment timestamp (Date object or number in milliseconds)
- * @param filterBoundaries - Filter boundaries for the target month
- * @returns True if payment falls within the month boundaries, false otherwise
- */
-function isPaymentInMonth(paidAt: Date | number, filterBoundaries: FilterBoundaries): boolean {
-  const timestamp = paidAt instanceof Date ? paidAt.getTime() : paidAt;
-  return timestamp >= filterBoundaries.filterStartUTC && timestamp <= filterBoundaries.filterEndUTC;
-}
+import {
+  calculateMonthBoundaries,
+  calculateExtendedQueryBoundaries,
+  calculateFilterBoundaries,
+  isTimestampInMonth,
+} from '@/lib/utils';
 
 /**
  * Service for transaction-related operations.
@@ -349,7 +212,7 @@ export const TransactionService = {
       )
       .orderBy(desc(transactions.paidAt));
 
-    return results.filter((payment) => isPaymentInMonth(payment.paidAt, filterBoundaries));
+    return results.filter((payment) => isTimestampInMonth(payment.paidAt, filterBoundaries));
   },
 
   /**
@@ -432,7 +295,7 @@ export const TransactionService = {
       .where(and(...conditions))
       .orderBy(desc(transactions.paidAt));
 
-    return results.filter((payment) => isPaymentInMonth(payment.paidAt, filterBoundaries));
+    return results.filter((payment) => isTimestampInMonth(payment.paidAt, filterBoundaries));
   },
 
   /**
@@ -516,7 +379,7 @@ export const TransactionService = {
         .innerJoin(bills, eq(transactions.billId, bills.id))
         .where(and(...conditions));
 
-      const filtered = results.filter((tx) => isPaymentInMonth(tx.paidAt, filterBoundaries));
+      const filtered = results.filter((tx) => isTimestampInMonth(tx.paidAt, filterBoundaries));
 
       const totalPaid = filtered.reduce((sum, tx) => sum + tx.amount, 0);
       const monthLabel = format(currentMonth, 'MMM');
