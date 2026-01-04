@@ -163,3 +163,19 @@ export const PAYMENT_MODE_LABELS = {
   auto: 'Auto',
   manual: 'Manual',
 } as const;
+
+/**
+ * Cookie name for storing the user's timezone offset.
+ *
+ * The value stored is the offset in hours from UTC (e.g., 1 for UTC+1, -5 for UTC-5).
+ * This is set by the TimezoneProvider client component on mount.
+ */
+export const TIMEZONE_COOKIE_NAME = 'oar-tz-offset';
+
+/**
+ * Default timezone offset (UTC) used when no cookie is available.
+ *
+ * UTC is a safe fallback that works correctly for users in any timezone,
+ * though month boundaries will align to UTC midnight instead of local midnight.
+ */
+export const DEFAULT_TIMEZONE_OFFSET_HOURS = 0;
