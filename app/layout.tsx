@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { Toaster } from '@/components/ui/sonner';
+import { TimezoneProvider } from '@/components/common/TimezoneProvider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
+        <TimezoneProvider />
         <NuqsAdapter>{children}</NuqsAdapter>
         <Toaster position="bottom-right" />
       </body>

@@ -46,7 +46,7 @@ describe('getForecastData', () => {
     if (result.success) {
       expect(result.data).toEqual(mockForecastBills);
     }
-    expect(ForecastService.getBillsForMonth).toHaveBeenCalledWith('2025-03', undefined);
+    expect(ForecastService.getBillsForMonth).toHaveBeenCalledWith('2025-03', undefined, 0);
   });
 
   it('passes tag filter when provided', async () => {
@@ -55,7 +55,7 @@ describe('getForecastData', () => {
     const result = await getForecastData({ month: '2025-03', tag: 'utilities' });
 
     expect(result.success).toBe(true);
-    expect(ForecastService.getBillsForMonth).toHaveBeenCalledWith('2025-03', 'utilities');
+    expect(ForecastService.getBillsForMonth).toHaveBeenCalledWith('2025-03', 'utilities', 0);
   });
 
   it('returns error for invalid month format', async () => {
@@ -186,7 +186,8 @@ describe('getForecastDataForRange', () => {
     expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
       '2025-03',
       12,
-      undefined
+      undefined,
+      0
     );
   });
 
@@ -205,7 +206,8 @@ describe('getForecastDataForRange', () => {
     expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
       '2025-03',
       12,
-      'utilities'
+      'utilities',
+      0
     );
   });
 
@@ -222,7 +224,8 @@ describe('getForecastDataForRange', () => {
     expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
       '2025-03',
       12,
-      undefined
+      undefined,
+      0
     );
   });
 
@@ -331,7 +334,8 @@ describe('getForecastDataForRange', () => {
       expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
         '2025-03',
         months,
-        undefined
+        undefined,
+        0
       );
     }
   });

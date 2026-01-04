@@ -20,8 +20,10 @@ declare global {
   var __oar_scheduler: CronJob[] | undefined;
 }
 
-// TODO: Add timezone support - currently uses server time (UTC)
-// Future: Allow users to configure timezone via SettingsService
+// TODO: Allow users to configure timezone via SettingsService, currently uses server time (UTC):
+// 1. Store the preferred cron timezone in SettingsService
+// 2. Read it during SchedulerService.init()
+// 3. Pass it to new CronJob({ timeZone: ... })
 const DEFAULT_TIMEZONE = 'UTC';
 
 /**

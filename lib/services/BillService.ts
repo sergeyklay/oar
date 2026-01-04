@@ -34,6 +34,12 @@ export interface GetBillsOptions {
   archivedOnly?: boolean;
   /** Whether to include automatic bills in Due Soon and Due This Month views (default: true) */
   includeAutoPayInDueSoon?: boolean;
+  /**
+   * User's timezone offset in hours from UTC.
+   * Positive for east (e.g., 1 for UTC+1), negative for west (e.g., -5 for UTC-5).
+   * Used for accurate month boundary filtering.
+   */
+  userTimezoneOffset?: number;
 }
 
 /**
@@ -168,6 +174,7 @@ export const BillService = {
       includeArchived = false,
       archivedOnly = false,
       includeAutoPayInDueSoon = true,
+      userTimezoneOffset = 0,
     } = options;
 
     const conditions = [];
@@ -215,7 +222,7 @@ export const BillService = {
       // Calculate timezone-aware boundaries
       const boundaries = calculateMonthBoundaries(year, monthNum);
       const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-      const filterBoundaries = calculateFilterBoundaries(year, monthNum, boundaries);
+      const filterBoundaries = calculateFilterBoundaries(year, monthNum, boundaries, userTimezoneOffset);
 
       // Check if viewing current month (for overdue inclusion)
       const today = startOfDay(new Date());

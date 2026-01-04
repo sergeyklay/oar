@@ -5,9 +5,9 @@ import { RightPanel } from '@/components/layout/RightPanel';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { PaidRecentlyList } from '@/components/features/payments';
 import { SettingsService } from '@/lib/services/SettingsService';
-import { TransactionService } from '@/lib/services/TransactionService';
 import { getTags } from '@/actions/tags';
 import { getCategoriesGrouped, getDefaultCategoryId } from '@/actions/categories';
+import { getRecentPayments, getPaymentsByDate } from '@/actions/transactions';
 import { getCurrencySymbol } from '@/lib/money';
 import { searchParamsCache } from '@/lib/search-params';
 import { getPaymentDatesForMonth } from '@/actions/calendar';
@@ -32,9 +32,12 @@ export default async function PaidRecentlyPage({
   ]);
   const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
-  const payments = date
-    ? await TransactionService.getPaymentsByDate(date, tag ?? undefined)
-    : await TransactionService.getRecentPayments(paidRecentlyRange, tag ?? undefined);
+  // Use server actions to get timezone-aware payment data
+  const paymentsResult = date
+    ? await getPaymentsByDate({ date, tag: tag ?? undefined })
+    : await getRecentPayments({ days: paidRecentlyRange, tag: tag ?? undefined });
+
+  const payments = paymentsResult.success ? paymentsResult.data ?? [] : [];
 
   return (
     <AppShellClient>

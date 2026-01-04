@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { ActionResult, PaymentWithBill, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { getLogger } from '@/lib/logger';
+import { getUserTimezoneOffset } from '@/lib/timezone';
 
 const logger = getLogger('Actions:History');
 
@@ -49,9 +50,11 @@ export async function getMonthlyHistoryData(
   }
 
   try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
     const payments = await TransactionService.getPaymentsByMonth(
       parsed.data.month,
-      parsed.data.tag
+      parsed.data.tag,
+      userTimezoneOffset
     );
     return {
       success: true,
@@ -84,10 +87,12 @@ export async function getMonthlyHistoryChartData(
   }
 
   try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
     const monthlyTotals = await TransactionService.getMonthlyPaymentTotals(
       parsed.data.startMonth,
       parsed.data.months,
-      parsed.data.tag
+      parsed.data.tag,
+      userTimezoneOffset
     );
     return {
       success: true,
@@ -120,8 +125,10 @@ export async function getAnnualSpendingData(
   }
 
   try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
     const aggregatedData = await TransactionService.getPaymentsByYearAggregatedByBill(
-      parsed.data.year
+      parsed.data.year,
+      userTimezoneOffset
     );
     return {
       success: true,

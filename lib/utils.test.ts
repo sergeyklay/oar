@@ -468,44 +468,97 @@ describe('calculateExtendedQueryBoundaries', () => {
 });
 
 describe('calculateFilterBoundaries', () => {
-  it('calculates January 2026 filter boundaries', () => {
-    const boundaries = calculateMonthBoundaries(2026, 1);
-    const result = calculateFilterBoundaries(2026, 1, boundaries);
+  describe('with UTC (default, offset=0)', () => {
+    it('calculates January 2026 filter boundaries for UTC', () => {
+      const boundaries = calculateMonthBoundaries(2026, 1);
+      const result = calculateFilterBoundaries(2026, 1, boundaries);
 
-    expect(result.filterStartUTC).toBe(Date.UTC(2025, 11, 31, 22, 0, 0, 0));
-    expect(result.filterEndUTC).toBe(Date.UTC(2026, 0, 31, 21, 59, 59, 999));
+      // Start: Jan 1 00:00 UTC
+      expect(result.filterStartUTC).toBe(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
+      // End: Jan 31 23:59:59.999 UTC
+      expect(result.filterEndUTC).toBe(Date.UTC(2026, 0, 31, 23, 59, 59, 999));
+    });
   });
 
-  it('calculates February 2026 filter boundaries', () => {
-    const boundaries = calculateMonthBoundaries(2026, 2);
-    const result = calculateFilterBoundaries(2026, 2, boundaries);
+  describe('with UTC+2 (offset=2)', () => {
+    it('calculates January 2026 filter boundaries for UTC+2', () => {
+      const boundaries = calculateMonthBoundaries(2026, 1);
+      const result = calculateFilterBoundaries(2026, 1, boundaries, 2);
 
-    expect(result.filterStartUTC).toBe(Date.UTC(2026, 0, 31, 22, 0, 0, 0));
-    expect(result.filterEndUTC).toBe(Date.UTC(2026, 1, 28, 21, 59, 59, 999));
+      // Start: Dec 31 22:00 UTC = Jan 1 00:00 in UTC+2
+      expect(result.filterStartUTC).toBe(Date.UTC(2025, 11, 31, 22, 0, 0, 0));
+      // End: Jan 31 21:59:59.999 UTC = Jan 31 23:59:59.999 in UTC+2
+      expect(result.filterEndUTC).toBe(Date.UTC(2026, 0, 31, 21, 59, 59, 999));
+    });
+
+    it('calculates February 2026 filter boundaries for UTC+2', () => {
+      const boundaries = calculateMonthBoundaries(2026, 2);
+      const result = calculateFilterBoundaries(2026, 2, boundaries, 2);
+
+      // Start: Jan 31 22:00 UTC = Feb 1 00:00 in UTC+2
+      expect(result.filterStartUTC).toBe(Date.UTC(2026, 0, 31, 22, 0, 0, 0));
+      // End: Feb 28 21:59:59.999 UTC = Feb 28 23:59:59.999 in UTC+2
+      expect(result.filterEndUTC).toBe(Date.UTC(2026, 1, 28, 21, 59, 59, 999));
+    });
+  });
+
+  describe('with UTC-5 (offset=-5, New York)', () => {
+    it('calculates January 2026 filter boundaries for New York', () => {
+      const boundaries = calculateMonthBoundaries(2026, 1);
+      const result = calculateFilterBoundaries(2026, 1, boundaries, -5);
+
+      // Start: Jan 1 05:00 UTC = Jan 1 00:00 in UTC-5
+      expect(result.filterStartUTC).toBe(Date.UTC(2026, 0, 1, 5, 0, 0, 0));
+      // End: Feb 1 04:59:59.999 UTC = Jan 31 23:59:59.999 in UTC-5
+      expect(result.filterEndUTC).toBe(Date.UTC(2026, 1, 1, 4, 59, 59, 999));
+    });
+  });
+
+  describe('with UTC+9 (offset=9, Japan)', () => {
+    it('calculates January 2026 filter boundaries for Japan', () => {
+      const boundaries = calculateMonthBoundaries(2026, 1);
+      const result = calculateFilterBoundaries(2026, 1, boundaries, 9);
+
+      // Start: Dec 31 15:00 UTC = Jan 1 00:00 in UTC+9
+      expect(result.filterStartUTC).toBe(Date.UTC(2025, 11, 31, 15, 0, 0, 0));
+      // End: Jan 31 14:59:59.999 UTC = Jan 31 23:59:59.999 in UTC+9
+      expect(result.filterEndUTC).toBe(Date.UTC(2026, 0, 31, 14, 59, 59, 999));
+    });
   });
 });
 
 describe('isTimestampInMonth', () => {
+  // Tests with UTC+2 (Poland) to maintain original regression test coverage
   const januaryBoundaries = calculateMonthBoundaries(2026, 1);
-  const januaryFilterBoundaries = calculateFilterBoundaries(2026, 1, januaryBoundaries);
+  const januaryFilterBoundaries = calculateFilterBoundaries(2026, 1, januaryBoundaries, 2);
 
-  describe('regression: timezone boundary bug fix', () => {
+  describe('regression: timezone boundary bug fix (UTC+2)', () => {
     it('excludes Feb 1 00:00 UTC+1 (stored as Jan 31 23:00 UTC) from January', () => {
+      // This timestamp is Feb 1 in UTC+1 (Poland), so should be in February not January
+      // With UTC+2 alignment, Jan ends at Jan 31 21:59:59.999 UTC
+      // Jan 31 23:00 UTC is AFTER this cutoff, so it's correctly excluded
       const feb1MidnightPoland = Date.UTC(2026, 0, 31, 23, 0, 0, 0);
 
       expect(isTimestampInMonth(feb1MidnightPoland, januaryFilterBoundaries)).toBe(false);
     });
 
     it('excludes Feb 1 00:00 UTC+2 (stored as Jan 31 22:00 UTC) from January', () => {
-      const feb1MidnightWarsaw = Date.UTC(2026, 0, 31, 22, 0, 0, 0);
+      // This is the exact start of February in UTC+2
+      const feb1MidnightUTC2 = Date.UTC(2026, 0, 31, 22, 0, 0, 0);
 
-      expect(isTimestampInMonth(feb1MidnightWarsaw, januaryFilterBoundaries)).toBe(false);
+      expect(isTimestampInMonth(feb1MidnightUTC2, januaryFilterBoundaries)).toBe(false);
+
+      // And it should be included in February
+      const februaryBoundaries = calculateMonthBoundaries(2026, 2);
+      const februaryFilterBoundaries = calculateFilterBoundaries(2026, 2, februaryBoundaries, 2);
+      expect(isTimestampInMonth(feb1MidnightUTC2, februaryFilterBoundaries)).toBe(true);
     });
 
     it('includes Jan 31 23:59 UTC+2 (stored as Jan 31 21:59 UTC) in January', () => {
-      const jan31LastSecondWarsaw = Date.UTC(2026, 0, 31, 21, 59, 59, 999);
+      // Last moment of January in UTC+2
+      const jan31LastSecondUTC2 = Date.UTC(2026, 0, 31, 21, 59, 59, 999);
 
-      expect(isTimestampInMonth(jan31LastSecondWarsaw, januaryFilterBoundaries)).toBe(true);
+      expect(isTimestampInMonth(jan31LastSecondUTC2, januaryFilterBoundaries)).toBe(true);
     });
   });
 
@@ -521,10 +574,18 @@ describe('isTimestampInMonth', () => {
     expect(isTimestampInMonth(jan1MidnightPoland, januaryFilterBoundaries)).toBe(true);
   });
 
-  it('excludes Dec 31 23:59 UTC+1 (stored as Dec 31 22:59 UTC) from January', () => {
-    const dec31NightPoland = Date.UTC(2025, 11, 31, 21, 59, 59, 999);
+  it('includes Jan 1 00:00 UTC+2 (stored as Dec 31 22:00 UTC) in January', () => {
+    // Exact start of January in UTC+2 (filter start boundary)
+    const jan1MidnightUTC2 = Date.UTC(2025, 11, 31, 22, 0, 0, 0);
 
-    expect(isTimestampInMonth(dec31NightPoland, januaryFilterBoundaries)).toBe(false);
+    expect(isTimestampInMonth(jan1MidnightUTC2, januaryFilterBoundaries)).toBe(true);
+  });
+
+  it('excludes Dec 31 23:59 UTC+2 (stored as Dec 31 21:59 UTC) from January', () => {
+    // This is still December 31 in UTC+2, should not be in January
+    const dec31NightUTC2 = Date.UTC(2025, 11, 31, 21, 59, 59, 999);
+
+    expect(isTimestampInMonth(dec31NightUTC2, januaryFilterBoundaries)).toBe(false);
   });
 
   it('accepts Date objects as input', () => {

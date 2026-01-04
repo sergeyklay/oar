@@ -11,6 +11,7 @@ import { BillService, type GetBillsOptions } from '@/lib/services/BillService';
 import { RecurrenceService } from '@/lib/services/RecurrenceService';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { getLogger } from '@/lib/logger';
+import { getUserTimezoneOffset } from '@/lib/timezone';
 
 const logger = getLogger('Actions:Bills');
 
@@ -168,7 +169,8 @@ export async function getBills(includeArchived = false) {
 export async function getBillsFiltered(
   options: GetBillsOptions = {}
 ): Promise<BillWithTags[]> {
-  return BillService.getFiltered(options);
+  const userTimezoneOffset = await getUserTimezoneOffset();
+  return BillService.getFiltered({ ...options, userTimezoneOffset });
 }
 
 /** Validation schema for bill search input. */
@@ -240,10 +242,14 @@ export async function getBillsForCurrentMonthStats(): Promise<{
   hasVariable: boolean;
 }> {
   const currentMonth = format(new Date(), 'yyyy-MM');
-  const includeAutoPay = await SettingsService.getIncludeAutoPayInDueSoon();
+  const [includeAutoPay, userTimezoneOffset] = await Promise.all([
+    SettingsService.getIncludeAutoPayInDueSoon(),
+    getUserTimezoneOffset(),
+  ]);
   const bills = await BillService.getFiltered({
     month: currentMonth,
     includeAutoPayInDueSoon: includeAutoPay,
+    userTimezoneOffset,
   });
 
   const count = bills.length;
@@ -263,7 +269,8 @@ export async function getBillsForCurrentMonthStats(): Promise<{
 export async function getAllBillsStats(): Promise<{
   count: number;
 }> {
-  const bills = await BillService.getFiltered({});
+  const userTimezoneOffset = await getUserTimezoneOffset();
+  const bills = await BillService.getFiltered({ userTimezoneOffset });
   return { count: bills.length };
 }
 
@@ -279,13 +286,15 @@ export async function getBillsForDueSoonStats(): Promise<{
   total: number;
   hasVariable: boolean;
 }> {
-  const [range, includeAutoPay] = await Promise.all([
+  const [range, includeAutoPay, userTimezoneOffset] = await Promise.all([
     SettingsService.getDueSoonRange(),
     SettingsService.getIncludeAutoPayInDueSoon(),
+    getUserTimezoneOffset(),
   ]);
   const bills = await BillService.getFiltered({
     dateRange: range,
     includeAutoPayInDueSoon: includeAutoPay,
+    userTimezoneOffset,
   });
 
   const count = bills.length;
@@ -305,7 +314,8 @@ export async function getBillsForDueSoonStats(): Promise<{
 export async function getArchivedBillsStats(): Promise<{
   count: number;
 }> {
-  const archivedBills = await BillService.getFiltered({ archivedOnly: true });
+  const userTimezoneOffset = await getUserTimezoneOffset();
+  const archivedBills = await BillService.getFiltered({ archivedOnly: true, userTimezoneOffset });
   return { count: archivedBills.length };
 }
 

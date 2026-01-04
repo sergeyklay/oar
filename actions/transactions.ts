@@ -6,9 +6,11 @@ import { startOfDay } from 'date-fns';
 import { db, bills, transactions } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 import type { Transaction } from '@/db/schema';
+import type { PaymentWithBill } from '@/lib/types';
 import { PaymentService } from '@/lib/services/PaymentService';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { SettingsService } from '@/lib/services/SettingsService';
+import { getUserTimezoneOffset } from '@/lib/timezone';
 import { getLogger } from '@/lib/logger';
 
 const logger = getLogger('Actions:Transactions');
@@ -177,13 +179,106 @@ export async function getRecentPaymentsStats(): Promise<{
   count: number;
   total: number;
 }> {
-  const range = await SettingsService.getPaidRecentlyRange();
-  const payments = await TransactionService.getRecentPayments(range);
+  const [range, userTimezoneOffset] = await Promise.all([
+    SettingsService.getPaidRecentlyRange(),
+    getUserTimezoneOffset(),
+  ]);
+  const payments = await TransactionService.getRecentPayments(
+    range,
+    undefined,
+    userTimezoneOffset
+  );
 
   const count = payments.length;
   const total = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
   return { count, total };
+}
+
+/** Validation schema for recent payments query. */
+const recentPaymentsQuerySchema = z.object({
+  days: z.coerce.number().int().min(0).max(365),
+  tag: z.string().optional(),
+});
+
+/**
+ * Fetches recent payments within the specified lookback period.
+ *
+ * @param input - Query parameters (days, optional tag)
+ * @returns Action result with payments array or error
+ */
+export async function getRecentPayments(
+  input: z.infer<typeof recentPaymentsQuerySchema>
+): Promise<ActionResult<PaymentWithBill[]>> {
+  const parsed = recentPaymentsQuerySchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Invalid recent payments query parameters',
+    };
+  }
+
+  try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
+    const payments = await TransactionService.getRecentPayments(
+      parsed.data.days,
+      parsed.data.tag,
+      userTimezoneOffset
+    );
+    return {
+      success: true,
+      data: payments,
+    };
+  } catch (error) {
+    logger.error(error, 'Failed to fetch recent payments');
+    return {
+      success: false,
+      error: 'Failed to fetch recent payments',
+    };
+  }
+}
+
+/** Validation schema for payments by date query. */
+const paymentsByDateQuerySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  tag: z.string().optional(),
+});
+
+/**
+ * Fetches all payments made on a specific date.
+ *
+ * @param input - Query parameters (date in YYYY-MM-DD format, optional tag)
+ * @returns Action result with payments array or error
+ */
+export async function getPaymentsByDate(
+  input: z.infer<typeof paymentsByDateQuerySchema>
+): Promise<ActionResult<PaymentWithBill[]>> {
+  const parsed = paymentsByDateQuerySchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: 'Invalid date query parameters',
+    };
+  }
+
+  try {
+    const userTimezoneOffset = await getUserTimezoneOffset();
+    const payments = await TransactionService.getPaymentsByDate(
+      parsed.data.date,
+      parsed.data.tag,
+      userTimezoneOffset
+    );
+    return {
+      success: true,
+      data: payments,
+    };
+  } catch (error) {
+    logger.error(error, 'Failed to fetch payments by date');
+    return {
+      success: false,
+      error: 'Failed to fetch payments by date',
+    };
+  }
 }
 
 /**

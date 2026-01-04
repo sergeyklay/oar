@@ -1,11 +1,13 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
-import { startOfDay, endOfDay, subDays, parse, isValid, format, addMonths, parseISO } from 'date-fns';
+import { parse, isValid, format, addMonths, parseISO } from 'date-fns';
 import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
 import {
   calculateMonthBoundaries,
   calculateExtendedQueryBoundaries,
   calculateFilterBoundaries,
+  calculateDayFilterBoundaries,
+  calculateYearFilterBoundaries,
   isTimestampInMonth,
 } from '@/lib/utils';
 
@@ -16,14 +18,42 @@ export const TransactionService = {
   /**
    * Fetches recent payments within the specified lookback period, optionally filtered by bill tag.
    *
+   * Uses timezone-aware date boundaries to correctly identify payments from the last N days
+   * in the user's local timezone, avoiding issues where payments near midnight appear in
+   * wrong date ranges.
+   *
    * @param days - Number of days to look back (0 = today only, 7 = last 7 days)
    * @param tag - Optional tag slug for filtering
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Payments with bill information and category icons, ordered by paidAt descending
    */
-  async getRecentPayments(days: number, tag?: string): Promise<PaymentWithBill[]> {
+  async getRecentPayments(
+    days: number,
+    tag?: string,
+    userTimezoneOffset: number = 0
+  ): Promise<PaymentWithBill[]> {
     const now = new Date();
-    const endDate = endOfDay(now);
-    const startDate = days === 0 ? startOfDay(now) : startOfDay(subDays(now, days));
+    const todayStr = format(now, 'yyyy-MM-dd');
+
+    // Calculate today's boundaries in user's timezone
+    const todayBoundaries = calculateDayFilterBoundaries(todayStr, userTimezoneOffset);
+
+    // For lookback, we need to go back N days
+    // Calculate the start date string
+    let startBoundaries: { filterStartUTC: number; filterEndUTC: number };
+    if (days === 0) {
+      startBoundaries = todayBoundaries;
+    } else {
+      // Go back N days
+      const startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - days);
+      const startDateStr = format(startDate, 'yyyy-MM-dd');
+      startBoundaries = calculateDayFilterBoundaries(startDateStr, userTimezoneOffset);
+    }
+
+    // Query range: from start of lookback period to end of today
+    const queryStart = new Date(startBoundaries.filterStartUTC);
+    const queryEnd = new Date(todayBoundaries.filterEndUTC);
 
     let billIds: string[] | undefined;
     if (tag) {
@@ -49,8 +79,8 @@ export const TransactionService = {
     }
 
     const conditions = [
-      gte(transactions.paidAt, startDate),
-      lte(transactions.paidAt, endDate),
+      gte(transactions.paidAt, queryStart),
+      lte(transactions.paidAt, queryEnd),
     ];
 
     if (billIds) {
@@ -78,18 +108,29 @@ export const TransactionService = {
   /**
    * Fetches all payments made on a specific date, optionally filtered by bill tag.
    *
+   * Uses timezone-aware date boundaries to correctly identify payments made on the
+   * target date in the user's local timezone.
+   *
    * @param date - Date string in YYYY-MM-DD format
    * @param tag - Optional tag slug for filtering
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Payments with bill information and category icons, ordered by paidAt descending
    * @throws Error if date string is invalid or cannot be parsed
    */
-  async getPaymentsByDate(date: string, tag?: string): Promise<PaymentWithBill[]> {
+  async getPaymentsByDate(
+    date: string,
+    tag?: string,
+    userTimezoneOffset: number = 0
+  ): Promise<PaymentWithBill[]> {
     const dateObj = parse(date, 'yyyy-MM-dd', new Date());
     if (!isValid(dateObj)) {
       throw new Error(`Invalid date format: "${date}". Expected YYYY-MM-DD format.`);
     }
-    const startDate = startOfDay(dateObj);
-    const endDate = endOfDay(dateObj);
+
+    // Calculate day boundaries in user's timezone
+    const dayBoundaries = calculateDayFilterBoundaries(date, userTimezoneOffset);
+    const startDate = new Date(dayBoundaries.filterStartUTC);
+    const endDate = new Date(dayBoundaries.filterEndUTC);
 
     let billIds: string[] | undefined;
     if (tag) {
@@ -185,12 +226,14 @@ export const TransactionService = {
    * @param billId - Bill ID to fetch transactions for
    * @param month - Month number (1-12, where 1 = January, 12 = December)
    * @param year - Year number
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Array of transactions ordered by paidAt descending
    */
   async getByBillIdAndMonth(
     billId: string,
     month: number,
-    year: number
+    year: number,
+    userTimezoneOffset: number = 0
   ): Promise<Transaction[]> {
     if (isNaN(month) || month < 1 || month > 12 || isNaN(year)) {
       return [];
@@ -198,7 +241,7 @@ export const TransactionService = {
 
     const boundaries = calculateMonthBoundaries(year, month);
     const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-    const filterBoundaries = calculateFilterBoundaries(year, month, boundaries);
+    const filterBoundaries = calculateFilterBoundaries(year, month, boundaries, userTimezoneOffset);
 
     const results = await db
       .select()
@@ -233,9 +276,14 @@ export const TransactionService = {
    *
    * @param month - Month string in YYYY-MM format (e.g., "2025-10")
    * @param tag - Optional tag slug for filtering payments by bill tag
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Payments with bill information and category icons, ordered by paidAt descending
    */
-  async getPaymentsByMonth(month: string, tag?: string): Promise<PaymentWithBill[]> {
+  async getPaymentsByMonth(
+    month: string,
+    tag?: string,
+    userTimezoneOffset: number = 0
+  ): Promise<PaymentWithBill[]> {
     const [yearStr, monthStr] = month.split('-');
     const yearNum = parseInt(yearStr, 10);
     const monthNum = parseInt(monthStr, 10);
@@ -246,7 +294,7 @@ export const TransactionService = {
 
     const boundaries = calculateMonthBoundaries(yearNum, monthNum);
     const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-    const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries);
+    const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries, userTimezoneOffset);
 
     let billIds: string[] | undefined;
     if (tag) {
@@ -318,12 +366,14 @@ export const TransactionService = {
    * @param startMonth - Starting month string in YYYY-MM format (e.g., "2025-10")
    * @param months - Number of months to include in the range (e.g., 12 for a full year)
    * @param tag - Optional tag slug for filtering payments by bill tag
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Array of monthly payment totals with month labels, ordered chronologically
    */
   async getMonthlyPaymentTotals(
     startMonth: string,
     months: number,
-    tag?: string
+    tag?: string,
+    userTimezoneOffset: number = 0
   ): Promise<MonthlyPaymentTotal[]> {
     const startDate = parse(startMonth, 'yyyy-MM', new Date());
     let billIds: string[] | undefined;
@@ -359,7 +409,7 @@ export const TransactionService = {
 
       const boundaries = calculateMonthBoundaries(yearNum, monthNum);
       const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-      const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries);
+      const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries, userTimezoneOffset);
 
       const conditions = [
         gte(transactions.paidAt, queryStart),
@@ -413,17 +463,20 @@ export const TransactionService = {
    * - UTC+14 (Line Islands, Kiribati): Jan 1, 2025 00:00:00 local = 2024-12-31T10:00:00.000Z
    * - UTC-12 (Baker Island, Howland Island): Dec 31, 2025 23:59:59 local = 2026-01-01T11:59:59.999Z
    *
-   * This is an intentional design decision, not a workaround. Storing in UTC and querying
-   * with UTC boundaries that account for timezone offsets is the standard approach for
-   * calendar-based queries when timezone information is not stored with each record.
+   * After fetching, we apply a post-query filter using the user's actual timezone to ensure
+   * only payments within their calendar year are included.
    *
    * Includes payments from archived bills if the payment date falls within the selected
    * year. This ensures complete historical accuracy in Annual Spending views.
    *
    * @param year - Year string in YYYY format (e.g., "2025")
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Array of aggregated bill spending data sorted by totalAmount descending
    */
-  async getPaymentsByYearAggregatedByBill(year: string): Promise<AggregatedBillSpending[]> {
+  async getPaymentsByYearAggregatedByBill(
+    year: string,
+    userTimezoneOffset: number = 0
+  ): Promise<AggregatedBillSpending[]> {
     const yearNum = parseInt(year, 10);
     if (isNaN(yearNum)) {
       return [];
@@ -433,18 +486,28 @@ export const TransactionService = {
     const yearStart = parseISO(`${yearNum - 1}-12-31T10:00:00.000Z`);
     const yearEnd = parseISO(`${yearNum + 1}-01-01T11:59:59.999Z`);
 
+    // Calculate precise year boundaries for user's timezone
+    const yearBoundaries = calculateYearFilterBoundaries(yearNum, userTimezoneOffset);
+
     const results = await db
       .select({
         billId: transactions.billId,
         billTitle: bills.title,
         categoryIcon: billCategories.icon,
         amount: transactions.amount,
+        paidAt: transactions.paidAt,
       })
       .from(transactions)
       .innerJoin(bills, eq(transactions.billId, bills.id))
       .innerJoin(billCategories, eq(bills.categoryId, billCategories.id))
       .where(and(gte(transactions.paidAt, yearStart), lte(transactions.paidAt, yearEnd)))
       .orderBy(transactions.billId);
+
+    // Post-query filter: only include payments that fall within the user's calendar year
+    const filteredResults = results.filter((result) => {
+      const ts = result.paidAt instanceof Date ? result.paidAt.getTime() : result.paidAt;
+      return ts >= yearBoundaries.filterStartUTC && ts <= yearBoundaries.filterEndUTC;
+    });
 
     // Group payments by billId using a Map for O(1) lookups
     const aggregatedMap = new Map<string, {
@@ -454,7 +517,7 @@ export const TransactionService = {
       amounts: number[];
     }>();
 
-    for (const result of results) {
+    for (const result of filteredResults) {
       const existing = aggregatedMap.get(result.billId);
       if (existing) {
         existing.amounts.push(result.amount);

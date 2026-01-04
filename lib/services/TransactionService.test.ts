@@ -1,7 +1,8 @@
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills, tags } from '@/db';
 import type { PaymentWithBill, Transaction } from '@/lib/types';
-import { startOfDay, endOfDay, subDays, parse, parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
+import { calculateDayFilterBoundaries } from '@/lib/utils';
 
 jest.mock('@/db', () => ({
   db: {
@@ -176,40 +177,60 @@ describe('TransactionService', () => {
     });
 
     describe('when calculating date ranges', () => {
-      it('uses today only when days is 0', async () => {
+      it('uses today only when days is 0 (UTC)', async () => {
         createPaymentQueryBuilder(mockPayments);
+        const todayStr = format(FIXED_DATE, 'yyyy-MM-dd');
+        const boundaries = calculateDayFilterBoundaries(todayStr, 0);
 
         await TransactionService.getRecentPayments(0);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, startOfDay(FIXED_DATE));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(FIXED_DATE));
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterStartUTC));
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterEndUTC));
       });
 
-      it('includes yesterday when days is 1', async () => {
+      it('includes yesterday when days is 1 (UTC)', async () => {
         createPaymentQueryBuilder(mockPayments);
+        const startDate = new Date(FIXED_DATE);
+        startDate.setDate(startDate.getDate() - 1);
+        const startStr = format(startDate, 'yyyy-MM-dd');
+        const todayStr = format(FIXED_DATE, 'yyyy-MM-dd');
+        const startBoundaries = calculateDayFilterBoundaries(startStr, 0);
+        const endBoundaries = calculateDayFilterBoundaries(todayStr, 0);
 
         await TransactionService.getRecentPayments(1);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, startOfDay(subDays(FIXED_DATE, 1)));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(FIXED_DATE));
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
       });
 
-      it('includes last 7 days when days is 7', async () => {
+      it('includes last 7 days when days is 7 (UTC)', async () => {
         createPaymentQueryBuilder(mockPayments);
+        const startDate = new Date(FIXED_DATE);
+        startDate.setDate(startDate.getDate() - 7);
+        const startStr = format(startDate, 'yyyy-MM-dd');
+        const todayStr = format(FIXED_DATE, 'yyyy-MM-dd');
+        const startBoundaries = calculateDayFilterBoundaries(startStr, 0);
+        const endBoundaries = calculateDayFilterBoundaries(todayStr, 0);
 
         await TransactionService.getRecentPayments(7);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, startOfDay(subDays(FIXED_DATE, 7)));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(FIXED_DATE));
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
       });
 
-      it('includes last 30 days when days is 30', async () => {
+      it('includes last 30 days when days is 30 (UTC)', async () => {
         createPaymentQueryBuilder(mockPayments);
+        const startDate = new Date(FIXED_DATE);
+        startDate.setDate(startDate.getDate() - 30);
+        const startStr = format(startDate, 'yyyy-MM-dd');
+        const todayStr = format(FIXED_DATE, 'yyyy-MM-dd');
+        const startBoundaries = calculateDayFilterBoundaries(startStr, 0);
+        const endBoundaries = calculateDayFilterBoundaries(todayStr, 0);
 
         await TransactionService.getRecentPayments(30);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, startOfDay(subDays(FIXED_DATE, 30)));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(FIXED_DATE));
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
       });
 
       it('combines date conditions with and()', async () => {
@@ -297,14 +318,14 @@ describe('TransactionService', () => {
         expect(builder.innerJoin).toHaveBeenCalledWith(bills, expect.anything());
       });
 
-      it('calculates date range from start to end of day', async () => {
+      it('calculates date range from start to end of day (UTC)', async () => {
         createPaymentQueryBuilder(mockPayments);
 
         await TransactionService.getPaymentsByDate('2025-12-15');
 
-        const dateObj = parse('2025-12-15', 'yyyy-MM-dd', new Date());
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, startOfDay(dateObj));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, endOfDay(dateObj));
+        const boundaries = calculateDayFilterBoundaries('2025-12-15', 0);
+        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterStartUTC));
+        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterEndUTC));
       });
 
       it('orders results by paidAt descending', async () => {
@@ -603,7 +624,8 @@ describe('TransactionService', () => {
         };
         createMonthQueryBuilder([boundaryTransaction, septTransaction]);
 
-        const result = await TransactionService.getByBillIdAndMonth('bill-1', 10, 2025);
+        // Pass offset=2 for UTC+2 timezone behavior
+        const result = await TransactionService.getByBillIdAndMonth('bill-1', 10, 2025, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-boundary');
@@ -628,7 +650,8 @@ describe('TransactionService', () => {
         };
         createMonthQueryBuilder([boundaryTransaction, septTransaction]);
 
-        const result = await TransactionService.getByBillIdAndMonth('bill-1', 9, 2025);
+        // Pass offset=2 for UTC+2 timezone behavior
+        const result = await TransactionService.getByBillIdAndMonth('bill-1', 9, 2025, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-sept');
@@ -654,7 +677,8 @@ describe('TransactionService', () => {
         };
         createMonthQueryBuilder([janTransaction, decTransaction]);
 
-        const result = await TransactionService.getByBillIdAndMonth('bill-1', 1, 2025);
+        // Pass offset=2 for UTC+2 timezone behavior
+        const result = await TransactionService.getByBillIdAndMonth('bill-1', 1, 2025, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-jan');
@@ -802,7 +826,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([boundaryPayment, septPayment, novPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2025-10');
+        const result = await TransactionService.getPaymentsByMonth('2025-10', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-boundary');
@@ -828,7 +852,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([boundaryPayment, septPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2025-09');
+        const result = await TransactionService.getPaymentsByMonth('2025-09', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-sept');
@@ -846,7 +870,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([endBoundaryPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2025-10');
+        const result = await TransactionService.getPaymentsByMonth('2025-10', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-end-boundary');
@@ -871,7 +895,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([octPayment, novPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2025-10');
+        const result = await TransactionService.getPaymentsByMonth('2025-10', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-oct');
@@ -897,7 +921,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([janPayment, decPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2025-01');
+        const result = await TransactionService.getPaymentsByMonth('2025-01', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-jan');
@@ -923,7 +947,7 @@ describe('TransactionService', () => {
         };
         createPaymentQueryBuilder([decPayment, janPayment]);
 
-        const result = await TransactionService.getPaymentsByMonth('2024-12');
+        const result = await TransactionService.getPaymentsByMonth('2024-12', undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].id).toBe('tx-dec');
@@ -1013,7 +1037,7 @@ describe('TransactionService', () => {
         const novPayment = { amount: 8000, paidAt: 1761951600000 };
         createTotalsQueryBuilder([boundaryPayment, septPayment, novPayment]);
 
-        const result = await TransactionService.getMonthlyPaymentTotals('2025-10', 1);
+        const result = await TransactionService.getMonthlyPaymentTotals('2025-10', 1, undefined, 2);
 
         expect(result).toHaveLength(1);
         expect(result[0].totalPaid).toBe(710846);
@@ -1053,7 +1077,23 @@ describe('TransactionService', () => {
       billTitle: string;
       categoryIcon: string;
       amount: number;
+      paidAt: Date;
     };
+
+    // Helper to create paidAt for tests - defaults to mid-year (July 1)
+    const createMockPayment = (
+      billId: string,
+      billTitle: string,
+      categoryIcon: string,
+      amount: number,
+      paidAt?: Date
+    ): YearAggregationResult => ({
+      billId,
+      billTitle,
+      categoryIcon,
+      amount,
+      paidAt: paidAt ?? new Date('2025-07-01T12:00:00Z'),
+    });
 
     const createYearQueryBuilder = (returnValue: YearAggregationResult[]) => {
       const orderByMock = jest.fn().mockResolvedValue(returnValue);
@@ -1104,9 +1144,9 @@ describe('TransactionService', () => {
 
     it('aggregates payments by bill with correct calculations', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-2', 'Internet', 'wifi', 5000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1134,9 +1174,9 @@ describe('TransactionService', () => {
 
     it('sorts results by totalAmount descending', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
+        createMockPayment('bill-2', 'Internet', 'wifi', 5000),
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1150,9 +1190,9 @@ describe('TransactionService', () => {
 
     it('calculates average correctly with rounding', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100001 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100002 },
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-1', 'Rent', 'house', 100001),
+        createMockPayment('bill-1', 'Rent', 'house', 100002),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1166,8 +1206,8 @@ describe('TransactionService', () => {
 
     it('handles single payment per bill', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-2', 'Internet', 'wifi', 5000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1191,12 +1231,12 @@ describe('TransactionService', () => {
 
     it('handles multiple payments for multiple bills', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Rent', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 6000 },
-        { billId: 'bill-2', billTitle: 'Internet', categoryIcon: 'wifi', amount: 5000 },
-        { billId: 'bill-3', billTitle: 'Electric', categoryIcon: 'zap', amount: 15000 },
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-1', 'Rent', 'house', 100000),
+        createMockPayment('bill-2', 'Internet', 'wifi', 5000),
+        createMockPayment('bill-2', 'Internet', 'wifi', 6000),
+        createMockPayment('bill-2', 'Internet', 'wifi', 5000),
+        createMockPayment('bill-3', 'Electric', 'zap', 15000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1223,7 +1263,7 @@ describe('TransactionService', () => {
     it('includes payment at exact year start boundary (Dec 31, 10:00:00 UTC for UTC+14)', async () => {
       const yearStart = parseISO('2024-12-31T10:00:00.000Z');
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+        createMockPayment('bill-1', 'Test Bill', 'house', 100000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1236,7 +1276,7 @@ describe('TransactionService', () => {
     it('includes payment at exact year end boundary (Jan 1, 11:59:59.999 UTC next year for UTC-12)', async () => {
       const yearEnd = parseISO('2026-01-01T11:59:59.999Z');
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+        createMockPayment('bill-1', 'Test Bill', 'house', 100000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1249,7 +1289,7 @@ describe('TransactionService', () => {
     it('includes payments logged at midnight in UTC+1 timezone (stored as previous day in UTC)', async () => {
       const paymentAtMidnightUTCPlus1 = parseISO('2024-12-31T23:00:00.000Z');
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Test Bill', categoryIcon: 'house', amount: 100000 },
+        createMockPayment('bill-1', 'Test Bill', 'house', 100000),
       ];
 
       createYearQueryBuilder(mockResults);
@@ -1282,9 +1322,9 @@ describe('TransactionService', () => {
 
     it('includes yearly boundary payments for a bill with monthly payments spanning the year', async () => {
       const mockResults: YearAggregationResult[] = [
-        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
-        { billId: 'bill-1', billTitle: 'Monthly Bill', categoryIcon: 'house', amount: 100000 },
+        createMockPayment('bill-1', 'Monthly Bill', 'house', 100000),
+        createMockPayment('bill-1', 'Monthly Bill', 'house', 100000),
+        createMockPayment('bill-1', 'Monthly Bill', 'house', 100000),
       ];
 
       createYearQueryBuilder(mockResults);

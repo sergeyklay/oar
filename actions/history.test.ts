@@ -39,7 +39,7 @@ describe('getMonthlyHistoryData', () => {
     if (result.success) {
       expect(result.data).toEqual(mockPayments);
     }
-    expect(TransactionService.getPaymentsByMonth).toHaveBeenCalledWith('2025-12', undefined);
+    expect(TransactionService.getPaymentsByMonth).toHaveBeenCalledWith('2025-12', undefined, 0);
   });
 
   it('passes tag filter when provided', async () => {
@@ -48,7 +48,7 @@ describe('getMonthlyHistoryData', () => {
     const result = await getMonthlyHistoryData({ month: '2025-12', tag: 'utilities' });
 
     expect(result.success).toBe(true);
-    expect(TransactionService.getPaymentsByMonth).toHaveBeenCalledWith('2025-12', 'utilities');
+    expect(TransactionService.getPaymentsByMonth).toHaveBeenCalledWith('2025-12', 'utilities', 0);
   });
 
   it('returns error for invalid month format', async () => {
@@ -175,7 +175,8 @@ describe('getMonthlyHistoryChartData', () => {
     expect(TransactionService.getMonthlyPaymentTotals).toHaveBeenCalledWith(
       '2025-12',
       12,
-      undefined
+      undefined,
+      0
     );
   });
 
@@ -194,7 +195,8 @@ describe('getMonthlyHistoryChartData', () => {
     expect(TransactionService.getMonthlyPaymentTotals).toHaveBeenCalledWith(
       '2025-12',
       12,
-      'utilities'
+      'utilities',
+      0
     );
   });
 
@@ -211,7 +213,8 @@ describe('getMonthlyHistoryChartData', () => {
     expect(TransactionService.getMonthlyPaymentTotals).toHaveBeenCalledWith(
       '2025-12',
       12,
-      undefined
+      undefined,
+      0
     );
   });
 
@@ -317,7 +320,8 @@ describe('getMonthlyHistoryChartData', () => {
       expect(TransactionService.getMonthlyPaymentTotals).toHaveBeenCalledWith(
         '2025-12',
         months,
-        undefined
+        undefined,
+        0
       );
     }
   });
@@ -358,7 +362,7 @@ describe('getAnnualSpendingData', () => {
     if (result.success) {
       expect(result.data).toEqual(mockAggregatedData);
     }
-    expect(TransactionService.getPaymentsByYearAggregatedByBill).toHaveBeenCalledWith('2025');
+    expect(TransactionService.getPaymentsByYearAggregatedByBill).toHaveBeenCalledWith('2025', 0);
   });
 
   it('returns error for invalid year format', async () => {

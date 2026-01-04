@@ -14,7 +14,13 @@ import {
   format,
   getDate,
 } from 'date-fns';
-import { clampToEndOfMonth } from '@/lib/utils';
+import {
+  clampToEndOfMonth,
+  calculateMonthBoundaries,
+  calculateFilterBoundaries,
+  isTimestampInMonth,
+  type FilterBoundaries,
+} from '@/lib/utils';
 import { RRule, Frequency } from 'rrule';
 
 /**
@@ -321,13 +327,29 @@ export const ForecastService = {
    *
    * @param month - Month string in YYYY-MM format
    * @param tag - Optional tag slug for filtering
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Array of forecast bills with enriched data
    */
-  async getBillsForMonth(month: string, tag?: string): Promise<ForecastBill[]> {
+  async getBillsForMonth(
+    month: string,
+    tag?: string,
+    userTimezoneOffset: number = 0
+  ): Promise<ForecastBill[]> {
     // Parse month string to Date object
     const targetDate = parse(month, 'yyyy-MM', new Date());
     const targetMonthStart = startOfMonth(targetDate);
     const targetMonthEnd = endOfMonth(targetDate);
+
+    // Calculate timezone-aware filter boundaries for post-projection filtering
+    const yearNum = targetDate.getFullYear();
+    const monthNum = targetDate.getMonth() + 1; // getMonth() is 0-indexed
+    const boundaries = calculateMonthBoundaries(yearNum, monthNum);
+    const filterBoundaries: FilterBoundaries = calculateFilterBoundaries(
+      yearNum,
+      monthNum,
+      boundaries,
+      userTimezoneOffset
+    );
 
     // Fetch ALL active bills (not filtered by month)
     const conditions = [eq(bills.isArchived, false), ne(bills.status, 'paid')];
@@ -469,7 +491,12 @@ export const ForecastService = {
     // Sort by projected due date
     forecastBills.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
-    return forecastBills;
+    // Post-projection filtering: exclude bills outside timezone-aware month boundaries
+    const filteredBills = forecastBills.filter((bill) =>
+      isTimestampInMonth(bill.dueDate, filterBoundaries)
+    );
+
+    return filteredBills;
   },
 
   /**
@@ -503,12 +530,14 @@ export const ForecastService = {
    * @param startMonth - Starting month in YYYY-MM format
    * @param count - Number of months to project (default 12, max 24)
    * @param tag - Optional tag slug for filtering
+   * @param userTimezoneOffset - User's timezone offset in hours from UTC (default: 0)
    * @returns Array of monthly forecast totals
    */
   async getBillsForMonthRange(
     startMonth: string,
     count: number,
-    tag?: string
+    tag?: string,
+    userTimezoneOffset: number = 0
   ): Promise<MonthlyForecastTotal[]> {
     const startDate = parse(startMonth, 'yyyy-MM', new Date());
     const results: MonthlyForecastTotal[] = [];
@@ -518,7 +547,7 @@ export const ForecastService = {
       const currentMonthStr = format(currentMonthDate, 'yyyy-MM');
       const monthLabel = format(currentMonthDate, 'MMM');
 
-      const bills = await this.getBillsForMonth(currentMonthStr, tag);
+      const bills = await this.getBillsForMonth(currentMonthStr, tag, userTimezoneOffset);
       const summary = this.calculateSummary(bills);
 
       results.push({
