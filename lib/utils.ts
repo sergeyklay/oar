@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { format, endOfMonth, getDate, setDate, parseISO } from 'date-fns';
+import { format, endOfMonth, getDate, setDate } from 'date-fns';
 
 export interface MonthBoundaries {
   prevMonth: number;
@@ -18,6 +18,21 @@ export interface QueryBoundaries {
 export interface FilterBoundaries {
   filterStartUTC: number;
   filterEndUTC: number;
+}
+
+/**
+ * Convert user's timezone offset to the UTC hour representing local midnight.
+ *
+ * @param userOffsetHours - Timezone offset in hours (positive = east, negative = west)
+ * @returns UTC hour (0-23) when it's midnight in user's timezone
+ *
+ * @example
+ * calculateMidnightUTCHour(1)  // 23 (UTC+1: midnight local = 23:00 UTC)
+ * calculateMidnightUTCHour(-5) // 5  (UTC-5: midnight local = 05:00 UTC)
+ * calculateMidnightUTCHour(0)  // 0  (UTC: midnight = 00:00 UTC)
+ */
+function calculateMidnightUTCHour(userOffsetHours: number): number {
+  return (24 - userOffsetHours) % 24;
 }
 
 /**
@@ -52,12 +67,8 @@ export function calculateMonthBoundaries(year: number, month: number): MonthBoun
 export function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): QueryBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth, nextMonthYear, nextMonth } = boundaries;
 
-  const queryStart = parseISO(
-    `${prevMonthYear}-${String(prevMonth).padStart(2, '0')}-${String(lastDayOfPrevMonth).padStart(2, '0')}T10:00:00.000Z`
-  );
-  const queryEnd = parseISO(
-    `${nextMonthYear}-${String(nextMonth).padStart(2, '0')}-01T11:59:59.999Z`
-  );
+  const queryStart = new Date(Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 10, 0, 0, 0));
+  const queryEnd = new Date(Date.UTC(nextMonthYear, nextMonth - 1, 1, 11, 59, 59, 999));
 
   return { queryStart, queryEnd };
 }
@@ -90,13 +101,8 @@ export function calculateFilterBoundaries(
 ): FilterBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth } = boundaries;
 
-  // Calculate the hour in UTC that corresponds to midnight in user's timezone
-  // For UTC+1: midnight local = 23:00 UTC previous day
-  // For UTC-5: midnight local = 05:00 UTC same day
-  // Formula: UTC hour = 24 - offset (mod 24)
-  const midnightUTCHour = (24 - userOffsetHours) % 24;
+  const midnightUTCHour = calculateMidnightUTCHour(userOffsetHours);
 
-  // Determine if we need to adjust the date for the start boundary
   // For positive offsets (east of UTC), midnight local is on previous UTC day
   // For negative offsets (west of UTC), midnight local is on same or next UTC day
   let startDay: number;
@@ -196,8 +202,7 @@ export function calculateDayFilterBoundaries(
   const month = parseInt(monthStr, 10);
   const day = parseInt(dayStr, 10);
 
-  // Calculate the hour in UTC that corresponds to midnight in user's timezone
-  const midnightUTCHour = (24 - userOffsetHours) % 24;
+  const midnightUTCHour = calculateMidnightUTCHour(userOffsetHours);
 
   let startDay = day;
   let startMonth = month;
@@ -259,8 +264,7 @@ export function calculateYearFilterBoundaries(
   year: number,
   userOffsetHours: number = 0
 ): FilterBoundaries {
-  // Calculate midnight UTC hour for user's timezone
-  const midnightUTCHour = (24 - userOffsetHours) % 24;
+  const midnightUTCHour = calculateMidnightUTCHour(userOffsetHours);
 
   let startYear = year;
   let startMonth = 1;
