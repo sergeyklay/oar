@@ -3,6 +3,7 @@ import {
   generateSlug,
   clampToEndOfMonth,
   calculateMonthBoundaries,
+  calculateExtendedQueryBoundaries,
   calculateFilterBoundaries,
   isTimestampInMonth,
 } from './utils';
@@ -304,6 +305,165 @@ describe('calculateMonthBoundaries', () => {
     const result = calculateMonthBoundaries(2024, 3);
 
     expect(result.lastDayOfPrevMonth).toBe(29);
+  });
+});
+
+describe('calculateExtendedQueryBoundaries', () => {
+  it('calculates query boundaries for mid-year month', () => {
+    const boundaries = calculateMonthBoundaries(2026, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2026-05-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2026-07-01T11:59:59.999Z');
+  });
+
+  it('calculates query boundaries for January with year boundary', () => {
+    const boundaries = calculateMonthBoundaries(2026, 1);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2025-12-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2026-02-01T11:59:59.999Z');
+  });
+
+  it('calculates query boundaries for December with year boundary', () => {
+    const boundaries = calculateMonthBoundaries(2025, 12);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2025-11-30T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2026-01-01T11:59:59.999Z');
+  });
+
+  it('handles February in non-leap year', () => {
+    const boundaries = calculateMonthBoundaries(2025, 2);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2025-01-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2025-03-01T11:59:59.999Z');
+  });
+
+  it('handles February in leap year', () => {
+    const boundaries = calculateMonthBoundaries(2024, 2);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2024-01-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2024-03-01T11:59:59.999Z');
+  });
+
+  it('handles March following leap year February', () => {
+    const boundaries = calculateMonthBoundaries(2024, 3);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2024-02-29T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2024-04-01T11:59:59.999Z');
+  });
+
+  it('handles March following non-leap year February', () => {
+    const boundaries = calculateMonthBoundaries(2025, 3);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2025-02-28T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2025-04-01T11:59:59.999Z');
+  });
+
+  describe.each([
+    { month: 4, name: 'April', prevLastDay: 31 },
+    { month: 6, name: 'June', prevLastDay: 31 },
+    { month: 9, name: 'September', prevLastDay: 31 },
+    { month: 11, name: 'November', prevLastDay: 31 },
+  ])('30-day month: $name', ({ month, prevLastDay }) => {
+    it('uses correct last day of previous month', () => {
+      const boundaries = calculateMonthBoundaries(2025, month);
+      const result = calculateExtendedQueryBoundaries(boundaries);
+
+      const expectedStart = new Date(
+        Date.UTC(2025, month - 2, prevLastDay, 10, 0, 0, 0)
+      );
+      expect(result.queryStart.getTime()).toBe(expectedStart.getTime());
+    });
+  });
+
+  describe.each([
+    { month: 1, name: 'January' },
+    { month: 3, name: 'March' },
+    { month: 5, name: 'May' },
+    { month: 7, name: 'July' },
+    { month: 8, name: 'August' },
+    { month: 10, name: 'October' },
+    { month: 12, name: 'December' },
+  ])('31-day month: $name', ({ month }) => {
+    it('handles correct query boundaries', () => {
+      const boundaries = calculateMonthBoundaries(2025, month);
+      const result = calculateExtendedQueryBoundaries(boundaries);
+
+      expect(result.queryStart).toBeInstanceOf(Date);
+      expect(result.queryEnd).toBeInstanceOf(Date);
+      expect(result.queryStart.getTime()).toBeLessThan(result.queryEnd.getTime());
+    });
+  });
+
+  it('uses exact time 10:00:00.000 UTC for query start', () => {
+    const boundaries = calculateMonthBoundaries(2026, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.getUTCHours()).toBe(10);
+    expect(result.queryStart.getUTCMinutes()).toBe(0);
+    expect(result.queryStart.getUTCSeconds()).toBe(0);
+    expect(result.queryStart.getUTCMilliseconds()).toBe(0);
+  });
+
+  it('uses exact time 11:59:59.999 UTC for query end', () => {
+    const boundaries = calculateMonthBoundaries(2026, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryEnd.getUTCHours()).toBe(11);
+    expect(result.queryEnd.getUTCMinutes()).toBe(59);
+    expect(result.queryEnd.getUTCSeconds()).toBe(59);
+    expect(result.queryEnd.getUTCMilliseconds()).toBe(999);
+  });
+
+  it('returns Date objects not timestamps', () => {
+    const boundaries = calculateMonthBoundaries(2026, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart).toBeInstanceOf(Date);
+    expect(result.queryEnd).toBeInstanceOf(Date);
+  });
+
+  it('ensures query start is before query end', () => {
+    const boundaries = calculateMonthBoundaries(2026, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.getTime()).toBeLessThan(result.queryEnd.getTime());
+  });
+
+  it('handles year 2100 correctly', () => {
+    const boundaries = calculateMonthBoundaries(2100, 6);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('2100-05-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2100-07-01T11:59:59.999Z');
+  });
+
+  it('handles edge case year 2000 correctly', () => {
+    const boundaries = calculateMonthBoundaries(2000, 1);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryStart.toISOString()).toBe('1999-12-31T10:00:00.000Z');
+    expect(result.queryEnd.toISOString()).toBe('2000-02-01T11:59:59.999Z');
+  });
+
+  it('formats month with leading zero for single digit months', () => {
+    const boundaries = calculateMonthBoundaries(2026, 1);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryEnd.toISOString()).toContain('2026-02-01');
+  });
+
+  it('formats day with leading zero when needed', () => {
+    const boundaries = calculateMonthBoundaries(2026, 2);
+    const result = calculateExtendedQueryBoundaries(boundaries);
+
+    expect(result.queryEnd.toISOString()).toContain('2026-03-01');
   });
 });
 
