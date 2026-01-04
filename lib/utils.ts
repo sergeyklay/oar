@@ -23,7 +23,7 @@ export interface FilterBoundaries {
 /**
  * Calculate month boundary metadata for a given year and month.
  *
- * Handle year boundaries (January wraps to previous year, December to next).
+ * Support year boundaries (January wraps to previous year, December to next).
  *
  * @param year - Year number (e.g., 2025)
  * @param month - Month number (1-12, 1 = January)
