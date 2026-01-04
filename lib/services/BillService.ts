@@ -1,9 +1,16 @@
 import { db, bills, tags, billsToTags, billCategories } from '@/db';
 import type { BillWithTags, Tag, Bill } from '@/db/schema';
 import { and, eq, gte, lte, inArray, ne, or, sql } from 'drizzle-orm';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, parse, addDays } from 'date-fns';
+import { startOfDay, endOfDay, addDays, parse } from 'date-fns';
 import { SettingsService } from './SettingsService';
 import { DateAdjustmentService } from './DateAdjustmentService';
+import {
+  calculateMonthBoundaries,
+  calculateExtendedQueryBoundaries,
+  calculateFilterBoundaries,
+  isTimestampInMonth,
+  type FilterBoundaries,
+} from '@/lib/utils';
 
 /**
  * Filter options for bill queries.
@@ -165,6 +172,10 @@ export const BillService = {
 
     const conditions = [];
 
+    // Context for post-query filtering when using month filter
+    let monthFilterContext: { filterBoundaries: FilterBoundaries; isCurrentMonth: boolean } | null =
+      null;
+
     if (archivedOnly) {
       conditions.push(eq(bills.isArchived, true));
     } else if (!includeArchived) {
@@ -198,28 +209,41 @@ export const BillService = {
         conditions.push(eq(bills.isAutoPay, false));
       }
     } else if (month) {
+      // Timezone-aware month filtering using extended boundaries + post-query filter
       const [year, monthNum] = month.split('-').map(Number);
-      const monthDate = new Date(year, monthNum - 1, 1);
-      const monthStart = startOfMonth(monthDate);
-      const monthEnd = endOfMonth(monthDate);
-      const today = startOfDay(new Date());
 
-      if (monthStart <= today && today <= monthEnd) {
+      // Calculate timezone-aware boundaries
+      const boundaries = calculateMonthBoundaries(year, monthNum);
+      const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
+      const filterBoundaries = calculateFilterBoundaries(year, monthNum, boundaries);
+
+      // Check if viewing current month (for overdue inclusion)
+      const today = startOfDay(new Date());
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth() + 1; // 1-indexed
+      const isCurrentMonth = year === currentYear && monthNum === currentMonth;
+
+      if (isCurrentMonth) {
+        // Current month: include bills in range OR overdue bills
         conditions.push(
           or(
-            and(gte(bills.dueDate, monthStart), lte(bills.dueDate, monthEnd)),
+            and(gte(bills.dueDate, queryStart), lte(bills.dueDate, queryEnd)),
             eq(bills.status, 'overdue')
           )
         );
       } else {
-        conditions.push(gte(bills.dueDate, monthStart));
-        conditions.push(lte(bills.dueDate, monthEnd));
+        // Past/future month: only bills in extended range
+        conditions.push(gte(bills.dueDate, queryStart));
+        conditions.push(lte(bills.dueDate, queryEnd));
       }
       conditions.push(ne(bills.status, 'paid'));
 
       if (includeAutoPayInDueSoon === false) {
         conditions.push(eq(bills.isAutoPay, false));
       }
+
+      // Store filter context for post-query filtering
+      monthFilterContext = { filterBoundaries, isCurrentMonth };
     }
 
     if (tag) {
@@ -266,7 +290,21 @@ export const BillService = {
       .where(and(finalConditions, eq(bills.status, 'paid')))
       .orderBy(bills.dueDate);
 
-    const billsWithCategories = [...activeResults, ...paidResults];
+    let billsWithCategories = [...activeResults, ...paidResults];
+
+    // Post-query filtering for timezone-aware month filtering
+    // This excludes bills that fall outside the target month when accounting for timezone offsets
+    if (monthFilterContext) {
+      const { filterBoundaries, isCurrentMonth } = monthFilterContext;
+      billsWithCategories = billsWithCategories.filter((item) => {
+        // Overdue bills are always included when viewing current month
+        if (isCurrentMonth && item.bill.status === 'overdue') {
+          return true;
+        }
+        // For all other bills, check if dueDate falls within the timezone-aware boundaries
+        return isTimestampInMonth(item.bill.dueDate, filterBoundaries);
+      });
+    }
 
     if (billsWithCategories.length === 0) {
       return [];

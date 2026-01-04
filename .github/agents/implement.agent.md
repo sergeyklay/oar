@@ -199,6 +199,7 @@ IF the task involves fixing a documented BUG:
    > ...
    >
    > Create a regression test ensuring that [specific logic condition] works as expected.
+   >
    > STRICTLY follow your instructions.
    > ```
 

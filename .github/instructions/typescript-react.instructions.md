@@ -73,7 +73,7 @@ You strictly adhere to the **Airbnb JavaScript Style Guide** and modern TypeScri
 ```typescript
 // ✅ CORRECT
 /**
- * Validates and transforms raw user data from external API.
+ * Validate and transform raw user data from external API.
  *
  * @param {RawData} data - Raw data from the API.
  * @returns {UserProfile} Validated profile.
@@ -425,7 +425,7 @@ export default function UserProfile({ user }) {
 
 ```typescript
 /**
- * Fetches user profile with comprehensive error handling.
+ * Fetch user profile with comprehensive error handling.
  *
  * @throws {NotFoundError} If user does not exist.
  * @throws {NetworkError} If API request fails.
