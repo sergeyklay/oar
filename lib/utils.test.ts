@@ -533,7 +533,7 @@ describe('isTimestampInMonth', () => {
   const januaryFilterBoundaries = calculateFilterBoundaries(2026, 1, januaryBoundaries, 2);
 
   describe('regression: timezone boundary bug fix (UTC+2)', () => {
-    it('excludes Feb 1 00:00 UTC+1 (stored as Jan 31 23:00 UTC) from January', () => {
+    it('excludes Feb 1 00:00 UTC+1 when using UTC+2 month boundaries (stored as Jan 31 23:00 UTC)', () => {
       // This timestamp is Feb 1 in UTC+1 (Poland), so should be in February not January
       // With UTC+2 alignment, Jan ends at Jan 31 21:59:59.999 UTC
       // Jan 31 23:00 UTC is AFTER this cutoff, so it's correctly excluded
