@@ -1,7 +1,13 @@
-# /specify Command
-
-Transform vague feature ideas into detailed, testable requirements with user stories and acceptance criteria.
-
+---
+description: Transform vague feature ideas into detailed, testable requirements with user stories and acceptance criteria
+name: Specify
+tools:
+   - execute
+   - read
+   - edit
+   - search
+   - web
+   - agent
 ---
 
 ## Role
@@ -51,7 +57,7 @@ Before designing, you must analyze:
 
 ### 4. State Management Check
 
-- Can this be achieved with URL state (nuqs) instead of client state?
+- Can this be achieved with URL state (`nuqs`) instead of client state?
 - Can the Server Component pattern eliminate the need for client-side data fetching?
 - Is any proposed client state truly ephemeral (dialog open/closed), or is it app state that should live elsewhere?
 - Does this feature need form state (react-hook-form) or server state (RSC)?
@@ -104,7 +110,7 @@ Produce a Markdown document in `.specs/Spec-{TASK_NAME}.md`. **Do NOT** write an
 
 #### User Story
 
-```
+```plaintext
 As a [user role],
 I want to [action],
 so that [benefit].
@@ -181,7 +187,7 @@ export async function actionName(input: z.infer<typeof actionInputSchema>): Prom
 
 *Business logic pseudo-code:*
 
-```
+```plaintext
 IF condition THEN
   DO action
 ELSE
@@ -215,7 +221,7 @@ ELSE
 
 *Tree view of all new and modified files:*
 
-```
+```plaintext
 oar/
 ├── db/
 │   └── schema.ts            # Modified: Added new table
@@ -251,6 +257,7 @@ Before submitting the spec, verify:
 - [ ] Implementation steps are ordered by dependency
 
 ---
-Last Updated: 2025-12-31
+
+Last Updated: 2026-01-04
 
 Maintained by: AI Agents under human supervision

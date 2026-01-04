@@ -1,7 +1,6 @@
 ---
-description: Critical rules for preserving existing UI/UX and preventing regression.
-globs: **/*
-alwaysApply: true
+description: Critical instruction for preserving existing UI/UX and preventing regression
+applyTo: '**'
 ---
 
 # Preservation & Anti-Entropy Protocol
@@ -11,7 +10,7 @@ alwaysApply: true
 ## 1. Immutable Files (The "Sacred" List)
 Unless explicitly instructed to *refactor* these specific files, you must **NEVER** overwrite or reset them. You may only **APPEND** to them.
 
-- `components.json` (Required for shadcn to function without resetting styles. NEVER DELETE.)
+- `components.json` (Required for `shadcn` to function without resetting styles. NEVER DELETE.)
 - `app/globals.css` (Contains critical Layout Tokens & Grid definitions)
 - `tailwind.config.ts` (Contains Theme Extensions)
 - `components/layout/*` (AppShell, Sidebar structure)

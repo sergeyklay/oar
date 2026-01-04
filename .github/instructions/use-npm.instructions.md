@@ -1,7 +1,6 @@
 ---
 description: Use npm as the package manager for all operations
-globs: **/package.json, **/package-lock.json
-alwaysApply: false
+applyTo: '**/package.json,**/package-lock.json'
 ---
 
 # Package Manager

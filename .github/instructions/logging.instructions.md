@@ -1,7 +1,6 @@
 ---
 description: Standards for logging, error handling, and debugging in Next.js
-alwaysApply: false
-globs: **/*.ts, **/*.tsx
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # Logging & Observability Standards

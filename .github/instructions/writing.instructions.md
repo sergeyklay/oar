@@ -1,7 +1,6 @@
 ---
-description: Rules for writing technical documentation and markdown files.
-alwaysApply: false
-globs: **/*.md
+description: Rules for writing technical documentation and markdown files
+applyTo: 'docs/**/*.md,**/README.md'
 ---
 
 ## Voice and tone

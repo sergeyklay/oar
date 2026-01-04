@@ -1,7 +1,6 @@
 ---
-description: Enforce Node.js environment via nvm.
-globs: **/*
-alwaysApply: true
+description: Enforce Node.js environment via nvm
+applyTo: '**'
 ---
 
 # Environment & Runtime Constraints
