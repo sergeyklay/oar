@@ -148,18 +148,9 @@ export function calculateFilterBoundaries(
     // West of UTC: last moment of month spills into next UTC day
     // e.g., Jan 31 23:59:59.999 in UTC-5 = Feb 1 04:59:59.999 UTC
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-      // Still on same day
-      endDay = lastDayOfTargetMonth;
-      endMonth = month;
-      endYear = year;
-    } else {
-      // Spills into next day
-      endDay = 1;
-      endMonth = boundaries.nextMonth;
-      endYear = boundaries.nextMonthYear;
-    }
+    endDay = 1;
+    endMonth = boundaries.nextMonth;
+    endYear = boundaries.nextMonthYear;
   } else {
     // UTC: straightforward
     endHour = 23;
@@ -249,15 +240,10 @@ export function calculateDayFilterBoundaries(
   } else if (userOffsetHours < 0) {
     // West of UTC: last moment of day spills into next UTC day
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-    } else {
-      // Spills into next day
-      const nextDayDate = new Date(year, month - 1, day + 1);
-      endDay = nextDayDate.getDate();
-      endMonth = nextDayDate.getMonth() + 1;
-      endYear = nextDayDate.getFullYear();
-    }
+    const nextDayDate = new Date(year, month - 1, day + 1);
+    endDay = nextDayDate.getDate();
+    endMonth = nextDayDate.getMonth() + 1;
+    endYear = nextDayDate.getFullYear();
   } else {
     // UTC: straightforward
     endHour = 23;
@@ -307,15 +293,11 @@ export function calculateYearFilterBoundaries(
       endHour = 23;
     }
   } else if (userOffsetHours < 0) {
+    // West of UTC: last moment of year spills into next year
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-    } else {
-      // Spills into next year
-      endYear = year + 1;
-      endMonth = 1;
-      endDay = 1;
-    }
+    endYear = year + 1;
+    endMonth = 1;
+    endDay = 1;
   } else {
     endHour = 23;
   }
