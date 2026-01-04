@@ -236,6 +236,30 @@ User clicks filter
   - ❌ Wrong: `<span>{format(bill.dueDate, 'dd MMM')}</span>`
 - **Server Components:** Pass raw date values (string or number) to ClientDate. Do not instantiate `new Date()` in Server Components.
 
+### Timezone-Aware Filtering
+
+When filtering data by date boundaries (month, day, year), use the timezone utilities:
+
+- **Cookie Detection:** User timezone is stored in `oar-tz-offset` cookie via `TimezoneProvider`
+- **Action Layer:** Read timezone via `getUserTimezoneOffset()` from `@/lib/timezone`
+- **Service Layer:** Accept `userTimezoneOffset` parameter, use boundary utilities
+- **Utilities (`lib/utils.ts`):**
+  - `calculateFilterBoundaries(year, month, boundaries, userOffsetHours)` — Month ranges
+  - `calculateDayFilterBoundaries(dateStr, userOffsetHours)` — Day ranges
+  - `calculateYearFilterBoundaries(year, userOffsetHours)` — Year ranges
+
+**✅ Correct:**
+```typescript
+// In Server Action
+const userTimezoneOffset = await getUserTimezoneOffset();
+return SomeService.getData(param, userTimezoneOffset);
+
+// In Service
+const { start, end } = calculateDayFilterBoundaries(date, userTimezoneOffset);
+```
+
+**❌ Wrong:** Never use `startOfDay()`, `endOfDay()`, `startOfMonth()`, `endOfMonth()` directly for filtering—they use server timezone.
+
 ---
 
 ## 6. Anti-Patterns (Forbidden)
