@@ -9,8 +9,8 @@
       "Bash(tail:*)",
       "Bash(grep:*)",
       "Bash(npm run *)",
-      "Bash(npm test:*)",
-      "Bash(node -e*)",
+      "Bash(npm test *)",
+      "Bash(node -e *)",
       "Read(~/.bashrc)",
       "Read(~/.profile)",
       "Read(./.env.example)"
