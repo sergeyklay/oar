@@ -568,10 +568,10 @@ describe('isTimestampInMonth', () => {
     expect(isTimestampInMonth(jan15Noon, januaryFilterBoundaries)).toBe(true);
   });
 
-  it('includes Jan 1 00:00 UTC+1 (stored as Dec 31 23:00 UTC) in January', () => {
-    const jan1MidnightPoland = Date.UTC(2025, 11, 31, 23, 0, 0, 0);
+  it('includes Jan 1 01:00 UTC+2 (stored as Dec 31 23:00 UTC) in January', () => {
+    const jan1OneAmUTC2 = Date.UTC(2025, 11, 31, 23, 0, 0, 0);
 
-    expect(isTimestampInMonth(jan1MidnightPoland, januaryFilterBoundaries)).toBe(true);
+    expect(isTimestampInMonth(jan1OneAmUTC2, januaryFilterBoundaries)).toBe(true);
   });
 
   it('includes Jan 1 00:00 UTC+2 (stored as Dec 31 22:00 UTC) in January', () => {
