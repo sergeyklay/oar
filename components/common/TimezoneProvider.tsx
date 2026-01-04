@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { TIMEZONE_COOKIE_NAME } from '@/lib/timezone';
+import { TIMEZONE_COOKIE_NAME } from '@/lib/constants';
 
 /**
  * Client component that detects the user's browser timezone and stores it in a cookie.
