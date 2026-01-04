@@ -137,12 +137,9 @@ export function calculateFilterBoundaries(
   let endYear: number;
 
   if (userOffsetHours > 0) {
-    // East of UTC: last moment of month is on same UTC day but earlier hour
+    // East of UTC: last moment is on same UTC day but earlier hour
     // e.g., Jan 31 23:59:59.999 in UTC+1 = Jan 31 22:59:59.999 UTC
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-    }
     endDay = lastDayOfTargetMonth;
     endMonth = month;
     endYear = year;
@@ -231,11 +228,8 @@ export function calculateDayFilterBoundaries(
   let endYear = year;
 
   if (userOffsetHours > 0) {
-    // East of UTC: last moment of day is on same UTC day but earlier hour
+    // East of UTC: last moment is on same UTC day but earlier hour
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-    }
   } else if (userOffsetHours < 0) {
     // West of UTC: last moment of day spills into next UTC day
     endHour = midnightUTCHour - 1;
@@ -287,9 +281,6 @@ export function calculateYearFilterBoundaries(
 
   if (userOffsetHours > 0) {
     endHour = midnightUTCHour - 1;
-    if (endHour < 0) {
-      endHour = 23;
-    }
   } else if (userOffsetHours < 0) {
     // West of UTC: last moment of year spills into next year
     endHour = midnightUTCHour - 1;
