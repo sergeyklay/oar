@@ -3,6 +3,8 @@ import {
   deleteTransaction,
   updateTransaction,
   getRecentPaymentsStats,
+  getRecentPayments,
+  getPaymentsByDate,
 } from './transactions';
 import { db, bills, transactions, resetDbMocks } from '@/db';
 import { revalidatePath } from 'next/cache';
@@ -27,6 +29,7 @@ jest.mock('@/lib/services/SettingsService', () => ({
 jest.mock('@/lib/services/TransactionService', () => ({
   TransactionService: {
     getRecentPayments: jest.fn(),
+    getPaymentsByDate: jest.fn(),
   },
 }));
 
@@ -598,6 +601,24 @@ describe('logPayment', () => {
     });
 
     expect(SettingsService.getBillEndAction).not.toHaveBeenCalled();
+  });
+
+  it('returns error when database throws', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockRejectedValue(new Error('Database connection lost')),
+      }),
+    });
+
+    const result = await logPayment({
+      billId: 'bill-1',
+      amount: 10000,
+      paidAt: new Date('2025-12-15'),
+      updateDueDate: true,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to log payment. Please try again.');
   });
 });
 
@@ -1378,6 +1399,23 @@ describe('updateTransaction', () => {
     expect(capturedAmountDue).toBe(2000);
     expect(capturedStatus).toBe('pending');
   });
+
+  it('returns error when database throws', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockRejectedValue(new Error('Connection error')),
+      }),
+    });
+
+    const result = await updateTransaction({
+      id: 'tx-1',
+      amount: 8000,
+      paidAt: new Date('2025-12-20'),
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to update payment record. Please try again.');
+  });
 });
 
 describe('deleteTransaction', () => {
@@ -1524,6 +1562,38 @@ describe('deleteTransaction', () => {
     expect(db.delete).toHaveBeenCalledWith(transactions);
     expect(db.update).toHaveBeenCalledWith(bills);
   });
+
+  it('returns error when bill not found', async () => {
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([mockTransaction]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([]),
+        }),
+      });
+
+    const result = await deleteTransaction({ id: 'tx-1' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Bill not found');
+  });
+
+  it('returns error when database throws', async () => {
+    (db.select as jest.Mock).mockReturnValue({
+      from: jest.fn().mockReturnValue({
+        where: jest.fn().mockRejectedValue(new Error('Connection error')),
+      }),
+    });
+
+    const result = await deleteTransaction({ id: 'tx-1' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to delete payment record. Please try again.');
+  });
 });
 
 describe('getRecentPaymentsStats', () => {
@@ -1576,5 +1646,103 @@ describe('getRecentPaymentsStats', () => {
 
     expect(result.count).toBe(3);
     expect(result.total).toBe(17500);
+  });
+});
+
+describe('getRecentPayments', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns payments for valid input', async () => {
+    const mockPayments = [
+      { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() },
+    ];
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue(mockPayments);
+
+    const result = await getRecentPayments({ days: 7 });
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(mockPayments);
+  });
+
+  it('passes tag to service when provided', async () => {
+    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+
+    await getRecentPayments({ days: 14, tag: 'utilities' });
+
+    expect(TransactionService.getRecentPayments).toHaveBeenCalledWith(14, 'utilities', 0);
+  });
+
+  it('returns error for invalid days', async () => {
+    const result = await getRecentPayments({ days: -1 });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid recent payments query parameters');
+  });
+
+  it('returns error for days exceeding max', async () => {
+    const result = await getRecentPayments({ days: 400 });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid recent payments query parameters');
+  });
+
+  it('returns error when service throws', async () => {
+    (TransactionService.getRecentPayments as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+    const result = await getRecentPayments({ days: 7 });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to fetch recent payments');
+  });
+});
+
+describe('getPaymentsByDate', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns payments for valid date', async () => {
+    const mockPayments = [
+      { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() },
+    ];
+    (TransactionService.getPaymentsByDate as jest.Mock).mockResolvedValue(mockPayments);
+
+    const result = await getPaymentsByDate({ date: '2026-01-05' });
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(mockPayments);
+  });
+
+  it('passes tag to service when provided', async () => {
+    (TransactionService.getPaymentsByDate as jest.Mock).mockResolvedValue([]);
+
+    await getPaymentsByDate({ date: '2026-01-05', tag: 'utilities' });
+
+    expect(TransactionService.getPaymentsByDate).toHaveBeenCalledWith('2026-01-05', 'utilities', 0);
+  });
+
+  it('returns error for invalid date format', async () => {
+    const result = await getPaymentsByDate({ date: '01-05-2026' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid date query parameters');
+  });
+
+  it('returns error for malformed date', async () => {
+    const result = await getPaymentsByDate({ date: 'not-a-date' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid date query parameters');
+  });
+
+  it('returns error when service throws', async () => {
+    (TransactionService.getPaymentsByDate as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+    const result = await getPaymentsByDate({ date: '2026-01-05' });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Failed to fetch payments by date');
   });
 });

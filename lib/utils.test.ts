@@ -6,6 +6,8 @@ import {
   calculateExtendedQueryBoundaries,
   calculateFilterBoundaries,
   isTimestampInMonth,
+  calculateDayFilterBoundaries,
+  calculateYearFilterBoundaries,
 } from './utils';
 
 describe('cn', () => {
@@ -592,5 +594,115 @@ describe('isTimestampInMonth', () => {
     const dateObj = new Date(Date.UTC(2026, 0, 15, 12, 0, 0, 0));
 
     expect(isTimestampInMonth(dateObj, januaryFilterBoundaries)).toBe(true);
+  });
+});
+
+describe('calculateDayFilterBoundaries', () => {
+  describe('with UTC (offset=0)', () => {
+    it('calculates boundaries for a mid-month day', () => {
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-01-15', 0);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 15, 0, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 0, 15, 23, 59, 59, 999));
+    });
+  });
+
+  describe('with positive offset (east of UTC)', () => {
+    it('shifts day boundaries for UTC+1', () => {
+      // Jan 15 in UTC+1: starts Jan 14 23:00 UTC, ends Jan 15 22:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-01-15', 1);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 14, 23, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 0, 15, 22, 59, 59, 999));
+    });
+
+    it('rolls back to previous month when day is 1st', () => {
+      // Jan 1 in UTC+1: starts Dec 31 23:00 UTC, ends Jan 1 22:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-01-01', 1);
+
+      expect(filterStartUTC).toBe(Date.UTC(2025, 11, 31, 23, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 0, 1, 22, 59, 59, 999));
+    });
+
+    it('rolls back to previous year when day is Jan 1st', () => {
+      // Mar 1 in UTC+2: starts Feb 28 22:00 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-03-01', 2);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 1, 28, 22, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 2, 1, 21, 59, 59, 999));
+    });
+  });
+
+  describe('with negative offset (west of UTC)', () => {
+    it('shifts day boundaries for UTC-5 (New York)', () => {
+      // Jan 15 in UTC-5: starts Jan 15 05:00 UTC, ends Jan 16 04:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-01-15', -5);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 15, 5, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 0, 16, 4, 59, 59, 999));
+    });
+
+    it('handles month rollover for last day', () => {
+      // Jan 31 in UTC-5: ends Feb 1 04:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2026-01-31', -5);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 31, 5, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 1, 1, 4, 59, 59, 999));
+    });
+
+    it('handles year rollover for Dec 31', () => {
+      // Dec 31 in UTC-5: ends Jan 1 next year 04:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateDayFilterBoundaries('2025-12-31', -5);
+
+      expect(filterStartUTC).toBe(Date.UTC(2025, 11, 31, 5, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 0, 1, 4, 59, 59, 999));
+    });
+  });
+});
+
+describe('calculateYearFilterBoundaries', () => {
+  describe('with UTC (offset=0)', () => {
+    it('calculates full year boundaries', () => {
+      const { filterStartUTC, filterEndUTC } = calculateYearFilterBoundaries(2026, 0);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 1, 0, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 11, 31, 23, 59, 59, 999));
+    });
+  });
+
+  describe('with positive offset (east of UTC)', () => {
+    it('shifts year start to previous year for UTC+1', () => {
+      // 2026 in UTC+1: starts Dec 31 2025 23:00 UTC
+      const { filterStartUTC, filterEndUTC } = calculateYearFilterBoundaries(2026, 1);
+
+      expect(filterStartUTC).toBe(Date.UTC(2025, 11, 31, 23, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 11, 31, 22, 59, 59, 999));
+    });
+
+    it('handles UTC+9 (Japan)', () => {
+      // 2026 in UTC+9: starts Dec 31 2025 15:00 UTC, ends Dec 31 2026 14:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateYearFilterBoundaries(2026, 9);
+
+      expect(filterStartUTC).toBe(Date.UTC(2025, 11, 31, 15, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2026, 11, 31, 14, 59, 59, 999));
+    });
+  });
+
+  describe('with negative offset (west of UTC)', () => {
+    it('shifts year end to next year for UTC-5 (New York)', () => {
+      // 2026 in UTC-5: starts Jan 1 05:00 UTC, ends Jan 1 2027 04:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateYearFilterBoundaries(2026, -5);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 1, 5, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2027, 0, 1, 4, 59, 59, 999));
+    });
+
+    it('handles UTC-12 (Baker Island)', () => {
+      // 2026 in UTC-12: starts Jan 1 12:00 UTC, ends Jan 1 2027 11:59:59.999 UTC
+      const { filterStartUTC, filterEndUTC } = calculateYearFilterBoundaries(2026, -12);
+
+      expect(filterStartUTC).toBe(Date.UTC(2026, 0, 1, 12, 0, 0, 0));
+      expect(filterEndUTC).toBe(Date.UTC(2027, 0, 1, 11, 59, 59, 999));
+    });
   });
 });
