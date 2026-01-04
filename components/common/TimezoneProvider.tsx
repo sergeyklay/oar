@@ -44,7 +44,8 @@ export function TimezoneProvider() {
 
     if (existingCookie) {
       const existingValue = existingCookie.split('=')[1];
-      if (parseFloat(existingValue) === offsetHours) {
+      const existingOffset = Number.parseFloat(existingValue);
+      if (!Number.isNaN(existingOffset) && Math.abs(existingOffset - offsetHours) < 0.01) {
         // Cookie already has the correct value, no need to update
         return;
       }
