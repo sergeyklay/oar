@@ -268,7 +268,7 @@ oar/
 ├── .github/
 │   ├── actions/                 ← GitHub Actions shared actions
 │   ├── agents/                  ← AI agents
-│   ├── instructions/            ← Common rules and important instructions you must to follow
+│   ├── instructions/            ← Common rules and important instructions you must follow
 │   └── workflows/               ← GitHub Actions workflows
 ├── .specs/                      ← Feature specifications
 ├── .plans/                      ← Implementation plans
