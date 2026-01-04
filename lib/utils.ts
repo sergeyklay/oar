@@ -21,9 +21,7 @@ export interface FilterBoundaries {
 }
 
 /**
- * Calculate month boundary metadata for a given year and month.
- *
- * Support year boundaries (January wraps to previous year, December to next).
+ * Compute previous/next month metadata with year boundary handling.
  *
  * @param year - Year number (e.g., 2025)
  * @param month - Month number (1-12, 1 = January)
@@ -46,7 +44,7 @@ export function calculateMonthBoundaries(year: number, month: number): MonthBoun
 }
 
 /**
- * Calculate extended query boundaries to catch all timezone offsets (UTC-12 to UTC+14).
+ * Compute extended query range covering all timezones (UTC-12 to UTC+14).
  *
  * @param boundaries - Month boundary metadata from calculateMonthBoundaries()
  * @returns Query start/end as UTC Date objects
@@ -65,18 +63,16 @@ export function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): Q
 }
 
 /**
- * Calculate precise filter boundaries for post-query filtering.
+ * Compute filter boundaries for timezone-aware post-query filtering.
  *
- * Filter boundaries determine which timestamps belong to a given calendar month
- * in the user's local timezone. The boundaries are calculated by offsetting
- * UTC midnight to match midnight in the user's timezone.
+ * Determine which timestamps belong to a calendar month in user's local timezone
+ * by offsetting UTC midnight to match local midnight.
  *
  * @param year - Year number
  * @param month - Month number (1-12)
  * @param boundaries - Month boundary metadata from calculateMonthBoundaries()
- * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
- *                          Positive for east (e.g., 1 for UTC+1 Poland)
- *                          Negative for west (e.g., -5 for UTC-5 New York)
+ * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0).
+ *                          Positive for east (e.g., 1 for UTC+1), negative for west.
  * @returns Filter boundaries as UTC timestamps (milliseconds)
  *
  * @example
@@ -165,11 +161,11 @@ export function calculateFilterBoundaries(
 }
 
 /**
- * Check if a timestamp falls within the target month's filter boundaries.
+ * Test if timestamp falls within filter boundaries.
  *
  * @param timestamp - Date or milliseconds since epoch
  * @param filterBoundaries - Boundaries from calculateFilterBoundaries()
- * @returns True if within boundaries, false otherwise
+ * @returns True if within boundaries
  */
 export function isTimestampInMonth(timestamp: Date | number, filterBoundaries: FilterBoundaries): boolean {
   const ts = timestamp instanceof Date ? timestamp.getTime() : timestamp;
@@ -177,15 +173,13 @@ export function isTimestampInMonth(timestamp: Date | number, filterBoundaries: F
 }
 
 /**
- * Calculate day filter boundaries for a specific date in the user's timezone.
+ * Compute day boundaries for a date in user's timezone.
  *
- * This function calculates the UTC timestamps that represent the start and end
- * of a given day in the user's local timezone. Used for filtering payments
- * or bills that fall on a specific date.
+ * Return UTC timestamps representing start/end of day in user's local timezone.
  *
  * @param dateStr - Date string in YYYY-MM-DD format
  * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
- * @returns Object with startUTC and endUTC timestamps in milliseconds
+ * @returns Filter boundaries as UTC timestamps (milliseconds)
  *
  * @example
  * // For a user in Poland (UTC+1) viewing January 15, 2026:
@@ -255,11 +249,11 @@ export function calculateDayFilterBoundaries(
 }
 
 /**
- * Calculate the year filter boundaries for the user's timezone.
+ * Compute year boundaries in user's timezone.
  *
  * @param year - Year number (e.g., 2025)
  * @param userOffsetHours - User's timezone offset in hours from UTC (default: 0)
- * @returns Object with startUTC and endUTC timestamps in milliseconds
+ * @returns Filter boundaries as UTC timestamps (milliseconds)
  */
 export function calculateYearFilterBoundaries(
   year: number,
