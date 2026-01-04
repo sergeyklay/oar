@@ -16,7 +16,6 @@ build
 # IDE and editor
 .idea
 .vscode
-.cursor
 *.swp
 *.swo
 *.code-workspace

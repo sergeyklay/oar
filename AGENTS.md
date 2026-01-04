@@ -265,9 +265,11 @@ These patterns are explicitly banned. If you see them in existing code, do NOT r
 ```plaintext
 oar/
 ├── AGENTS.md                    ← YOU ARE HERE (Constitution)
-├── .cursor/
-│   ├── commands/                ← Commands for the AI agents
-│   └── rules/                   ← Tactical coding patterns
+├── .github/
+│   ├── actions/                 ← GitHub Actions shared actions
+│   ├── agents/                  ← AI agents
+│   ├── instructions/            ← Common rules and important instructions you must to follow
+│   └── workflows/               ← GitHub Actions workflows
 ├── .specs/                      ← Feature specifications
 ├── .plans/                      ← Implementation plans
 │

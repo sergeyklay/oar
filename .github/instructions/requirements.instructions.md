@@ -1,6 +1,6 @@
 ---
-description: MUST activate when any of these trigger words are seen: rewrite this prompt.
-globs:
+description: 'MUST activate when any of these trigger words are seen: "rewrite this prompt", "optimize this prompt", "improve this prompt", "refine this prompt"'
+applyTo: '**'
 ---
 
 Role: LLM Prompt Optimizer

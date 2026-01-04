@@ -1,9 +1,14 @@
-# /implement Command
-
-Implement a step from the Execution Plan strictly following architectural constraints.
-
 ---
-
+description: Implement a step from the Execution Plan strictly following architectural constraints
+name: Implement
+tools:
+   - execute
+   - read
+   - edit
+   - search
+   - web
+   - agent
+---
 ## Role
 
 You are a **Principal Next.js/TypeScript Engineer**. Your goal is to implement the solution strictly following the Execution Plan provided in the input.
@@ -144,11 +149,11 @@ import { format } from 'date-fns';
 
 ### Rule Files to Follow
 
-- **CRITICAL:** Strictly follow @AGENTS.md
-- **TypeScript/React:** Follow @.cursor/rules/typescript-react.mdc
-- **Logging:** Follow @.cursor/rules/logging.mdc
-- **Testing:** Follow @.cursor/rules/testing.mdc
-- **Preservation:** Follow @.cursor/rules/preservation.mdc
+- **CRITICAL:** Strictly follow #file:../../AGENTS.md
+- **TypeScript/React:** Follow #file:../instructions/typescript-react.instructions.md
+- **Logging:** Follow #file:../instructions/logging.instructions.md
+- **Testing:** Follow #file:../instructions/testing.instructions.md
+- **Preservation:** Follow #file:../instructions/preservation.instructions.md
 
 ---
 
@@ -180,12 +185,12 @@ IF the task involves fixing a documented BUG:
 
    Propose the exact command for the QA Agent:
    > Bug {short name} was fixed.
-   > **Next Step:** Lock this fix with a regression test.
+   > **Next Step:** Lock this fix with a regression test. Use the following prompt for *Test* agent:
    > ```plaintext
-   > /test @[affected filename], @[affected filename], ...
-   >
    > Bug {short name of the bug} was fixed.
-   > The bug was: [specific bug description].
+   > [specific bug description].
+   >
+   > **Affected files:** [affected filename], [affected filename], ...
    >
    > **Changes Made:**
    > 1. [specific change description]
@@ -194,14 +199,14 @@ IF the task involves fixing a documented BUG:
    > ...
    >
    > Create a regression test ensuring that [specific logic condition] works as expected.
-   > Strictly follow testing rules: @.cursor/rules/testing.mdc
+   > STRICTLY follow your instructions.
    > ```
 
    **Scenario B: Fix is NOT Testable (e.g., CSS)**
 
    Explicitly state why and request manual verification:
    > Bug {short name} was fixed.
-   > The bug was: [specific bug description].
+   > [specific bug description].
    >
    > **Changes Made:**
    > 1. [specific change description]
@@ -257,6 +262,7 @@ npm run test -- --testPathPatterns="[AffectedFile]" --no-coverage 2>&1
 **Do not ask the user to test it. YOU test it.**
 
 ---
-Last Updated: 2025-12-31
+
+Last Updated: 2026-01-04
 
 Maintained by: AI Agents under human supervision

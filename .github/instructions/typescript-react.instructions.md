@@ -1,7 +1,6 @@
 ---
 description: TypeScript and React coding standards for clean, maintainable code
-alwaysApply: false
-globs: **/*.ts, **/*.tsx
+applyTo: '**/*.ts,**/*.tsx'
 ---
 
 # TypeScript & React Development Standards

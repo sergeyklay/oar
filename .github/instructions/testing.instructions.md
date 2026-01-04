@@ -1,7 +1,6 @@
 ---
-description: Rules for writing Jest unit tests in Next.js/Drizzle environment.
-globs: **/*.test.ts, **/*.test.tsx, jest.config.ts
-alwaysApply: false
+description: Instructions for writing Jest unit tests in Next.js/Drizzle environment
+applyTo: '**/*.test.ts,**/*.test.tsx,jest.config.ts'
 ---
 
 # Testing Standards
@@ -18,7 +17,7 @@ alwaysApply: false
 
 - Maintain a 1:1 ratio between test files and implementation files
 - All new features require tests; bug fixes need regression tests
-- Arrange-Act-Assert pattern clearly separated. Do NOT use "// Arrange", "// Act", "// Assert" comments.
+- Arrange-Act-Assert pattern clearly separated. **Do NOT** use "// Arrange", "// Act", "// Assert" comments.
 
 ## Mocking Drizzle ORM
 
