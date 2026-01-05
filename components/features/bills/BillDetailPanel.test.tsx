@@ -146,7 +146,7 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText(/variable amount/i)).toBeInTheDocument();
     });
 
-    it('displays base amount when non-variable bill has amountDue=0 (fully paid current cycle)', () => {
+    it('displays base amount when non-variable bill has zero amountDue', () => {
       const bill = createMockBill({
         amount: 10000,
         amountDue: 0,
