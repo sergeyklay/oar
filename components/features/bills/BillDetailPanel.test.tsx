@@ -129,7 +129,7 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText(/\(\$150\.00\)/)).toBeInTheDocument();
     });
 
-    it('displays base amount (not partial format) when variable bill has amountDue=0 after cycle advance', () => {
+    it('displays base amount when variable bill has zero amountDue', () => {
       const bill = createMockBill({
         amount: 121012,
         amountDue: 0,
