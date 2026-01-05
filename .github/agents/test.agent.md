@@ -5,6 +5,7 @@ tools:
    - execute
    - read
    - edit
+   - search
 handoffs:
   - label: Document Results
     agent: Document
