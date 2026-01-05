@@ -28,12 +28,39 @@ Evaluate query optimization for AI chatbot interaction given conversational cont
 * Maintain semantic intent fidelity.
 * Integrate conversational context.
 * Exclude domain-irrelevant historical data.
+* Ensure success criteria is defined and measurable.
 * Rank outputs by likelihood optimization.
+
+### Building strong criteria
+
+Good success criteria are:
+
+* **Specific:** Clearly define what user want to achieve. Instead of "good performance," specify "accurate sentiment classification."
+* **Measurable:** Use quantitative metrics or well-defined qualitative scales. Numbers provide clarity and scalability, but qualitative measures can be valuable if consistently applied along with quantitative measures.
+  * Even "hazy" topics such as ethics and safety can be quantified.
+* **Achievable:** Base user targets on industry benchmarks, prior experiments, AI research, or expert knowledge. User success metrics should not be unrealistic to current frontier model capabilities.
+* **Relevant:** Align user criteria with user application's purpose and user needs. Strong citation accuracy might be critical for medical apps but less so for casual chatbots.
+
+#### Common success criteria to consider
+
+Here are some criteria that might be important for user use case. This list is non-exhaustive:
+
+* **Task fidelity:** How well does the model need to perform on the task? User may also need to consider edge case handling, such as how well the model needs to perform on rare or challenging inputs.
+* **Consistency:** How similar does the model's responses need to be for similar types of input? If a user asks the same question twice, how important is it that they get semantically similar answers?
+* **Relevance and coherence:** How well does the model directly address the user's questions or instructions? How important is it for the information to be presented in a logical, easy to follow manner?
+* **Tone and style:** How well does the model's output style match expectations? How appropriate is its language for the target audience?
+* **Privacy preservation:** What is a successful metric for how the model handles personal or sensitive information? Can it follow instructions not to use or share certain details?
+* **Context utilization:** How effectively does the model use provided context? How well does it reference and build upon information given in its history? Does the task require studying the project, searching the internet, or using instructions?
+* **Latency:** What is the acceptable response time for the model? This will depend on user application's real-time requirements and user expectations.
+* **Price:** What is user budget for running the model? Consider factors like the cost per API call, the size of the model, and the frequency of usage.
 
 ## Input
 
 * Conversational History
 * Target Query (evaluation subject)
+* Project Context (if applicable)
+* Domain Context (if applicable)
+* AGENTS.md (if applicable)
 
 ## Output Schema
 
@@ -49,6 +76,7 @@ For each ranked candidate, use this format:
 ```markdown
 [Goal statement here]
 [Actionable, specific verb-driven task description, step-by-step instructions]
+Success: [One measurable outcome statement]
 ```
 
 **Assumption Matrix:**
@@ -58,7 +86,7 @@ For each ranked candidate, use this format:
 
 ### Example Output
 
-Use the following as a guide for formatting your output.
+Use the following as a guide for formatting your output. Do NOT copy this directly - it is only an example for structure and inspiration.
 
 <user>
 Rewrite this prompt:
@@ -83,6 +111,7 @@ The intent is clear, but typos, grammar, and structure need fixes.
 | Structure             | Needs Improvement | Could be more organized and actionable.                 |
 | Specificity           | Effective         | Clear constraints (concise, concrete, minimal changes). |
 | Redundancy            | Minor Issue       | "STRICTLY follow your instructions" is redundant        |
+| Success Criteria      | Needs Improvement | Could specify what "concise and concrete" means.        |
 | Language              | Effective         | Prompt already in English, no need to translate.        |
 
 #### 3. Ranked Rewrite Candidates
@@ -91,7 +120,8 @@ The intent is clear, but typos, grammar, and structure need fixes.
 
 ```markdown
 Update the existing AGENTS.md file with only the strictly necessary changes.
-Keep the file concise and concrete. Do not rewrite large sections—make minimal, targeted edits only.
+Keep the file concise and concrete. Do not rewrite large sections - make minimal, targeted edits only.
+Success: Diff shows ≤10 changed lines; original structure intact.
 ```
 
 **Assumption Matrix:**
@@ -108,6 +138,7 @@ Keep the file concise and concrete. Do not rewrite large sections—make minimal
 Your task is to update AGENTS.md (do not generate a new file).
 Make only the strictly necessary changes to keep it concise and concrete.
 Do not rewrite large portions of the file—apply minimal, targeted edits.
+Success: No section headers removed; changes localized to target content.
 ```
 
 **Assumption Matrix:**
@@ -127,6 +158,8 @@ Requirements:
 - Keep content concise and concrete
 - Make only strictly necessary edits
 - Do not rewrite large sections of the file
+
+Success: All requirements met; file passes linter.
 ```
 
 **Assumption Matrix:**
