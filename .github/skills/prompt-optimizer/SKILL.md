@@ -28,7 +28,7 @@ Evaluate query optimization for AI chatbot interaction given conversational cont
 * Maintain semantic intent fidelity.
 * Integrate conversational context.
 * Exclude domain-irrelevant historical data.
-* Ensure success criteria is defined and measurable.
+* Ensure success criteria are defined and measurable.
 * Rank outputs by likelihood optimization.
 
 ### Building strong criteria
