@@ -28,44 +28,42 @@ describe('TimezoneProvider', () => {
     });
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('renders nothing visible', () => {
     const { container } = render(<TimezoneProvider />);
 
     expect(container.firstChild).toBeNull();
   });
 
-  it('sets timezone cookie on mount', () => {
+  it('sets timezone cookie with correct format on mount', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
+    const oneYearInSeconds = 365 * 24 * 60 * 60;
 
     render(<TimezoneProvider />);
 
+    expect(cookieSetter).toHaveBeenCalledTimes(1);
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${COOKIE_NAME}=1`)
-    );
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining('path=/')
-    );
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining('SameSite=Lax')
+      `${COOKIE_NAME}=1; path=/; max-age=${oneYearInSeconds}; SameSite=Lax`
     );
   });
 
-  describe.each([
+  it.each([
     { offsetMinutes: -60, expectedHours: 1, timezone: 'UTC+1 (CET)' },
     { offsetMinutes: 300, expectedHours: -5, timezone: 'UTC-5 (EST)' },
     { offsetMinutes: -540, expectedHours: 9, timezone: 'UTC+9 (JST)' },
     { offsetMinutes: 0, expectedHours: 0, timezone: 'UTC+0' },
     { offsetMinutes: -330, expectedHours: 5.5, timezone: 'UTC+5:30 (IST)' },
-  ])('timezone offset conversion: $timezone', ({ offsetMinutes, expectedHours }) => {
-    it(`converts ${offsetMinutes} minutes to ${expectedHours} hours`, () => {
-      jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(offsetMinutes);
+  ])('converts $offsetMinutes minutes to $expectedHours hours ($timezone)', ({ offsetMinutes, expectedHours }) => {
+    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(offsetMinutes);
 
-      render(<TimezoneProvider />);
+    render(<TimezoneProvider />);
 
-      expect(cookieSetter).toHaveBeenCalledWith(
-        expect.stringContaining(`${COOKIE_NAME}=${expectedHours}`)
-      );
-    });
+    expect(cookieSetter).toHaveBeenCalledWith(
+      expect.stringContaining(`${COOKIE_NAME}=${expectedHours}`)
+    );
   });
 
   it('does not update cookie if value is already correct', () => {
@@ -85,17 +83,6 @@ describe('TimezoneProvider', () => {
 
     expect(cookieSetter).toHaveBeenCalledWith(
       expect.stringContaining(`${COOKIE_NAME}=1`)
-    );
-  });
-
-  it('sets cookie with 1 year max-age', () => {
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(0);
-
-    render(<TimezoneProvider />);
-
-    const oneYearInSeconds = 365 * 24 * 60 * 60;
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`max-age=${oneYearInSeconds}`)
     );
   });
 
