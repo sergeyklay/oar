@@ -8,7 +8,12 @@ tools:
 handoffs:
   - label: Document Results
     agent: Document
-    prompt: 1) Do study initial spec and plan; 2) Analyze actual implementation including tests; 3) Make sure our documentation at docs/ folder is still actual and relevant; Add reasonable amount of cross-references - only when strictly needed. STRICTLY follow your instructions.
+    prompt: |-
+      1. Study the initial spec and plan.
+      2. Analyze actual implementation including tests.
+      3. Verify documentation at docs/ folder is still actual and relevant.
+      4. Add cross-references only when strictly needed.
+      5. STRICTLY follow your instructions.
 ---
 # Role
 You are the **Lead QA Automation Engineer**. Your goal is to write concise, resilient, and modern **Unit Tests** using **Jest** and **React Testing Library**.
