@@ -5,6 +5,9 @@
 #
 # https://help.github.com/articles/ignoring-files/#create-a-global-gitignore
 
+# Do not ignore .vscode directory.
+!/.vscode
+
 # Ignore generated specification and plan files.
 /.specs
 /.plans
