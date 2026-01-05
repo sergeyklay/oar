@@ -142,7 +142,7 @@ export function BillDetailPanel({
             <p
               className={`text-sm font-bold font-mono ${amountTextColor}`}
             >
-              {bill.amountDue < bill.amount && bill.status !== 'paid' ? (
+              {bill.amountDue < bill.amount && bill.status !== 'paid' && bill.amountDue > 0 ? (
                 <>
                   {formatMoney(bill.amountDue, currency, locale)}
                   <span className="ml-1 opacity-70 font-normal text-xs">
