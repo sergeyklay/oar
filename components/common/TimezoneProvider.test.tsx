@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
+import { TIMEZONE_COOKIE_NAME } from '@/lib/constants';
 import { TimezoneProvider } from './TimezoneProvider';
 
 describe('TimezoneProvider', () => {
-  const COOKIE_NAME = 'oar-tz-offset';
   let cookieGetter: jest.Mock;
   let cookieSetter: jest.Mock;
   let originalCookieDescriptor: PropertyDescriptor | undefined;
@@ -46,7 +46,7 @@ describe('TimezoneProvider', () => {
 
     expect(cookieSetter).toHaveBeenCalledTimes(1);
     expect(cookieSetter).toHaveBeenCalledWith(
-      `${COOKIE_NAME}=1; path=/; max-age=${oneYearInSeconds}; SameSite=Lax`
+      `${TIMEZONE_COOKIE_NAME}=1; path=/; max-age=${oneYearInSeconds}; SameSite=Lax`
     );
   });
 
@@ -62,13 +62,13 @@ describe('TimezoneProvider', () => {
     render(<TimezoneProvider />);
 
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${COOKIE_NAME}=${expectedHours}`)
+      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=${expectedHours}`)
     );
   });
 
   it('does not update cookie if value is already correct', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
-    cookieGetter.mockReturnValue(`${COOKIE_NAME}=1`);
+    cookieGetter.mockReturnValue(`${TIMEZONE_COOKIE_NAME}=1`);
 
     render(<TimezoneProvider />);
 
@@ -77,12 +77,12 @@ describe('TimezoneProvider', () => {
 
   it('updates cookie if existing value differs', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
-    cookieGetter.mockReturnValue(`${COOKIE_NAME}=-5`);
+    cookieGetter.mockReturnValue(`${TIMEZONE_COOKIE_NAME}=-5`);
 
     render(<TimezoneProvider />);
 
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${COOKIE_NAME}=1`)
+      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`)
     );
   });
 
@@ -98,7 +98,7 @@ describe('TimezoneProvider', () => {
 
   it('handles cookie with multiple entries', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
-    cookieGetter.mockReturnValue(`other-cookie=value; ${COOKIE_NAME}=1; another=test`);
+    cookieGetter.mockReturnValue(`other-cookie=value; ${TIMEZONE_COOKIE_NAME}=1; another=test`);
 
     render(<TimezoneProvider />);
 
@@ -107,7 +107,7 @@ describe('TimezoneProvider', () => {
 
   it('handles fractional offsets with tolerance', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-330);
-    cookieGetter.mockReturnValue(`${COOKIE_NAME}=5.5`);
+    cookieGetter.mockReturnValue(`${TIMEZONE_COOKIE_NAME}=5.5`);
 
     render(<TimezoneProvider />);
 
@@ -116,23 +116,23 @@ describe('TimezoneProvider', () => {
 
   it('updates cookie when value differs slightly beyond tolerance', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-330);
-    cookieGetter.mockReturnValue(`${COOKIE_NAME}=5.4`);
+    cookieGetter.mockReturnValue(`${TIMEZONE_COOKIE_NAME}=5.4`);
 
     render(<TimezoneProvider />);
 
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${COOKIE_NAME}=5.5`)
+      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=5.5`)
     );
   });
 
   it('handles invalid cookie value gracefully', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
-    cookieGetter.mockReturnValue(`${COOKIE_NAME}=invalid`);
+    cookieGetter.mockReturnValue(`${TIMEZONE_COOKIE_NAME}=invalid`);
 
     render(<TimezoneProvider />);
 
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${COOKIE_NAME}=1`)
+      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`)
     );
   });
 });
