@@ -75,15 +75,15 @@ The intent is clear, but typos, grammar, and structure need fixes.
 
 #### 2. Characteristic Analysis
 
-| Aspect                | Status            | Notes                                                     |
-|-----------------------|-------------------|-----------------------------------------------------------|
-| Intent Clarity        | Effective         | Clear: update existing file, make minimal changes.        |
-| Spelling              | Needs Fix         | "gemerate" → "generate", "cessary" → "necessary".         |
-| Grammar               | Needs Fix         | "You task" → "Your task".                                 |
-| Structure             | Needs Improvement | Could be more organized and actionable.                   |
-| Specificity           | Effective         | Clear constraints (concise, concrete, minimal changes).   |
-| Redundancy            | Minor Issue       | "STRICTLY follow your instructions" is somewhat redundant |
-| Language              | Effective         | Prompt already in English, no need translate.             |
+| Aspect                | Status            | Notes                                                   |
+|-----------------------|-------------------|---------------------------------------------------------|
+| Intent Clarity        | Effective         | Clear: update existing file, make minimal changes.      |
+| Spelling              | Needs Fix         | "gemerate" → "generate", "cessary" → "necessary".       |
+| Grammar               | Needs Fix         | "You task" → "Your task".                               |
+| Structure             | Needs Improvement | Could be more organized and actionable.                 |
+| Specificity           | Effective         | Clear constraints (concise, concrete, minimal changes). |
+| Redundancy            | Minor Issue       | "STRICTLY follow your instructions" is redundant        |
+| Language              | Effective         | Prompt already in English, no need to translate.        |
 
 #### 3. Ranked Rewrite Candidates
 
