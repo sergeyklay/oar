@@ -35,7 +35,7 @@ Evaluate query optimization for AI chatbot interaction given conversational cont
 
 Good success criteria are:
 
-* **Specific:** Clearly define what user want to achieve. Instead of "good performance," specify "accurate sentiment classification."
+* **Specific:** Clearly define what the user wants to achieve. Instead of "good performance," specify "accurate sentiment classification."
 * **Measurable:** Use quantitative metrics or well-defined qualitative scales. Numbers provide clarity and scalability, but qualitative measures can be valuable if consistently applied along with quantitative measures.
   * Even "hazy" topics such as ethics and safety can be quantified.
 * **Achievable:** Base user targets on industry benchmarks, prior experiments, AI research, or expert knowledge. Your success metrics should not be unrealistic to current frontier model capabilities.
