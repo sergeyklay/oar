@@ -52,7 +52,7 @@ Here are some criteria that might be important for your use case. This list is n
 * **Privacy preservation:** What is a successful metric for how the model handles personal or sensitive information? Can it follow instructions not to use or share certain details?
 * **Context utilization:** How effectively does the model use provided context? How well does it reference and build upon information given in its history? Does the task require studying the project, searching the internet, or using instructions?
 * **Latency:** What is the acceptable response time for the model? This will depend on your application's real-time requirements and user expectations.
-* **Price:** What is user budget for running the model? Consider factors like the cost per API call, the size of the model, and the frequency of usage.
+* **Price:** What is your budget for running the model? Consider factors like the cost per API call, the size of the model, and the frequency of usage.
 
 ## Input
 
