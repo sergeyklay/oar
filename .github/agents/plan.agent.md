@@ -11,7 +11,7 @@ handoffs:
     prompt: Execute the plan strictly phase by phase. STRICTLY follow your instructions.
   - label: Review Plan
     agent: Specify
-    prompt: Review the plan against the original requirements. Do not change th plan yourself. If there are gaps, ask the user for clarification. If changes are needed, inform the user what to change in the plan and why.
+    prompt: Review the plan against the original requirements. Do not change the plan yourself. If there are gaps, ask the user for clarification. If changes are needed, inform the user what to change in the plan and why.
 ---
 ## Role
 
