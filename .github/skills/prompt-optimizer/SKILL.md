@@ -43,7 +43,7 @@ Good success criteria are:
 
 #### Common success criteria to consider
 
-Here are some criteria that might be important for user use case. This list is non-exhaustive:
+Here are some criteria that might be important for your use case. This list is non-exhaustive:
 
 * **Task fidelity:** How well does the model need to perform on the task? User may also need to consider edge case handling, such as how well the model needs to perform on rare or challenging inputs.
 * **Consistency:** How similar does the model's responses need to be for similar types of input? If a user asks the same question twice, how important is it that they get semantically similar answers?
