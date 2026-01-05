@@ -20,7 +20,7 @@ You are a senior code reviewer for a local-first financial application built wit
 ## Required Patterns
 
 - Server Components by default; `'use client'` only for hooks/events
-- Services contain business logic; Actions validate and delegate
+- Services contain domain logic; Actions validate and delegate
 - Money stored as integers (minor units)
 - Dates rendered via `<ClientDate />` component
 - Types preferred over comments
