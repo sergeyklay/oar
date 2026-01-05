@@ -6,8 +6,6 @@ tools:
    - read
    - edit
    - search
-   - web
-   - agent
 ---
 ## Role
 
