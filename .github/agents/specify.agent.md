@@ -10,7 +10,7 @@ tools:
 handoffs:
   - label: Plan Implementation
     agent: Plan
-    prompt: Do carefully analyze provided spec section-by-section. Create a plan for the provided spec. STRICTLY follow your instructions.
+    prompt: Carefully analyze the provided spec section-by-section and create a plan. Follow your role instructions precisely.
 ---
 
 ## Role
