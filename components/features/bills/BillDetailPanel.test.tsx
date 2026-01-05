@@ -129,6 +129,23 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText(/\(\$150\.00\)/)).toBeInTheDocument();
     });
 
+    it('displays base amount (not partial format) when variable bill has amountDue=0 after cycle advance', () => {
+      const bill = createMockBill({
+        amount: 121012,
+        amountDue: 0,
+        isVariable: true,
+        status: 'pending',
+      });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      // Should show the estimate amount, not "0.00 (1210.12)"
+      expect(screen.getByText('$1,210.12')).toBeInTheDocument();
+      // Should NOT show the partial payment format with $0.00
+      expect(screen.queryByText(/\$0\.00/)).not.toBeInTheDocument();
+      // Should still show the variable amount note
+      expect(screen.getByText(/variable amount/i)).toBeInTheDocument();
+    });
+
     it('colors amount red if overdue', () => {
       const bill = createMockBill({ status: 'overdue', amount: 10000, amountDue: 10000 });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
