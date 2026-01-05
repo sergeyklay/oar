@@ -146,6 +146,38 @@ describe('BillDetailPanel', () => {
       expect(screen.getByText(/variable amount/i)).toBeInTheDocument();
     });
 
+    it('displays base amount when non-variable bill has amountDue=0 (fully paid current cycle)', () => {
+      const bill = createMockBill({
+        amount: 10000,
+        amountDue: 0,
+        isVariable: false,
+        status: 'pending',
+      });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      // Should show the base amount, not "0.00 (100.00)"
+      expect(screen.getByText('$100.00')).toBeInTheDocument();
+      // Should NOT show partial payment format
+      expect(screen.queryByText(/\$0\.00/)).not.toBeInTheDocument();
+      // Should NOT show variable amount note
+      expect(screen.queryByText(/variable amount/i)).not.toBeInTheDocument();
+    });
+
+    it('displays base amount when non-variable bill is paid', () => {
+      const bill = createMockBill({
+        amount: 10000,
+        amountDue: 0,
+        isVariable: false,
+        status: 'paid',
+      });
+      render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
+
+      // Should show the base amount
+      expect(screen.getByText('$100.00')).toBeInTheDocument();
+      // Should NOT show partial payment format
+      expect(screen.queryByText(/\$0\.00/)).not.toBeInTheDocument();
+    });
+
     it('colors amount red if overdue', () => {
       const bill = createMockBill({ status: 'overdue', amount: 10000, amountDue: 10000 });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
