@@ -39,7 +39,7 @@ Good success criteria are:
 * **Measurable:** Use quantitative metrics or well-defined qualitative scales. Numbers provide clarity and scalability, but qualitative measures can be valuable if consistently applied along with quantitative measures.
   * Even "hazy" topics such as ethics and safety can be quantified.
 * **Achievable:** Base user targets on industry benchmarks, prior experiments, AI research, or expert knowledge. User success metrics should not be unrealistic to current frontier model capabilities.
-* **Relevant:** Align user criteria with user application's purpose and user needs. Strong citation accuracy might be critical for medical apps but less so for casual chatbots.
+* **Relevant:** Align the criteria with the application's purpose and user needs. Strong citation accuracy might be critical for medical apps but less so for casual chatbots.
 
 #### Common success criteria to consider
 
