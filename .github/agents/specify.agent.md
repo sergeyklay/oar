@@ -7,7 +7,10 @@ tools:
    - edit
    - search
    - web
-   - agent
+handoffs:
+  - label: Plan Implementation
+    agent: Plan
+    prompt: Do carefully analyze provided spec section-by-section. Create a plan for the provided spec. STRICTLY follow your instructions.
 ---
 
 ## Role

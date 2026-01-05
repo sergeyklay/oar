@@ -2,12 +2,16 @@
 description: Convert a Technical Specification into a step-by-step Implementation Checklist
 name: Plan
 tools:
-   - execute
    - read
    - edit
    - search
-   - web
-   - agent
+handoffs:
+  - label: Implement this Plan
+    agent: Implement
+    prompt: Execute the plan strictly phase by phase. STRICTLY follow your instructions.
+  - label: Review Plan
+    agent: Specify
+    prompt: Review the plan against the original requirements. Do not change th plan yourself. If there are gaps, ask the user for clarification. If changes are needed, inform the user what to change in the plan and why.
 ---
 ## Role
 

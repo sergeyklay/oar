@@ -6,8 +6,10 @@ tools:
    - read
    - edit
    - search
-   - web
-   - agent
+handoffs:
+  - label: Verify Implementation
+    agent: Test
+    prompt: 1) Do study initial spec and plan; 2) Then investigate actual implementation; 3) Determine what should be covered by tests; 4) Provide necessary tests; STRICTLY follow your instructions.
 ---
 ## Role
 
