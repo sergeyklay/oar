@@ -2,7 +2,7 @@ name: PR Title Generator
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 permissions:
   pull-requests: write
@@ -10,8 +10,13 @@ permissions:
 
 jobs:
   rename-pr:
+    name: Update PR title
     runs-on: ubuntu-latest
-    if: startsWith(github.event.pull_request.title, '@cicdbot title')
+
+    # Only run for code owners and members to avoid spending tokens on random contributors
+    if: |
+      startsWith(github.event.pull_request.title, '@cicdbot title') &&
+      contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
 
     steps:
       - name: Checkout code
@@ -41,19 +46,51 @@ jobs:
         id: generate_title
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_VERSION: 2023-06-01
+          MODEL: claude-haiku-4-5-20251001
+          MAX_TOKENS: 100
+          TEMPERATURE: 0.3
+          SYSTEM_PROMPT: |
+            You are a helpful assistant that generates concise, descriptive pull request titles.
+
+            Follow these rules:
+
+            1. Use conventional commit format: <type>[optional scope]: <description>
+            2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
+            3. An optional scope MAY be provided to a commit's type.
+            4. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis
+            4. Keep under 72 characters including type and scope
+            5. Be specific and descriptive
+            6. Use imperative mood (e.g., 'add' not 'added')
+            7. No period at the end
+            8. Respond with ONLY the title, no explanations or markdown formatting
+
+            Good examples:
+
+            - chore: cleanup workspace config and refactor agent names
+            - feat: implement PR title generation using Claude API
+            - feat(auth): add OAuth2 login support
+            - fix(api): resolve null pointer exception in user endpoint
+            - docs(readme): update installation instructions for clarity
+
+            Bad examples:
+
+            - Added OAuth2 login support. (not imperative, has period)
+            - Fixes issue with user endpoint (not specific)
+            - Update docs (not descriptive)
         run: |
-          # Build the full content for the API request
           CONTENT=$(printf "Based on this git diff, generate an appropriate PR title:\n\n%s" '${{ steps.diff.outputs.diff }}')
 
-          # Use jq to build the entire JSON payload properly (handles all escaping)
           PAYLOAD=$(jq -n \
-            --arg model "claude-haiku-4-5-20251001" \
-            --arg system "You are a helpful assistant that generates concise, descriptive pull request titles. Follow these rules: 1. Use conventional commit format: type(scope): description 2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci 3. Keep under 72 characters 4. Be specific and descriptive 5. Use imperative mood (e.g., 'add' not 'added') 6. No period at the end 7. Respond with ONLY the title, no explanations or markdown formatting" \
+            --arg model "$MODEL" \
+            --arg system "$SYSTEM_PROMPT" \
             --arg content "$CONTENT" \
+            --arg max_tokens "$MAX_TOKENS" \
+            --arg temperature "$TEMPERATURE" \
             '{
               model: $model,
-              max_tokens: 100,
-              temperature: 0.3,
+              max_tokens: $max_tokens,
+              temperature: $temperature,
               system: $system,
               messages: [{role: "user", content: $content}]
             }')
@@ -63,7 +100,7 @@ jobs:
             https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
+            -H "anthropic-version: $ANTHROPIC_VERSION" \
             -d "$PAYLOAD")
 
           # Check for HTTP errors
