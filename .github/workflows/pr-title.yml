@@ -2,7 +2,7 @@ name: PR Title Generator
 
 on:
   pull_request:
-    types: [opened, edited]
+    types: [opened]
 
 permissions:
   pull-requests: write
@@ -10,8 +10,13 @@ permissions:
 
 jobs:
   rename-pr:
+    name: Update PR title
     runs-on: ubuntu-latest
-    if: startsWith(github.event.pull_request.title, '@cicdbot title')
+
+    # Only run for code owners and members to avoid spending tokens on random contributors
+    if: |
+      startsWith(github.event.pull_request.title, '@cicdbot title') &&
+      contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
 
     steps:
       - name: Checkout code
@@ -21,63 +26,84 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Get PR diff
-        id: diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the diff for this PR
-          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --patch)
-
-          # Truncate diff to avoid token limits (first ~500 lines to stay within Claude's context)
-          # Using line-based truncation to preserve UTF-8 character boundaries
-          DIFF_TRUNCATED=$(echo "$DIFF" | head -n 500)
-
-          # Save to multiline output (escaping happens later via jq)
-          echo "diff<<EOF" >> $GITHUB_OUTPUT
-          echo "$DIFF_TRUNCATED" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 500 > /tmp/pr_diff.txt
 
       - name: Generate PR title with Claude
         id: generate_title
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          # Build the full content for the API request
-          CONTENT=$(printf "Based on this git diff, generate an appropriate PR title:\n\n%s" '${{ steps.diff.outputs.diff }}')
+          ANTHROPIC_VERSION: '2023-06-01'
+          # Anthropic's format is claude-{family}-{major}[-{minor}]-{YYYYMMDD}
+          MODEL: claude-haiku-4-5-20251001
+          MAX_TOKENS: 100
+          TEMPERATURE: 0.3
+          SYSTEM_PROMPT: |
+            ## Role
+            You are a helpful assistant that generates concise, descriptive Pull Request titles.
 
-          # Use jq to build the entire JSON payload properly (handles all escaping)
+            ## Task
+            Compose concise, self-explanatory title, reflecting ONLY the main purpose of the Pull Request.
+
+            ## Rules
+            1. Use Conventional Commit format: <type>[optional scope]: <description>
+            2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
+            3. An optional scope MAY be provided to a commit's type.
+            4. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis
+            5. Keep under 72 characters including type and scope
+            6. Be specific and descriptive
+            7. Use imperative mood (e.g., 'add' not 'added')
+            8. No period at the end
+            9. Respond with ONLY the title, no explanations or markdown formatting
+
+            ## Examples
+            Good examples:
+            - chore: cleanup workspace config and refactor agent names
+            - feat: implement PR title generation using Claude API
+            - feat(auth): add OAuth2 login support
+            - fix(api): resolve null pointer exception in user endpoint
+            - docs(readme): update installation instructions for clarity
+
+            Bad examples:
+            - Added OAuth2 login support. (not imperative, has period)
+            - Fix issue with user endpoint (not specific)
+            - Update docs (not descriptive)
+            - feat: implement PR title generation using Claude API to enhance automation and improve workflow efficiency in CI/CD processes (too long)
+        run: |
           PAYLOAD=$(jq -n \
-            --arg model "claude-haiku-4-5-20251001" \
-            --arg system "You are a helpful assistant that generates concise, descriptive pull request titles. Follow these rules: 1. Use conventional commit format: type(scope): description 2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci 3. Keep under 72 characters 4. Be specific and descriptive 5. Use imperative mood (e.g., 'add' not 'added') 6. No period at the end 7. Respond with ONLY the title, no explanations or markdown formatting" \
-            --arg content "$CONTENT" \
+            --arg model "$MODEL" \
+            --arg system "$SYSTEM_PROMPT" \
+            --rawfile diff /tmp/pr_diff.txt \
+            --argjson max_tokens $MAX_TOKENS \
+            --argjson temperature $TEMPERATURE \
             '{
               model: $model,
-              max_tokens: 100,
-              temperature: 0.3,
+              max_tokens: $max_tokens,
+              temperature: $temperature,
               system: $system,
-              messages: [{role: "user", content: $content}]
+              messages: [{
+                role: "user",
+                content: ("Based on this git diff, generate an appropriate PR title:\n\n" + $diff)
+              }]
             }')
 
-          # Call Claude API to generate PR title
           HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
             https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
+            -H "anthropic-version: $ANTHROPIC_VERSION" \
             -d "$PAYLOAD")
 
-          # Check for HTTP errors
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
             exit 1
           fi
 
-          # Extract the title from response
           NEW_TITLE=$(jq -r '.content[0].text // empty' /tmp/response.json | head -n1)
 
-          # Validate we got a response
           if [ -z "$NEW_TITLE" ]; then
-            # Extract error type without exposing full response
             ERROR_TYPE=$(jq -r '.error.type // "unknown_error"' /tmp/response.json)
             echo "::error::Failed to generate title: $ERROR_TYPE"
             exit 1
