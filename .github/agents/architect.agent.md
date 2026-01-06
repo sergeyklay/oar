@@ -1,6 +1,6 @@
 ---
 description: Transform vague feature ideas into detailed, testable requirements with user stories and acceptance criteria
-name: Specify
+name: Architect
 tools:
    - execute
    - read
@@ -9,7 +9,7 @@ tools:
    - web
 handoffs:
   - label: Plan Implementation
-    agent: Plan
+    agent: Planner
     prompt: Carefully analyze the provided spec section-by-section and create a plan. Follow your role instructions precisely.
 ---
 

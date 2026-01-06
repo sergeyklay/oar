@@ -1,6 +1,6 @@
 ---
 description: Test agent for validating implementation plans
-name: Test
+name: Tester
 tools:
    - execute
    - read
@@ -8,7 +8,7 @@ tools:
    - search
 handoffs:
   - label: Document Results
-    agent: Document
+    agent: Writer
     prompt: |-
       1. Study the initial spec and plan.
       2. Analyze actual implementation including tests.

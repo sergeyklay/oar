@@ -1,6 +1,6 @@
 ---
 description: Create detailed, source-of-truth documentation for features, architecture, and development guides
-name: Document
+name: Writer
 tools:
    - execute
    - read

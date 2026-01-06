@@ -1,17 +1,22 @@
 ---
 description: Convert a Technical Specification into a step-by-step Implementation Checklist
-name: Plan
+name: Planner
 tools:
    - read
    - edit
    - search
 handoffs:
-  - label: Implement this Plan
-    agent: Implement
+  - label: Start Implementation
+    agent: Coder
     prompt: Execute the plan strictly phase by phase. STRICTLY follow your instructions.
   - label: Review Plan
-    agent: Specify
-    prompt: Review the plan against the original requirements. Do not change the plan yourself. If there are gaps, ask the user for clarification. If changes are needed, inform the user what to change in the plan and why.
+    agent: Architect
+    prompt: |-
+      Perform a compliance check: compare the Implementation Plan against the Technical Specification.
+
+      1. Identify missing requirements or architectural violations.
+      2. Do NOT edit the plan file. Provide a list of discrepancies.
+      3. If any changes in plan are needed, generate a strict corrective prompt for the Planner agent.
 ---
 ## Role
 
