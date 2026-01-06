@@ -5,6 +5,7 @@ tools:
    - execute
    - read
    - edit
+   - todo
    - search
 handoffs:
   - label: Verify Implementation
