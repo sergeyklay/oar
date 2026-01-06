@@ -28,10 +28,11 @@ jobs:
           # Get the diff for this PR
           DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --patch)
 
-          # Truncate diff to avoid token limits (first 20000 chars for Claude)
-          DIFF_TRUNCATED=$(echo "$DIFF" | head -c 20000)
+          # Truncate diff to avoid token limits (first ~500 lines to stay within Claude's context)
+          # Using line-based truncation to preserve UTF-8 character boundaries
+          DIFF_TRUNCATED=$(echo "$DIFF" | head -n 500)
 
-          # Escape for JSON and save to output
+          # Save to multiline output (escaping happens later via jq)
           echo "diff<<EOF" >> $GITHUB_OUTPUT
           echo "$DIFF_TRUNCATED" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -58,19 +59,27 @@ jobs:
             }')
 
           # Call Claude API to generate PR title
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
+            https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -d "$PAYLOAD")
 
+          # Check for HTTP errors
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+            exit 1
+          fi
+
           # Extract the title from response
-          NEW_TITLE=$(echo "$RESPONSE" | jq -r '.content[0].text' | tr -d '\n')
+          NEW_TITLE=$(jq -r '.content[0].text // empty' /tmp/response.json | head -n1)
 
           # Validate we got a response
-          if [ -z "$NEW_TITLE" ] || [ "$NEW_TITLE" = "null" ]; then
-            echo "Error: Failed to generate title"
-            echo "Response: $RESPONSE"
+          if [ -z "$NEW_TITLE" ]; then
+            # Extract error type without exposing full response
+            ERROR_TYPE=$(jq -r '.error.type // "unknown_error"' /tmp/response.json)
+            echo "::error::Failed to generate title: $ERROR_TYPE"
             exit 1
           fi
 
