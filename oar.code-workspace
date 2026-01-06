@@ -7,13 +7,13 @@
 	"settings": {
 		"editor.rulers": [
 			100
-		],
+		]
 	},
 	"extensions": {
 		"recommendations": [
 			"mkhl.direnv",
 			"elagil.pre-commit-helper",
-			"coderabbit.coderabbit-vscode",
+			"coderabbit.coderabbit-vscode"
 		]
 	}
 }
