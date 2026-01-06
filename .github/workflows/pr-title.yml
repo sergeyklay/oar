@@ -26,21 +26,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Get PR diff
-        id: diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the diff for this PR
-          DIFF=$(gh pr diff ${{ github.event.pull_request.number }} --patch)
-
-          # Truncate diff to avoid token limits (first ~500 lines to stay within Claude's context)
-          # Using line-based truncation to preserve UTF-8 character boundaries
-          DIFF_TRUNCATED=$(echo "$DIFF" | head -n 500)
-
-          # Save to multiline output (escaping happens later via jq)
-          echo "diff<<EOF" >> $GITHUB_OUTPUT
-          echo "$DIFF_TRUNCATED" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 500 > /tmp/pr_diff.txt
 
       - name: Generate PR title with Claude
         id: generate_title
@@ -79,23 +68,23 @@ jobs:
             - Fixes issue with user endpoint (not specific)
             - Update docs (not descriptive)
         run: |
-          CONTENT=$(printf "Based on this git diff, generate an appropriate PR title:\n\n%s" '${{ steps.diff.outputs.diff }}')
-
           PAYLOAD=$(jq -n \
             --arg model "$MODEL" \
             --arg system "$SYSTEM_PROMPT" \
-            --arg content "$CONTENT" \
-            --arg max_tokens "$MAX_TOKENS" \
-            --arg temperature "$TEMPERATURE" \
+            --rawfile diff /tmp/pr_diff.txt \
+            --argjson max_tokens $MAX_TOKENS \
+            --argjson temperature $TEMPERATURE \
             '{
               model: $model,
               max_tokens: $max_tokens,
               temperature: $temperature,
               system: $system,
-              messages: [{role: "user", content: $content}]
+              messages: [{
+                role: "user",
+                content: ("Based on this git diff, generate an appropriate PR title:\n\n" + $diff)
+              }]
             }')
 
-          # Call Claude API to generate PR title
           HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
             https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
@@ -103,18 +92,14 @@ jobs:
             -H "anthropic-version: $ANTHROPIC_VERSION" \
             -d "$PAYLOAD")
 
-          # Check for HTTP errors
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
             exit 1
           fi
 
-          # Extract the title from response
           NEW_TITLE=$(jq -r '.content[0].text // empty' /tmp/response.json | head -n1)
 
-          # Validate we got a response
           if [ -z "$NEW_TITLE" ]; then
-            # Extract error type without exposing full response
             ERROR_TYPE=$(jq -r '.error.type // "unknown_error"' /tmp/response.json)
             echo "::error::Failed to generate title: $ERROR_TYPE"
             exit 1
