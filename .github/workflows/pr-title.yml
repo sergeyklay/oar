@@ -48,11 +48,11 @@ jobs:
             2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
             3. An optional scope MAY be provided to a commit's type.
             4. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis
-            4. Keep under 72 characters including type and scope
-            5. Be specific and descriptive
-            6. Use imperative mood (e.g., 'add' not 'added')
-            7. No period at the end
-            8. Respond with ONLY the title, no explanations or markdown formatting
+            5. Keep under 72 characters including type and scope
+            6. Be specific and descriptive
+            7. Use imperative mood (e.g., 'add' not 'added')
+            8. No period at the end
+            9. Respond with ONLY the title, no explanations or markdown formatting
 
             Good examples:
 
