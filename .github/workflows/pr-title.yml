@@ -41,26 +41,28 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Escape diff for JSON
-          DIFF_JSON=$(echo '${{ steps.diff.outputs.diff }}' | jq -Rs .)
+          # Build the full content for the API request
+          CONTENT=$(printf "Based on this git diff, generate an appropriate PR title:\n\n%s" '${{ steps.diff.outputs.diff }}')
+
+          # Use jq to build the entire JSON payload properly (handles all escaping)
+          PAYLOAD=$(jq -n \
+            --arg model "claude-haiku-4-5-20251001" \
+            --arg system "You are a helpful assistant that generates concise, descriptive pull request titles. Follow these rules: 1. Use conventional commit format: type(scope): description 2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci 3. Keep under 72 characters 4. Be specific and descriptive 5. Use imperative mood (e.g., 'add' not 'added') 6. No period at the end 7. Respond with ONLY the title, no explanations or markdown formatting" \
+            --arg content "$CONTENT" \
+            '{
+              model: $model,
+              max_tokens: 100,
+              temperature: 0.3,
+              system: $system,
+              messages: [{role: "user", content: $content}]
+            }')
 
           # Call Claude API to generate PR title
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
-            -d '{
-              "model": "claude-haiku-4-5-20251001",
-              "max_tokens": 100,
-              "temperature": 0.3,
-              "system": "You are a helpful assistant that generates concise, descriptive pull request titles. Follow these rules:\n1. Use conventional commit format: type(scope): description\n2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci\n3. Keep under 72 characters\n4. Be specific and descriptive\n5. Use imperative mood (e.g., '\''add'\'' not '\''added'\'')\n6. No period at the end\n7. Respond with ONLY the title, no explanations or markdown formatting",
-              "messages": [
-                {
-                  "role": "user",
-                  "content": "Based on this git diff, generate an appropriate PR title:\n\n'"$DIFF_JSON"'"
-                }
-              ]
-            }')
+            -d "$PAYLOAD")
 
           # Extract the title from response
           NEW_TITLE=$(echo "$RESPONSE" | jq -r '.content[0].text' | tr -d '\n')
