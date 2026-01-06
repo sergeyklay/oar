@@ -29,7 +29,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 500 > /tmp/pr_diff.txt
+          gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 2000 > /tmp/pr_diff.txt
 
       - name: Generate PR title with Claude
         id: generate_title
