@@ -1,6 +1,6 @@
 ---
 description: Implement a step from the Execution Plan strictly following architectural constraints
-name: Implement
+name: Coder
 tools:
    - execute
    - read
@@ -9,7 +9,7 @@ tools:
    - search
 handoffs:
   - label: Verify Implementation
-    agent: Test
+    agent: Tester
     prompt: |-
       1. Study the initial spec and plan.
       2. Investigate the actual implementation.
