@@ -35,16 +35,20 @@ jobs:
         id: generate_title
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_VERSION: 2023-06-01
+          ANTHROPIC_VERSION: '2023-06-01'
+          # Anthropic's format is claude-{family}-{major}[-{minor}]-{YYYYMMDD}
           MODEL: claude-haiku-4-5-20251001
           MAX_TOKENS: 100
           TEMPERATURE: 0.3
           SYSTEM_PROMPT: |
-            You are a helpful assistant that generates concise, descriptive pull request titles.
+            ## Role
+            You are a helpful assistant that generates concise, descriptive Pull Request titles.
 
-            Follow these rules:
+            ## Task
+            Compose concise, self-explanatory title, reflecting ONLY the main purpose of the Pull Request.
 
-            1. Use conventional commit format: <type>[optional scope]: <description>
+            ## Rules
+            1. Use Conventional Commit format: <type>[optional scope]: <description>
             2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
             3. An optional scope MAY be provided to a commit's type.
             4. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis
@@ -54,8 +58,8 @@ jobs:
             8. No period at the end
             9. Respond with ONLY the title, no explanations or markdown formatting
 
+            ## Examples
             Good examples:
-
             - chore: cleanup workspace config and refactor agent names
             - feat: implement PR title generation using Claude API
             - feat(auth): add OAuth2 login support
@@ -63,10 +67,10 @@ jobs:
             - docs(readme): update installation instructions for clarity
 
             Bad examples:
-
             - Added OAuth2 login support. (not imperative, has period)
-            - Fixes issue with user endpoint (not specific)
+            - Fix issue with user endpoint (not specific)
             - Update docs (not descriptive)
+            - feat: implement PR title generation using Claude API to enhance automation and improve workflow efficiency in CI/CD processes (too long)
         run: |
           PAYLOAD=$(jq -n \
             --arg model "$MODEL" \
