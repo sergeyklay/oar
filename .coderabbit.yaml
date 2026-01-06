@@ -7,81 +7,14 @@ tone_instructions: >-
 reviews:
   profile: chill
   request_changes_workflow: true
-  high_level_summary: true
-  high_level_summary_placeholder: "@coderabbitai summary"
-  high_level_summary_instructions: >-
-    Act as a Senior Technical Lead adhering to GitHub's best practices for code review.
-    Generate a concise, structured summary that helps reviewers navigate the changes efficiently.
-
-    ## Constraints
-
-    1. NO EMOJIS. Use professional Markdown formatting only. Emojis are allowed only for the section headers as shown in the output format.
-    2. NO FLUFF. Avoid generic intros like "This PR updates...".
-    3. STATIC SECTIONS. All 3 sections shown in the output format are required in the summary.
-    4. DYNAMIC SUB-SECTIONS. Only show sub-sections if relevant data exists.
-    5. NO TOP-LEVEL HEADERS. Start directly with the first section key.
-    6. USING DASHES. Use a single hyphen "-" and add spaces before and after the hyphen. Do not use "—" for dashes.
-       * FORBIDDEN: Breaking Changes: No—all modifications are documentation and configuration updates with no functional impact to codebase or build process.
-       * ALLOWED: Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
-    7. FILENAMES. Filenames should be wrapped in backticks: `lib/services/AutoPayService.ts`
-    8. **CRITICAL**. Make sure the summary and EVERY ELEMENT of the summary is up to date, following the output format, and accurate for every commit in the PR as well as the overall PR. This is a critical requirement. The summary should NOT contain anything that is not described in this instruction.
-
-    ## Output Format
-
-    ```markdown
-    ### 🎯 Scope & Context
-    **Type:** [Feat | Fix | Refactor | Chore | Perf]
-    **Intent:** [1-2 sentences explaining the business or technical goal - the "Why"]
-    **Related Issues:** [Extract issue numbers (e.g., #123 for GitHub, PROJ-456 for Jira, etc.) from commits. If none, omit this line. Do NOT use empty values here - "Related Issues: " - this is NOT allowed.]
-
-    ### 🧭 Reviewer Guide
-    **Complexity:** [Choose one of: Low | Medium | High]
-    #### Entry Point
-    [Identify the most critical or complex file where the reviewer should start to understand the logic. Example to follow: "Start with the `schema.ts` file to understand the database schema and the core changes to the schema. Then look at ..., then look at ...". Do not use just file name, you have to explain what the file is and why it is important to understand the changes.]
-    #### Sensitive Areas
-    [List specific files or functions that require extra scrutiny (e.g., auth, payments, regex)]
-
-    ### ⚠️ Risk Assessment
-    - **Breaking Changes:** [Choose one of:  Yes + details | No breaking changes]
-    - **Migrations/State:** [Database migrations or manual steps required? If none, just "No migrations or state changes"]
-    ```
-
-    ## Example
-    ```markdown
-    ### 🎯 Scope & Context
-
-    **Type:** Chore
-
-    **Intent:** Update transaction notes in AutoPayService to reflect accurate logging information. The notes field in auto-pay transaction records is changed from "Auto-processed on due date" to "Logged by Oar" to better represent the system's logging behavior.
-
-    ### 🧭 Reviewer Guide
-    **Complexity:** Low
-
-    #### Entry Point
-    Start with the `lib/services/AutoPayService.ts` file. This contains the most substantial rework, changes the logic of the service to log payments accurately.
-
-    #### Sensitive Areas
-
-    - `lib/services/foo.ts`: Database transaction insertion logic with notes field value
-    - `lib/services/bar.ts`: Service logic to calculate next due date for recurring bills
-    - `lib/services/baz.ts`: Service logic to derive bill status based on next due date
-
-    ### ⚠️ Risk Assessment
-    - **Breaking Changes:** No breaking changes
-    - **Migrations/State:** No migrations or state changes
-    ```
-
-  auto_title_placeholder: "@coderabbitai title"
-  auto_title_instructions: >-
-    Compose concise, self-explanatory titles (max 72 characters including any prefix),
-    reflecting only the main purpose of the Pull Request;
+  high_level_summary: false
   review_status: true
   commit_status: true
   fail_commit_status: false
   collapse_walkthrough: true
   changed_files_summary: false
   high_level_summary_in_walkthrough: false
-  estimate_code_review_effort: true
+  estimate_code_review_effort: false
   sequence_diagrams: false
   assess_linked_issues: false
   related_issues: false
@@ -93,41 +26,7 @@ reviews:
   poem: false
   labeling_instructions: []
   path_filters: []
-  path_instructions:
-    - path: "README.md"
-      instructions: >-
-        1. Consider the file 'README.md' the overview/introduction of the project.
-           Also consider the 'README.md' file the first place to look for project documentation.
-        2. When reviewing the file 'README.md' it should be linted with help
-           from the tools `markdownlint` and `languagetool`, pointing out any issues.
-        3. You may assume the file 'README.md' will contain GitHub flavor Markdown.
-    - path: "docs/**/*.md"
-      instructions: >-
-        1. When reviewing documentation files, they should be linted with help
-           from the tools `markdownlint` and `languagetool`, pointing out any issues.
-        2. You may assume the documentation files will contain GitHub flavor Markdown.
-    - path: "**/package.json"
-      instructions: >-
-        1. Verify that ONLY npm is used - alternative package managers (yarn, pnpm, bun) are forbidden.
-        2. Ensure package-lock.json is committed and present.
-        3. Check that no global installations are used (no -g flag).
-        4. Verify no @latest syntax is used in version specifications.
-        5. Review dependency versions for security vulnerabilities.
-    - path: "**/*.ts"
-      instructions: >-
-        1. Enforce TypeScript strict mode compliance.
-        2. Follow Airbnb style guide for TypeScript (enforced by ESLint).
-        3. Enforce 100-character line-length limit.
-        4. Require JSDoc style docstrings for functions, classes, and complex interfaces.
-        5. Use imperative voice in descriptions, focus on side effects, parameters, return types, and potential errors.
-        6. Flag obvious comments explaining basic syntax.
-    - path: "**/*.tsx"
-      instructions: >-
-        1. Use functional components with hooks only.
-        2. Keep components small and focused.
-        3. Ensure proper prop typing.
-        4. Verify file naming follows PascalCase.tsx convention.
-        5. Follow TypeScript strict mode and Airbnb style guide.
+  path_instructions: []
   abort_on_close: true
   disable_cache: false
   auto_review:
@@ -135,13 +34,13 @@ reviews:
     auto_incremental_review: true
     ignore_title_keywords: []
     labels: []
-    drafts: true
+    drafts: false
     base_branches: []
   finishing_touches:
     docstrings:
-      enabled: true
+      enabled: false
     unit_tests:
-      enabled: true
+      enabled: false
   tools:
     ast-grep:
       rule_dirs: []
@@ -246,18 +145,3 @@ knowledge_base:
     team_keys: []
   pull_requests:
     scope: auto
-
-code_generation:
-  docstrings:
-    language: en-US
-    path_instructions:
-      - path: "**/*.ts"
-        instructions: >-
-          Adhere **strictly** to the **Airbnb style guide** for TypeScript
-          formatting, enforced by ESLint. Use 100-character line-length limit
-          unless specifically required by the style guide. Do not use
-          obvious comments (e.g., explaining basic syntax). The target audience
-          is a senior Node.js/TypeScript developer. Document functions,
-          classes, and complex interfaces using **JSDoc style** docstrings.
-          Use imperative voice in descriptions and keep them concise, professional,
-          and focused on **side effects, parameters, return types, and potential errors**.
