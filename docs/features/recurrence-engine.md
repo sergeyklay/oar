@@ -38,7 +38,7 @@ When you log a payment and keep the "Update Due Date" toggle on (the default), t
 
 ### Trigger: daily status check
 
-At midnight each day, a [background job](./006-background-jobs.md) scans all pending bills. Any bill with a due date before today gets marked "overdue." This happens automatically without user action.
+At midnight each day, a [background job](./background-jobs.md) scans all pending bills. Any bill with a due date before today gets marked "overdue." This happens automatically without user action.
 
 **Status determination:**
 - Due date is today or in the future → pending
@@ -69,7 +69,7 @@ The system uses "anchor dates" for recurrence calculations to prevent date drift
 
 This separation ensures that monthly bills stay anchored to the same day of the month across all months, regardless of weekend adjustments. The recurrence engine always calculates next due dates using anchor dates, preventing drift over time.
 
-For details on weekend adjustment strategies and configuration, see [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md).
+For details on weekend adjustment strategies and configuration, see [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md).
 
 ## Edge cases and constraints
 
@@ -122,6 +122,6 @@ To confirm the recurrence engine works:
 
 ## Related Documents
 
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Background Jobs](./006-background-jobs.md) - Automated system tasks
-* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Background Jobs](./background-jobs.md) - Automated system tasks
+* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

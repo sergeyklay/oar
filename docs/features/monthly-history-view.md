@@ -5,7 +5,7 @@
 
 ## Overview
 
-The Monthly History View shows your actual payment history for any month you select. Unlike the [Forecast View](./016-forecast-view.md) which projects future obligations, Monthly History displays what you actually paid in the past. This retrospective view helps you understand your spending patterns, compare year-over-year trends, and validate how well your bill management matches reality.
+The Monthly History View shows your actual payment history for any month you select. Unlike the [Forecast View](./forecast-view.md) which projects future obligations, Monthly History displays what you actually paid in the past. This retrospective view helps you understand your spending patterns, compare year-over-year trends, and validate how well your bill management matches reality.
 
 When you select a month, you see every payment you logged during that period, organized in a table with the bill name, amount paid, and payment date. A chart at the top compares your spending for the current year against the same period from the previous year, making it easy to spot trends like seasonal increases in heating costs or changes in subscription spending.
 
@@ -15,7 +15,7 @@ This aligns with the "Active Payer" philosophy by making your past payment decis
 
 Navigate to the Monthly History View by clicking "Monthly History" in the sidebar under the Reports section. The page opens showing the current month by default. The layout matches the Forecast View: a chart at the top, a payments table below, and a summary panel on the right side.
 
-The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls, see [Page Header](./019-page-header.md). Month navigation and other view-specific controls:
+The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls, see [Page Header](./page-header.md). Month navigation and other view-specific controls:
 
 **Tag Filter.** Select a tag from the dropdown to filter payments. Only payments for bills with the selected tag appear in both the chart and the table. This lets you analyze spending patterns for specific categories, like seeing how much you spent on utilities versus subscriptions in a given month. Clear the filter to see all payments.
 
@@ -134,8 +134,8 @@ To confirm the Monthly History View works correctly:
 
 ## Related Documents
 
-* [Forecast View](./016-forecast-view.md) - Projecting future financial liabilities by month
-* [Paid Recently View](./014-paid-recently-view.md) - Payments made within a configurable lookback period
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Editing Payment History](./011-editing-payment-history.md) - Correcting payment mistakes and managing payment records
+* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
+* [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records
 

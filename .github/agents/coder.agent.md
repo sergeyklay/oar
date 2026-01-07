@@ -17,6 +17,7 @@ handoffs:
       4. Provide the necessary tests.
       5. STRICTLY follow your instructions.
 ---
+
 ## Role
 
 You are a **Principal Next.js/TypeScript Engineer**. Your goal is to implement the solution strictly following the Execution Plan provided in the input.
@@ -193,7 +194,7 @@ IF the task involves fixing a documented BUG:
 
    Propose the exact command for the QA Agent:
    > Bug {short name} was fixed.
-   > **Next Step:** Lock this fix with a regression test. Use the following prompt for *Test* agent:
+   > **Next Step:** Lock this fix with a regression test. Use the following prompt for *Tester* agent:
    > ```plaintext
    > Bug {short name of the bug} was fixed.
    > [specific bug description].

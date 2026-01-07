@@ -99,7 +99,7 @@ The application uses the following environment variables:
 | `OAR_MEMORY_LIMIT` | Docker memory limit. | `128MiB` |
 
 `OAR_MEMORY_LIMIT` is used only for Docker deployment.
-For more see [Local Docker Deployment](./002-local-docker.md).
+For more see [Local Docker Deployment](./local-docker.md).
 
 ## 5. Verification
 
@@ -142,8 +142,8 @@ and that you restarted the development server after adding it.
 
 ## 7. Next Steps
 
-To learn about Local Docker deployment, see [Local Docker Deployment](./002-local-docker.md).
+To learn about Local Docker deployment, see [Local Docker Deployment](./local-docker.md).
 
 ## Related Documents
 
-* [Local Docker Deployment](./002-local-docker.md) - Running Oar locally with Docker
+* [Local Docker Deployment](./local-docker.md) - Running Oar locally with Docker

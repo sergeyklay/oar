@@ -128,6 +128,6 @@ To confirm the Paid Recently feature works:
 
 ## Related Documents
 
-* [Due Soon View](./008-due-soon-view.md) - Bills due within a configurable time range
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
 

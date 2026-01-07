@@ -5,11 +5,11 @@
 
 ## Overview
 
-The Due Soon view answers one question: "What needs my attention right now?" While the [Due This Month](./004-due-this-month.md) view shows your full monthly picture, Due Soon narrows the focus to imminent obligations.
+The Due Soon view answers one question: "What needs my attention right now?" While the [Due This Month](./due-this-month.md) view shows your full monthly picture, Due Soon narrows the focus to imminent obligations.
 
 The range is configurable. Set it to 3 days for tight weekly reviews, or stretch it to 30 days for monthly planning sessions. This flexibility lets you tune the view to match your personal financial rhythm.
 
-By default, the view shows all unpaid bills within your configured range, including both manual bills and automatic payments. You can control whether automatic bills appear by adjusting the "Include automatic bills in bills due soon" setting in Settings → General → View Options. See [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) for details.
+By default, the view shows all unpaid bills within your configured range, including both manual bills and automatic payments. You can control whether automatic bills appear by adjusting the "Include automatic bills in bills due soon" setting in Settings → General → View Options. See [Include Automatic Bills Setting](./include-automatic-bills-setting.md) for details.
 
 ## How it differs from Due This Month
 
@@ -80,7 +80,7 @@ For example, if today is December 21 and your range is 7:
 
 ## Filtering by tag
 
-You can filter the Due Soon view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within your configured range. For details about header controls, see [Page Header](./019-page-header.md).
+You can filter the Due Soon view by tag, the same way you filter the Overview. Select a tag from the dropdown in the header to see only unpaid bills matching that tag within your configured range. For details about header controls, see [Page Header](./page-header.md).
 
 The filter combines both conditions: bills must be unpaid, within the range, and have the selected tag.
 
@@ -129,7 +129,7 @@ To confirm the Due Soon feature works:
 
 ## Related Documents
 
-* [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Include Automatic Bills Setting](./022-include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
+* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Include Automatic Bills Setting](./include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
 

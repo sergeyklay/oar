@@ -1,82 +1,78 @@
-# Oar documentation
+# Oar Documentation
 
-This directory contains the technical documentation for Oar. Architecture Decision Records explain system design choices. Feature docs describe user-facing functionality. Development guides help contributors set up and build the project.
-
-## Architecture
-
-Foundational decisions about system design and technical direction.
-
-| Document | Description |
-|----------|-------------|
-| [ADR-001: Hyper-optimized modular monolith](./architecture/001-monolith.md) | Hyper-optimized modular monolith architecture |
-| [ADR-002: Client-Side Only Date Rendering Strategy](./architecture/002-client-side-date-rendering.md) | Client-Side Only Date Rendering Strategy |
+Technical documentation for Oar. Feature docs describe user-facing functionality. Development guides help contributors set up and build the project. Architecture Decision Records explain system design choices.
 
 ## Features
 
 Explanations of user-facing functionality and domain logic. Start with the foundation concepts, then explore the interface, actions, and advanced features.
 
-### Views
-
-| Document | Description |
-|----------|-------------|
-| [Overview View](./features/005-overview-view.md) | The main view for managing all bills |
-| [Due Soon View](./features/008-due-soon-view.md) | Bills due within a configurable time range |
-| [Due This Month View](./features/004-due-this-month.md) | Bills due in the current calendar month |
-| [Paid Recently View](./features/014-paid-recently-view.md) | Payments made within a configurable lookback period |
-| [Forecast View](./features/016-forecast-view.md) | Projecting future financial liabilities by month |
-| [Monthly History View](./features/017-monthly-history-view.md) | Reviewing actual payment history with year-over-year comparison |
-| [Annual Spending View](./features/020-annual-spending-view.md) | Reviewing annual spending patterns aggregated by bill |
-| [Archive View](./features/013-archive-view.md) | Viewing and managing archived bills |
-
 ### Foundation
 
-| Document | Description |
-|----------|-------------|
-| [Active Payer Philosophy](./features/000-active-payer-philosophy.md) | The foundational philosophy behind Oar's approach to personal finance |
-| [Recurrence Engine](./features/001-recurrence-engine.md) | How recurring and one-time payments advance |
+Core concepts that underpin the entire system.
+
+- [Active Payer Philosophy](./features/active-payer-philosophy.md) - The foundational philosophy behind Oar's approach to personal finance
+- [Recurrence Engine](./features/recurrence-engine.md) - How recurring and one-time payments advance
+
+### Views
+
+The main screens for viewing and managing bills.
+
+- [Overview View](./features/overview-view.md) - The main view for managing all bills
+- [Due Soon View](./features/due-soon-view.md) - Bills due within a configurable time range
+- [Due This Month View](./features/due-this-month.md) - Bills due in the current calendar month
+- [Paid Recently View](./features/paid-recently-view.md) - Payments made within a configurable lookback period
+- [Forecast View](./features/forecast-view.md) - Projecting future financial liabilities by month
+- [Monthly History View](./features/monthly-history-view.md) - Reviewing actual payment history with year-over-year comparison
+- [Annual Spending View](./features/annual-spending-view.md) - Reviewing annual spending patterns aggregated by bill
+- [Archive View](./features/archive-view.md) - Viewing and managing archived bills
 
 ### Core Interface
 
-| Document | Description |
-|----------|-------------|
-| [Page Header](./features/019-page-header.md) | Common header controls available on all pages |
-| [Bill Search](./features/018-bill-search.md) | Search for bills by title across all pages |
-| [Bill Detail Panel](./features/009-bill-detail-panel-and-skip-payment.md) | The panel for managing a specific bill |
+Common UI elements shared across views.
+
+- [Page Header](./features/page-header.md) - Common header controls available on all pages
+- [Bill Search](./features/bill-search.md) - Search for bills by title across all pages
+- [Bill Detail Panel](./features/bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
 
 ### Organization
 
-| Document | Description |
-|----------|-------------|
-| [Organizing Bills with Tags](./features/003-organizing-bills-with-tags.md) | Categorizing bills with tags |
+Categorizing and grouping bills.
+
+- [Organizing Bills with Tags](./features/organizing-bills-with-tags.md) - Categorizing bills with tags
 
 ### Actions
 
-| Document | Description |
-|----------|-------------|
-| [Logging Payments](./features/002-auto-pay.md) | Recording payments, partial payments, and historical payment detection |
-| [Editing Payment History](./features/011-editing-payment-history.md) | Correcting payment mistakes and managing payment records |
+Recording and managing payments.
+
+- [Logging Payments](./features/auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Editing Payment History](./features/editing-payment-history.md) - Correcting payment mistakes and managing payment records
 
 ### Advanced Features
 
-| Document | Description |
-|----------|-------------|
-| [After a Bill Ends](./features/012-after-a-bill-ends-setting.md) | What happens when a bill ends |
-| [Include Automatic Bills Setting](./features/022-include-automatic-bills-setting.md) | Control whether automatic bills appear in Due Soon and Due This Month views |
-| [Weekend Payment Date Adjustment](./features/021-weekend-payment-date-adjustment.md) | How weekend due dates are adjusted for banking reality |
+Optional behaviors and configuration.
+
+- [After a Bill Ends](./features/after-a-bill-ends-setting.md) - What happens when a bill ends
+- [Include Automatic Bills Setting](./features/include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
+- [Weekend Payment Date Adjustment](./features/weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
 
 ### Automation
 
-| Document | Description |
-|----------|-------------|
-| [Background Jobs](./features/006-background-jobs.md) | Automated system tasks |
-| [Active Payer Signals](./features/010-active-payer-signals.md) | Explicit payment mode indicators (Auto/Manual) for each bill |
+Background processes and system tasks.
+
+- [Background Jobs](./features/background-jobs.md) - Automated system tasks
+- [Active Payer Signals](./features/active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
 
 ## Development
 
 Guides for contributors and local development.
 
-| Document | Description |
-|----------|-------------|
-| [Getting Started](./development/001-getting-started.md) | Getting started with Oar |
-| [Local Docker Deployment](./development/002-local-docker.md) | Running Oar locally with Docker |
-| [Logging](./development/003-logging.md) | Logging in Oar |
+- [Getting Started](./development/getting-started.md) - Setting up your development environment
+- [Local Docker Deployment](./development/local-docker.md) - Running Oar locally with Docker
+- [Logging](./development/logging.md) - Logging conventions and configuration
+
+## Architecture
+
+Foundational decisions about system design and technical direction.
+
+- [ADR-001: Hyper-optimized modular monolith](./architecture/monolith.md)
+- [ADR-002: Client-Side Only Date Rendering Strategy](./architecture/client-side-date-rendering.md)

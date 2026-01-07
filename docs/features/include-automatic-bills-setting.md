@@ -7,7 +7,7 @@
 
 Some bills pay themselves. Your Netflix subscription charges automatically. Your phone bill drafts from your account. These automatic payments don't require your immediate attention, but they still represent financial obligations. The question is: do you want to see them when you're planning what needs your manual action?
 
-The "Include automatic bills in bills due soon" setting gives you control over this visibility. When enabled, automatic bills appear alongside manual bills in the [Due Soon](./008-due-soon-view.md) and [Due This Month](./004-due-this-month.md) views. When disabled, only bills requiring manual payment appear, letting you focus on what needs your action.
+The "Include automatic bills in bills due soon" setting gives you control over this visibility. When enabled, automatic bills appear alongside manual bills in the [Due Soon](./due-soon-view.md) and [Due This Month](./due-this-month.md) views. When disabled, only bills requiring manual payment appear, letting you focus on what needs your action.
 
 This setting aligns with the "Active Payer" philosophy by giving you control over your awareness level. Some users want to see all obligations, including automatic ones, for complete financial visibility. Others prefer to focus only on bills requiring manual action. The choice is yours, and you can change it anytime.
 
@@ -19,7 +19,7 @@ You find the "Include automatic bills in bills due soon" setting in Settings und
 
 **Disabled.** Automatic bills are excluded from Due Soon and Due This Month views. Only bills requiring manual payment appear, helping you focus on what needs your immediate attention.
 
-The setting applies only to Due Soon and Due This Month views. Other views like [Overview](./005-overview-view.md) and [Paid Recently](./014-paid-recently-view.md) always show all bills regardless of this setting. This keeps the filtering focused on the views where you're actively planning upcoming payments.
+The setting applies only to Due Soon and Due This Month views. Other views like [Overview](./overview-view.md) and [Paid Recently](./paid-recently-view.md) always show all bills regardless of this setting. This keeps the filtering focused on the views where you're actively planning upcoming payments.
 
 ## How it works
 
@@ -64,7 +64,7 @@ Here's what happens when you change the setting:
 
 **Empty views when all bills are automatic.** If you disable the setting and all bills in your Due Soon or Due This Month range are automatic, the view shows an empty state. This is expected behavior; the view is working correctly by filtering out automatic bills.
 
-**Mixed automatic and manual bills.** When the setting is enabled, you see both types. When disabled, you see only manual bills. The view doesn't distinguish between the two types visually; you can identify automatic bills by their auto-pay indicator in the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md).
+**Mixed automatic and manual bills.** When the setting is enabled, you see both types. When disabled, you see only manual bills. The view doesn't distinguish between the two types visually; you can identify automatic bills by their auto-pay indicator in the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md).
 
 ## Verification
 
@@ -91,8 +91,8 @@ To test with tag filtering:
 
 ## Related Documents
 
-* [Due Soon View](./008-due-soon-view.md) - Bills due within a configurable time range
-* [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
-* [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
+* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+* [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
 

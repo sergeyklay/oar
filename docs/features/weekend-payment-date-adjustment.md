@@ -105,8 +105,8 @@ To confirm weekend adjustment works:
 
 ## Related Documents
 
-* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Background Jobs](./006-background-jobs.md) - Automated system tasks
-* [Forecast View](./016-forecast-view.md) - Projecting future financial liabilities by month
+* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Background Jobs](./background-jobs.md) - Automated system tasks
+* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
 

@@ -41,7 +41,7 @@ Clicking calendar days has no effect on the Archive view - the page always shows
 
 ## Filtering archived bills
 
-You can filter archived bills by tag using the tag filter dropdown in the page header. This works the same way as filtering on other bill views: select a tag to see only archived bills that have that tag assigned. This helps when you have many archived bills and want to find specific ones, like all archived utility bills or subscription services. For details about header controls, see [Page Header](./019-page-header.md).
+You can filter archived bills by tag using the tag filter dropdown in the page header. This works the same way as filtering on other bill views: select a tag to see only archived bills that have that tag assigned. This helps when you have many archived bills and want to find specific ones, like all archived utility bills or subscription services. For details about header controls, see [Page Header](./page-header.md).
 
 ## Bill detail panel for archived bills
 
@@ -75,7 +75,7 @@ Bills can reach the Archive through two paths:
 
 **Manual archiving.** You can archive any bill from the Bill Detail Panel by clicking the "Archive" button. This immediately moves the bill to the Archive, removing it from active views. This is useful for bills you want to pause temporarily, like a subscription you're taking a break from.
 
-**Automatic archiving.** When a bill ends (fully paid one-time bill or recurring bill that reaches its end date), it can be automatically archived if you've configured the "After a Bill Ends" setting to "Move to the Archive." See [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) for details on this behavior.
+**Automatic archiving.** When a bill ends (fully paid one-time bill or recurring bill that reaches its end date), it can be automatically archived if you've configured the "After a Bill Ends" setting to "Move to the Archive." See [After a Bill Ends Setting](./after-a-bill-ends-setting.md) for details on this behavior.
 
 Both paths lead to the same Archive view. The Archive doesn't distinguish between manually and automatically archived bills - they all appear together in the same list, and you can unarchive any of them with the same action.
 
@@ -114,7 +114,7 @@ To confirm the Archive feature works as expected:
 
 ## Related Documents
 
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) - What happens when a bill ends
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [After a Bill Ends Setting](./after-a-bill-ends-setting.md) - What happens when a bill ends
 

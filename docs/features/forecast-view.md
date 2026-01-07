@@ -32,7 +32,7 @@ This means you can forecast any month, even years in the future, without the dat
 
 ## Viewing forecast data
 
-Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page opens showing the current month by default. The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls and their behavior, see [Page Header](./019-page-header.md).
+Navigate to the Forecast View by clicking "Forecast" in the sidebar. The page opens showing the current month by default. The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls and their behavior, see [Page Header](./page-header.md).
 
 Month navigation happens in the summary panel on the right side of the page. The panel header displays the current month and year (for example, "January 2026") with navigation arrows on the right. Click the left arrow to move to the previous month, or the right arrow to move to the next month. The URL updates immediately with `?month=YYYY-MM`, and the page refreshes to show projected bills for the new month. You can navigate to past months to review what should have been due, or future months to plan ahead.
 
@@ -148,9 +148,9 @@ To confirm the Forecast View works correctly:
 
 ## Related Documents
 
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Due This Month View](./004-due-this-month.md) - Bills due in the current calendar month
-* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
-* [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) - Categorizing bills with tags
-* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+* [Organizing Bills with Tags](./organizing-bills-with-tags.md) - Categorizing bills with tags
+* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
 

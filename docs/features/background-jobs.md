@@ -13,7 +13,7 @@ Runs at midnight (00:00 UTC).
 
 This job scans all your pending bills and marks any with past due dates as "overdue." The job uses adjusted payment dates (not anchor dates) to determine overdue status, ensuring bills are marked overdue based on when payments actually clear. For example, a bill due Saturday January 15 with "Move to Next Business Day" strategy becomes overdue on Monday January 17, not on Saturday. You'll see the status change in the bill list the next time you open the app.
 
-For details on how bill statuses work, see [Recurrence Engine](./001-recurrence-engine.md). For details on weekend date adjustment, see [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md).
+For details on how bill statuses work, see [Recurrence Engine](./recurrence-engine.md). For details on weekend date adjustment, see [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md).
 
 ## Auto-pay processing
 
@@ -52,8 +52,8 @@ To confirm background jobs are running:
 
 ## Related Documents
 
-* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
 

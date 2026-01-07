@@ -73,8 +73,8 @@ The dropdown closes when you click outside the search component, press the Escap
 
 ## Related Documents
 
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Archive View](./013-archive-view.md) - Viewing and managing archived bills
-* [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Page Header](./019-page-header.md) - Common header controls available on all pages
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Archive View](./archive-view.md) - Viewing and managing archived bills
+* [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Page Header](./page-header.md) - Common header controls available on all pages
 

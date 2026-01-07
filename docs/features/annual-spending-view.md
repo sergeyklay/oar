@@ -5,7 +5,7 @@
 
 ## Overview
 
-The Annual Spending View provides a high-level perspective on your spending patterns by aggregating all payments for each bill across an entire year. Unlike the [Monthly History View](./017-monthly-history-view.md) which shows individual payments organized by month, Annual Spending groups all payments for each bill within a selected year, calculating totals, averages, and payment counts. This aggregated view helps you identify which bills consume the most resources over time and understand your financial commitments at a yearly scale.
+The Annual Spending View provides a high-level perspective on your spending patterns by aggregating all payments for each bill across an entire year. Unlike the [Monthly History View](./monthly-history-view.md) which shows individual payments organized by month, Annual Spending groups all payments for each bill within a selected year, calculating totals, averages, and payment counts. This aggregated view helps you identify which bills consume the most resources over time and understand your financial commitments at a yearly scale.
 
 When you select a year, you see a pie chart visualizing spending proportions by bill, a table listing each bill with its aggregated statistics, and a summary panel showing overall totals. The chart and table synchronize interactively: clicking a pie segment highlights the corresponding table row, and clicking a table row highlights the corresponding chart segment. This synchronization makes it easy to connect the visual representation with the detailed numbers.
 
@@ -15,7 +15,7 @@ This view reinforces the "Active Payer" philosophy by providing annual perspecti
 
 Navigate to the Annual Spending View by clicking "Annual Spending" in the sidebar under the Reports section. The page opens showing the current year by default. The layout matches the Monthly History View: a chart at the top, a bills table below, and a summary panel on the right side.
 
-The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls, see [Page Header](./019-page-header.md).
+The page header provides access to common controls including the sidebar toggle, Add Bill button, tag filter, and bill search. For details about header controls, see [Page Header](./page-header.md).
 
 Year navigation happens in the summary panel on the right side of the page. The panel header displays the current year (for example, "2025") with navigation arrows on the right. Click the left arrow to move to the previous year, or the right arrow to move to the next year. The URL updates immediately with `?year=YYYY`, and the page refreshes to show spending data for the new year. You can navigate to any year where you've logged payments, or future years if you've backdated payments.
 
@@ -131,8 +131,8 @@ To confirm the Annual Spending View works correctly:
 
 ## Related Documents
 
-* [Monthly History View](./017-monthly-history-view.md) - Reviewing actual payment history with year-over-year comparison
-* [Forecast View](./016-forecast-view.md) - Projecting future financial liabilities by month
-* [Paid Recently View](./014-paid-recently-view.md) - Payments made within a configurable lookback period
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Monthly History View](./monthly-history-view.md) - Reviewing actual payment history with year-over-year comparison
+* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
+* [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
 

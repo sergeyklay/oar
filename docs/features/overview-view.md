@@ -27,7 +27,7 @@ Clicking anywhere on a bill row opens the **Bill Detail Panel** on the right sid
 
 The detail panel replaces the calendar widget when a bill is selected, ensuring you have enough context to make a payment decision without navigating away from the Overview. From here, you can log a payment or skip the current billing cycle.
 
-See the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) documentation for full details on its behavior and the "Skip" action.
+See the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) documentation for full details on its behavior and the "Skip" action.
 
 ## Due date display
 
@@ -97,19 +97,19 @@ The estimate label uses muted styling to avoid visual clutter while providing im
 
 ## Logging payments
 
-To record a payment for an unpaid bill, click the bill row to open the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button. This opens the payment dialog where you can enter the amount and date.
+To record a payment for an unpaid bill, click the bill row to open the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button. This opens the payment dialog where you can enter the amount and date.
 
-See the [Logging Payments](./002-auto-pay.md) documentation for details on the payment dialog, partial payments, and how due dates update.
+See the [Logging Payments](./auto-pay.md) documentation for details on the payment dialog, partial payments, and how due dates update.
 
 ## Editing bills
 
 Clicking anywhere on a bill row opens the **Bill Detail Panel**. Management actions for the selected bill are located at the bottom of this panel:
 
-- **Archive:** Moves the bill to your archive (removes it from active views). Archived bills can be accessed through the [Archive View](./013-archive-view.md).
+- **Archive:** Moves the bill to your archive (removes it from active views). Archived bills can be accessed through the [Archive View](./archive-view.md).
 - **Edit:** Opens the bill form to modify title, amount, repeat interval, category, or tags.
 - **Delete:** Removes the bill entirely (requires confirmation).
 
-Payment history is available directly within the Bill Detail Panel through the collapsible "View Payment History" section. See [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) for details.
+Payment history is available directly within the Bill Detail Panel through the collapsible "View Payment History" section. See [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) for details.
 
 ## Edge cases
 
@@ -142,6 +142,6 @@ To confirm the Overview view works:
 
 ## Related Documents
 
-* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Archive View](./013-archive-view.md) - Viewing and managing archived bills
+* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Archive View](./archive-view.md) - Viewing and managing archived bills
