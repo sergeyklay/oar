@@ -1,7 +1,7 @@
 ---
 description: Use these instructions to guide your code reviews.
 excludeAgent: ["coding-agent"]
-applyTo: '**'
+applyTo: 'docs/**/*.md,**/README.md'
 ---
 
 # Code Review Standards
