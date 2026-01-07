@@ -13,7 +13,7 @@ The Log Payment dialog captures what you paid, when you paid it, and optionally 
 
 ## The Log Payment dialog
 
-You open the Log Payment dialog through the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md). Click any bill row in the Overview to open the panel, then click the **Log Payment** button. You'll see four fields:
+You open the Log Payment dialog through the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md). Click any bill row in the Overview to open the panel, then click the **Log Payment** button. You'll see four fields:
 
 **Amount.** Pre-filled with the bill's current amount due. Change this if you paid a different amount, like when splitting a payment or paying extra.
 
@@ -41,7 +41,7 @@ For variable bills (like utility bills), the amount due resets to zero when the 
 - The amount due decreases by what you paid
 - The bill remains in your current obligations
 
-For example: a $200 bill due March 15. You log $75 with the toggle off. The due date stays March 15, but the amount due drops to $125. The [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) now displays your remaining commitment as "$125.00 ($200.00)" so you can see exactly how much is left. Log the remaining $125 later with the toggle on, and the cycle advances.
+For example: a $200 bill due March 15. You log $75 with the toggle off. The due date stays March 15, but the amount due drops to $125. The [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) now displays your remaining commitment as "$125.00 ($200.00)" so you can see exactly how much is left. Log the remaining $125 later with the toggle on, and the cycle advances.
 
 ## One-time bills
 
@@ -50,7 +50,7 @@ Bills with a "Never" repeat interval behave differently. After you log a full pa
 - The status changes to "paid"
 - The bill ends its lifecycle
 
-What happens next depends on your "After a Bill Ends" setting. By default, the bill stays visible in your bill list but won't appear in time-based filters like "Due Soon." If you've configured the setting to "Move to the Archive," the bill is archived and disappears from active views. See [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md) for details.
+What happens next depends on your "After a Bill Ends" setting. By default, the bill stays visible in your bill list but won't appear in time-based filters like "Due Soon." If you've configured the setting to "Move to the Archive," the bill is archived and disappears from active views. See [After a Bill Ends Setting](./after-a-bill-ends-setting.md) for details.
 
 You can still log partial payments against one-time bills. When the cumulative payments equal or exceed the bill amount, the bill is marked paid and ends according to your setting.
 
@@ -99,7 +99,7 @@ Every payment you log is recorded with its amount, date, and notes. To view a bi
 
 Each payment displays the date (formatted as DD/MM/YYYY), amount, and any notes you added. Long notes truncate to a single line; hover to see the full text.
 
-If you need to correct a payment mistake, click any payment row to view its details and edit or delete it. See [Editing Payment History](./011-editing-payment-history.md) for details.
+If you need to correct a payment mistake, click any payment row to view its details and edit or delete it. See [Editing Payment History](./editing-payment-history.md) for details.
 
 ## Edge cases
 
@@ -117,14 +117,14 @@ If you need to correct a payment mistake, click any payment row to view its deta
 
 **Auto-pay bills.** If you've marked a bill as auto-pay, Oar can log payments automatically when the due date arrives. This behavior is controlled by the "Automatically log automatic bills" setting in Settings → Logging Settings. When enabled (the default), the background job processes auto-pay bills and creates payment records automatically. When disabled, you must manually log payments for auto-pay bills using the Log Payment dialog, giving you full control to verify amounts before recording them.
 
-AutoPay eligibility uses adjusted payment dates (not anchor dates) to determine when a bill becomes due. For example, a bill due Saturday January 15 with "Move to Previous Business Day" strategy becomes eligible on Friday January 14. When processed, the transaction records the adjusted date for audit accuracy, but the next due date advances using the anchor date to prevent drift. You'll still see these payments in the bill's history. See [Background Jobs](./006-background-jobs.md) and [Active Payer Signals](./010-active-payer-signals.md) for details.
+AutoPay eligibility uses adjusted payment dates (not anchor dates) to determine when a bill becomes due. For example, a bill due Saturday January 15 with "Move to Previous Business Day" strategy becomes eligible on Friday January 14. When processed, the transaction records the adjusted date for audit accuracy, but the next due date advances using the anchor date to prevent drift. You'll still see these payments in the bill's history. See [Background Jobs](./background-jobs.md) and [Active Payer Signals](./active-payer-signals.md) for details.
 
 ## Verification
 
 To confirm payment logging works:
 
 1. Navigate to the Overview and find an unpaid bill.
-2. Click the bill row to open the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button.
+2. Click the bill row to open the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) and click the **Log Payment** button.
 3. The dialog should show the amount pre-filled and today's date selected.
 4. Log a payment with "Update Due Date" on. The bill's due date should advance to the next cycle.
 5. Create another bill and log a partial payment with the toggle off. Verify the Bill Detail Panel displays the remaining balance followed by the total amount in parentheses.
@@ -141,7 +141,7 @@ To confirm historical payment detection works:
 
 ## Related Documents
 
-* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
-* [Background Jobs](./006-background-jobs.md) - Automated system tasks
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Weekend Payment Date Adjustment](./021-weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+* [Background Jobs](./background-jobs.md) - Automated system tasks
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

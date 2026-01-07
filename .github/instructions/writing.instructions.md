@@ -1,16 +1,20 @@
 ---
 description: Rules for writing technical documentation and markdown files
-applyTo: 'docs/**/*.md,**/README.md'
+applyTo: '**/*.md'
 ---
+
+# Writing Instructions
+
+When writing technical documentation and markdown files, follow these guidelines to ensure clarity, consistency, and usefulness for the intended audience.
 
 ## Voice and tone
 
 - Write like humans speak. Avoid corporate jargon and marketing fluff.
-- Be confident and direct. Avoid softening phrases like "I think," "maybe," or "could."
+- Be confident and direct. Avoid softening phrases like "I think", "maybe", or "could".
 - Use active voice instead of passive voice.
 - Use positive phrasing—say what something _is_ rather than what it _isn't_.
 - Say "you" more than "we" when addressing external audiences.
-- Use contractions like "I'll," "won't," and "can't" for a warmer tone.
+- Use contractions like "I'll", "won't", and "can't" for a warmer tone.
 
 ## Specificity and evidence
 
@@ -25,7 +29,7 @@ applyTo: 'docs/**/*.md,**/README.md'
 - Make a promise in the title so readers know exactly what they'll get if they click.
 - Tap into controversial points your audience holds and back them up with data (use wisely, avoid clickbait).
 - Share something uniquely helpful that makes readers better at meaningful aspects of their lives.
-- Avoid vague titles like "My Thoughts On XYZ." Titles should be opinions or shareable facts.
+- Avoid vague titles like "My Thoughts On XYZ". Titles should be opinions or shareable facts.
 - Write placeholder titles first, complete the content, then spend time iterating on titles at the end.
 
 ## Banned words
@@ -44,8 +48,10 @@ applyTo: 'docs/**/*.md,**/README.md'
 - `cognitive load` -> remove
 - `cognitive overhead` -> remove
 - `commence` -> "start"
-- `delve` -> "go into"
+- `commendable` -> remove
+- `delve` -> "explore" or remove
 - `disrupt/disruptive` -> remove
+- `embark` -> "start" or remove
 - `facilitate` -> "help" or "ease"
 - `game-changing` -> specific benefit
 - `great` -> remove or be specific
@@ -55,17 +61,23 @@ applyTo: 'docs/**/*.md,**/README.md'
 - `innovative` -> remove
 - `just` -> remove
 - `leverage` -> "use"
+- `meticulous` -> "careful" or remove
 - `mission-critical` -> "important"
 - `modern/modernized` -> remove
+- `multifaceted` -> remove
 - `numerous` -> "many"
+- `nuanced` -> remove
 - `out of the box` -> remove
 - `performant` -> "fast and reliable"
+- `pivotal` -> "important" or remove
 - `pretty/quite/rather/really/very` -> remove
 - `referred to as` -> "called"
 - `remainder` -> "rest"
+- `realm` -> remove
 - `robust` -> "strong"
 - `seamless/seamlessly` -> "automatic"
 - `sufficient` -> "enough"
+- `tapestry` -> remove
 - `that` -> often removable, context dependent
 - `thing` -> be specific
 - `utilize` -> "use"
@@ -87,22 +99,43 @@ applyTo: 'docs/**/*.md,**/README.md'
 
 ## Avoid LLM patterns
 
-- Replace em dashes (—) with semicolons, commas, or sentence breaks.
-- Avoid starting responses with "Great question!", "You're right!", or "Let me help you."
+### Em-dash overuse
+
+Em-dashes (—) are an AI signature. Models insert them constantly; humans rarely use them. Replace with other punctuation or restructure the sentence.
+
+**Never glue words with em-dashes:**
+- ❌ "The system—which handles authentication—is fast"
+- ✅ "The system, which handles authentication, is fast"
+- ✅ "The system (which handles authentication) is fast"
+
+**Replace with periods or semicolons:**
+- ❌ "This is important—it affects performance"
+- ✅ "This is important. It affects performance."
+- ✅ "This is important; it affects performance."
+
+**Or restructure entirely:**
+- ❌ "The API—originally designed for mobile—now supports web"
+- ✅ "The API now supports web. It was originally designed for mobile."
+
+If you must use a dash, use a spaced en-dash (" - ") or hyphen with spaces, not an em-dash glued to words.
+
+### Other patterns to avoid
+
+- Avoid starting responses with "Great question!", "You're right!", or "Let me help you".
 - Don't use phrases like "Let's dive into..."
-- Skip cliché intros like "In today's fast-paced digital world" or "In the ever-evolving landscape of."
-- Avoid phrases like "it's not just [x], it's [y]."
-- Avoid self-referential disclaimers like "As an AI" or "I'm here to help you with."
-- Don't use high-school essay closers: "In conclusion," "Overall," or "To summarize."
+- Skip cliché intros like "In today's fast-paced digital world" or "In the ever-evolving landscape of".
+- Avoid phrases like "it's not just [x], it's [y]".
+- Avoid self-referential disclaimers like "As an AI" or "I'm here to help you with".
+- Don't use high-school essay closers: "In conclusion", "Overall", or "To summarize".
 - Avoid numbered lists in cases where bullets work better.
 - Don't end with "Hope this helps!" or similar closers.
-- Avoid overusing transition words like "Furthermore," "Additionally," or "Moreover."
+- Avoid overusing transition words like "Furthermore", "Additionally", or "Moreover".
 - Replace "In conclusion" with direct statements.
-- Avoid hedge words: "might," "perhaps," "potentially" unless uncertainty is real.
-- Don't stack hedging phrases: "may potentially," "it's important to note that."
+- Avoid hedge words: "might", "perhaps", "potentially" unless uncertainty is real.
+- Don't stack hedging phrases: "may potentially", "it's important to note that".
 - Don't create perfectly symmetrical paragraphs or lists that start with "Firstly... Secondly..."
 - Avoid title-case headings; prefer sentence casing.
-- Remove Unicode artifacts when copy-pasting: smart quotes (“), em-dashes, non-breaking spaces.
+- Remove Unicode artifacts when copy-pasting: smart quotes ("), non-breaking spaces.
 - Replace smart/curly single quotes (’’) with straight single
 quotes ('') and double quotes (“”) with straight double quotes ("").
 - Delete empty citation placeholders like "[1]" with no actual source.
@@ -111,9 +144,11 @@ quotes ('') and double quotes (“”) with straight double quotes ("").
 
 - Use Oxford commas consistently.
 - Use exclamation points sparingly.
-- Sentences can start with "But" and "And"—but don't overuse.
+- Sentences can start with "But" and "And", but don't overuse.
 - Use periods instead of commas when possible for clarity.
-
+- Place commas and periods outside quotation marks (British style):
+  - ✅ words like "foo", "bar", and "baz".
+  - ❌ words like "foo," "bar," and "baz."
 
 ## Output Style Rules (CRITICAL)
 

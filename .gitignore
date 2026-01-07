@@ -21,9 +21,6 @@
 # TypeScript build info.
 /tsconfig.tsbuildinfo
 
-# Speedy Web Compiler output.
-/.swc
-
 # Node modules
 /node_modules
 

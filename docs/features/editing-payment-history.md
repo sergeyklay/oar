@@ -108,7 +108,7 @@ If no payment is selected, the bottom of the payment history section displays a 
 
 **Variable bills and cycle preservation.** Bills marked with variable amounts (like utility bills) behave differently when their cycle advances. When you log a payment that advances a variable bill's cycle, the amount due resets to zero, not the base amount. This reflects that each billing cycle for variable bills is independent; you don't carry residual debt forward. If you later edit that payment's amount without changing the date, the cycle stays advanced and the amount due remains zero. Variable bills only accumulate debt within a single cycle, never across cycles.
 
-**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. When editing a one-time bill's payment, Oar always performs a full recalculation (even if you don't change the date) because the bill's status is directly tied to the amount due. If the total payments equal or exceed the bill amount, the status becomes "paid" and the amount due becomes zero. If the total payments are less than the bill amount, the status becomes "pending" and the amount due reflects the difference. This ensures status and amount due stay synchronized. If a one-time bill has ended (fully paid), deleting the final payment will reactivate it. The bill's final state (archived or marked as "Never Due") depends on your [After a Bill Ends Setting](./012-after-a-bill-ends-setting.md).
+**One-time bills.** For bills that repeat "Never," deleting the payment that marked the bill as paid will revert the bill to pending status with the full amount due. When editing a one-time bill's payment, Oar always performs a full recalculation (even if you don't change the date) because the bill's status is directly tied to the amount due. If the total payments equal or exceed the bill amount, the status becomes "paid" and the amount due becomes zero. If the total payments are less than the bill amount, the status becomes "pending" and the amount due reflects the difference. This ensures status and amount due stay synchronized. If a one-time bill has ended (fully paid), deleting the final payment will reactivate it. The bill's final state (archived or marked as "Never Due") depends on your [After a Bill Ends Setting](./after-a-bill-ends-setting.md).
 
 **Concurrent edits.** Oar is designed for single-user use. If you're editing a payment in one browser tab and delete it in another, the system will reflect the most recent change. For best results, complete one operation before starting another.
 
@@ -188,6 +188,6 @@ To confirm one-time bill editing behavior:
 
 ## Related Documents
 
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
 

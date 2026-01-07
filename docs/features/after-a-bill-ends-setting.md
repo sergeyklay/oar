@@ -27,7 +27,7 @@ You find the "After a Bill Ends" setting in Settings under General → Behavior 
 
 **Mark as Never Due (default).** When a bill ends, it stays visible in your bill list. The status changes to "paid," the amount due becomes zero, and there's no next due date. The bill remains in your active views so you can reference it, but it won't appear in "Due Soon" or other time-based filters. This is useful when you want to keep a record of completed bills without cluttering your active obligations.
 
-**Move to the Archive.** When a bill ends, it's immediately archived. The bill disappears from your active bill list, "Due Soon" view, and other active views. You can still access it through the [Archive View](./013-archive-view.md), but it's out of the way. This is useful when you want a clean separation between active bills and completed ones.
+**Move to the Archive.** When a bill ends, it's immediately archived. The bill disappears from your active bill list, "Due Soon" view, and other active views. You can still access it through the [Archive View](./archive-view.md), but it's out of the way. This is useful when you want a clean separation between active bills and completed ones.
 
 The setting applies globally to all bills. You can't set different behaviors for different bills. This keeps the system simple and predictable. Once you choose your preference, every bill that ends follows that rule.
 
@@ -35,7 +35,7 @@ The setting applies globally to all bills. You can't set different behaviors for
 
 Here's what happens when a bill ends:
 
-**Trigger:** You log a payment that causes a bill to end. This happens in the Log Payment dialog when you click "Log Payment" in the [Bill Detail Panel](./009-bill-detail-panel-and-skip-payment.md).
+**Trigger:** You log a payment that causes a bill to end. This happens in the Log Payment dialog when you click "Log Payment" in the [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md).
 
 **Detection:** The system checks if the payment would cause the bill to end. It looks at two things: whether the next due date would exceed the bill's end date (if one is set), or whether the bill is a one-time bill that's now fully paid.
 
@@ -55,7 +55,7 @@ Here's what happens when a bill ends:
 
 **Changing the setting after bills have ended.** If you change the "After a Bill Ends" setting, it only affects bills that end after the change. Bills that already ended keep their current state. You can manually archive or unarchive bills later if needed.
 
-**Archived bills remain accessible.** When a bill is archived, it's not deleted. It's still in your database, and you can access it through the [Archive View](./013-archive-view.md). You can also unarchive it later if you need to reference it or reactivate it.
+**Archived bills remain accessible.** When a bill is archived, it's not deleted. It's still in your database, and you can access it through the [Archive View](./archive-view.md). You can also unarchive it later if you need to reference it or reactivate it.
 
 **Auto-pay bills and bill end.** If you have auto-pay enabled on a bill that ends, the system still processes the final payment automatically. The bill end detection happens after the auto-payment, and the setting applies the same way as manual payments.
 
@@ -95,8 +95,8 @@ To test the "Never" interval scenario:
 
 ## Related Documents
 
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Bill Detail Panel & Skip Payment](./009-bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Archive View](./013-archive-view.md) - Viewing and managing archived bills
-* [Recurrence Engine](./001-recurrence-engine.md) - How recurring and one-time payments advance
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+* [Archive View](./archive-view.md) - Viewing and managing archived bills
+* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
 

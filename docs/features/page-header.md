@@ -67,5 +67,5 @@ Typing in the search input triggers a search after you've entered at least three
 
 ## Related Documents
 
-* [Bill Search](./018-bill-search.md) - Search for bills by title across all pages
-* [Organizing Bills with Tags](./003-organizing-bills-with-tags.md) - Categorizing bills with tags
+* [Bill Search](./bill-search.md) - Search for bills by title across all pages
+* [Organizing Bills with Tags](./organizing-bills-with-tags.md) - Categorizing bills with tags

@@ -35,7 +35,7 @@ The system provides tools and calculations, but you make the decisions. The recu
 
 Every payment requires explicit logging. There's no automatic import from bank feeds. You open the Log Payment dialog, enter the amount and date, and confirm the payment. This process takes a few extra clicks compared to a simple checkmark, but those clicks ensure you look at the amount and date.
 
-See [Logging Payments](./002-auto-pay.md) for details on how payment logging works.
+See [Logging Payments](./auto-pay.md) for details on how payment logging works.
 
 ### Visual signals
 
@@ -45,7 +45,7 @@ The system uses visual signals to maintain your awareness:
 - **Urgency colors:** Status bars use color to prioritize your attention (red for overdue, amber for due soon)
 - **Estimate labels:** Variable bills are marked with "(estimate)" to remind you the final charge might differ
 
-See [Active Payer Signals](./010-active-payer-signals.md) for details on visual indicators.
+See [Active Payer Signals](./active-payer-signals.md) for details on visual indicators.
 
 ### Intentional decision points
 
@@ -57,7 +57,7 @@ Even when bills end (fully paid one-time bills or recurring bills that reach the
 
 When you make a mistake—wrong date, incorrect amount, duplicate payment—you can correct it. The system doesn't automatically merge duplicates or "fix" your entries. You decide what needs correction and when. Every edit and deletion requires explicit action.
 
-See [Editing Payment History](./011-editing-payment-history.md) for details on correcting payment mistakes.
+See [Editing Payment History](./editing-payment-history.md) for details on correcting payment mistakes.
 
 ## Why Active Payer matters
 
@@ -77,8 +77,8 @@ Passive systems encourage you to set it and forget it. Active Payer systems enco
 
 ## Related Documents
 
-* [Logging Payments](./002-auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Active Payer Signals](./010-active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Overview View](./005-overview-view.md) - The main view for managing all bills
-* [Editing Payment History](./011-editing-payment-history.md) - Correcting payment mistakes and managing payment records
+* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+* [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+* [Overview View](./overview-view.md) - The main view for managing all bills
+* [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records
 
