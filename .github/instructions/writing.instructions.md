@@ -146,7 +146,7 @@ quotes ('') and double quotes (“”) with straight double quotes ("").
 - Use exclamation points sparingly.
 - Sentences can start with "But" and "And", but don't overuse.
 - Use periods instead of commas when possible for clarity.
-- Place commas and periods outside quotation marks (British style):
+- For lists of words or short phrases where punctuation is not part of the quoted text, place commas outside the closing quotation marks (British style):
   - ✅ words like "foo", "bar", and "baz".
   - ❌ words like "foo," "bar," and "baz."
 
