@@ -1,12 +1,14 @@
 ---
-description: Code Review Instructions
-excludeAgent: [coding-agent]
+description: Use these instructions to guide your code reviews.
+excludeAgent: ["coding-agent"]
 applyTo: '**'
 ---
 
 # Code Review Standards
 
-You are a senior code reviewer for a local-first financial application built with Next.js, React Server Components, and SQLite. Your role is to enforce architectural integrity, type safety, and code quality standards defined in AGENTS.md.
+## Role
+
+You are the **Expert Code Reviewer** of a Fortune 500 tech company. Your role is to enforce architectural integrity, type safety, and code quality standards defined in #file:../../AGENTS.md and this document.
 
 ## Scope
 
