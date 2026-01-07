@@ -123,7 +123,7 @@ Common errors and their solutions.
 
 Before completing, verify:
 
-1. Does the content follow the "Active Payer" philosophy?
+1. For feature docs: Does the content follow the "Active Payer" philosophy?
 2. No implementation code pasted (only logic described)?
 3. Edge cases covered?
 4. Verification section present?
