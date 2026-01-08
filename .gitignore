@@ -35,3 +35,9 @@
 
 # Backups
 /backups
+
+# My temporary files
+TODO.md
+docs/context-docs.md
+scripts/backup-docker-db.sh
+scripts/generate-context-docs.sh
