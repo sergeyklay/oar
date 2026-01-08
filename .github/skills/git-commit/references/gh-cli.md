@@ -159,6 +159,6 @@ gh <command> --help
 ## Best Practices
 
 1. **Always verify auth status** before Git operations in automated workflows
-2. **Use `--web` for interactive login** — more secure than token input
+2. **Use `--web` for interactive login** - more secure than token input
 3. **Check exit codes** in scripts to handle failures gracefully
 4. **Prefer SSH protocol** for Git operations when possible
