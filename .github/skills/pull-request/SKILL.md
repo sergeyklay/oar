@@ -28,14 +28,35 @@ gh auth status
 
 ### Step 2: Verify Branch State
 
-Ensure the current branch is ready for PR:
+**CRITICAL:** Never create a PR from a protected branch.
+
+#### Detect Protected Branch
 
 ```bash
-# Check current branch
-git branch --show-current
+# Get the repository's default branch
+gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
 
-# Verify commits ahead of main
-git log --oneline main..HEAD
+# Get current branch
+git branch --show-current
+```
+
+**Protected branches (cannot be PR source):**
+- The default branch (usually `main` or `master`)
+- `develop` or `development`
+- Any branch matching `release/*` or `hotfix/*` patterns
+
+#### If on Protected Branch
+
+1. **STOP** - do not create PR from this branch
+2. Inform the user: "You are on the protected branch `<branch>`. PRs must be created from feature branches."
+3. Ask the user to switch to or create a feature branch first
+4. Suggest using the `git-commit` skill to create an appropriate branch
+
+#### Branch State Verification
+
+```bash
+# Verify commits ahead of base
+git log --oneline $(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')..HEAD
 
 # Check for uncommitted changes
 git status --short
@@ -43,10 +64,10 @@ git status --short
 
 **Pre-PR checklist:**
 
-- Current branch is NOT `main` or `master`
-- Branch has commits ahead of base branch
-- No uncommitted changes (commit or stash first)
-- Branch is pushed to remote
+- ✅ Current branch is NOT a protected branch
+- ✅ Branch has commits ahead of base branch
+- ✅ No uncommitted changes (commit or stash first)
+- ✅ Branch is pushed to remote
 
 ```bash
 # Push branch if needed
@@ -58,14 +79,17 @@ git push -u origin $(git branch --show-current)
 Gather context for the PR description:
 
 ```bash
+# Get default branch name
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+
 # Get all commits in this PR
-git log --format="%s%n%b" main..HEAD
+git log --format="%s%n%b" $DEFAULT_BRANCH..HEAD
 
 # Get list of changed files
-git diff --name-only main..HEAD
+git diff --name-only $DEFAULT_BRANCH..HEAD
 
 # Get diff stats
-git diff --stat main..HEAD
+git diff --stat $DEFAULT_BRANCH..HEAD
 ```
 
 **Analyze for:**
@@ -138,10 +162,13 @@ Use the project template structure. See [PR Template](../../../pull_request_temp
 ### Step 6: Create the Pull Request
 
 ```bash
+# Get default branch for base
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+
 gh pr create \
   --title "<type>: <description>" \
   --body "<generated description>" \
-  --base main
+  --base "$DEFAULT_BRANCH"
 ```
 
 **For draft PRs:**
@@ -150,7 +177,7 @@ gh pr create \
 gh pr create \
   --title "<type>: <description>" \
   --body "<generated description>" \
-  --base main \
+  --base "$DEFAULT_BRANCH" \
   --draft
 ```
 

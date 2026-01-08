@@ -33,7 +33,55 @@ gh auth status
 - "invalid token"
 - Exit code 1 with stderr output
 
-### Step 2: Analyze Project Writing Style
+### Step 2: Verify Branch Safety
+
+**CRITICAL:** Never commit directly to protected branches.
+
+#### Detect Protected Branch
+
+```bash
+# Get the repository's default branch
+gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+
+# Get current branch
+git branch --show-current
+```
+
+Protected branches include:
+- The default branch (usually `main` or `master`)
+- `develop` or `development`
+- Any branch matching `release/*` or `hotfix/*` patterns
+
+#### If on Protected Branch
+
+1. **STOP** - do not commit directly
+2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
+3. Create an appropriately named feature branch:
+
+```bash
+git checkout -b <type>/<short-description>
+```
+
+#### Branch Naming Convention
+
+Format: `<type>/<kebab-case-description>`
+
+| Type | Use Case | Example |
+|------|----------|---------|
+| `feat` | New feature | `feat/bill-reminders` |
+| `fix` | Bug fix | `fix/null-amount-validation` |
+| `refactor` | Code restructuring | `refactor/extract-payment-service` |
+| `chore` | Maintenance tasks | `chore/update-dependencies` |
+| `docs` | Documentation | `docs/api-reference` |
+| `test` | Test additions | `test/payment-service-coverage` |
+
+**Rules:**
+- Use kebab-case (lowercase with hyphens)
+- Keep it short (2-4 words max)
+- Make it descriptive of the change intent
+- ALWAYS in English
+
+### Step 3: Analyze Project Writing Style
 
 Analyze recent commits to understand the project's **writing style** for description content:
 
@@ -52,7 +100,7 @@ git log --format="%s" -30
 
 **Important:** The Conventional Commits format is fixed. Only adapt the vocabulary and phrasing style to match project conventions.
 
-### Step 3: Identify Files to Commit
+### Step 4: Identify Files to Commit
 
 **Atomic commits principle:** Each commit should represent ONE logical change. Do not bundle unrelated changes into a single commit.
 
@@ -94,7 +142,7 @@ git diff --cached
 | "commit <specific file>" | `git add <file>` |
 | Ambiguous | Ask user to clarify which files and grouping |
 
-### Step 4: Generate Commit Message
+### Step 5: Generate Commit Message
 
 **Always use Conventional Commits format.** Apply the analyzed writing style to the description.
 
@@ -140,7 +188,7 @@ git diff --cached
 | Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5` | `Updated packages` |
 | Add unit test | `test: add coverage for PaymentService edge cases` | `Tests` |
 
-### Step 5: Execute the Commit
+### Step 6: Execute the Commit
 
 Stage files and create commit:
 
@@ -158,7 +206,7 @@ git commit -m "<message>"
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
 ```
 
-### Step 6: Confirm Success
+### Step 7: Confirm Success
 
 After committing, verify and report:
 

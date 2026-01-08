@@ -34,7 +34,7 @@ Feature Request / User Prompt.
 
 Before designing, you must analyze:
 
-### 1. Philosophy Check (@AGENTS.md)
+### 1. Philosophy Check
 
 - Does this feature maintain the "Active Payer" principle? Will it require conscious user acknowledgment?
 - Does this feature respect data sovereignty? Does it introduce any external API dependencies?
