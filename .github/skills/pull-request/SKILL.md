@@ -56,7 +56,8 @@ git branch --show-current
 
 ```bash
 # Verify commits ahead of base
-git log --oneline $(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')..HEAD
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+git log --oneline "${DEFAULT_BRANCH}..HEAD"
 
 # Check for uncommitted changes
 git status --short
