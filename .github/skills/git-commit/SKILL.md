@@ -109,17 +109,17 @@ git diff --cached
 ```
 
 **Allowed types:**
-- `feat` — New feature
-- `fix` — Bug fix
-- `docs` — Documentation only
-- `style` — Formatting, no code change
-- `refactor` — Code restructuring without behavior change
-- `test` — Adding or fixing tests
-- `chore` — Maintenance, dependencies, build changes
-- `perf` — Performance improvements
-- `ci` — CI/CD changes
-- `build` — Build system changes
-- `revert` — Reverting previous commit
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation only
+- `style` - Formatting, no code change
+- `refactor` - Code restructuring without behavior change
+- `test` - Adding or fixing tests
+- `chore` - Maintenance, dependencies, build changes
+- `perf` - Performance improvements
+- `ci` - CI/CD changes
+- `build` - Build system changes
+- `revert` - Reverting previous commit
 
 #### Description Guidelines
 
@@ -214,9 +214,9 @@ Always follow the Conventional Commits specification:
 - Footer `BREAKING CHANGE:` MUST be uppercase
 
 **Common scopes in this project:**
-- `(deps)` — dependency updates
-- `(deps-dev)` — dev dependency updates
-- No scope — most other changes
+- `(deps)` - dependency updates
+- `(deps-dev)` - dev dependency updates
+- No scope - most other changes
 
 **When in doubt:** Run `git log --oneline -20` to see recent writing styles
 
