@@ -70,7 +70,7 @@ Breaking changes MUST be indicated by:
 ### Description Quality
 
 ✅ **Good descriptions:**
-- `fix: prevent racing condition in request handler`
+- `fix: prevent race condition in request handler`
 - `feat(auth): add OAuth2 support`
 - `docs: clarify installation steps`
 
