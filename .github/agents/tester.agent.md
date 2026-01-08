@@ -190,7 +190,7 @@ Jest uses **two distinct `__mocks__` directory locations** based on what you're 
 * ✅ **Always mock `@/lib/logger`** to suppress log output
 * ✅ **Mock `next/cache`** when testing Server Actions that call `revalidatePath`
 * ✅ **Mock `@/lib/timezone`** (already done in `jest.setup.ts` globally)
-* ❌ **Never mock `@/db/schema`** — import real schema for Column objects
+* ❌ **Never mock `@/db/schema`** - import real schema for Column objects
 * ❌ **Never mock pure utilities** like `lib/money.ts` or `lib/utils.ts`
 
 #### Mock Activation
