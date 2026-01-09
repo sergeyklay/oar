@@ -27,87 +27,30 @@ gh auth status
 3. Wait for the user to complete authentication before proceeding.
 
 **Common authentication error patterns:**
+
 - "You are not logged in"
 - "authentication required"
 - "token has expired"
 - "invalid token"
 - Exit code 1 with stderr output
 
-### Step 2: Verify Branch Safety
-
-**CRITICAL:** Never commit directly to protected branches.
-
-#### Detect Protected Branch
-
-```bash
-# Get the repository's default branch
-gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
-
-# Get current branch
-git branch --show-current
-```
-
-Protected branches include:
-- The default branch (usually `main` or `master`)
-- `develop` or `development`
-- Any branch matching `release/*` or `hotfix/*` patterns
-
-#### If on Protected Branch
-
-1. **STOP** - do not commit directly
-2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
-3. Create an appropriately named feature branch:
-
-```bash
-git checkout -b <type>/<short-description>
-```
-
-#### Branch Naming Convention
-
-Format: `<type>/<kebab-case-description>`
-
-| Type | Use Case | Example |
-|------|----------|---------|
-| `feat` | New feature | `feat/bill-reminders` |
-| `fix` | Bug fix | `fix/null-amount-validation` |
-| `refactor` | Code restructuring | `refactor/extract-payment-service` |
-| `chore` | Maintenance tasks | `chore/update-dependencies` |
-| `docs` | Documentation | `docs/api-reference` |
-| `test` | Test additions | `test/payment-service-coverage` |
-
-**Rules:**
-- Use kebab-case (lowercase with hyphens)
-- Keep it short (2-4 words max)
-- Make it descriptive of the change intent
-- ALWAYS in English
-
-### Step 3: Analyze Project Writing Style
-
-Analyze recent commits to understand the project's **writing style** for description content:
-
-```bash
-git log --format="%s" -30
-```
-
-**Writing style characteristics to identify:**
-
-| Characteristic | What to Look For |
-|---------------|------------------|
-| **Vocabulary** | Which verbs are commonly used? (add, implement, introduce, etc.) |
-| **Detail level** | Brief ("fix bug") vs descriptive ("fix null pointer in auth flow") |
-| **Scope patterns** | Common scopes: `(deps)`, `(api)`, `(ui)`, or no scope |
-| **Specificity** | Generic vs domain-specific terminology |
-
-**Important:** The Conventional Commits format is fixed. Only adapt the vocabulary and phrasing style to match project conventions.
-
-### Step 4: Identify Files to Commit
+### Step 2: Identify Files to Commit
 
 **Atomic commits principle:** Each commit should represent ONE logical change. Do not bundle unrelated changes into a single commit.
+
+Analyze the current Git status to identify files to commit:
 
 ```bash
 # Show current status
 git status --short
+```
 
+Not all changed files should be committed.
+Having a branch with multiple unrelated changes makes it hard to review, revert, or understand history.
+Try to determine what the user intends to commit based on context and recent changes.
+If unclear, ask the user for clarification on which files or changes to include in the commit.
+
+```bash
 # Show detailed diff for unstaged changes
 git diff
 
@@ -124,23 +67,94 @@ git diff --cached
 
 **Examples of logical grouping:**
 
-| Changes | Commits |
-|---------|---------|
-| New service + its unit tests | 1 commit: `feat: add PaymentService` |
-| New feature + unrelated config change | 2 commits: feature first, then config |
-| Bug fix in component + related test fix | 1 commit: `fix: handle null in BillForm` |
-| Refactor + unrelated documentation update | 2 commits: refactor first, then docs |
-| Multiple files for one feature (action, service, component) | 1 commit: all related files together |
+| Changes                                                     | Commits                                  |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| New service + its unit tests                                | 1 commit: `feat: add PaymentService`     |
+| New feature + unrelated config change                       | 2 commits: feature first, then config    |
+| Bug fix in component + related test fix                     | 1 commit: `fix: handle null in BillForm` |
+| Refactor + unrelated documentation update                   | 2 commits: refactor first, then docs     |
+| Multiple files for one feature (action, service, component) | 1 commit: all related files together     |
 
 **Staging rules:**
 
-| User says | Action |
-|-----------|--------|
-| "commit all changes" | Group into logical atomic commits, create multiple if needed |
-| "commit these files" + list | `git add <file1> <file2>...` |
-| "commit staged files" | Use already staged files |
-| "commit <specific file>" | `git add <file>` |
-| Ambiguous | Ask user to clarify which files and grouping |
+| User says                   | Action                                                       |
+| --------------------------- | ------------------------------------------------------------ |
+| "commit all changes"        | Group into logical atomic commits, create multiple if needed |
+| "commit these files" + list | `git add <file1> <file2>...`                                 |
+| "commit staged files"       | Use already staged files                                     |
+| "commit <specific file>"    | `git add <file>`                                             |
+| Ambiguous                   | Ask user to clarify which files and grouping                 |
+
+### Step 3: Verify Branch Safety
+
+**CRITICAL:** Never commit directly to protected branches.
+
+#### Detect Protected Branch
+
+```bash
+# Get the repository's default branch
+gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+
+# Get current branch
+git branch --show-current
+```
+
+Protected branches include:
+
+- The default branch (usually `main` or `master`)
+- `develop` or `development`
+- Any branch matching `release/*` or `hotfix/*` patterns
+
+#### If on Protected Branch
+
+1. **STOP** - do not commit directly
+2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
+3. Create an appropriately named feature branch based on analyze from Step 2:
+
+```bash
+git checkout -b <type>/<short-description>
+```
+
+#### Branch Naming Convention
+
+Format: `<type>/<kebab-case-description>`
+
+| Type       | Use Case           | Example                            |
+| ---------- | ------------------ | ---------------------------------- |
+| `feat`     | New feature        | `feat/bill-reminders`              |
+| `fix`      | Bug fix            | `fix/null-amount-validation`       |
+| `refactor` | Code restructuring | `refactor/extract-payment-service` |
+| `chore`    | Maintenance tasks  | `chore/update-dependencies`        |
+| `docs`     | Documentation      | `docs/api-reference`               |
+| `test`     | Test additions     | `test/payment-service-coverage`    |
+
+**Rules:**
+
+- Use kebab-case (lowercase with hyphens)
+- Keep it short (2-4 words max)
+- Make it descriptive of the change intent
+- ALWAYS in English
+
+### Step 4: Analyze Project Writing Style
+
+Analyze recent commits to understand the project's **writing style** for description content:
+
+```bash
+git log --format="%s" -30
+```
+
+You have to mimic the vocabulary, detail level, and phrasing style.
+
+**Writing style characteristics to identify:**
+
+| Characteristic     | What to Look For                                                   |
+| ------------------ | ------------------------------------------------------------------ |
+| **Vocabulary**     | Which verbs are commonly used? (add, implement, introduce, etc.)   |
+| **Detail level**   | Brief ("fix bug") vs descriptive ("fix null pointer in auth flow") |
+| **Scope patterns** | Common scopes: `(deps)`, `(api)`, `(ui)`, or no scope              |
+| **Specificity**    | Generic vs domain-specific terminology                             |
+
+**Important:** The Conventional Commits format is fixed. Only adapt the vocabulary and phrasing style to match project conventions.
 
 ### Step 5: Generate Commit Message
 
@@ -157,6 +171,7 @@ git diff --cached
 ```
 
 **Allowed types:**
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation only
@@ -179,14 +194,14 @@ git diff --cached
 
 #### Examples Based on Change Type
 
-| Change | Good Message | Bad Message |
-|--------|--------------|-------------|
-| New API endpoint | `feat(api): add user preferences endpoint` | `Added new stuff` |
-| Fix null reference | `fix: handle null user in auth middleware` | `Fixed bug` |
-| Update README | `docs: clarify installation steps for Docker` | `Update README` |
-| Rename variable | `refactor: rename userId to accountId for clarity` | `Refactoring` |
-| Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5` | `Updated packages` |
-| Add unit test | `test: add coverage for PaymentService edge cases` | `Tests` |
+| Change             | Good Message                                       | Bad Message        |
+| ------------------ | -------------------------------------------------- | ------------------ |
+| New API endpoint   | `feat(api): add user preferences endpoint`         | `Added new stuff`  |
+| Fix null reference | `fix: handle null user in auth middleware`         | `Fixed bug`        |
+| Update README      | `docs: clarify installation steps for Docker`      | `Update README`    |
+| Rename variable    | `refactor: rename userId to accountId for clarity` | `Refactoring`      |
+| Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5`        | `Updated packages` |
+| Add unit test      | `test: add coverage for PaymentService edge cases` | `Tests`            |
 
 ### Step 6: Execute the Commit
 
@@ -219,6 +234,7 @@ git show --stat HEAD
 ```
 
 Report to the user:
+
 - Commit hash (short form)
 - Files changed count
 - Insertions/deletions summary
@@ -227,11 +243,11 @@ Report to the user:
 
 ### Git Errors
 
-| Error | Cause | Resolution |
-|-------|-------|------------|
-| "nothing to commit" | No staged changes | Verify files exist and have changes |
-| "pathspec did not match" | File path incorrect | Check file path spelling |
-| "not a git repository" | Not in repo directory | Navigate to correct directory |
+| Error                    | Cause                 | Resolution                          |
+| ------------------------ | --------------------- | ----------------------------------- |
+| "nothing to commit"      | No staged changes     | Verify files exist and have changes |
+| "pathspec did not match" | File path incorrect   | Check file path spelling            |
+| "not a git repository"   | Not in repo directory | Navigate to correct directory       |
 
 ### Authentication Errors
 
@@ -255,6 +271,7 @@ Always follow the Conventional Commits specification:
 ```
 
 **Format rules:**
+
 - Description MUST immediately follow the colon and space
 - Description is a short summary of code changes
 - Body MAY provide additional context, MUST begin one blank line after description
@@ -262,6 +279,7 @@ Always follow the Conventional Commits specification:
 - Footer `BREAKING CHANGE:` MUST be uppercase
 
 **Common scopes in this project:**
+
 - `(deps)` - dependency updates
 - `(deps-dev)` - dev dependency updates
 - No scope - most other changes
