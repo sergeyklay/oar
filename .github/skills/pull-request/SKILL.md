@@ -201,8 +201,6 @@ gh pr create \
 After creating, verify and report:
 
 ```bash
-PAGER=cat
-
 # Get PR URL
 gh pr view
 ```
