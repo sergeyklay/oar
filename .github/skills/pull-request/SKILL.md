@@ -41,6 +41,7 @@ git branch --show-current
 ```
 
 **Protected branches (cannot be PR source):**
+
 - The default branch (usually `main` or `master`)
 - `develop` or `development`
 - Any branch matching `release/*` or `hotfix/*` patterns
@@ -95,14 +96,14 @@ git diff --stat $DEFAULT_BRANCH..HEAD
 
 **Analyze for:**
 
-| Element | Source |
-|---------|--------|
-| **Type** | Primary commit type (feat, fix, refactor, chore, perf) |
-| **Intent** | Business/technical goal from commit messages |
-| **Entry Point** | Most critical or complex changed file |
-| **Sensitive Areas** | Files requiring extra scrutiny (auth, payments, data) |
-| **Breaking Changes** | Look for `!` in commits or BREAKING CHANGE footer |
-| **Migrations** | Database or schema changes |
+| Element              | Source                                                 |
+| -------------------- | ------------------------------------------------------ |
+| **Type**             | Primary commit type (feat, fix, refactor, chore, perf) |
+| **Intent**           | Business/technical goal from commit messages           |
+| **Entry Point**      | Most critical or complex changed file                  |
+| **Sensitive Areas**  | Files requiring extra scrutiny (auth, payments, data)  |
+| **Breaking Changes** | Look for `!` in commits or BREAKING CHANGE footer      |
+| **Migrations**       | Database or schema changes                             |
 
 ### Step 4: Generate PR Title
 
@@ -188,29 +189,32 @@ After creating, verify and report:
 
 ```bash
 # Get PR URL
-gh pr view --web
+PAGER=cat gh pr view
 ```
 
+NOTE: You have to use the `PAGER=cat` environment variable to avoid interactive pager blocking output.
+
 Report to the user:
+
 - PR number and URL
 - Title
 - Base and head branches
 
 ## Complexity Assessment
 
-| Complexity | Criteria |
-|------------|----------|
-| **Low** | Single file or config changes, documentation, simple fixes |
-| **Medium** | Multiple related files, new features with tests, refactoring |
-| **High** | Cross-cutting changes, database migrations, breaking changes, security-sensitive |
+| Complexity | Criteria                                                                         |
+| ---------- | -------------------------------------------------------------------------------- |
+| **Low**    | Single file or config changes, documentation, simple fixes                       |
+| **Medium** | Multiple related files, new features with tests, refactoring                     |
+| **High**   | Cross-cutting changes, database migrations, breaking changes, security-sensitive |
 
 ## Error Handling
 
-| Error | Cause | Resolution |
-|-------|-------|------------|
-| "pull request already exists" | PR open for this branch | Use `gh pr view` to see existing PR |
-| "no commits between" | Branch same as base | Verify commits exist on branch |
-| "repository not found" | Wrong remote or no access | Check `git remote -v` and permissions |
+| Error                         | Cause                     | Resolution                            |
+| ----------------------------- | ------------------------- | ------------------------------------- |
+| "pull request already exists" | PR open for this branch   | Use `gh pr view` to see existing PR   |
+| "no commits between"          | Branch same as base       | Verify commits exist on branch        |
+| "repository not found"        | Wrong remote or no access | Check `git remote -v` and permissions |
 
 ## Language
 
