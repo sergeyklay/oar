@@ -124,42 +124,51 @@ PR title should follow Conventional Commits format:
 
 Use the project template structure. See [PR Template](../../../pull_request_template.md).
 
-#### Required Sections
+#### Constraints
 
-```markdown
+1. **NO EMOJIS:** Use professional Markdown formatting only. Emojis are allowed only for the section headers as shown in PR template.
+2. **NO FLUFF:** Avoid generic intros like "This PR updates...".
+3. **STATIC SECTIONS:** All 3 sections from template are required in the summary.
+4. **DYNAMIC SUB-SECTIONS:** Only show sub-sections if relevant data exists.
+5. **NO TOP-LEVEL HEADERS:** Start directly with the first section key.
+6. **USING DASHES:** Use a single hyphen "-" and add spaces before and after the hyphen. Do not use "—" for dashes.
+   - **FORBIDDEN:** Breaking Changes: No—all modifications are documentation and configuration updates with no functional impact to codebase or build process.
+   - **ALLOWED:** Breaking Changes: No - all modifications are documentation and configuration updates with no functional impact to codebase or build process.
+7. **FILENAMES:** Filenames should be wrapped in backticks: `lib/services/AutoPayService.ts`
+
+#### Example
+
+<example format="markdown">
 ### 🎯 Scope & Context
 
-**Type:** [Feat | Fix | Refactor | Chore | Perf]
+**Type:** Chore
 
-**Intent:** [1-2 sentences explaining the business or technical goal]
-
-**Related Issues:** [#123, etc. - omit if none]
+**Intent:** Update transaction notes in AutoPayService to reflect accurate logging information. The notes field in auto-pay transaction records is changed from "Auto-processed on due date" to "Logged by Oar" to better represent the system's logging behavior.
 
 ### 🧭 Reviewer Guide
 
-**Complexity:** [Low | Medium | High]
+**Complexity:** Low
 
 #### Entry Point
 
-[Most critical file to start review + explanation]
+[Example 1: Start with `lib/services/AutoPayService.ts` - this is where the core logic change happens. The rest of the files are just adapting to the new return type introduced here. Understanding this file first will make the other changes obvious.]
+[Example 2: Start with `lib/models/Bill.ts` - there are changes how `nextDueDate` is calculated. This looks minor but it affects validation in 3 other services. Once you see the new calculation logic, the changes in `AutoPayService` and `BillValidator` will make sense.]
+[Example 3: Start with `lib/services/PaymentProcessor.ts` - this contains the most significant change: switching from sync to async transaction handling. Pay attention to the error handling block on lines 45-60, this is where the behavior differs from before.]
+[Example 4: Start with `lib/services/AutoPayService.ts` - this file drives the change. The modifications in other files follow from the new interface defined here.]
+[Example 5: No specific entry point needed - changes are straightforward and self-contained. Each file can be reviewed independently. The `AutoPayService.ts` change is just a string update in the notes field, other files follow the same pattern.]
 
 #### Sensitive Areas
 
-- `path/to/file`: [Why it needs scrutiny]
+- `lib/services/foo.ts`: Database transaction insertion logic with notes field value
+- `lib/services/bar.ts`: Service logic to calculate next due date for recurring bills
+- `lib/services/baz.ts`: Service logic to derive bill status based on next due date
 
 ### ⚠️ Risk Assessment
 
-- **Breaking Changes:** [Yes + details | No breaking changes]
-- **Migrations/State:** [Required steps | No migrations or state changes]
-```
+- **Breaking Changes:** No breaking changes
+- **Migrations/State:** No migrations or state changes
 
-#### Description Guidelines
-
-- **NO EMOJIS** except section headers (🎯, 🧭, ⚠️)
-- **NO FLUFF** - avoid "This PR updates..."
-- **BE SPECIFIC** - reference actual files and changes
-- **USE DASHES** - single hyphen with spaces: `- item`
-- **WRAP FILENAMES** in backticks: `` `lib/services/BillService.ts` ``
+</example>
 
 ### Step 6: Create the Pull Request
 
@@ -167,21 +176,25 @@ Use the project template structure. See [PR Template](../../../pull_request_temp
 # Get default branch for base
 DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
 
+# Do NOT use double quotes for --body
 gh pr create \
   --title "<type>: <description>" \
-  --body "<generated description>" \
+  --body '<generated description>' \
   --base "$DEFAULT_BRANCH"
 ```
 
 **For draft PRs:**
 
 ```bash
+# Do NOT use double quotes for --body
 gh pr create \
   --title "<type>: <description>" \
-  --body "<generated description>" \
+  --body '<generated description>' \
   --base "$DEFAULT_BRANCH" \
   --draft
 ```
+
+**IMPORTANT:** You must NOT use double quotes for `--body` to avoid shell interpolation issues.
 
 ### Step 7: Confirm Success
 
@@ -192,7 +205,7 @@ After creating, verify and report:
 PAGER=cat gh pr view
 ```
 
-NOTE: You have to use the `PAGER=cat` environment variable to avoid interactive pager blocking output.
+**IMPORTANT:** You have to use the `PAGER=cat` environment variable to avoid interactive pager blocking output.
 
 Report to the user:
 
