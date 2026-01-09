@@ -202,10 +202,8 @@ After creating, verify and report:
 
 ```bash
 # Get PR URL
-PAGER=cat gh pr view
+gh pr view
 ```
-
-**IMPORTANT:** You have to use the `PAGER=cat` environment variable to avoid interactive pager blocking output.
 
 Report to the user:
 

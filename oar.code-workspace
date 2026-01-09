@@ -1,18 +1,29 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"editor.rulers": [
-			100
-		]
-	},
-	"extensions": {
-		"recommendations": [
-			"mkhl.direnv",
-			"elagil.pre-commit-helper"
-		]
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.rulers": [
+      100
+    ],
+		// Setting PAGER to "cat" to avoid interactive pager blocking output in terminal
+		// when agent runs commands like `gh pr view`.
+    "terminal.integrated.env.linux": {
+      "PAGER": "cat"
+    },
+    "terminal.integrated.env.osx": {
+      "PAGER": "cat"
+    },
+    "terminal.integrated.env.windows": {
+      "PAGER": "cat"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "mkhl.direnv",
+      "elagil.pre-commit-helper"
+    ]
+  }
 }
