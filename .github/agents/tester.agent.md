@@ -1,6 +1,7 @@
 ---
 description: Generate concise, resilient tests following project conventions
 name: Tester
+argument-hint: Specify the source code file or module to test
 tools:
    - execute
    - read

@@ -1,6 +1,7 @@
 ---
 description: Transform vague feature ideas into detailed, testable requirements with user stories and acceptance criteria
 name: Architect
+argument-hint: Specify the feature or idea to architect
 tools:
    - execute
    - read
