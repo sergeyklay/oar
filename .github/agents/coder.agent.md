@@ -1,6 +1,7 @@
 ---
 description: Implement a step from the Execution Plan strictly following architectural constraints
 name: Coder
+argument-hint: Specify the execution plan step or file to implement
 tools:
    - execute
    - read

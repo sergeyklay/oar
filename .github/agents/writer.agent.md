@@ -1,6 +1,7 @@
 ---
 description: Create detailed, source-of-truth documentation for features, architecture, and development guides
 name: Writer
+argument-hint: Specify the documentation topic or feature to write about
 tools:
    - execute
    - read
