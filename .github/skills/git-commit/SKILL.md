@@ -109,7 +109,7 @@ Protected branches include:
 
 1. **STOP** - do not commit directly
 2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
-3. Create an appropriately named feature branch based on analyze from Step 2:
+3. Create an appropriately named feature branch based on analysis from Step 2:
 
 ```bash
 git checkout -b <type>/<short-description>
