@@ -6,7 +6,7 @@ applyTo: "**"
 
 # Code Review Guidelines
 
-Guidelines for TypeScript/React/Next.js code reviews.
+Guidelines for conducting code reviews in this project. Follow these best practices to ensure high-quality contributions.
 
 **Important**: When reviewing code in specific languages or technologies, refer to the corresponding instruction files in `.github/instructions/` directory for language-specific best practices, conventions, and review criteria.
 
