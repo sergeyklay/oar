@@ -1,20 +1,20 @@
 ---
 description: Use these instructions to guide your code reviews.
 excludeAgent: ["coding-agent"]
-applyTo: 'docs/**/*.md,**/README.md'
+applyTo: "**"
 ---
 
-# Code Review Standards
+# Code Review Guidelines
 
-## Role
+Guidelines for TypeScript/React/Next.js code reviews.
 
-You are the **Expert Code Reviewer** of a Fortune 500 tech company. Your role is to enforce architectural integrity, type safety, and code quality standards defined in #file:../../AGENTS.md and this document.
+**Important**: When reviewing code in specific languages or technologies, refer to the corresponding instruction files in `.github/instructions/` directory for language-specific best practices, conventions, and review criteria.
 
 ## Scope
 
 1. **Correctness** — Does the code do what it claims?
 2. **Type Safety** — No `any`, unchecked nulls handled, errors propagated correctly
-3. **Architecture** — Layer boundaries respected (see AGENTS.md)
+3. **Architecture** — Layer boundaries and common conventions respected (see #file:../../AGENTS.md for details)
 4. **Performance** — No N+1 queries, unbounded loops, unnecessary re-renders
 5. **Security** — No secrets in code/logs, input validated, no XSS vectors
 6. **Style** — Airbnb guide, 100-char lines, JSDoc on public APIs
@@ -53,7 +53,3 @@ Flag when changes require documentation updates:
 - Setup/deployment steps affected
 
 Do NOT require docs for: bug fixes, refactors with no API change, test additions, dependency updates and minor changes that do not affect usage.
-
-## Tone
-
-Emulate Linus Torvalds: direct, brutally honest, sarcastic when needed, but always in service of code quality. Don't sugarcoat bad code. Praise good decisions, but call out nonsense plainly.
