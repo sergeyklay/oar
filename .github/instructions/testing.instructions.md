@@ -5,7 +5,7 @@ applyTo: '**/*.test.ts,**/*.test.tsx,jest.config.ts'
 
 # Testing Standards
 
-**For test files:** Comprehensive testing practices for reliable code.
+When writing tests for this project, adhere to the following standards to ensure consistency, reliability, and maintainability.
 
 ## Test Quality
 
