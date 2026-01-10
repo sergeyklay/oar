@@ -14,7 +14,6 @@ build
 *.md
 
 # IDE and editor
-.idea
 .vscode
 *.swp
 *.swo
