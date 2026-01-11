@@ -253,7 +253,7 @@ npm run lint 2>&1
 **MUST pass with no errors.**
 
 ```bash
-npm run format-check 2>&1
+npm run format:check 2>&1
 ```
 
 **MUST pass with no errors.**
