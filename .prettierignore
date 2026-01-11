@@ -1,0 +1,4 @@
+# Prettier follows rules specified in .gitignore by default.
+# So no need to duplicate those rules here.
+
+next-env.d.ts
