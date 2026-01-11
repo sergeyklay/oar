@@ -124,7 +124,7 @@ _React components. Server Components by default; Client Components only when hoo
 
 - [ ] Run linter: `npm run lint 2>&1`
 - [ ] Run type check: `npm run typecheck 2>&1`
-- [ ] Run formatter check: `npm run format-check 2>&1`
+- [ ] Run formatter check: `npm run format:check 2>&1`
 - [ ] Manual verification: [Describe the user flow to test]
 - [ ] Verify all domain logic lives in Services, not Actions or Components
 
