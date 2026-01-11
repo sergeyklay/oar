@@ -263,7 +263,7 @@ Steps to verify:
 3. Run `npm run typecheck 2>&1` to check for type errors.
 4. Run `npm run lint 2>&1` to check for linting errors.
 5. Run `npm run format:check 2>&1` to check for formatting errors.
-6. If the tests AND linting AND type checks pass, respond "Done".
+6. If the tests AND linting AND type checks AND formatting pass, respond "Done".
 
 NEVER respond "Done" until you have verified that the tests are complete and cover all the functionality of the source file and that there are no linting/type errors or warnings.
 
