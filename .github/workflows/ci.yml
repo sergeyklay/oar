@@ -22,11 +22,6 @@ jobs:
     # before GitHub automatically cancels it. Default: 360
     timeout-minutes: 30
 
-    strategy:
-      # When set to true, GitHub cancels
-      # all in-progress jobs if any matrix job fails.
-      fail-fast: false
-
     concurrency:
       # Cancel any currently running job or workflow in the same concurrency group.
       # The group is a unique identifier for the workflow run.
@@ -60,14 +55,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci --include=dev
+
+      - name: Run prettier
+        run: npm run format-check
+
+      - name: Run linter
+        run: npm run lint
 
       - name: Run type check
         run: npm run typecheck
-
-      - name: Run lint
-        run: npm run lint
 
       - name: Audit packages
         run: npm audit --audit-level=high
@@ -93,7 +91,3 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-
-      - name: Success Reporting
-        if: ${{ !cancelled() && success() }}
-        run: git log --format=fuller -5

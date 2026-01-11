@@ -252,6 +252,12 @@ npm run lint 2>&1
 
 **MUST pass with no errors.**
 
+```bash
+npm run format-check 2>&1
+```
+
+**MUST pass with no errors.**
+
 ### 2. Runtime Validation (For Logic/DB Changes)
 
 IF you modified database operations or business logic:
