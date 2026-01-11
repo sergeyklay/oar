@@ -91,3 +91,9 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+
+      - name: Success Reporting
+        if: ${{ !cancelled() && success() }}
+        run: |
+          echo "CI succeeded. Recent commits:"
+          git log -5 --oneline
