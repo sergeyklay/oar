@@ -265,7 +265,6 @@ Steps to verify:
 5. Run `npm run format-check 2>&1` to check for formatting errors.
 6. If the tests AND linting AND type checks pass, respond "Done".
 
-
 NEVER respond "Done" until you have verified that the tests are complete and cover all the functionality of the source file and that there are no linting/type errors or warnings.
 
 ---
