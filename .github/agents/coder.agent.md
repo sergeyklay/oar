@@ -3,11 +3,11 @@ description: Implement a step from the Execution Plan strictly following archite
 name: Coder
 argument-hint: Specify the execution plan step or file to implement
 tools:
-   - execute
-   - read
-   - edit
-   - todo
-   - search
+  - execute
+  - read
+  - edit
+  - todo
+  - search
 handoffs:
   - label: Verify Implementation
     agent: Tester
@@ -95,7 +95,7 @@ db.transaction((tx) => {
 
 // ❌ WRONG: Async/await inside transaction (WILL NOT WORK)
 db.transaction(async (tx) => {
-  await tx.insert(bills).values(billData);  // This breaks!
+  await tx.insert(bills).values(billData); // This breaks!
   await tx.insert(transactions).values(txData);
 });
 ```
@@ -108,14 +108,14 @@ All monetary values are stored and transmitted as **integers in minor units** (c
 
 ```typescript
 // ✅ CORRECT: Integer storage and conversion at UI boundary
-const amountInCents = toMinorUnits(userInput, 'USD');  // '49.99' → 4999
+const amountInCents = toMinorUnits(userInput, 'USD'); // '49.99' → 4999
 db.insert(bills).values({ amount: amountInCents });
 
-const displayAmount = formatMoney(bill.amount);  // 4999 → "$49.99"
+const displayAmount = formatMoney(bill.amount); // 4999 → "$49.99"
 
 // ❌ WRONG: Floating point money
-const amount = 49.99;  // NEVER DO THIS
-db.insert(bills).values({ amount: amount * 100 });  // Floating point errors!
+const amount = 49.99; // NEVER DO THIS
+db.insert(bills).values({ amount: amount * 100 }); // Floating point errors!
 ```
 
 ---
@@ -186,7 +186,7 @@ IF the task involves fixing a documented BUG:
 1. **Fix the Code:** Implement the fix in source files.
 2. **Verify:** Ensure it passes existing lint/type checks.
 3. **Testability Analysis:**
-   - Ask yourself: *Can this specific fix be reliably verified with our CURRENT stack (Jest, React Testing Library)?*
+   - Ask yourself: _Can this specific fix be reliably verified with our CURRENT stack (Jest, React Testing Library)?_
    - ✅ **YES (Testable):** Logic changes, State updates, Service method behavior, Component rendering.
    - ❌ **NO (Not Testable):** Pure CSS changes, Animations, complex Browser APIs.
 4. **Final Step (CRITICAL):**
@@ -194,8 +194,10 @@ IF the task involves fixing a documented BUG:
    **Scenario A: Fix is Testable**
 
    Propose the exact command for the QA Agent:
+
    > Bug {short name} was fixed.
-   > **Next Step:** Lock this fix with a regression test. Use the following prompt for *Tester* agent:
+   > **Next Step:** Lock this fix with a regression test. Use the following prompt for _Tester_ agent:
+   >
    > ```plaintext
    > Bug {short name of the bug} was fixed.
    > [specific bug description].
@@ -216,14 +218,16 @@ IF the task involves fixing a documented BUG:
    **Scenario B: Fix is NOT Testable (e.g., CSS)**
 
    Explicitly state why and request manual verification:
+
    > Bug {short name} was fixed.
    > [specific bug description].
    >
    > **Changes Made:**
+   >
    > 1. [specific change description]
    > 2. [specific change description]
    > 3. [specific change description]
-   > ...
+   >    ...
    >
    > **Note:** This is a visual/CSS fix and cannot be reliably verified using Jest/RTL.
    > **Next Step:** Please manually verify that [specific visual element] is now correct in the browser.
@@ -239,11 +243,13 @@ You are PROHIBITED from responding "Done" until you have verified runtime execut
 ```bash
 npm run typecheck 2>&1
 ```
+
 **MUST pass with no errors.**
 
 ```bash
 npm run lint 2>&1
 ```
+
 **MUST pass with no errors.**
 
 ### 2. Runtime Validation (For Logic/DB Changes)

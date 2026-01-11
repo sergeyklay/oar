@@ -30,6 +30,7 @@ The chart at the top of the Monthly History View provides a visual comparison of
 Each month appears as two bars grouped together. The left bar (in the primary theme color) shows "Current Year" - your actual payments for that month in the current year. The right bar (in a muted color) shows "Last Year" - your payments for the same month in the previous year. This side-by-side comparison makes it easy to spot trends like seasonal variations or changes in spending habits.
 
 **Example:** If you select December 2025, the chart shows:
+
 - Current Year bars: January 2025, February 2025, through December 2025 (with December 2025 as the rightmost bar)
 - Last Year bars: January 2024, February 2024, through December 2024 (with December 2024 as the rightmost bar)
 
@@ -134,8 +135,7 @@ To confirm the Monthly History View works correctly:
 
 ## Related Documents
 
-* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
-* [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records
-
+- [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
+- [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records

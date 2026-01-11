@@ -51,17 +51,20 @@ describe('logPayment', () => {
     frequency: 'monthly' as const,
   };
 
-  const setupMocks = (bill = mockBill, paymentResult: {
-    nextDueDate: Date | null;
-    newAmountDue: number;
-    newStatus: 'pending' | 'paid' | 'overdue';
-    isHistorical: boolean;
-  } = {
-    nextDueDate: new Date('2026-01-15'),
-    newAmountDue: 20000,
-    newStatus: 'pending',
-    isHistorical: false,
-  }) => {
+  const setupMocks = (
+    bill = mockBill,
+    paymentResult: {
+      nextDueDate: Date | null;
+      newAmountDue: number;
+      newStatus: 'pending' | 'paid' | 'overdue';
+      isHistorical: boolean;
+    } = {
+      nextDueDate: new Date('2026-01-15'),
+      newAmountDue: 20000,
+      newStatus: 'pending',
+      isHistorical: false,
+    },
+  ) => {
     (db.select as jest.Mock).mockReturnValue({
       from: jest.fn().mockReturnValue({
         where: jest.fn().mockResolvedValue([bill]),
@@ -177,12 +180,7 @@ describe('logPayment', () => {
       updateDueDate: true,
     });
 
-    expect(PaymentService.processPayment).toHaveBeenCalledWith(
-      mockBill,
-      10000,
-      paidAt,
-      true
-    );
+    expect(PaymentService.processPayment).toHaveBeenCalledWith(mockBill, 10000, paidAt, true);
   });
 
   it('passes updateDueDate to PaymentService', async () => {
@@ -199,7 +197,7 @@ describe('logPayment', () => {
       expect.anything(),
       expect.anything(),
       expect.any(Date),
-      true
+      true,
     );
   });
 
@@ -219,12 +217,7 @@ describe('logPayment', () => {
       updateDueDate: false,
     });
 
-    expect(PaymentService.processPayment).toHaveBeenCalledWith(
-      mockBill,
-      5000,
-      paidAt,
-      false
-    );
+    expect(PaymentService.processPayment).toHaveBeenCalledWith(mockBill, 5000, paidAt, false);
   });
 
   it('updates bill with amountDue from PaymentService result', async () => {
@@ -520,9 +513,7 @@ describe('logPayment', () => {
 
     expect(mockTx.update).toHaveBeenCalled();
     const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
-    expect(setCall).toHaveBeenCalledWith(
-      expect.objectContaining({ isArchived: true })
-    );
+    expect(setCall).toHaveBeenCalledWith(expect.objectContaining({ isArchived: true }));
   });
 
   it('does not archive bill when bill ended but setting is mark_as_paid', async () => {
@@ -576,7 +567,7 @@ describe('logPayment', () => {
     expect(mockTx.update).toHaveBeenCalled();
     const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
     expect(setCall).toHaveBeenCalledWith(
-      expect.not.objectContaining({ isArchived: expect.anything() })
+      expect.not.objectContaining({ isArchived: expect.anything() }),
     );
   });
 
@@ -953,7 +944,7 @@ describe('updateTransaction', () => {
     expect(PaymentService.recalculateBillFromPayments).not.toHaveBeenCalled();
     expect(PaymentService.doesPaymentAffectCurrentCycle).toHaveBeenCalledWith(
       billWithAdvancedCycle,
-      transactionWithOriginalDate
+      transactionWithOriginalDate,
     );
   });
 
@@ -1221,7 +1212,7 @@ describe('updateTransaction', () => {
     expect(result.data?.transactionId).toBe('tx-1');
     expect(PaymentService.doesPaymentAffectCurrentCycle).toHaveBeenCalledWith(
       currentBill,
-      historicalTransaction
+      historicalTransaction,
     );
     expect(db.transaction).toHaveBeenCalledTimes(1);
     expect(db.update).toHaveBeenCalledWith(transactions);
@@ -1655,9 +1646,7 @@ describe('getRecentPayments', () => {
   });
 
   it('returns payments for valid input', async () => {
-    const mockPayments = [
-      { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() },
-    ];
+    const mockPayments = [{ id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() }];
     (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue(mockPayments);
 
     const result = await getRecentPayments({ days: 7 });
@@ -1704,9 +1693,7 @@ describe('getPaymentsByDate', () => {
   });
 
   it('returns payments for valid date', async () => {
-    const mockPayments = [
-      { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() },
-    ];
+    const mockPayments = [{ id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() }];
     (TransactionService.getPaymentsByDate as jest.Mock).mockResolvedValue(mockPayments);
 
     const result = await getPaymentsByDate({ date: '2026-01-05' });

@@ -1,4 +1,9 @@
-import type { PaymentWithBill, HistorySummary, AggregatedBillSpending, AnnualSpendingSummary } from '@/lib/types';
+import type {
+  PaymentWithBill,
+  HistorySummary,
+  AggregatedBillSpending,
+  AnnualSpendingSummary,
+} from '@/lib/types';
 
 /**
  * Service for history-related business logic.
@@ -38,4 +43,3 @@ export const HistoryService = {
     };
   },
 };
-

@@ -1,4 +1,17 @@
-import { createBill, updateBill, getBillTags, getBillsFiltered, getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats, skipPayment, searchBills, type CreateBillInput, type UpdateBillInput } from './bills';
+import {
+  createBill,
+  updateBill,
+  getBillTags,
+  getBillsFiltered,
+  getBillsForCurrentMonthStats,
+  getAllBillsStats,
+  getBillsForDueSoonStats,
+  getArchivedBillsStats,
+  skipPayment,
+  searchBills,
+  type CreateBillInput,
+  type UpdateBillInput,
+} from './bills';
 import { db, bills, billsToTags, resetDbMocks } from '@/db';
 import { BillService } from '@/lib/services/BillService';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -773,9 +786,7 @@ describe('getBillTags', () => {
   });
 
   it('returns success with tags when bill found', async () => {
-    const mockTags = [
-      { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
-    ];
+    const mockTags = [{ id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() }];
 
     (BillService.getTags as jest.Mock).mockResolvedValue(mockTags);
 
@@ -864,8 +875,11 @@ describe('getBillsFiltered', () => {
 
     expect(resultWithMonth).toHaveLength(3);
     expect(resultWithoutMonth).toHaveLength(3);
-    expect(resultWithMonth.map(b => b.id)).toEqual(resultWithoutMonth.map(b => b.id));
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ month: '2025-01', userTimezoneOffset: 0 });
+    expect(resultWithMonth.map((b) => b.id)).toEqual(resultWithoutMonth.map((b) => b.id));
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      month: '2025-01',
+      userTimezoneOffset: 0,
+    });
     expect(BillService.getFiltered).toHaveBeenCalledWith({ userTimezoneOffset: 0 });
   });
 
@@ -877,7 +891,10 @@ describe('getBillsFiltered', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-01-15', userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      date: '2025-01-15',
+      userTimezoneOffset: 0,
+    });
   });
 
   it('excludes archived bills by default', async () => {
@@ -885,7 +902,7 @@ describe('getBillsFiltered', () => {
 
     const result = await getBillsFiltered({});
 
-    expect(result.every(bill => !bill.isArchived)).toBe(true);
+    expect(result.every((bill) => !bill.isArchived)).toBe(true);
     expect(result).toHaveLength(3);
     expect(BillService.getFiltered).toHaveBeenCalledWith({ userTimezoneOffset: 0 });
   });
@@ -903,9 +920,12 @@ describe('getBillsFiltered', () => {
 
     const result = await getBillsFiltered({ includeArchived: true });
 
-    expect(result.some(bill => bill.isArchived)).toBe(true);
+    expect(result.some((bill) => bill.isArchived)).toBe(true);
     expect(result.length).toBeGreaterThan(3);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ includeArchived: true, userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      includeArchived: true,
+      userTimezoneOffset: 0,
+    });
   });
 
   it('filters bills by tag slug', async () => {
@@ -915,7 +935,10 @@ describe('getBillsFiltered', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ tag: 'utilities', userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      tag: 'utilities',
+      userTimezoneOffset: 0,
+    });
   });
 
   it('returns empty array when tag does not exist', async () => {
@@ -924,7 +947,10 @@ describe('getBillsFiltered', () => {
     const result = await getBillsFiltered({ tag: 'nonexistent' });
 
     expect(result).toEqual([]);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ tag: 'nonexistent', userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      tag: 'nonexistent',
+      userTimezoneOffset: 0,
+    });
   });
 
   it('combines date and tag filters', async () => {
@@ -934,7 +960,11 @@ describe('getBillsFiltered', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-01-15', tag: 'utilities', userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      date: '2025-01-15',
+      tag: 'utilities',
+      userTimezoneOffset: 0,
+    });
   });
 
   it('returns bills with tags attached', async () => {
@@ -964,7 +994,10 @@ describe('getBillsFiltered', () => {
     const result = await getBillsFiltered({ date: '2025-12-31' });
 
     expect(result).toEqual([]);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ date: '2025-12-31', userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      date: '2025-12-31',
+      userTimezoneOffset: 0,
+    });
   });
 
   it('sorts bills by dueDate ascending', async () => {
@@ -1474,7 +1507,10 @@ describe('getArchivedBillsStats', () => {
     const result = await getArchivedBillsStats();
 
     expect(result).toEqual({ count: 2 });
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true, userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      archivedOnly: true,
+      userTimezoneOffset: 0,
+    });
   });
 
   it('returns zero count when no bills exist', async () => {
@@ -1483,7 +1519,10 @@ describe('getArchivedBillsStats', () => {
     const result = await getArchivedBillsStats();
 
     expect(result).toEqual({ count: 0 });
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true, userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      archivedOnly: true,
+      userTimezoneOffset: 0,
+    });
   });
 
   it('returns correct count when all bills are archived', async () => {
@@ -1511,7 +1550,10 @@ describe('getArchivedBillsStats', () => {
 
     expect(result.count).toBe(allArchivedBills.length);
     expect(result.count).toBe(4);
-    expect(BillService.getFiltered).toHaveBeenCalledWith({ archivedOnly: true, userTimezoneOffset: 0 });
+    expect(BillService.getFiltered).toHaveBeenCalledWith({
+      archivedOnly: true,
+      userTimezoneOffset: 0,
+    });
   });
 });
 

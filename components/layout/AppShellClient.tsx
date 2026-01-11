@@ -18,10 +18,5 @@ export function AppShellClient({ children, className }: AppShellClientProps) {
   const [sidebarState] = useQueryState('sidebar', parseAsStringLiteral(['hidden']));
   const isSidebarHidden = sidebarState === 'hidden';
 
-  return (
-    <div className={cn(className, isSidebarHidden && 'sidebar-hidden')}>
-      {children}
-    </div>
-  );
+  return <div className={cn(className, isSidebarHidden && 'sidebar-hidden')}>{children}</div>;
 }
-

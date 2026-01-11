@@ -20,11 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import {
   toMajorUnits,
@@ -162,12 +158,7 @@ export function PaymentDetailForm({
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </Button>
@@ -194,7 +185,7 @@ export function PaymentDetailForm({
                               variant="outline"
                               className={cn(
                                 'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
+                                !field.value && 'text-muted-foreground',
                               )}
                             >
                               {field.value ? (
@@ -273,9 +264,7 @@ export function PaymentDetailForm({
                           rows={2}
                         />
                       ) : (
-                        <div className="text-sm py-2">
-                          {transaction.notes || ''}
-                        </div>
+                        <div className="text-sm py-2">{transaction.notes || ''}</div>
                       )}
                     </FormControl>
                   </div>
@@ -296,9 +285,7 @@ export function PaymentDetailForm({
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save
                 </Button>
               </div>
@@ -318,4 +305,3 @@ export function PaymentDetailForm({
     </>
   );
 }
-

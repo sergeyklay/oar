@@ -40,10 +40,7 @@ export function useSettingDropdown<T extends string>({
   onUpdate,
   showSuccessToast = true,
 }: UseSettingDropdownOptions<T>): UseSettingDropdownReturn<T> {
-  const updateAction = async (
-    prevState: ActionState<T>,
-    value: T
-  ): Promise<ActionState<T>> => {
+  const updateAction = async (prevState: ActionState<T>, value: T): Promise<ActionState<T>> => {
     const result = await onUpdate(value);
     if (!result.success) {
       return {
@@ -90,11 +87,7 @@ export function useSettingDropdown<T extends string>({
     const prevCurrentValue = prevCurrentValueRef.current;
     prevCurrentValueRef.current = currentValue;
 
-    if (
-      currentValue !== prevCurrentValue &&
-      currentValue !== state.value &&
-      !isPending
-    ) {
+    if (currentValue !== prevCurrentValue && currentValue !== state.value && !isPending) {
       startTransition(() => {
         updateValue(currentValue);
       });

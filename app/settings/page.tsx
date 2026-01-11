@@ -50,9 +50,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             }
           >
             <div className="p-6">
-              <p className="text-destructive">
-                Failed to load settings structure
-              </p>
+              <p className="text-destructive">Failed to load settings structure</p>
             </div>
           </MainContent>
         </AppShell>
@@ -80,9 +78,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             }
           >
             <div className="p-6">
-              <p className="text-muted-foreground">
-                No settings categories available
-              </p>
+              <p className="text-muted-foreground">No settings categories available</p>
             </div>
           </MainContent>
         </AppShell>
@@ -103,11 +99,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             />
           }
         >
-          <SettingsLayout
-            navigation={
-              <SettingsNavigation categories={structure.categories} />
-            }
-          >
+          <SettingsLayout navigation={<SettingsNavigation categories={structure.categories} />}>
             <SettingsCategoryPanel category={selectedCategory} />
           </SettingsLayout>
         </MainContent>

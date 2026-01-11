@@ -12,20 +12,21 @@ jest.mock('date-fns', () => ({
   }),
 }));
 
-const createMockDay = (date: Date): CalendarDay => ({
-  date,
-  dateLib: date,
-  displayMonth: date,
-  isoDate: date.toISOString().split('T')[0],
-  displayMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-  dateMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-  isEqualTo: jest.fn(),
-  modifiers: {},
-  disabled: false,
-  selected: false,
-  today: false,
-  outside: false,
-} as unknown as CalendarDay);
+const createMockDay = (date: Date): CalendarDay =>
+  ({
+    date,
+    dateLib: date,
+    displayMonth: date,
+    isoDate: date.toISOString().split('T')[0],
+    displayMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+    dateMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+    isEqualTo: jest.fn(),
+    modifiers: {},
+    disabled: false,
+    selected: false,
+    today: false,
+    outside: false,
+  }) as unknown as CalendarDay;
 
 describe('DayWithDots', () => {
   const mockDate = new Date('2025-12-15');
@@ -45,7 +46,7 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="status"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       const dots = screen.getAllByLabelText(/bill$/);
@@ -62,7 +63,7 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="status"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText(/bill$/)).not.toBeInTheDocument();
@@ -80,7 +81,7 @@ describe('DayWithDots', () => {
           isLoading={true}
           dotMode="status"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText(/bill$/)).not.toBeInTheDocument();
@@ -98,7 +99,7 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="status"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       const dots = screen.getAllByLabelText(/bill$/);
@@ -117,7 +118,7 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="status"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       const dots = screen.getAllByLabelText(/bill$/);
@@ -142,7 +143,7 @@ describe('DayWithDots', () => {
           dotMode="payment"
           paymentDates={paymentDates}
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       const dot = screen.getByLabelText('payment made');
@@ -163,7 +164,7 @@ describe('DayWithDots', () => {
           dotMode="payment"
           paymentDates={paymentDates}
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText('payment made')).not.toBeInTheDocument();
@@ -182,7 +183,7 @@ describe('DayWithDots', () => {
           dotMode="payment"
           paymentDates={paymentDates}
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText('payment made')).not.toBeInTheDocument();
@@ -196,7 +197,7 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="payment"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText('payment made')).not.toBeInTheDocument();
@@ -220,7 +221,7 @@ describe('DayWithDots', () => {
           dotMode="none"
           paymentDates={paymentDates}
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.queryByLabelText(/bill$/)).not.toBeInTheDocument();
@@ -240,7 +241,7 @@ describe('DayWithDots', () => {
           dateStatuses={dateStatuses}
           isLoading={false}
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       const dots = screen.getAllByLabelText(/bill$/);
@@ -257,11 +258,10 @@ describe('DayWithDots', () => {
           isLoading={false}
           dotMode="none"
           modifiers={mockModifiers}
-        />
+        />,
       );
 
       expect(screen.getByText('15')).toBeInTheDocument();
     });
   });
 });
-

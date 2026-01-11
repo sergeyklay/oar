@@ -12,6 +12,7 @@ It is the "Constitution" for all AI agents working on this project.
 **Role:** You are a Principal Engineer maintaining a sovereign financial system. Treat user data as sacred—this system exists to serve the user, not to harvest their information.
 
 **Core Stack:**
+
 - Node.js 24 with npm as package manager
 - Next.js 16 (App Router, React Server Components)
 - React 19.2 with TypeScript
@@ -23,9 +24,11 @@ It is the "Constitution" for all AI agents working on this project.
 - Docker for containerization
 
 **Philosophy — "The Active Payer":**
-> Unlike passive expense trackers that merely *record* what happened, Oar is a **commitment calendar** that enforces *awareness* of upcoming financial obligations. The user is not a passive observer—they are an **Active Payer** who must consciously acknowledge every bill. This is a feature, not friction.
+
+> Unlike passive expense trackers that merely _record_ what happened, Oar is a **commitment calendar** that enforces _awareness_ of upcoming financial obligations. The user is not a passive observer—they are an **Active Payer** who must consciously acknowledge every bill. This is a feature, not friction.
 
 **Sovereignty Principle:**
+
 > All data lives on the user's machine. There is no cloud sync, no telemetry, no external API calls for core functionality. The user owns their financial truth absolutely.
 
 ---
@@ -35,6 +38,7 @@ It is the "Constitution" for all AI agents working on this project.
 **Goal:** Build a sovereign, local-first financial commitment calendar that enforces "Active Payer" awareness and provides deep liquidity forecasting—without external banking dependencies.
 
 **Technical Implications:**
+
 1. **Forecasting Engine:** The system must predict future cash flow using only user-entered bill data and recurrence rules. No bank balance imports.
 2. **Commitment, Not Automation:** Bills are not auto-paid by the system. The user must explicitly mark payments—this is intentional friction that builds financial awareness.
 3. **Offline-First:** The app must function completely offline. SQLite with WAL mode ensures this.
@@ -112,13 +116,13 @@ It is the "Constitution" for all AI agents working on this project.
 
 ### Layer Rules (Access Matrix)
 
-| Layer | CAN Access | CANNOT Access |
-|-------|------------|---------------|
-| **React Server Components** | Server Actions, Domain Services (read-only queries), URL state | Client state, browser APIs |
-| **Client Components** | Server Actions (via form/mutation), props from parent, URL state | Domain Services directly, database |
-| **Server Actions** | Domain Services, Drizzle queries, Zod schemas | UI components, React hooks |
-| **Domain Services** | Other services, Drizzle ORM, pure utilities | Server Actions, UI, Next.js APIs (revalidate, cookies) |
-| **Utilities (lib/*.ts)** | Other utilities, external libs | Services, Actions, Database, UI |
+| Layer                       | CAN Access                                                       | CANNOT Access                                          |
+| --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| **React Server Components** | Server Actions, Domain Services (read-only queries), URL state   | Client state, browser APIs                             |
+| **Client Components**       | Server Actions (via form/mutation), props from parent, URL state | Domain Services directly, database                     |
+| **Server Actions**          | Domain Services, Drizzle queries, Zod schemas                    | UI components, React hooks                             |
+| **Domain Services**         | Other services, Drizzle ORM, pure utilities                      | Server Actions, UI, Next.js APIs (revalidate, cookies) |
+| **Utilities (lib/\*.ts)**   | Other utilities, external libs                                   | Services, Actions, Database, UI                        |
 
 ### The Golden Rule of Logic Isolation
 
@@ -197,6 +201,7 @@ User clicks filter
 ### Money Handling — THE IRON RULE
 
 > **All monetary values are stored and transmitted as INTEGERS (minor units).**
+>
 > - Database: `amount INTEGER` (4999 = $49.99)
 > - API/Actions: Always integers
 > - Conversion: Only at UI boundary via `lib/money.ts`
@@ -249,6 +254,7 @@ When filtering data by date boundaries (month, day, year), use the timezone util
   - `calculateYearFilterBoundaries(year, userOffsetHours)` — Year ranges
 
 **✅ Correct:**
+
 ```typescript
 // In Server Action
 const userTimezoneOffset = await getUserTimezoneOffset();
@@ -375,11 +381,13 @@ oar/
 ### Component Directory Organization
 
 **`components/layout/`** contains structural layout components that define the overall page shell and structure:
+
 - AppShell, Sidebar, MainContent, RightPanel, PageHeader
 - These components orchestrate the page layout and are always rendered in specific structural positions
 - They have layout-specific responsibilities (positioning, spacing, grid structure)
 
 **`components/common/`** contains generic reusable UI components that can be used anywhere in the application:
+
 - ScrollableContainer, ReportSidebarSummary (when applicable)
 - These are pure presentational wrappers with no layout-specific concerns
 - They are not tied to page structure and can appear in any context
@@ -389,6 +397,7 @@ oar/
 ### Sacred Files Protocol
 
 Files marked `SACRED` must NOT be modified without explicit user instruction. When modifying adjacent code:
+
 1. Do NOT reset or overwrite sacred files
 2. Do NOT remove existing CSS variables or theme tokens
 3. Do NOT restructure the layout component hierarchy
@@ -409,9 +418,10 @@ When encountering legacy or inconsistent code:
 
 ### The Boy Scout Rule
 
-> Leave code *you touched* cleaner than you found it. Leave code *you didn't touch* alone.
+> Leave code _you touched_ cleaner than you found it. Leave code _you didn't touch_ alone.
 
 ---
+
 Last Updated: 2025-12-31
 
 Maintained by: AI Agents under human supervision

@@ -64,7 +64,10 @@ const entries = journal.entries ?? [];
 
 // Get already applied migrations
 const applied = new Set(
-  db.prepare('SELECT hash FROM __drizzle_migrations').all().map((row) => row.hash)
+  db
+    .prepare('SELECT hash FROM __drizzle_migrations')
+    .all()
+    .map((row) => row.hash),
 );
 
 let appliedCount = 0;
@@ -100,7 +103,7 @@ for (const entry of entries) {
     }
     db.prepare('INSERT INTO __drizzle_migrations (hash, created_at) VALUES (?, ?)').run(
       hash,
-      Date.now()
+      Date.now(),
     );
   });
 
@@ -122,4 +125,3 @@ if (appliedCount === 0) {
 } else {
   logger.info({ appliedCount }, 'Successfully applied migrations');
 }
-

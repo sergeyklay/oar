@@ -34,49 +34,27 @@ describe('RangeSettingDropdown', () => {
   });
 
   it('renders with current value', () => {
-    render(
-      <RangeSettingDropdown
-        currentValue="7"
-        labels={mockLabels}
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
     expect(screen.getByText('In next 7 days')).toBeInTheDocument();
   });
 
   it('displays correct label for current value', () => {
-    render(
-      <RangeSettingDropdown
-        currentValue="14"
-        labels={mockLabels}
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<RangeSettingDropdown currentValue="14" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
     expect(screen.getByText('In next 14 days')).toBeInTheDocument();
   });
 
   it('displays fallback value when label not found', () => {
     render(
-      <RangeSettingDropdown
-        currentValue="unknown"
-        labels={mockLabels}
-        onUpdate={mockOnUpdate}
-      />
+      <RangeSettingDropdown currentValue="unknown" labels={mockLabels} onUpdate={mockOnUpdate} />,
     );
 
     expect(screen.getByText('unknown')).toBeInTheDocument();
   });
 
   it('renders select component', () => {
-    render(
-      <RangeSettingDropdown
-        currentValue="7"
-        labels={mockLabels}
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
@@ -84,13 +62,7 @@ describe('RangeSettingDropdown', () => {
   describe('user interactions', () => {
     it('calls onUpdate with correct range when value changes', async () => {
       mockOnUpdate.mockResolvedValue({ success: true });
-      render(
-        <RangeSettingDropdown
-          currentValue="7"
-          labels={mockLabels}
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -114,13 +86,7 @@ describe('RangeSettingDropdown', () => {
 
     it('persists new value when onUpdate resolves successfully', async () => {
       mockOnUpdate.mockResolvedValue({ success: true });
-      render(
-        <RangeSettingDropdown
-          currentValue="7"
-          labels={mockLabels}
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -148,13 +114,7 @@ describe('RangeSettingDropdown', () => {
         success: false,
         error: 'Update failed',
       });
-      render(
-        <RangeSettingDropdown
-          currentValue="7"
-          labels={mockLabels}
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -185,13 +145,7 @@ describe('RangeSettingDropdown', () => {
         resolveUpdate = resolve;
       });
       mockOnUpdate.mockReturnValue(updatePromise);
-      render(
-        <RangeSettingDropdown
-          currentValue="7"
-          labels={mockLabels}
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<RangeSettingDropdown currentValue="7" labels={mockLabels} onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -224,4 +178,3 @@ describe('RangeSettingDropdown', () => {
     });
   });
 });
-

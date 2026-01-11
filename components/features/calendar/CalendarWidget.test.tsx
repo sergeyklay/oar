@@ -5,8 +5,12 @@ import { getBillDatesForMonth } from '@/actions/calendar';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Triangle: ({ className }: { className: string }) => <span data-testid="triangle-icon" className={className} />,
-  Circle: ({ className }: { className: string }) => <span data-testid="circle-icon" className={className} />,
+  Triangle: ({ className }: { className: string }) => (
+    <span data-testid="triangle-icon" className={className} />
+  ),
+  Circle: ({ className }: { className: string }) => (
+    <span data-testid="circle-icon" className={className} />
+  ),
 }));
 
 // Mock actions and state
@@ -176,4 +180,3 @@ describe('CalendarWidget', () => {
     expect(screen.getByText('December 15, 2025')).toBeInTheDocument();
   });
 });
-

@@ -16,9 +16,7 @@ interface ArchivePageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function ArchivePage({
-  searchParams,
-}: ArchivePageProps) {
+export default async function ArchivePage({ searchParams }: ArchivePageProps) {
   const { tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
   const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -65,4 +63,3 @@ export default async function ArchivePage({
     </AppShellClient>
   );
 }
-

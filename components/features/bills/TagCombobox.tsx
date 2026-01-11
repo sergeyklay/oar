@@ -13,11 +13,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getLogger } from '@/lib/logger';
@@ -62,14 +58,10 @@ export function TagCombobox({
   const selectedTags = tags.filter((tag) => selectedIds.includes(tag.id));
 
   // Filter tags based on search
-  const filteredTags = tags.filter((tag) =>
-    tag.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTags = tags.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
 
   // Check if search matches any existing tag (for create-on-fly)
-  const exactMatch = tags.some(
-    (tag) => tag.name.toLowerCase() === search.toLowerCase()
-  );
+  const exactMatch = tags.some((tag) => tag.name.toLowerCase() === search.toLowerCase());
   const showCreateOption = search.length > 0 && !exactMatch && !isCreating;
 
   /** Toggle tag selection */
@@ -117,7 +109,10 @@ export function TagCombobox({
     } catch (error) {
       logger.error(error, 'Failed to create tag');
       toast.error('Failed to create tag', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsCreating(false);
@@ -142,11 +137,7 @@ export function TagCombobox({
               <span className="text-muted-foreground">{placeholder}</span>
             ) : (
               selectedTags.map((tag) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="mr-1"
-                >
+                <Badge key={tag.id} variant="secondary" className="mr-1">
                   {tag.name}
                   <span
                     role="button"
@@ -213,7 +204,7 @@ export function TagCombobox({
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      selectedIds.includes(tag.id) ? 'opacity-100' : 'opacity-0'
+                      selectedIds.includes(tag.id) ? 'opacity-100' : 'opacity-0',
                     )}
                   />
                   {tag.name}

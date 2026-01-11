@@ -15,9 +15,7 @@ jest.mock('recharts', () => ({
       onClick={() => onClick?.({ payload: { month: '2025-03' } })}
     />
   ),
-  XAxis: ({ dataKey }: { dataKey: string }) => (
-    <div data-testid="x-axis" data-key={dataKey} />
-  ),
+  XAxis: ({ dataKey }: { dataKey: string }) => <div data-testid="x-axis" data-key={dataKey} />,
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
 }));
 
@@ -34,9 +32,7 @@ jest.mock('@/components/ui/chart', () => ({
     <div
       data-testid="chart-container"
       data-config={JSON.stringify(config)}
-      data-initial-dimension={
-        initialDimension ? JSON.stringify(initialDimension) : null
-      }
+      data-initial-dimension={initialDimension ? JSON.stringify(initialDimension) : null}
     >
       {children}
     </div>
@@ -61,22 +57,14 @@ jest.mock('@/components/ui/chart', () => ({
     };
     return <div data-testid="chart-tooltip">{content(mockProps)}</div>;
   },
-  ChartLegend: ({
-    content,
-  }: {
-    content?: (props: unknown) => React.ReactNode;
-  }) => {
+  ChartLegend: ({ content }: { content?: (props: unknown) => React.ReactNode }) => {
     const mockProps = {
       payload: [
         { value: 'totalDue', id: 'totalDue', color: '#000' },
         { value: 'totalToSave', id: 'totalToSave', color: '#000' },
       ],
     };
-    return (
-      <div data-testid="chart-legend">
-        {content ? content(mockProps) : null}
-      </div>
-    );
+    return <div data-testid="chart-legend">{content ? content(mockProps) : null}</div>;
   },
   ChartLegendContent: ({ config }: { config: Record<string, unknown> }) => (
     <div data-testid="chart-legend-content" data-config={JSON.stringify(config)} />
@@ -112,39 +100,21 @@ describe('ForecastChart', () => {
   });
 
   it('renders chart with provided data', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 
   it('renders both bars for totalDue and totalToSave', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('bar-totalDue')).toBeInTheDocument();
     expect(screen.getByTestId('bar-totalToSave')).toBeInTheDocument();
   });
 
   it('renders X-axis with monthLabel dataKey', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     const xAxis = screen.getByTestId('x-axis');
     expect(xAxis).toBeInTheDocument();
@@ -152,38 +122,20 @@ describe('ForecastChart', () => {
   });
 
   it('renders cartesian grid', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('cartesian-grid')).toBeInTheDocument();
   });
 
   it('renders chart legend', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-legend')).toBeInTheDocument();
     expect(screen.getByTestId('chart-legend-content')).toBeInTheDocument();
   });
 
   it('includes totalToSave in legend config', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     const container = screen.getByTestId('chart-container');
     const config = JSON.parse(container.getAttribute('data-config') || '{}');
@@ -195,13 +147,7 @@ describe('ForecastChart', () => {
   });
 
   it('formats tooltip values using formatMoney', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     screen.getByTestId('chart-tooltip');
 
@@ -210,13 +156,7 @@ describe('ForecastChart', () => {
   });
 
   it('displays formatted currency values in tooltip', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     const tooltip = screen.getByTestId('chart-tooltip');
     expect(tooltip).toHaveTextContent('$300.00');
@@ -227,14 +167,7 @@ describe('ForecastChart', () => {
     const user = userEvent.setup();
     const onBarClick = jest.fn();
 
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-        onBarClick={onBarClick}
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" onBarClick={onBarClick} />);
 
     const totalDueBar = screen.getByTestId('bar-totalDue');
     await user.click(totalDueBar);
@@ -243,44 +176,22 @@ describe('ForecastChart', () => {
   });
 
   it('handles empty data array', () => {
-    render(
-      <ForecastChart
-        data={[]}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={[]} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 
   it('passes correct currency and locale to formatMoney', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="PLN"
-        locale="pl-PL"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="PLN" locale="pl-PL" />);
 
     screen.getByTestId('chart-tooltip');
 
-    expect(formatMoney).toHaveBeenCalledWith(
-      expect.any(Number),
-      'PLN',
-      'pl-PL'
-    );
+    expect(formatMoney).toHaveBeenCalledWith(expect.any(Number), 'PLN', 'pl-PL');
   });
 
   it('passes initialDimension to ChartContainer for SSR support', () => {
-    render(
-      <ForecastChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<ForecastChart data={mockData} currency="USD" locale="en-US" />);
 
     const container = screen.getByTestId('chart-container');
     const dimensionAttr = container.getAttribute('data-initial-dimension');
@@ -289,4 +200,3 @@ describe('ForecastChart', () => {
     expect(initialDimension).toEqual({ width: 800, height: 400 });
   });
 });
-

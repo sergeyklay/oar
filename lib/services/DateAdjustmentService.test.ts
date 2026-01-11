@@ -106,14 +106,17 @@ describe('DateAdjustmentService', () => {
       ['unchanged', 'next_business_day', 'unchanged'],
       ['next_business_day', 'previous_business_day', 'next_business_day'],
       ['previous_business_day', 'unchanged', 'previous_business_day'],
-    ])('returns bill strategy %s when override is set (global: %s)', (billStrategy, globalStrategy, expected) => {
-      const result = DateAdjustmentService.getEffectiveStrategy(
-        billStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
-        globalStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day'
-      );
+    ])(
+      'returns bill strategy %s when override is set (global: %s)',
+      (billStrategy, globalStrategy, expected) => {
+        const result = DateAdjustmentService.getEffectiveStrategy(
+          billStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
+          globalStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
+        );
 
-      expect(result).toBe(expected);
-    });
+        expect(result).toBe(expected);
+      },
+    );
 
     it.each([
       ['unchanged', 'unchanged'],
@@ -122,11 +125,10 @@ describe('DateAdjustmentService', () => {
     ])('returns global strategy %s when bill override is null', (globalStrategy, expected) => {
       const result = DateAdjustmentService.getEffectiveStrategy(
         null,
-        globalStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day'
+        globalStrategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
       );
 
       expect(result).toBe(expected);
     });
   });
 });
-

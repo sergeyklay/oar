@@ -178,4 +178,3 @@ describe('getPaymentDatesForMonth', () => {
     expect(result).toEqual({});
   });
 });
-

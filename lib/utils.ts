@@ -67,7 +67,9 @@ export function calculateMonthBoundaries(year: number, month: number): MonthBoun
 export function calculateExtendedQueryBoundaries(boundaries: MonthBoundaries): QueryBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth, nextMonthYear, nextMonth } = boundaries;
 
-  const queryStart = new Date(Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 10, 0, 0, 0));
+  const queryStart = new Date(
+    Date.UTC(prevMonthYear, prevMonth - 1, lastDayOfPrevMonth, 10, 0, 0, 0),
+  );
   const queryEnd = new Date(Date.UTC(nextMonthYear, nextMonth - 1, 1, 11, 59, 59, 999));
 
   return { queryStart, queryEnd };
@@ -97,7 +99,7 @@ export function calculateFilterBoundaries(
   year: number,
   month: number,
   boundaries: MonthBoundaries,
-  userOffsetHours: number = 0
+  userOffsetHours: number = 0,
 ): FilterBoundaries {
   const { prevMonthYear, prevMonth, lastDayOfPrevMonth } = boundaries;
 
@@ -170,7 +172,10 @@ export function calculateFilterBoundaries(
  * @param filterBoundaries - Boundaries from calculateFilterBoundaries()
  * @returns True if within boundaries
  */
-export function isTimestampInMonth(timestamp: Date | number, filterBoundaries: FilterBoundaries): boolean {
+export function isTimestampInMonth(
+  timestamp: Date | number,
+  filterBoundaries: FilterBoundaries,
+): boolean {
   const ts = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   return ts >= filterBoundaries.filterStartUTC && ts <= filterBoundaries.filterEndUTC;
 }
@@ -192,7 +197,7 @@ export function isTimestampInMonth(timestamp: Date | number, filterBoundaries: F
  */
 export function calculateDayFilterBoundaries(
   dateStr: string,
-  userOffsetHours: number = 0
+  userOffsetHours: number = 0,
 ): FilterBoundaries {
   const [yearStr, monthStr, dayStr] = dateStr.split('-');
   const year = parseInt(yearStr, 10);
@@ -256,7 +261,7 @@ export function calculateDayFilterBoundaries(
  */
 export function calculateYearFilterBoundaries(
   year: number,
-  userOffsetHours: number = 0
+  userOffsetHours: number = 0,
 ): FilterBoundaries {
   const midnightUTCHour = calculateMidnightUTCHour(userOffsetHours);
 
@@ -371,7 +376,7 @@ export function getCurrentYear(): string {
 export function clampToEndOfMonth(
   targetMonthStart: Date,
   originalDueDay: number,
-  originalTime: Date
+  originalTime: Date,
 ): Date {
   const targetMonthEnd = endOfMonth(targetMonthStart);
   const targetMonthLastDay = getDate(targetMonthEnd);
@@ -385,7 +390,7 @@ export function clampToEndOfMonth(
     originalTime.getHours(),
     originalTime.getMinutes(),
     originalTime.getSeconds(),
-    originalTime.getMilliseconds()
+    originalTime.getMilliseconds(),
   );
 
   return clampedDate;

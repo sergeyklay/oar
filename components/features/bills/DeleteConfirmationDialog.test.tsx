@@ -36,9 +36,7 @@ describe('DeleteConfirmationDialog', () => {
   it('displays warning about cycle recalculation', () => {
     render(<DeleteConfirmationDialog {...defaultProps} />);
 
-    expect(
-      screen.getByText(/This will recalculate the billing cycle/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/This will recalculate the billing cycle/i)).toBeInTheDocument();
   });
 
   it('shows Cancel and Delete buttons', () => {

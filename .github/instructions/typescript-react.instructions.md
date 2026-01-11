@@ -38,10 +38,12 @@ You strictly adhere to the **Airbnb JavaScript Style Guide** and modern TypeScri
 ### Design Principles
 
 **DRY (Don't Repeat Yourself)**
+
 - Extract repeated logic to shared components, library functions, or services.
 - If code appears in 3+ places, refactor to a reusable abstraction.
 
 **YAGNI (You Aren't Gonna Need It)**
+
 - Don't add functionality until actually needed.
 - Avoid "just in case" code, configurations, or abstractions.
 - Don't design for hypothetical future requirements.
@@ -51,14 +53,17 @@ You strictly adhere to the **Airbnb JavaScript Style Guide** and modern TypeScri
 ### Code Style (Airbnb + TypeScript)
 
 **Formatting**
+
 - Semicolons, 2-space indentation, single quotes, trailing commas in multi-line structures
 
 **Modern Syntax**
+
 - Prefer arrow functions for utilities and callbacks
 - Use `const` over `let` (avoid `var` entirely)
 - Destructuring when it improves readability
 
 **TypeScript Typing**
+
 - **STRICT typing**: Avoid `any` at all costs
 - Use `unknown` for truly unknown types, then narrow with type guards
 - Use `interface` for public APIs and data models
@@ -68,7 +73,7 @@ You strictly adhere to the **Airbnb JavaScript Style Guide** and modern TypeScri
 
 **Always document:** Public classes, methods, interfaces, and complex logic.
 
-**Focus on:** *Why* the code exists and *what* it does (inputs/outputs, side effects), NOT the obvious *how*.
+**Focus on:** _Why_ the code exists and _what_ it does (inputs/outputs, side effects), NOT the obvious _how_.
 
 ```typescript
 // ✅ CORRECT
@@ -92,8 +97,8 @@ export const formatUserProfile = (data: RawData): UserProfile => {
 
 // ❌ WRONG: No JSDoc, using 'any', poor naming
 function fix(data: any) {
-  let user = data.USER_NAME
-  return {id: data.id}
+  let user = data.USER_NAME;
+  return { id: data.id };
 }
 ```
 
@@ -135,6 +140,7 @@ export default function DashboardPage() { ... }
 ```
 
 **Code Smells:**
+
 - ❌ `'use client'` in `app/**/page.tsx`
 - ❌ `useEffect` for data fetching when Server Component can do it
 - [ ] No `'use client'` at page/route level
@@ -198,6 +204,7 @@ export async function myAction(input: any) { ... } // No safeParse
 ```
 
 **Code Smells:**
+
 - ❌ `useForm()` without `resolver` option
 - ❌ Server Action parameter typed as `any`
 - ❌ Schema not exported from Server Action file
@@ -247,6 +254,7 @@ const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => { ... };
 Apply this pattern when you see:
 
 1. **Multiple loading state variables:**
+
    ```typescript
    // ❌ Code smell
    const [isSkipping, setIsSkipping] = useState(false);
@@ -255,6 +263,7 @@ Apply this pattern when you see:
    ```
 
 2. **Duplicated async handler pattern (2+ times):**
+
    ```typescript
    // ❌ Code smell
    async function handleSkip() {
@@ -407,6 +416,7 @@ export default function UserProfile({ user }) {
 ```
 
 **Rules:**
+
 - NEVER call `format(...)` from `date-fns` directly in JSX
 - NEVER use `new Date().toLocaleDateString()` in JSX
 - NEVER format dates on server for UI display
@@ -483,9 +493,10 @@ import type { UserProfile } from '@/types/user';
 Before submitting code:
 
 **TypeScript:**
+
 - [ ] All variables/functions have explicit types, no `any`
 - [ ] Public APIs documented with JSDoc
-- [ ] Airbnb style (semicolons, single quotes, 2-space indent)
+- [ ] Airbnb style (semicolons, single quotes, 2-space indent, trailing commas)
 - [ ] `const` over `let`, arrow functions where appropriate
 - [ ] No obvious comments
 - [ ] One export per file
@@ -493,6 +504,7 @@ Before submitting code:
 - [ ] Code in English (names, comments, logs)
 
 **React/Next.js:**
+
 - [ ] Components are Server Components by default (no `'use client'` unless needed)
 - [ ] `'use client'` only at leaf nodes (hooks, event handlers, browser APIs)
 - [ ] No `'use client'` at page/route level
@@ -505,5 +517,6 @@ Before submitting code:
 - [ ] Field errors from server mapped to form state via `onError`
 
 **Error Handling:**
+
 - [ ] Errors handled with meaningful messages in English
 - [ ] No silent failures

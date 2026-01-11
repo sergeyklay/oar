@@ -40,9 +40,7 @@ export function CategorySelect({
       <SelectContent>
         {categoriesGrouped.map((group) => (
           <SelectGroup key={group.id}>
-            <SelectLabel className="text-xs text-muted-foreground">
-              {group.name}
-            </SelectLabel>
+            <SelectLabel className="text-xs text-muted-foreground">{group.name}</SelectLabel>
             {group.categories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 <span className="flex items-center gap-2">
@@ -57,4 +55,3 @@ export function CategorySelect({
     </Select>
   );
 }
-

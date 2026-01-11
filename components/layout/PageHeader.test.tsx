@@ -44,16 +44,14 @@ jest.mock('@/components/features/bills/TagFilter', () => ({
 }));
 
 jest.mock('@/components/features/bills/BillSearch', () => ({
-  BillSearch: () => (
-    <input type="text" placeholder="Search" aria-label="Search bills" />
-  ),
+  BillSearch: () => <input type="text" placeholder="Search" aria-label="Search bills" />,
 }));
 
 describe('PageHeader', () => {
   const createMockCategoryGroup = (
     id: string,
     name: string,
-    categoryId: string = 'cat-1'
+    categoryId: string = 'cat-1',
   ): BillCategoryGroupWithCategories => ({
     id,
     name,
@@ -84,30 +82,17 @@ describe('PageHeader', () => {
     createMockCategoryGroup('group-1', 'Group 1'),
   ];
 
-  const defaultTags: Tag[] = [
-    createMockTag('tag-1', 'Tag 1'),
-    createMockTag('tag-2', 'Tag 2'),
-  ];
+  const defaultTags: Tag[] = [createMockTag('tag-1', 'Tag 1'), createMockTag('tag-2', 'Tag 2')];
 
   describe('component rendering', () => {
     it('renders SidebarToggle always', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />);
 
       expect(screen.getByRole('button', { name: /hide sidebar/i })).toBeInTheDocument();
     });
 
     it('renders BillSearch always', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />);
 
       expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
       expect(screen.getByLabelText('Search bills')).toBeInTheDocument();
@@ -120,7 +105,7 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={defaultTags}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       expect(screen.getByRole('button', { name: /hide sidebar/i })).toBeInTheDocument();
@@ -132,12 +117,7 @@ describe('PageHeader', () => {
 
   describe('AddBillButton rendering', () => {
     it('renders AddBillButton when categoriesGrouped is provided', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />);
 
       expect(screen.getByRole('button', { name: /add bill/i })).toBeInTheDocument();
     });
@@ -153,7 +133,7 @@ describe('PageHeader', () => {
         <PageHeader
           categoriesGrouped={undefined as unknown as BillCategoryGroupWithCategories[]}
           defaultCategoryId={null}
-        />
+        />,
       );
 
       expect(screen.queryByRole('button', { name: /add bill/i })).not.toBeInTheDocument();
@@ -167,7 +147,7 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={defaultTags}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       expect(screen.getByRole('button', { name: /filter bills/i })).toBeInTheDocument();
@@ -179,19 +159,14 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={[]}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       expect(screen.queryByRole('button', { name: /filter bills/i })).not.toBeInTheDocument();
     });
 
     it('does not render TagFilter when availableTags is undefined', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />);
 
       expect(screen.queryByRole('button', { name: /filter bills/i })).not.toBeInTheDocument();
     });
@@ -210,7 +185,7 @@ describe('PageHeader', () => {
           categoriesGrouped={categoriesGrouped}
           availableTags={availableTags}
           defaultCategoryId={defaultCategoryId}
-        />
+        />,
       );
 
       const addBillButton = screen.getByRole('button', { name: /add bill/i });
@@ -237,7 +212,7 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={defaultTags}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       const tagFilter = screen.getByRole('button', { name: /filter bills/i });
@@ -251,12 +226,7 @@ describe('PageHeader', () => {
     });
 
     it('passes undefined currencySymbol when not provided', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />);
 
       const addBillButton = screen.getByRole('button', { name: /add bill/i });
       expect(addBillButton.getAttribute('data-currency-symbol')).toBeNull();
@@ -266,10 +236,7 @@ describe('PageHeader', () => {
   describe('layout structure', () => {
     it('renders header with correct flex layout classes', () => {
       const { container } = render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId="cat-1"
-        />
+        <PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId="cat-1" />,
       );
 
       const headerWrapper = container.firstChild as HTMLElement;
@@ -282,19 +249,17 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={defaultTags}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       const addBillWrapper = container.querySelector('.ml-4');
       expect(addBillWrapper).toBeInTheDocument();
-      expect(
-        addBillWrapper?.querySelector('button[aria-label="Add Bill"]')
-      ).toBeInTheDocument();
+      expect(addBillWrapper?.querySelector('button[aria-label="Add Bill"]')).toBeInTheDocument();
 
       const tagFilterWrapper = container.querySelector('.ml-2');
       expect(tagFilterWrapper).toBeInTheDocument();
       expect(
-        tagFilterWrapper?.querySelector('button[aria-label="Filter bills"]')
+        tagFilterWrapper?.querySelector('button[aria-label="Filter bills"]'),
       ).toBeInTheDocument();
 
       const billSearchWrapper = container.querySelector('.ml-auto');
@@ -308,12 +273,12 @@ describe('PageHeader', () => {
           categoriesGrouped={undefined as unknown as BillCategoryGroupWithCategories[]}
           availableTags={defaultTags}
           defaultCategoryId={null}
-        />
+        />,
       );
 
       const tagFilterWrappers = container.querySelectorAll('.ml-4');
       const tagFilterWrapper = Array.from(tagFilterWrappers).find((el) =>
-        el.querySelector('button[aria-label="Filter bills"]')
+        el.querySelector('button[aria-label="Filter bills"]'),
       );
       expect(tagFilterWrapper).toBeInTheDocument();
     });
@@ -330,12 +295,7 @@ describe('PageHeader', () => {
     });
 
     it('handles null defaultCategoryId correctly', () => {
-      render(
-        <PageHeader
-          categoriesGrouped={defaultCategoriesGrouped}
-          defaultCategoryId={null}
-        />
-      );
+      render(<PageHeader categoriesGrouped={defaultCategoriesGrouped} defaultCategoryId={null} />);
 
       const addBillButton = screen.getByRole('button', { name: /add bill/i });
       expect(addBillButton.getAttribute('data-default-category-id')).toBeNull();
@@ -347,12 +307,7 @@ describe('PageHeader', () => {
         createMockCategoryGroup('group-2', 'Group 2', 'cat-2'),
       ];
 
-      render(
-        <PageHeader
-          categoriesGrouped={multipleGroups}
-          defaultCategoryId="cat-1"
-        />
-      );
+      render(<PageHeader categoriesGrouped={multipleGroups} defaultCategoryId="cat-1" />);
 
       const addBillButton = screen.getByRole('button', { name: /add bill/i });
       const categoriesAttr = addBillButton.getAttribute('data-categories-grouped');
@@ -362,7 +317,7 @@ describe('PageHeader', () => {
 
     it('handles large number of tags correctly', () => {
       const manyTags: Tag[] = Array.from({ length: 50 }, (_, i) =>
-        createMockTag(`tag-${i}`, `Tag ${i}`)
+        createMockTag(`tag-${i}`, `Tag ${i}`),
       );
 
       render(
@@ -370,7 +325,7 @@ describe('PageHeader', () => {
           categoriesGrouped={defaultCategoriesGrouped}
           availableTags={manyTags}
           defaultCategoryId="cat-1"
-        />
+        />,
       );
 
       const tagFilter = screen.getByRole('button', { name: /filter bills/i });

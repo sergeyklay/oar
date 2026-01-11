@@ -170,16 +170,14 @@ export function PaymentHistorySection({
               onClick={() => handleTransactionClick(tx.id)}
               className={cn(
                 'flex items-center gap-2 text-sm min-w-0 cursor-pointer rounded-md px-2 py-2 hover:bg-muted/50 transition-colors',
-                selectedTransactionId === tx.id && 'bg-muted'
+                selectedTransactionId === tx.id && 'bg-muted',
               )}
               title={tx.notes ?? undefined}
             >
               <span className="text-muted-foreground shrink-0">
                 <ClientDate date={tx.paidAt} format="dd/MM/yyyy" />
               </span>
-              <span className="font-mono shrink-0">
-                {formatMoney(tx.amount, currency, locale)}
-              </span>
+              <span className="font-mono shrink-0">{formatMoney(tx.amount, currency, locale)}</span>
               <span className="text-muted-foreground truncate min-w-0 flex-1">
                 {tx.notes ?? ''}
               </span>
@@ -209,4 +207,3 @@ export function PaymentHistorySection({
     </div>
   );
 }
-

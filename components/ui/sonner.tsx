@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
 function Toaster({ ...props }: ToasterProps) {
   return (
@@ -22,18 +22,15 @@ function Toaster({ ...props }: ToasterProps) {
       {...props}
       toastOptions={{
         classNames: {
-          toast:
-            'group toast group-[.toaster]:shadow-lg !opacity-100',
+          toast: 'group toast group-[.toaster]:shadow-lg !opacity-100',
           description: 'group-[.toast]:text-neutral-600',
-          actionButton:
-            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
-          cancelButton:
-            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+          actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+          cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
         },
         ...props.toastOptions,
       }}
     />
-  )
+  );
 }
 
-export { Toaster }
+export { Toaster };

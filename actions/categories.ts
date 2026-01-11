@@ -75,4 +75,3 @@ export async function getDefaultCategoryId(): Promise<string | null> {
 
   return categories[0]?.id ?? null;
 }
-

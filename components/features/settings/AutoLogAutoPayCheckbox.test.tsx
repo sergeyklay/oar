@@ -26,8 +26,8 @@ describe('AutoLogAutoPayCheckbox', () => {
     expect(screen.getByText('Automatically log automatic bills')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'If an automatic bill has an amount due set, Oar will automatically log it on the due date'
-      )
+        'If an automatic bill has an amount due set, Oar will automatically log it on the due date',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -142,4 +142,3 @@ describe('AutoLogAutoPayCheckbox', () => {
     });
   });
 });
-

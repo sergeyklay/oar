@@ -14,7 +14,7 @@ export function CloseDetailButton() {
   // shallow: false triggers server component re-render
   const [, setSelectedBill] = useQueryState(
     'selectedBill',
-    parseAsString.withOptions({ shallow: false })
+    parseAsString.withOptions({ shallow: false }),
   );
 
   const handleClose: Prop<typeof Button, 'onClick'> = () => {
@@ -33,4 +33,3 @@ export function CloseDetailButton() {
     </Button>
   );
 }
-

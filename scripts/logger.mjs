@@ -20,4 +20,3 @@ const baseLogger = pino({ level: 'info' });
 export function getLogger(name) {
   return baseLogger.child({ name });
 }
-

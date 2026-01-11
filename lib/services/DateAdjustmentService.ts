@@ -36,10 +36,7 @@ export const DateAdjustmentService = {
    * @param strategy - Weekend adjustment strategy to apply
    * @returns Adjusted date or original date if no adjustment needed
    */
-  adjustPaymentDate(
-    date: Date,
-    strategy: WeekendAdjustmentStrategy
-  ): Date {
+  adjustPaymentDate(date: Date, strategy: WeekendAdjustmentStrategy): Date {
     if (strategy === 'unchanged') {
       return date;
     }
@@ -81,9 +78,8 @@ export const DateAdjustmentService = {
    */
   getEffectiveStrategy(
     billStrategy: WeekendAdjustmentStrategy | null,
-    globalStrategy: WeekendAdjustmentStrategy
+    globalStrategy: WeekendAdjustmentStrategy,
   ): WeekendAdjustmentStrategy {
     return billStrategy ?? globalStrategy;
   },
 };
-

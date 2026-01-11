@@ -173,7 +173,7 @@ describe('sanitizeColorValue', () => {
   describe('CSS injection prevention', () => {
     it('rejects CSS injection attempts in color values', () => {
       expect(sanitizeColorValue('red; } body { background: url(evil) } div {')).toBe(
-        'hsl(var(--chart-1))'
+        'hsl(var(--chart-1))',
       );
       expect(sanitizeColorValue('red } body {')).toBe('hsl(var(--chart-1))');
       expect(sanitizeColorValue('red; } /* */')).toBe('hsl(var(--chart-1))');
@@ -212,11 +212,9 @@ jest.mock('recharts', () => ({
       'div',
       {
         'data-testid': 'responsive-container',
-        'data-initial-dimension': initialDimension
-          ? JSON.stringify(initialDimension)
-          : null,
+        'data-initial-dimension': initialDimension ? JSON.stringify(initialDimension) : null,
       },
-      children
+      children,
     ),
 }));
 
@@ -232,7 +230,7 @@ describe('ChartContainer', () => {
     render(
       <ChartContainer config={mockConfig}>
         <div>Chart Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     expect(screen.getByText('Chart Content')).toBeInTheDocument();
@@ -243,7 +241,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={mockConfig} className="custom-class">
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -254,7 +252,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={mockConfig} id="my-chart">
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -265,7 +263,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={mockConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -277,7 +275,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={mockConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const styleElement = container.querySelector('style');
@@ -287,13 +285,9 @@ describe('ChartContainer', () => {
 
   it('passes additional props to container div', () => {
     const { container } = render(
-      <ChartContainer
-        config={mockConfig}
-        data-testid="chart-wrapper"
-        aria-label="Test Chart"
-      >
+      <ChartContainer config={mockConfig} data-testid="chart-wrapper" aria-label="Test Chart">
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -306,7 +300,7 @@ describe('ChartContainer', () => {
     render(
       <ChartContainer config={mockConfig} ref={ref}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
@@ -323,7 +317,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={emptyConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const styleElement = container.querySelector('style');
@@ -344,7 +338,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={themeConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const styleElement = container.querySelector('style');
@@ -364,7 +358,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={configWithSpecialChars} id="chart:id">
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -394,7 +388,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={unsafeConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const styleElement = container.querySelector('style');
@@ -416,7 +410,7 @@ describe('ChartContainer', () => {
     const { container } = render(
       <ChartContainer config={themeConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const styleElement = container.querySelector('style');
@@ -429,7 +423,7 @@ describe('ChartContainer', () => {
     render(
       <ChartContainer config={mockConfig} initialDimension={initialDimension}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const responsiveContainer = screen.getByTestId('responsive-container');
@@ -441,7 +435,7 @@ describe('ChartContainer', () => {
     render(
       <ChartContainer config={mockConfig}>
         <div>Content</div>
-      </ChartContainer>
+      </ChartContainer>,
     );
 
     const responsiveContainer = screen.getByTestId('responsive-container');
@@ -462,17 +456,13 @@ describe('ChartTooltipContent', () => {
   ];
 
   it('returns null when not active', () => {
-    const { container } = render(
-      <ChartTooltipContent active={false} payload={mockPayload} />
-    );
+    const { container } = render(<ChartTooltipContent active={false} payload={mockPayload} />);
 
     expect(container.firstChild).toBeNull();
   });
 
   it('returns null when payload is empty', () => {
-    const { container } = render(
-      <ChartTooltipContent active={true} payload={[]} />
-    );
+    const { container } = render(<ChartTooltipContent active={true} payload={[]} />);
 
     expect(container.firstChild).toBeNull();
   });
@@ -485,13 +475,7 @@ describe('ChartTooltipContent', () => {
   });
 
   it('renders label when provided', () => {
-    render(
-      <ChartTooltipContent
-        active={true}
-        payload={mockPayload}
-        label="January 2025"
-      />
-    );
+    render(<ChartTooltipContent active={true} payload={mockPayload} label="January 2025" />);
 
     expect(screen.getByText('January 2025')).toBeInTheDocument();
   });
@@ -503,7 +487,7 @@ describe('ChartTooltipContent', () => {
         payload={mockPayload}
         label="January 2025"
         hideLabel={true}
-      />
+      />,
     );
 
     expect(screen.queryByText('January 2025')).not.toBeInTheDocument();
@@ -517,7 +501,7 @@ describe('ChartTooltipContent', () => {
         payload={mockPayload}
         label="January 2025"
         labelFormatter={labelFormatter}
-      />
+      />,
     );
 
     expect(labelFormatter).toHaveBeenCalledWith('January 2025', mockPayload);
@@ -526,21 +510,9 @@ describe('ChartTooltipContent', () => {
 
   it('uses formatter when provided', () => {
     const formatter = jest.fn(() => <span>Formatted Value</span>);
-    render(
-      <ChartTooltipContent
-        active={true}
-        payload={mockPayload}
-        formatter={formatter}
-      />
-    );
+    render(<ChartTooltipContent active={true} payload={mockPayload} formatter={formatter} />);
 
-    expect(formatter).toHaveBeenCalledWith(
-      1000,
-      'Series 1',
-      mockPayload[0],
-      0,
-      {}
-    );
+    expect(formatter).toHaveBeenCalledWith(1000, 'Series 1', mockPayload[0], 0, {});
     expect(screen.getByText('Formatted Value')).toBeInTheDocument();
   });
 
@@ -577,23 +549,21 @@ describe('ChartTooltipContent', () => {
         payload={mockPayload}
         label="January 2025"
         indicator="line"
-      />
+      />,
     );
 
     const label = screen.getByText('January 2025');
     const tooltipContainer = label.closest('.grid.min-w-\\[8rem\\]');
     expect(tooltipContainer).toBeInTheDocument();
-    const nestedGrid = tooltipContainer?.querySelector('.grid.gap-1\\.5')?.querySelector('.grid.gap-1\\.5');
+    const nestedGrid = tooltipContainer
+      ?.querySelector('.grid.gap-1\\.5')
+      ?.querySelector('.grid.gap-1\\.5');
     expect(nestedGrid).toBeInTheDocument();
   });
 
   it('applies custom className', () => {
     const { container } = render(
-      <ChartTooltipContent
-        active={true}
-        payload={mockPayload}
-        className="custom-tooltip"
-      />
+      <ChartTooltipContent active={true} payload={mockPayload} className="custom-tooltip" />,
     );
 
     const tooltip = container.firstChild as HTMLElement;
@@ -618,9 +588,7 @@ describe('ChartTooltipContent', () => {
       },
     ];
 
-    render(
-      <ChartTooltipContent active={true} payload={payloadWithConfig} />
-    );
+    render(<ChartTooltipContent active={true} payload={payloadWithConfig} />);
 
     expect(screen.getByText('Custom Label')).toBeInTheDocument();
     expect(screen.queryByText('Series 1')).not.toBeInTheDocument();
@@ -660,9 +628,7 @@ describe('ChartTooltipContent', () => {
       },
     ];
 
-    const { container } = render(
-      <ChartTooltipContent active={true} payload={payloadWithConfig} />
-    );
+    const { container } = render(<ChartTooltipContent active={true} payload={payloadWithConfig} />);
 
     const indicators = container.querySelectorAll('[style*="--color-bg"]');
     expect(indicators.length).toBeGreaterThan(0);
@@ -689,11 +655,7 @@ describe('ChartTooltipContent', () => {
     ];
 
     const { container } = render(
-      <ChartTooltipContent
-        active={true}
-        payload={payloadWithConfig}
-        indicator="line"
-      />
+      <ChartTooltipContent active={true} payload={payloadWithConfig} indicator="line" />,
     );
 
     const indicators = container.querySelectorAll('[style*="--color-bg"]');
@@ -721,11 +683,7 @@ describe('ChartTooltipContent', () => {
     ];
 
     const { container } = render(
-      <ChartTooltipContent
-        active={true}
-        payload={payloadWithConfig}
-        indicator="dashed"
-      />
+      <ChartTooltipContent active={true} payload={payloadWithConfig} indicator="dashed" />,
     );
 
     const indicator = container.querySelector('[class*="border-dashed"]');
@@ -751,11 +709,7 @@ describe('ChartTooltipContent', () => {
     ];
 
     const { container } = render(
-      <ChartTooltipContent
-        active={true}
-        payload={payloadWithConfig}
-        hideIndicator={true}
-      />
+      <ChartTooltipContent active={true} payload={payloadWithConfig} hideIndicator={true} />,
     );
 
     const indicator = container.querySelector('[style*="--color-bg"]');
@@ -781,11 +735,7 @@ describe('ChartTooltipContent', () => {
     ];
 
     const { container } = render(
-      <ChartTooltipContent
-        active={true}
-        payload={payloadWithConfig}
-        color="#00ff00"
-      />
+      <ChartTooltipContent active={true} payload={payloadWithConfig} color="#00ff00" />,
     );
 
     const indicator = container.querySelector('[style*="--color-bg"]') as HTMLElement;
@@ -810,9 +760,7 @@ describe('ChartTooltipContent', () => {
       },
     ];
 
-    const { container } = render(
-      <ChartTooltipContent active={true} payload={payloadWithFill} />
-    );
+    const { container } = render(<ChartTooltipContent active={true} payload={payloadWithFill} />);
 
     const indicator = container.querySelector('[style*="--color-bg"]') as HTMLElement;
     expect(indicator?.getAttribute('style')).toContain('--color-bg: #00ff00');
@@ -836,9 +784,7 @@ describe('ChartTooltipContent', () => {
       },
     ];
 
-    const { container } = render(
-      <ChartTooltipContent active={true} payload={payloadWithConfig} />
-    );
+    const { container } = render(<ChartTooltipContent active={true} payload={payloadWithConfig} />);
 
     const indicator = container.querySelector('[style*="--color-bg"]') as HTMLElement;
     expect(indicator?.getAttribute('style')).toContain('--color-bg: #ff0000');
@@ -862,13 +808,7 @@ describe('ChartTooltipContent', () => {
       },
     ];
 
-    render(
-      <ChartTooltipContent
-        active={true}
-        payload={payloadWithConfig}
-        nameKey="customKey"
-      />
-    );
+    render(<ChartTooltipContent active={true} payload={payloadWithConfig} nameKey="customKey" />);
 
     expect(screen.getByText('Custom Label')).toBeInTheDocument();
     expect(screen.queryByText('Series 1')).not.toBeInTheDocument();
@@ -898,7 +838,7 @@ describe('ChartTooltipContent', () => {
         payload={payloadWithConfig}
         label={123}
         labelKey="customLabelKey"
-      />
+      />,
     );
 
     expect(screen.getByText('Custom Label')).toBeInTheDocument();
@@ -928,7 +868,7 @@ describe('ChartTooltipContent', () => {
         payload={multiPayload}
         label="January 2025"
         indicator="line"
-      />
+      />,
     );
 
     const label = screen.getByText('January 2025');
@@ -943,7 +883,7 @@ describe('ChartTooltipContent', () => {
         payload={mockPayload}
         label="January 2025"
         indicator="dashed"
-      />
+      />,
     );
 
     const label = screen.getByText('January 2025');
@@ -962,7 +902,7 @@ describe('ChartTooltipContent', () => {
         label="January 2025"
         labelFormatter={labelFormatter}
         labelClassName="custom-label-class"
-      />
+      />,
     );
 
     const label = screen.getByText('Formatted Label');
@@ -984,8 +924,8 @@ describe('ChartTooltipContent', () => {
 
     expect(screen.getByText('Series 1')).toBeInTheDocument();
     const valueElements = screen.queryAllByText(/\d/);
-    const formattedValueElements = valueElements.filter(el =>
-      el.classList.contains('tabular-nums')
+    const formattedValueElements = valueElements.filter((el) =>
+      el.classList.contains('tabular-nums'),
     );
     expect(formattedValueElements.length).toBe(0);
   });
@@ -1005,9 +945,8 @@ describe('ChartTooltipContent', () => {
 
     expect(screen.getByText('Series 1')).toBeInTheDocument();
     const valueElements = screen.queryAllByText('0');
-    const formattedValueElement = valueElements.find(el =>
-      el.classList.contains('tabular-nums') &&
-      el.classList.contains('font-mono')
+    const formattedValueElement = valueElements.find(
+      (el) => el.classList.contains('tabular-nums') && el.classList.contains('font-mono'),
     );
     expect(formattedValueElement).toBeInTheDocument();
   });
@@ -1027,7 +966,6 @@ describe('ChartTooltipContent', () => {
     const tooltip = screen.getByText('1,000').closest('.grid');
     expect(tooltip).toBeInTheDocument();
   });
-
 });
 
 describe('ChartLegendContent', () => {
@@ -1045,17 +983,13 @@ describe('ChartLegendContent', () => {
   ];
 
   it('returns null when payload is empty', () => {
-    const { container } = render(
-      <ChartLegendContent payload={[]} config={{}} />
-    );
+    const { container } = render(<ChartLegendContent payload={[]} config={{}} />);
 
     expect(container.firstChild).toBeNull();
   });
 
   it('returns null when payload is undefined', () => {
-    const { container } = render(
-      <ChartLegendContent payload={undefined} config={{}} />
-    );
+    const { container } = render(<ChartLegendContent payload={undefined} config={{}} />);
 
     expect(container.firstChild).toBeNull();
   });
@@ -1086,9 +1020,7 @@ describe('ChartLegendContent', () => {
   });
 
   it('uses payload color when config color is not available', () => {
-    const { container } = render(
-      <ChartLegendContent payload={mockPayload} config={{}} />
-    );
+    const { container } = render(<ChartLegendContent payload={mockPayload} config={{}} />);
 
     const colorBoxes = container.querySelectorAll('[style*="background-color"]');
     expect(colorBoxes[0]).toHaveStyle({ backgroundColor: '#ff0000' });
@@ -1111,12 +1043,10 @@ describe('ChartLegendContent', () => {
     ];
 
     const { container } = render(
-      <ChartLegendContent payload={payloadWithoutColor} config={config} />
+      <ChartLegendContent payload={payloadWithoutColor} config={config} />,
     );
 
-    const colorBox = container.querySelector(
-      '[style*="background-color"]'
-    ) as HTMLElement;
+    const colorBox = container.querySelector('[style*="background-color"]') as HTMLElement;
     expect(colorBox).toHaveStyle({ backgroundColor: 'rgb(0, 255, 0)' });
   });
 
@@ -1128,23 +1058,15 @@ describe('ChartLegendContent', () => {
       },
     ];
 
-    const { container } = render(
-      <ChartLegendContent payload={payloadWithoutColor} config={{}} />
-    );
+    const { container } = render(<ChartLegendContent payload={payloadWithoutColor} config={{}} />);
 
-    const colorBox = container.querySelector(
-      '[style*="background-color"]'
-    ) as HTMLElement;
+    const colorBox = container.querySelector('[style*="background-color"]') as HTMLElement;
     expect(colorBox).toHaveStyle({ backgroundColor: 'var(--color-series1)' });
   });
 
   it('applies custom className', () => {
     const { container } = render(
-      <ChartLegendContent
-        payload={mockPayload}
-        config={{}}
-        className="custom-legend"
-      />
+      <ChartLegendContent payload={mockPayload} config={{}} className="custom-legend" />,
     );
 
     const legend = container.firstChild as HTMLElement;
@@ -1166,20 +1088,15 @@ describe('ChartLegendContent', () => {
       },
     };
 
-    const { rerender } = render(
-      <ChartLegendContent payload={payloadWithIdOnly} config={config} />
-    );
+    const { rerender } = render(<ChartLegendContent payload={payloadWithIdOnly} config={config} />);
 
     expect(screen.getByText('Series 1')).toBeInTheDocument();
 
-    rerender(
-      <ChartLegendContent payload={payloadWithIdOnly} config={{}} />
-    );
+    rerender(<ChartLegendContent payload={payloadWithIdOnly} config={{}} />);
 
     const spans = screen.queryAllByRole('generic');
-    const textSpan = spans.find(el =>
-      el.classList.contains('text-xs') &&
-      el.classList.contains('text-muted-foreground')
+    const textSpan = spans.find(
+      (el) => el.classList.contains('text-xs') && el.classList.contains('text-muted-foreground'),
     );
     expect(textSpan?.textContent).toBe('');
   });
@@ -1227,9 +1144,7 @@ describe('ChartLegendContent', () => {
       },
     };
 
-    const { rerender } = render(
-      <ChartLegendContent payload={payloadIdOnly} config={config} />
-    );
+    const { rerender } = render(<ChartLegendContent payload={payloadIdOnly} config={config} />);
 
     expect(screen.getByText('Series 1 Label')).toBeInTheDocument();
 
@@ -1245,7 +1160,7 @@ describe('ChartLegendContent', () => {
         config={{}}
         data-testid="legend-wrapper"
         aria-label="Chart Legend"
-      />
+      />,
     );
 
     const legend = container.firstChild as HTMLElement;
@@ -1255,11 +1170,8 @@ describe('ChartLegendContent', () => {
 
   it('forwards ref to legend container div', () => {
     const ref = React.createRef<HTMLDivElement>();
-    render(
-      <ChartLegendContent payload={mockPayload} config={{}} ref={ref} />
-    );
+    render(<ChartLegendContent payload={mockPayload} config={{}} ref={ref} />);
 
     expect(ref.current).toBeInstanceOf(HTMLDivElement);
   });
 });
-

@@ -61,7 +61,7 @@ interface ActionResult<T = void> {
  * Uses Drizzle transaction for atomicity.
  */
 export async function logPayment(
-  input: LogPaymentInput
+  input: LogPaymentInput,
 ): Promise<ActionResult<{ transactionId: string; isHistorical: boolean; billArchived?: boolean }>> {
   // 1. Validate input
   const parsed = logPaymentSchema.safeParse(input);
@@ -89,12 +89,7 @@ export async function logPayment(
 
     // 3. Delegate to PaymentService for business logic
     // Amount is already in minor units (converted by UI layer)
-    const paymentResult = PaymentService.processPayment(
-      bill,
-      amount,
-      paidAt,
-      updateDueDate
-    );
+    const paymentResult = PaymentService.processPayment(bill, amount, paidAt, updateDueDate);
 
     // 4. Check if bill ended and determine archiving action
     let shouldArchive = false;
@@ -183,11 +178,7 @@ export async function getRecentPaymentsStats(): Promise<{
     SettingsService.getPaidRecentlyRange(),
     getUserTimezoneOffset(),
   ]);
-  const payments = await TransactionService.getRecentPayments(
-    range,
-    undefined,
-    userTimezoneOffset
-  );
+  const payments = await TransactionService.getRecentPayments(range, undefined, userTimezoneOffset);
 
   const count = payments.length;
   const total = payments.reduce((sum, payment) => sum + payment.amount, 0);
@@ -208,7 +199,7 @@ const recentPaymentsQuerySchema = z.object({
  * @returns Action result with payments array or error
  */
 export async function getRecentPayments(
-  input: z.infer<typeof recentPaymentsQuerySchema>
+  input: z.infer<typeof recentPaymentsQuerySchema>,
 ): Promise<ActionResult<PaymentWithBill[]>> {
   const parsed = recentPaymentsQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -223,7 +214,7 @@ export async function getRecentPayments(
     const payments = await TransactionService.getRecentPayments(
       parsed.data.days,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -251,7 +242,7 @@ const paymentsByDateQuerySchema = z.object({
  * @returns Action result with payments array or error
  */
 export async function getPaymentsByDate(
-  input: z.infer<typeof paymentsByDateQuerySchema>
+  input: z.infer<typeof paymentsByDateQuerySchema>,
 ): Promise<ActionResult<PaymentWithBill[]>> {
   const parsed = paymentsByDateQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -266,7 +257,7 @@ export async function getPaymentsByDate(
     const payments = await TransactionService.getPaymentsByDate(
       parsed.data.date,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -340,7 +331,7 @@ export type DeleteTransactionInput = z.infer<typeof deleteTransactionSchema>;
  * - If not historical, recalculates amountDue and status
  */
 export async function updateTransaction(
-  input: UpdateTransactionInput
+  input: UpdateTransactionInput,
 ): Promise<ActionResult<{ transactionId: string }>> {
   // 1. Validate input
   const parsed = updateTransactionSchema.safeParse(input);
@@ -390,7 +381,7 @@ export async function updateTransaction(
       // Check if transaction affects current cycle before adjusting amountDue
       const affectsCurrentCycle = PaymentService.doesPaymentAffectCurrentCycle(
         bill,
-        existingTransaction
+        existingTransaction,
       );
 
       if (!affectsCurrentCycle) {
@@ -420,9 +411,8 @@ export async function updateTransaction(
       const amountDelta = amount - existingTransaction.amount;
       // Adjust amountDue: if payment decreased, amountDue increases
       // For variable bills: if cycle was advanced (amountDue=0), keep it at 0
-      const newAmountDue = bill.isVariable && bill.amountDue === 0
-        ? 0
-        : Math.max(0, bill.amountDue - amountDelta);
+      const newAmountDue =
+        bill.isVariable && bill.amountDue === 0 ? 0 : Math.max(0, bill.amountDue - amountDelta);
 
       // Atomic transaction: update transaction and bill.amountDue only
       db.transaction((tx) => {
@@ -461,7 +451,7 @@ export async function updateTransaction(
     // Check if old transaction affected current cycle
     const oldAffectedCycle = PaymentService.doesPaymentAffectCurrentCycle(
       bill,
-      existingTransaction
+      existingTransaction,
     );
 
     // 7. Prepare updated transaction object
@@ -486,7 +476,7 @@ export async function updateTransaction(
 
       // Replace the old transaction with the updated one in the array
       const updatedTransactions = allTransactions.map((tx) =>
-        tx.id === id ? updatedTransaction : tx
+        tx.id === id ? updatedTransaction : tx,
       );
 
       newBillState = PaymentService.recalculateBillFromPayments(bill, updatedTransactions);
@@ -551,9 +541,7 @@ export async function updateTransaction(
  * - If yes, recalculate bill state based on remaining payments
  * - If no, bill state remains unchanged
  */
-export async function deleteTransaction(
-  input: DeleteTransactionInput
-): Promise<ActionResult> {
+export async function deleteTransaction(input: DeleteTransactionInput): Promise<ActionResult> {
   // 1. Validate input
   const parsed = deleteTransactionSchema.safeParse(input);
 
@@ -568,10 +556,7 @@ export async function deleteTransaction(
 
   try {
     // 2. Verify transaction exists and fetch it
-    const [transaction] = await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.id, id));
+    const [transaction] = await db.select().from(transactions).where(eq(transactions.id, id));
 
     if (!transaction) {
       return {

@@ -29,9 +29,7 @@ export type PaymentDateMap = Record<string, boolean>;
  * @param monthStr - Month in YYYY-MM format (e.g., "2025-12")
  * @returns Map of date strings to status arrays
  */
-export async function getBillDatesForMonth(
-  monthStr: string
-): Promise<DateStatusMap> {
+export async function getBillDatesForMonth(monthStr: string): Promise<DateStatusMap> {
   // Parse month string to date range
   const [year, month] = monthStr.split('-').map(Number);
   const monthDate = new Date(year, month - 1, 1);
@@ -45,13 +43,7 @@ export async function getBillDatesForMonth(
       status: bills.status,
     })
     .from(bills)
-    .where(
-      and(
-        eq(bills.isArchived, false),
-        gte(bills.dueDate, start),
-        lte(bills.dueDate, end)
-      )
-    );
+    .where(and(eq(bills.isArchived, false), gte(bills.dueDate, start), lte(bills.dueDate, end)));
 
   // Group by date string
   const dateMap: DateStatusMap = {};
@@ -75,9 +67,7 @@ export async function getBillDatesForMonth(
  * @param monthStr - Month in YYYY-MM format (e.g., "2025-12")
  * @returns Map of date strings to boolean (true = has payment)
  */
-export async function getPaymentDatesForMonth(
-  monthStr: string
-): Promise<PaymentDateMap> {
+export async function getPaymentDatesForMonth(monthStr: string): Promise<PaymentDateMap> {
   // Parse month string to date range
   const [year, month] = monthStr.split('-').map(Number);
   const monthDate = new Date(year, month - 1, 1);
@@ -90,12 +80,7 @@ export async function getPaymentDatesForMonth(
       paidAt: transactions.paidAt,
     })
     .from(transactions)
-    .where(
-      and(
-        gte(transactions.paidAt, start),
-        lte(transactions.paidAt, end)
-      )
-    );
+    .where(and(gte(transactions.paidAt, start), lte(transactions.paidAt, end)));
 
   // Group by date string
   const dateMap: PaymentDateMap = {};

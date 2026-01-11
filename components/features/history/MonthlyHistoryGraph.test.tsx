@@ -374,4 +374,3 @@ describe('MonthlyHistoryGraph', () => {
     expect(screen.getByText('Failed to fetch chart data')).toBeInTheDocument();
   });
 });
-

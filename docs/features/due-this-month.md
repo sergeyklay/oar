@@ -18,10 +18,12 @@ You can control whether automatic bills appear by adjusting the "Include automat
 The [Overview view](./overview-view.md) shows all your bills, optionally filtered by a specific date or tag. The Due This Month view automatically filters to show only unpaid bills due in the current calendar month.
 
 **Overview:**
+
 - Shows all bills by default
 - Can filter by specific date using calendar navigation
 
 **Due This Month:**
+
 - Shows only unpaid bills due in the current month
 - Excludes bills already marked as paid
 - Always shows current month (no date navigation)
@@ -34,6 +36,7 @@ Both views share the same header controls, including the Add Bill button and tag
 Click "Due This Month" in the sidebar to navigate to the dedicated page. The page displays only unpaid bills sorted by due date, earliest first.
 
 The sidebar menu item shows a summary subtitle:
+
 - **With unpaid bills:** "3 bills - 2345 zł" (or your currency)
 - **With variable bills:** "3 bills - 2345 zł (est.)"
 - **No unpaid bills:** "No bills"
@@ -59,10 +62,12 @@ Clicking the same selected day again clears the date filter and returns to showi
 ## What counts as "this month"
 
 The system uses calendar month boundaries and shows only unpaid bills. A bill is included only if:
+
 1. Its due date falls within the current calendar month (first day at 00:00:00 to last day at 23:59:59)
 2. It is not marked as paid
 
 **Included (unpaid bills only):**
+
 - Unpaid bills due on the first day of the month
 - Unpaid bills due on the last day of the month
 - Unpaid bills due on any day in between
@@ -71,6 +76,7 @@ The system uses calendar month boundaries and shows only unpaid bills. A bill is
 - Bills with status "pending" or "overdue"
 
 **Not included:**
+
 - Bills already marked as paid (even if due date is in current month)
 - Bills due in previous months
 - Bills due in future months
@@ -110,6 +116,6 @@ To confirm the Due This Month feature works:
 
 ## Related Documents
 
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Include Automatic Bills Setting](./include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Include Automatic Bills Setting](./include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views

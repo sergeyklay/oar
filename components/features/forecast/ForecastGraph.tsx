@@ -20,12 +20,7 @@ interface ForecastGraphProps {
  *
  * Render Mode: Server Component (fetches data, renders chart)
  */
-export async function ForecastGraph({
-  month,
-  tag,
-  currency,
-  locale,
-}: ForecastGraphProps) {
+export async function ForecastGraph({ month, tag, currency, locale }: ForecastGraphProps) {
   const result = await getForecastDataForRange({
     startMonth: month,
     months: 12,
@@ -35,9 +30,7 @@ export async function ForecastGraph({
   if (!result.success) {
     return (
       <div className="flex items-center justify-center h-64 bg-card border border-border">
-        <p className="text-muted-foreground">
-          {result.error ?? 'Failed to load chart data'}
-        </p>
+        <p className="text-muted-foreground">{result.error ?? 'Failed to load chart data'}</p>
       </div>
     );
   }
@@ -45,21 +38,14 @@ export async function ForecastGraph({
   if (!result.data || result.data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 bg-card border border-border">
-        <p className="text-muted-foreground">
-          No bills projected for this period
-        </p>
+        <p className="text-muted-foreground">No bills projected for this period</p>
       </div>
     );
   }
 
   return (
     <div className="bg-card border border-border">
-      <ForecastChart
-        data={result.data}
-        currency={currency}
-        locale={locale}
-      />
+      <ForecastChart data={result.data} currency={currency} locale={locale} />
     </div>
   );
 }
-

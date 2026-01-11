@@ -48,12 +48,14 @@ When you create a bill with a due date that falls on a weekend, the system store
 **Example: Monthly rent due January 15 (Saturday)**
 
 With "Move to Previous Business Day" strategy:
+
 - Anchor date stored: January 15 (Saturday)
 - Payment date displayed: January 14 (Friday)
 - When you log payment on January 14, the next due date advances to February 15 (anchor preserved)
 - If February 15 is also a weekend, it adjusts again for display
 
 With "Move to Next Business Day" strategy:
+
 - Anchor date stored: January 15 (Saturday)
 - Payment date displayed: January 17 (Monday)
 - When you log payment on January 17, the next due date advances to February 15 (anchor preserved)
@@ -105,8 +107,7 @@ To confirm weekend adjustment works:
 
 ## Related Documents
 
-* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Background Jobs](./background-jobs.md) - Automated system tasks
-* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
-
+- [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Background Jobs](./background-jobs.md) - Automated system tasks
+- [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month

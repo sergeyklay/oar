@@ -143,17 +143,11 @@ export const RecurrenceService = {
 
     for (const bill of candidates) {
       if (bill.status === 'overdue') {
-        logger.info(
-          { billId: bill.id, billTitle: bill.title },
-          'Bill marked overdue'
-        );
+        logger.info({ billId: bill.id, billTitle: bill.title }, 'Bill marked overdue');
       }
     }
 
-    logger.info(
-      { checked: candidates.length, updated: count },
-      'Daily bill check complete'
-    );
+    logger.info({ checked: candidates.length, updated: count }, 'Daily bill check complete');
   },
 };
 ```
@@ -183,10 +177,7 @@ async function handler() {
 
   try {
     const result = await RecurrenceService.checkDailyBills();
-    logger.info(
-      { checked: result.checked, updated: result.updated },
-      'Job completed successfully'
-    );
+    logger.info({ checked: result.checked, updated: result.updated }, 'Job completed successfully');
   } catch (error) {
     logger.error(error, 'Job failed');
   }
@@ -198,10 +189,12 @@ async function handler() {
 The logger behaves differently based on where it runs:
 
 **Server-side (Node.js):**
+
 - Development: Pretty-printed logs with colors via `pino-pretty`
 - Production: JSON logs to stdout for log aggregation tools
 
 **Client-side (Browser):**
+
 - Development: All log levels appear in the browser console
 - Production: Only `error` and `fatal` logs appear. `debug`, `info`, `warn`, and `trace` are suppressed.
 
@@ -220,10 +213,7 @@ it('logs error when operation fails', async () => {
   await myFunction();
 
   const logger = getLogger('test');
-  expect(logger.error).toHaveBeenCalledWith(
-    expect.any(Error),
-    'Operation failed'
-  );
+  expect(logger.error).toHaveBeenCalledWith(expect.any(Error), 'Operation failed');
 });
 ```
 
@@ -242,7 +232,7 @@ logger.info(
     amount: bill.amount,
     dueDate: bill.dueDate.toISOString(),
   },
-  'Bill created'
+  'Bill created',
 );
 ```
 
@@ -264,10 +254,7 @@ When logging errors, include relevant context in the structured data object, not
 try {
   await processPayment(billId, amount);
 } catch (error) {
-  logger.error(
-    { err: error, billId, amount },
-    'Failed to process payment'
-  );
+  logger.error({ err: error, billId, amount }, 'Failed to process payment');
 }
 ```
 
@@ -305,6 +292,7 @@ expect(logger.info).toHaveBeenCalledWith('Expected message');
 ### Logs Not Appearing
 
 If logs don't appear in development:
+
 - Verify you're using `getLogger` from `@/lib/logger`, not `console.log`
 - Check that the log level is appropriate (debug logs are hidden in production client)
 - Ensure the logger is initialized at the module level, not inside a function
@@ -312,19 +300,21 @@ If logs don't appear in development:
 ### Type Errors
 
 If TypeScript complains about logger types:
+
 - Ensure you're importing from `@/lib/logger`, not directly from `pino`
 - The logger returns a `pino.Logger` type, which should work with all Pino methods
 
 ### Test Failures
 
 If tests fail because logger isn't mocked:
+
 - Ensure `jest.mock('@/lib/logger')` is called before imports
 - The manual mock in `lib/__mocks__/logger.ts` is used automatically
 
 ### Performance Concerns
 
 If logging seems slow:
+
 - Use `debug` level for verbose logs that only matter in development
 - Avoid logging in tight loops; batch the operation and log the summary
 - The logger is optimized for performance, but excessive logging can still impact throughput
-

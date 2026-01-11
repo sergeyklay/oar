@@ -17,4 +17,3 @@ export function SettingsCategory({ category }: SettingsCategoryProps) {
     </div>
   );
 }
-

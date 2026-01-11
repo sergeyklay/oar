@@ -31,12 +31,7 @@ const mockCategoriesGrouped: BillCategoryGroupWithCategories[] = [
 
 describe('AddBillButton', () => {
   it('renders a button with plus icon', () => {
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     const button = screen.getByRole('button', { name: /add bill/i });
     expect(button).toBeInTheDocument();
@@ -44,12 +39,7 @@ describe('AddBillButton', () => {
   });
 
   it('renders button as icon-only (no text)', () => {
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     const button = screen.getByRole('button', { name: /add bill/i });
     expect(button.textContent).toBe('');
@@ -57,12 +47,7 @@ describe('AddBillButton', () => {
 
   it('opens dialog when button is clicked', async () => {
     const user = userEvent.setup();
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     const button = screen.getByRole('button', { name: /add bill/i });
     await user.click(button);
@@ -72,12 +57,7 @@ describe('AddBillButton', () => {
 
   it('closes dialog when onOpenChange is called', async () => {
     const user = userEvent.setup();
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     const button = screen.getByRole('button', { name: /add bill/i });
     await user.click(button);
@@ -96,7 +76,7 @@ describe('AddBillButton', () => {
         currencySymbol="$"
         categoriesGrouped={mockCategoriesGrouped}
         defaultCategoryId={null}
-      />
+      />,
     );
 
     expect(screen.getByTestId('bill-form-dialog')).toBeInTheDocument();
@@ -117,43 +97,29 @@ describe('AddBillButton', () => {
         availableTags={mockTags}
         categoriesGrouped={mockCategoriesGrouped}
         defaultCategoryId={null}
-      />
+      />,
     );
 
     expect(screen.getByTestId('bill-form-dialog')).toBeInTheDocument();
   });
 
   it('passes categoriesGrouped to BillFormDialog', () => {
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     expect(screen.getByTestId('bill-form-dialog')).toBeInTheDocument();
   });
 
   it('passes defaultCategoryId to BillFormDialog', () => {
     render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId="category-1"
-      />
+      <AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId="category-1" />,
     );
 
     expect(screen.getByTestId('bill-form-dialog')).toBeInTheDocument();
   });
 
   it('uses empty array as default for availableTags', () => {
-    render(
-      <AddBillButton
-        categoriesGrouped={mockCategoriesGrouped}
-        defaultCategoryId={null}
-      />
-    );
+    render(<AddBillButton categoriesGrouped={mockCategoriesGrouped} defaultCategoryId={null} />);
 
     expect(screen.getByTestId('bill-form-dialog')).toBeInTheDocument();
   });
 });
-

@@ -51,7 +51,7 @@ describe('PaymentService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         bill.dueDate,
         'monthly',
-        null
+        null,
       );
     });
 
@@ -385,7 +385,7 @@ describe('PaymentService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         bill.dueDate,
         'monthly',
-        endDate
+        endDate,
       );
     });
 
@@ -795,10 +795,7 @@ describe('PaymentService', () => {
       expect(result.amountDue).toBe(20000);
       expect(result.status).toBe('pending');
       expect(result.nextDueDate).toEqual(nextDueDate);
-      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
-        bill.dueDate,
-        'monthly'
-      );
+      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(bill.dueDate, 'monthly');
     });
 
     it('marks one-time bill as paid when total paid >= amountDue', () => {
@@ -1116,4 +1113,3 @@ describe('PaymentService', () => {
     });
   });
 });
-

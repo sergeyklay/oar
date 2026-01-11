@@ -71,4 +71,3 @@ describe('billing-cycle utilities', () => {
     });
   });
 });
-

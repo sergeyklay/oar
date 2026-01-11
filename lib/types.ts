@@ -125,7 +125,7 @@ type ComponentType = React.ElementType;
 
 export type Prop<
   Component extends ComponentType,
-  PropKey extends keyof React.ComponentProps<Component>
+  PropKey extends keyof React.ComponentProps<Component>,
 > = React.ComponentProps<Component>[PropKey];
 
 /**
@@ -191,10 +191,7 @@ export interface AnnualSpendingSummary {
  * - 'next_business_day': Move Saturday/Sunday to Monday (classic banking behavior)
  * - 'previous_business_day': Move Saturday/Sunday to Friday (safe payer strategy)
  */
-export type WeekendAdjustmentStrategy =
-  | 'unchanged'
-  | 'next_business_day'
-  | 'previous_business_day';
+export type WeekendAdjustmentStrategy = 'unchanged' | 'next_business_day' | 'previous_business_day';
 
 /**
  * Configuration object for weekend adjustment strategy resolution.

@@ -5,7 +5,12 @@ import { RangeSettingDropdown } from './RangeSettingDropdown';
 import { ViewOptionsForm } from './ViewOptionsForm';
 import { BillEndActionDropdown } from './BillEndActionDropdown';
 import { WeekendAdjustmentDropdown } from './WeekendAdjustmentDropdown';
-import { updateDueSoonRange, updatePaidRecentlyRange, updateBillEndAction, updateWeekendAdjustment } from '@/actions/settings';
+import {
+  updateDueSoonRange,
+  updatePaidRecentlyRange,
+  updateBillEndAction,
+  updateWeekendAdjustment,
+} from '@/actions/settings';
 import { AutoLogAutoPayCheckbox } from './AutoLogAutoPayCheckbox';
 import { FUTURE_RANGE_LABELS, PAST_RANGE_LABELS } from '@/lib/constants';
 import { SettingsService } from '@/lib/services/SettingsService';
@@ -29,9 +34,7 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-semibold">{section.name}</CardTitle>
-          {section.description && (
-            <CardDescription>{section.description}</CardDescription>
-          )}
+          {section.description && <CardDescription>{section.description}</CardDescription>}
         </CardHeader>
         <CardContent>
           <ViewOptionsForm
@@ -49,15 +52,11 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
     <Card>
       <CardHeader>
         <CardTitle className="text-xl font-semibold">{section.name}</CardTitle>
-        {section.description && (
-          <CardDescription>{section.description}</CardDescription>
-        )}
+        {section.description && <CardDescription>{section.description}</CardDescription>}
       </CardHeader>
       <CardContent>
         {sectionSettings.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic">
-            Settings coming soon
-          </p>
+          <p className="text-sm text-muted-foreground italic">Settings coming soon</p>
         ) : (
           <div className="space-y-6">
             {sectionSettings.map((setting) => {
@@ -100,8 +99,9 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
                       onUpdate={updateBillEndAction}
                     />
                     <p className="text-xs text-muted-foreground">
-                      A bill ends when you change its repeat interval to &quot;Never&quot; and then log a payment that fully pays it,
-                      or when the next due date would exceed the End Date set in the bill.
+                      A bill ends when you change its repeat interval to &quot;Never&quot; and then
+                      log a payment that fully pays it, or when the next due date would exceed the
+                      End Date set in the bill.
                     </p>
                   </FormItem>
                 );
@@ -111,7 +111,9 @@ export async function SettingsSection({ section }: SettingsSectionProps) {
                   <FormItem key={setting.key}>
                     <Label>If a bill is due on the weekend</Label>
                     <WeekendAdjustmentDropdown
-                      currentValue={setting.value as 'unchanged' | 'next_business_day' | 'previous_business_day'}
+                      currentValue={
+                        setting.value as 'unchanged' | 'next_business_day' | 'previous_business_day'
+                      }
                       onUpdate={updateWeekendAdjustment}
                     />
                   </FormItem>

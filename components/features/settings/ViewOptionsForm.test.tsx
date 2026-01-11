@@ -59,7 +59,7 @@ describe('ViewOptionsForm', () => {
       expect(document.getElementById('locale-description')).toBeInTheDocument();
       expect(document.getElementById('weekstart-description')).toBeInTheDocument();
       expect(
-        screen.getByText('Show automatic bills in Due Soon and Due This Month views')
+        screen.getByText('Show automatic bills in Due Soon and Due This Month views'),
       ).toBeInTheDocument();
     });
 
@@ -100,7 +100,7 @@ describe('ViewOptionsForm', () => {
           initialLocale="de-DE"
           initialWeekStart={1}
           initialIncludeAutoPayInDueSoon={true}
-        />
+        />,
       );
 
       expect(screen.getByText('EUR (€)')).toBeInTheDocument();
@@ -140,12 +140,7 @@ describe('ViewOptionsForm', () => {
     });
 
     it('displays initial include auto pay value as unchecked when false', () => {
-      render(
-        <ViewOptionsForm
-          {...defaultProps}
-          initialIncludeAutoPayInDueSoon={false}
-        />
-      );
+      render(<ViewOptionsForm {...defaultProps} initialIncludeAutoPayInDueSoon={false} />);
 
       const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
       expect(switchElement).toHaveAttribute('aria-checked', 'false');
@@ -174,12 +169,7 @@ describe('ViewOptionsForm', () => {
       const user = userEvent.setup();
       (updateViewOptions as jest.Mock).mockResolvedValue({ success: true });
 
-      render(
-        <ViewOptionsForm
-          {...defaultProps}
-          initialIncludeAutoPayInDueSoon={false}
-        />
-      );
+      render(<ViewOptionsForm {...defaultProps} initialIncludeAutoPayInDueSoon={false} />);
 
       const switchElement = document.getElementById('include-autopay-toggle') as HTMLButtonElement;
       await user.click(switchElement);

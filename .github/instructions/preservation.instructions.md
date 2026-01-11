@@ -8,7 +8,8 @@ applyTo: '**'
 **CRITICAL:** You are working on an existing, high-fidelity project. **DO NOT BREAK EXISTING UI.**
 
 ## 1. Immutable Files (The "Sacred" List)
-Unless explicitly instructed to *refactor* these specific files, you must **NEVER** overwrite or reset them. You may only **APPEND** to them.
+
+Unless explicitly instructed to _refactor_ these specific files, you must **NEVER** overwrite or reset them. You may only **APPEND** to them.
 
 - `components.json` (Required for `shadcn` to function without resetting styles. NEVER DELETE.)
 - `app/globals.css` (Contains critical Layout Tokens & Grid definitions)
@@ -17,17 +18,21 @@ Unless explicitly instructed to *refactor* these specific files, you must **NEVE
 - `app/layout.tsx` (Root providers and fonts)
 
 ## 2. Shadcn UI Constraints
+
 - Before running `npx shadcn@latest add ...`, ALWAYS verify that `components.json` exists.
 - When running `npx shadcn@latest add ...`, ensure it does NOT overwrite `globals.css`. If conflicts arise, manually merge config instead of resetting.
 - If `components.json` is missing, DO NOT run `add`. Instead, create the config file manually first.
 - Never accept prompts to overwrite `globals.css` or `tailwind.config.ts`.
 
 ## 3. CSS & UI Constraints
+
 - **NO Global Resets:** Never delete existing CSS variables (`:root`).
-- **NO Layout Changes:** If adding a feature (e.g., Tags), it must fit *inside* the existing component structure. Do not remove `<AppShell>` or wrappers.
+- **NO Layout Changes:** If adding a feature (e.g., Tags), it must fit _inside_ the existing component structure. Do not remove `<AppShell>` or wrappers.
 
 ## 4. "Do No Harm" Verification
+
 Before submitting code, check:
+
 - Did I remove any imports?
 - Did I change the root layout structure?
 - Did I modify a file that wasn't related to the specific feature? (e.g., modifying `Sidebar.tsx` when working on `Tags`).

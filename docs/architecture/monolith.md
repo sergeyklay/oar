@@ -123,4 +123,3 @@ You know this architecture is working correctly when:
 3. Stopping and restarting the container preserves all data
 4. The app works after disconnecting from the internet (for already-loaded pages)
 5. Background jobs (due date notifications) execute without a separate worker container
-

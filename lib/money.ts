@@ -16,10 +16,7 @@ export const DEFAULT_LOCALE = 'en-US';
  * getMinorUnits('USD', 'en-US') // 2
  * getMinorUnits('JPY', 'ja-JP') // 0
  */
-export function getMinorUnits(
-  currencyCode: string,
-  locale: string = DEFAULT_LOCALE
-): number {
+export function getMinorUnits(currencyCode: string, locale: string = DEFAULT_LOCALE): number {
   try {
     const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
@@ -45,7 +42,7 @@ export function getMinorUnits(
  */
 export function toMinorUnits(
   amount: string | number,
-  currencyCode: string = DEFAULT_CURRENCY
+  currencyCode: string = DEFAULT_CURRENCY,
 ): number {
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
 
@@ -68,10 +65,7 @@ export function toMinorUnits(
  * @example
  * toMajorUnits(4999, 'USD') // 49.99
  */
-export function toMajorUnits(
-  minorAmount: number,
-  currencyCode: string = DEFAULT_CURRENCY
-): number {
+export function toMajorUnits(minorAmount: number, currencyCode: string = DEFAULT_CURRENCY): number {
   const minorUnits = getMinorUnits(currencyCode);
   const divisor = Math.pow(10, minorUnits);
   return minorAmount / divisor;
@@ -92,7 +86,7 @@ export function toMajorUnits(
 export function formatMoney(
   minorAmount: number,
   currencyCode: string = DEFAULT_CURRENCY,
-  locale: string = DEFAULT_LOCALE
+  locale: string = DEFAULT_LOCALE,
 ): string {
   const majorAmount = toMajorUnits(minorAmount, currencyCode);
   const minorUnits = getMinorUnits(currencyCode, locale);
@@ -119,7 +113,7 @@ export function formatMoney(
  */
 export function getCurrencySymbol(
   currencyCode: string = DEFAULT_CURRENCY,
-  locale: string = DEFAULT_LOCALE
+  locale: string = DEFAULT_LOCALE,
 ): string {
   try {
     const formatter = new Intl.NumberFormat(locale, {

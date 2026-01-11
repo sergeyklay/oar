@@ -1,7 +1,7 @@
 ---
 description: Use these instructions to guide your code reviews.
-excludeAgent: ["coding-agent"]
-applyTo: "**"
+excludeAgent: ['coding-agent']
+applyTo: '**'
 ---
 
 # Code Review Guidelines
@@ -43,11 +43,13 @@ Guidelines for conducting code reviews in this project. Follow these best practi
 Flag when changes require documentation updates:
 
 **AGENTS.md** — Update when:
+
 - New architectural patterns or layer boundaries introduced
 - Critical files added/removed/renamed
 - Core philosophy or conventions change
 
 **docs/** — Update when:
+
 - User-facing features added or behavior changed
 - Configuration options modified
 - Setup/deployment steps affected

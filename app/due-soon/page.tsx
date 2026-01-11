@@ -16,9 +16,7 @@ interface DueSoonPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function DueSoonPage({
-  searchParams,
-}: DueSoonPageProps) {
+export default async function DueSoonPage({ searchParams }: DueSoonPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
   const [settings, dueSoonRange, includeAutoPay, tags, categoriesGrouped, defaultCategoryId] =
@@ -66,4 +64,3 @@ export default async function DueSoonPage({
     </AppShellClient>
   );
 }
-

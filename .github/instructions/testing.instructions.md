@@ -22,6 +22,7 @@ When writing tests for this project, adhere to the following standards to ensure
 ## Mocking Drizzle ORM
 
 When testing Server Actions, NEVER import the real `db` instance.
+
 - Use `jest.mock('@/db')` to mock the Drizzle client.
 - Mock return values of queries using `mockReturnValue` or `mockResolvedValue`.
 - Example for insert: `(db.insert as jest.Mock).mockReturnValue({ values: jest.fn().mockReturnValue({ returning: jest.fn().mockResolvedValue([mockData]) }) })`.

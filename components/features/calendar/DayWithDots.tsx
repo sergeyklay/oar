@@ -80,23 +80,16 @@ export function DayWithDots({
       className={cn(
         buttonVariants({ variant: 'ghost' }),
         'relative h-8 w-8 p-0 font-normal flex flex-col items-center justify-center',
-        modifiers?.selected &&
-          'bg-primary text-primary-foreground hover:bg-primary',
-        modifiers?.today &&
-          !modifiers?.selected &&
-          'bg-accent text-accent-foreground',
+        modifiers?.selected && 'bg-primary text-primary-foreground hover:bg-primary',
+        modifiers?.today && !modifiers?.selected && 'bg-accent text-accent-foreground',
         modifiers?.outside && 'text-muted-foreground opacity-50',
-        className
+        className,
       )}
       {...props}
     >
       <span className="text-sm">{day.date.getDate()}</span>
 
-      {shouldRenderDots && (
-        <div className="absolute bottom-0.5 flex gap-0.5">
-          {dotsToRender}
-        </div>
-      )}
+      {shouldRenderDots && <div className="absolute bottom-0.5 flex gap-0.5">{dotsToRender}</div>}
     </button>
   );
 }

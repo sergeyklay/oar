@@ -1,7 +1,12 @@
 import { db, transactions, bills, billCategories, tags, billsToTags } from '@/db';
 import { gte, lte, desc, eq, and, inArray } from 'drizzle-orm';
 import { parse, isValid, format, addMonths, parseISO } from 'date-fns';
-import type { PaymentWithBill, Transaction, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
+import type {
+  PaymentWithBill,
+  Transaction,
+  MonthlyPaymentTotal,
+  AggregatedBillSpending,
+} from '@/lib/types';
 import {
   calculateMonthBoundaries,
   calculateExtendedQueryBoundaries,
@@ -30,7 +35,7 @@ export const TransactionService = {
   async getRecentPayments(
     days: number,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<PaymentWithBill[]> {
     const now = new Date();
     const todayStr = format(now, 'yyyy-MM-dd');
@@ -57,10 +62,7 @@ export const TransactionService = {
 
     let billIds: string[] | undefined;
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -78,10 +80,7 @@ export const TransactionService = {
       }
     }
 
-    const conditions = [
-      gte(transactions.paidAt, queryStart),
-      lte(transactions.paidAt, queryEnd),
-    ];
+    const conditions = [gte(transactions.paidAt, queryStart), lte(transactions.paidAt, queryEnd)];
 
     if (billIds) {
       conditions.push(inArray(transactions.billId, billIds));
@@ -120,7 +119,7 @@ export const TransactionService = {
   async getPaymentsByDate(
     date: string,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<PaymentWithBill[]> {
     const dateObj = parse(date, 'yyyy-MM-dd', new Date());
     if (!isValid(dateObj)) {
@@ -134,10 +133,7 @@ export const TransactionService = {
 
     let billIds: string[] | undefined;
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -155,10 +151,7 @@ export const TransactionService = {
       }
     }
 
-    const conditions = [
-      gte(transactions.paidAt, startDate),
-      lte(transactions.paidAt, endDate),
-    ];
+    const conditions = [gte(transactions.paidAt, startDate), lte(transactions.paidAt, endDate)];
 
     if (billIds) {
       conditions.push(inArray(transactions.billId, billIds));
@@ -191,12 +184,9 @@ export const TransactionService = {
    */
   async getByBillId(
     billId: string,
-    options?: { limit?: number; orderBy?: 'paidAt' | 'paidAt DESC' }
+    options?: { limit?: number; orderBy?: 'paidAt' | 'paidAt DESC' },
   ): Promise<Transaction[]> {
-    const baseQuery = db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.billId, billId));
+    const baseQuery = db.select().from(transactions).where(eq(transactions.billId, billId));
 
     const orderedQuery =
       options?.orderBy === 'paidAt DESC'
@@ -233,7 +223,7 @@ export const TransactionService = {
     billId: string,
     month: number,
     year: number,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<Transaction[]> {
     if (isNaN(month) || month < 1 || month > 12 || isNaN(year)) {
       return [];
@@ -250,8 +240,8 @@ export const TransactionService = {
         and(
           eq(transactions.billId, billId),
           gte(transactions.paidAt, queryStart),
-          lte(transactions.paidAt, queryEnd)
-        )
+          lte(transactions.paidAt, queryEnd),
+        ),
       )
       .orderBy(desc(transactions.paidAt));
 
@@ -282,7 +272,7 @@ export const TransactionService = {
   async getPaymentsByMonth(
     month: string,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<PaymentWithBill[]> {
     const [yearStr, monthStr] = month.split('-');
     const yearNum = parseInt(yearStr, 10);
@@ -294,14 +284,16 @@ export const TransactionService = {
 
     const boundaries = calculateMonthBoundaries(yearNum, monthNum);
     const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-    const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries, userTimezoneOffset);
+    const filterBoundaries = calculateFilterBoundaries(
+      yearNum,
+      monthNum,
+      boundaries,
+      userTimezoneOffset,
+    );
 
     let billIds: string[] | undefined;
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -319,10 +311,7 @@ export const TransactionService = {
       }
     }
 
-    const conditions = [
-      gte(transactions.paidAt, queryStart),
-      lte(transactions.paidAt, queryEnd),
-    ];
+    const conditions = [gte(transactions.paidAt, queryStart), lte(transactions.paidAt, queryEnd)];
 
     if (billIds) {
       conditions.push(inArray(transactions.billId, billIds));
@@ -373,16 +362,13 @@ export const TransactionService = {
     startMonth: string,
     months: number,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<MonthlyPaymentTotal[]> {
     const startDate = parse(startMonth, 'yyyy-MM', new Date());
     let billIds: string[] | undefined;
 
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -409,12 +395,14 @@ export const TransactionService = {
 
       const boundaries = calculateMonthBoundaries(yearNum, monthNum);
       const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-      const filterBoundaries = calculateFilterBoundaries(yearNum, monthNum, boundaries, userTimezoneOffset);
+      const filterBoundaries = calculateFilterBoundaries(
+        yearNum,
+        monthNum,
+        boundaries,
+        userTimezoneOffset,
+      );
 
-      const conditions = [
-        gte(transactions.paidAt, queryStart),
-        lte(transactions.paidAt, queryEnd),
-      ];
+      const conditions = [gte(transactions.paidAt, queryStart), lte(transactions.paidAt, queryEnd)];
 
       if (billIds) {
         conditions.push(inArray(transactions.billId, billIds));
@@ -475,7 +463,7 @@ export const TransactionService = {
    */
   async getPaymentsByYearAggregatedByBill(
     year: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<AggregatedBillSpending[]> {
     const yearNum = parseInt(year, 10);
     if (isNaN(yearNum)) {
@@ -510,12 +498,15 @@ export const TransactionService = {
     });
 
     // Group payments by billId using a Map for O(1) lookups
-    const aggregatedMap = new Map<string, {
-      billId: string;
-      billTitle: string;
-      categoryIcon: string;
-      amounts: number[];
-    }>();
+    const aggregatedMap = new Map<
+      string,
+      {
+        billId: string;
+        billTitle: string;
+        categoryIcon: string;
+        amounts: number[];
+      }
+    >();
 
     for (const result of filteredResults) {
       const existing = aggregatedMap.get(result.billId);
@@ -556,4 +547,3 @@ export const TransactionService = {
     return aggregated;
   },
 };
-

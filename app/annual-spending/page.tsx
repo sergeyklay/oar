@@ -17,9 +17,7 @@ interface AnnualSpendingPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function AnnualSpendingPage({
-  searchParams,
-}: AnnualSpendingPageProps) {
+export default async function AnnualSpendingPage({ searchParams }: AnnualSpendingPageProps) {
   const { year } = await annualSpendingSearchParamsCache.parse(searchParams);
 
   const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -55,4 +53,3 @@ export default async function AnnualSpendingPage({
     </AppShellClient>
   );
 }
-

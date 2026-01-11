@@ -30,20 +30,9 @@ function kebabToPascal(str: string): string {
  * Uses dynamic icon lookup from lucide-react's icons object.
  * Falls back to CircleDashed if icon name is invalid.
  */
-export function CategoryIcon({
-  icon,
-  size = 16,
-  className,
-}: CategoryIconProps) {
+export function CategoryIcon({ icon, size = 16, className }: CategoryIconProps) {
   const pascalName = kebabToPascal(icon);
   const IconComponent: LucideIcon = icons[pascalName as keyof typeof icons] ?? CircleDashed;
 
-  return (
-    <IconComponent
-      size={size}
-      className={cn('shrink-0', className)}
-    />
-  );
+  return <IconComponent size={size} className={cn('shrink-0', className)} />;
 }
-
-

@@ -29,34 +29,34 @@ This reference contains formatting rules and examples for PR descriptions.
 
 ### Scope & Context
 
-| Field | Description |
-|-------|-------------|
-| **Type** | One of: Feat, Fix, Refactor, Chore, Perf |
-| **Intent** | 1-2 sentences explaining the business or technical goal |
-| **Related Issues** | Issue numbers from commits. Omit if none. |
+| Field              | Description                                             |
+| ------------------ | ------------------------------------------------------- |
+| **Type**           | One of: Feat, Fix, Refactor, Chore, Perf                |
+| **Intent**         | 1-2 sentences explaining the business or technical goal |
+| **Related Issues** | Issue numbers from commits. Omit if none.               |
 
 ### Reviewer Guide
 
-| Field | Description |
-|-------|-------------|
-| **Complexity** | Low, Medium, or High |
-| **Entry Point** | Most critical file to start review + explanation of why |
-| **Sensitive Areas** | Files requiring extra scrutiny (auth, payments, data) |
+| Field               | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| **Complexity**      | Low, Medium, or High                                    |
+| **Entry Point**     | Most critical file to start review + explanation of why |
+| **Sensitive Areas** | Files requiring extra scrutiny (auth, payments, data)   |
 
 ### Risk Assessment
 
-| Field | Description |
-|-------|-------------|
-| **Breaking Changes** | "Yes + details" or "No breaking changes" |
+| Field                | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| **Breaking Changes** | "Yes + details" or "No breaking changes"           |
 | **Migrations/State** | Required steps or "No migrations or state changes" |
 
 ## Complexity Criteria
 
-| Level | Criteria |
-|-------|----------|
-| **Low** | Single file, config changes, documentation, simple fixes |
-| **Medium** | Multiple related files, new features with tests, refactoring |
-| **High** | Cross-cutting changes, migrations, breaking changes, security |
+| Level      | Criteria                                                      |
+| ---------- | ------------------------------------------------------------- |
+| **Low**    | Single file, config changes, documentation, simple fixes      |
+| **Medium** | Multiple related files, new features with tests, refactoring  |
+| **High**   | Cross-cutting changes, migrations, breaking changes, security |
 
 ## Example PR Description
 

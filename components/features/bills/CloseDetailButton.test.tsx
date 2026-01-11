@@ -42,4 +42,3 @@ describe('CloseDetailButton', () => {
     expect(mockSetSelectedBill).toHaveBeenCalledTimes(2);
   });
 });
-

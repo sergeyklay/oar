@@ -26,31 +26,33 @@ This reference provides guidance on writing commit messages following the [Conve
 
 ## Commit Types
 
-| Type | Description |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation changes |
-| `style` | Code style changes (formatting, no logic change) |
-| `refactor` | Code restructuring (no behavior change) |
-| `test` | Adding or updating tests |
-| `chore` | Maintenance tasks, dependencies |
-| `perf` | Performance improvements |
-| `ci` | CI/CD changes |
-| `build` | Build system changes |
-| `revert` | Revert previous commit |
+| Type       | Description                                      |
+| ---------- | ------------------------------------------------ |
+| `feat`     | New feature                                      |
+| `fix`      | Bug fix                                          |
+| `docs`     | Documentation changes                            |
+| `style`    | Code style changes (formatting, no logic change) |
+| `refactor` | Code restructuring (no behavior change)          |
+| `test`     | Adding or updating tests                         |
+| `chore`    | Maintenance tasks, dependencies                  |
+| `perf`     | Performance improvements                         |
+| `ci`       | CI/CD changes                                    |
+| `build`    | Build system changes                             |
+| `revert`   | Revert previous commit                           |
 
 ## Breaking Changes
 
 Breaking changes MUST be indicated by:
 
 1. **Exclamation mark** before the colon:
+
    ```
    feat!: remove deprecated API endpoints
    fix(api)!: change response format
    ```
 
 2. **Footer** with `BREAKING CHANGE:` (uppercase):
+
    ```
    feat: add new authentication flow
 
@@ -70,11 +72,13 @@ Breaking changes MUST be indicated by:
 ### Description Quality
 
 ✅ **Good descriptions:**
+
 - `fix: prevent race condition in request handler`
 - `feat(auth): add OAuth2 support`
 - `docs: clarify installation steps`
 
 ❌ **Poor descriptions:**
+
 - `fix: fixed bug` (vague)
 - `feat: added stuff` (unclear)
 - `update` (missing type)
@@ -87,12 +91,12 @@ Breaking changes MUST be indicated by:
 
 ## Common Anti-Patterns
 
-| Anti-Pattern | Why Wrong | Correct |
-|-------------|-----------|---------|
-| Past tense | Doesn't follow imperative mood | `fix: add validation` not `fix: added validation` |
-| Present continuous | Doesn't follow imperative mood | `fix: add support` not `fix: adding support` |
-| Trailing period | Against spec conventions | `fix: add validation` not `fix: add validation.` |
-| Emoji in subject | Not part of specification | `feat: add feature` not `✨ feat: add feature` |
-| Missing type prefix | Required by specification | `feat: add feature` not `add feature` |
-| Vague descriptions | Lacks useful information | `fix: prevent race condition` not `fix: fix bug` |
-| Exceeding 72 chars | Readability issues | Keep subject line under 72 characters |
+| Anti-Pattern        | Why Wrong                      | Correct                                           |
+| ------------------- | ------------------------------ | ------------------------------------------------- |
+| Past tense          | Doesn't follow imperative mood | `fix: add validation` not `fix: added validation` |
+| Present continuous  | Doesn't follow imperative mood | `fix: add support` not `fix: adding support`      |
+| Trailing period     | Against spec conventions       | `fix: add validation` not `fix: add validation.`  |
+| Emoji in subject    | Not part of specification      | `feat: add feature` not `✨ feat: add feature`    |
+| Missing type prefix | Required by specification      | `feat: add feature` not `add feature`             |
+| Vague descriptions  | Lacks useful information       | `fix: prevent race condition` not `fix: fix bug`  |
+| Exceeding 72 chars  | Readability issues             | Keep subject line under 72 characters             |

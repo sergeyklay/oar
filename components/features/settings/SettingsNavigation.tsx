@@ -11,14 +11,9 @@ export function SettingsNavigation({ categories }: SettingsNavigationProps) {
     <div className="p-4 flex flex-col">
       <nav className="flex flex-col gap-1">
         {categories.map((category) => (
-          <SettingsNavLink
-            key={category.id}
-            slug={category.slug}
-            name={category.name}
-          />
+          <SettingsNavLink key={category.id} slug={category.slug} name={category.name} />
         ))}
       </nav>
     </div>
   );
 }
-

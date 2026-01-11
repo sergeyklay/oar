@@ -377,9 +377,7 @@ describe('calculateExtendedQueryBoundaries', () => {
       const boundaries = calculateMonthBoundaries(2025, month);
       const result = calculateExtendedQueryBoundaries(boundaries);
 
-      const expectedStart = new Date(
-        Date.UTC(2025, month - 2, prevLastDay, 10, 0, 0, 0)
-      );
+      const expectedStart = new Date(Date.UTC(2025, month - 2, prevLastDay, 10, 0, 0, 0));
       expect(result.queryStart.getTime()).toBe(expectedStart.getTime());
     });
   });

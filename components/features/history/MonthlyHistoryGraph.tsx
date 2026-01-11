@@ -65,10 +65,10 @@ export async function MonthlyHistoryGraph({
   // Create maps for quick lookup by month string (YYYY-MM)
   // Only include months with actual payments (totalPaid > 0)
   const allMonthsMap = new Map(
-    allMonthsData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid])
+    allMonthsData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid]),
   );
   const lastYearMap = new Map(
-    lastYearData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid])
+    lastYearData.filter((item) => item.totalPaid > 0).map((item) => [item.month, item.totalPaid]),
   );
 
   // Build merged data: always show 12 months ending at selected month
@@ -111,21 +111,14 @@ export async function MonthlyHistoryGraph({
   if (mergedData.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 bg-card border border-border">
-        <p className="text-muted-foreground">
-          No payment data for this period
-        </p>
+        <p className="text-muted-foreground">No payment data for this period</p>
       </div>
     );
   }
 
   return (
     <div className="bg-card border border-border">
-      <MonthlyHistoryChart
-        data={mergedData}
-        currency={currency}
-        locale={locale}
-      />
+      <MonthlyHistoryChart data={mergedData} currency={currency} locale={locale} />
     </div>
   );
 }
-

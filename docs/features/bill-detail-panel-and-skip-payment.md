@@ -16,6 +16,7 @@ The panel uses a bold visual language to signal urgency. The header background c
 ## User flow
 
 ### Trigger
+
 You open the panel by clicking any bill row in the Overview table or other bill lists. Selecting a different bill updates the panel content, while clicking the "X" or the background closes it.
 
 ### Information hierarchy
@@ -28,21 +29,23 @@ The panel presents information in a prioritized stack:
 4. **Contextual Data:** Any notes or tags associated with the bill.
 
 ### Core actions
+
 Two primary buttons drive the user interaction:
 
-* **Log Payment:** Opens the standard payment dialog. This is the primary path for fulfilling your financial commitment.
-* **Skip:** A specialized action for deferred obligations. Clicking "Skip" advances the bill to its next occurrence without recording a transaction.
+- **Log Payment:** Opens the standard payment dialog. This is the primary path for fulfilling your financial commitment.
+- **Skip:** A specialized action for deferred obligations. Clicking "Skip" advances the bill to its next occurrence without recording a transaction.
 
 ## The "Skip" action
 
 The "Skip" action is designed for real-world flexibility. Sometimes a service is paused, a bill is waived for a month, or you're managing a subscription you've decided not to use this cycle but want to keep for the future.
 
 When you skip a payment:
+
 1. **No Transaction:** Unlike logging a payment of $0, no record is added to your transaction history.
 2. **Date Advancement:** The bill's due date moves forward based on its repeat interval (e.g., a monthly bill moves to the next month).
 3. **Amount Reset:** The amount due resets to the bill's base amount, preparing it for the next cycle.
 
-*Note: You can't skip one-time bills, as they have no future occurrences to advance to.*
+_Note: You can't skip one-time bills, as they have no future occurrences to advance to._
 
 ## Payment history
 
@@ -51,6 +54,7 @@ The Bill Detail Panel includes an inline payment history section positioned abov
 ### Collapsed state
 
 When collapsed, the section displays:
+
 - **Title:** "View Payment History" with a right-pointing chevron
 - **Subtitle:** Either "No Payments" or "Last Paid {amount} on {date}" showing your most recent payment
 
@@ -69,6 +73,7 @@ Click the back arrow or header to collapse the section and restore the full pane
 ### Transaction display
 
 Each payment entry shows:
+
 - **Date:** Formatted as DD/MM/YYYY
 - **Amount:** Your currency-formatted payment
 - **Notes:** Any notes you added when logging the payment (truncated to a single line if long)
@@ -79,18 +84,19 @@ Click any payment row to view its details and edit or delete it. See [Editing Pa
 
 ## Edge cases and constraints
 
-* **Archived Bills:** When viewing an archived bill (accessed through the [Archive View](./archive-view.md)), the panel behavior changes. The "Log Payment" and "Skip" buttons are hidden, the "Archive" button becomes "Unarchive," and the due date displays "Never / Archived" instead of relative dates. The header uses neutral colors rather than urgency-based status colors.
-* **One-time Bills:** The "Skip" button is disabled for bills that repeat "Never." These must either be paid or deleted.
-* **Already Paid:** If a bill is marked as "Paid" (common for one-time bills), both the Log Payment and Skip buttons are disabled.
-* **Partial Payment Visibility:** When you pay only part of a bill and choose not to advance the due date, the panel displays your remaining balance and the total base amount in parentheses. This ensures you never lose sight of the original commitment while celebrating progress.
-* **Negative Margins:** The panel header uses a "full-bleed" design with negative margins to touch the edges of the sidebar, ensuring the status color is the dominant visual element.
-* **Variable Estimates:** If a bill is marked as variable, the amount displayed includes an "(estimate)" label to remind you that the final payment might differ.
-* **Empty History:** Bills with no payments show "No payments recorded yet." in the expanded view.
-* **Data Loading:** Payment history loads when the panel opens, not when you expand the section. This ensures instant display when you click to view history.
+- **Archived Bills:** When viewing an archived bill (accessed through the [Archive View](./archive-view.md)), the panel behavior changes. The "Log Payment" and "Skip" buttons are hidden, the "Archive" button becomes "Unarchive," and the due date displays "Never / Archived" instead of relative dates. The header uses neutral colors rather than urgency-based status colors.
+- **One-time Bills:** The "Skip" button is disabled for bills that repeat "Never." These must either be paid or deleted.
+- **Already Paid:** If a bill is marked as "Paid" (common for one-time bills), both the Log Payment and Skip buttons are disabled.
+- **Partial Payment Visibility:** When you pay only part of a bill and choose not to advance the due date, the panel displays your remaining balance and the total base amount in parentheses. This ensures you never lose sight of the original commitment while celebrating progress.
+- **Negative Margins:** The panel header uses a "full-bleed" design with negative margins to touch the edges of the sidebar, ensuring the status color is the dominant visual element.
+- **Variable Estimates:** If a bill is marked as variable, the amount displayed includes an "(estimate)" label to remind you that the final payment might differ.
+- **Empty History:** Bills with no payments show "No payments recorded yet." in the expanded view.
+- **Data Loading:** Payment history loads when the panel opens, not when you expand the section. This ensures instant display when you click to view history.
 
 ## Verification
 
 To confirm the Bill Detail Panel works as expected:
+
 1. Open the Overview view and click on a recurring bill.
 2. Verify the panel slides in and the header background color matches the bill's urgency.
 3. Check that the amount is red if the bill is overdue.
@@ -105,7 +111,7 @@ To confirm the Bill Detail Panel works as expected:
 
 ## Related Documents
 
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records
-* [Archive View](./archive-view.md) - Viewing and managing archived bills
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Editing Payment History](./editing-payment-history.md) - Correcting payment mistakes and managing payment records
+- [Archive View](./archive-view.md) - Viewing and managing archived bills

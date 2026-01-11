@@ -4,9 +4,9 @@
 
 Oar is currently in active development. Security updates are applied to the latest version on the main branch.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| Latest  | ✅                 |
+| Version | Supported |
+| ------- | --------- |
+| Latest  | ✅        |
 
 ## Reporting a Vulnerability
 

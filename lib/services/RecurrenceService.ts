@@ -38,7 +38,7 @@ export const RecurrenceService = {
   calculateNextDueDate(
     currentDueDate: Date,
     frequency: BillFrequency,
-    endDate?: Date | null
+    endDate?: Date | null,
   ): Date | null {
     const rruleFrequency = FREQUENCY_MAP[frequency];
 
@@ -48,14 +48,16 @@ export const RecurrenceService = {
     }
 
     // Use UTC date with same components as local date to avoid timezone issues with rrule
-    const localAsUtc = new Date(Date.UTC(
-      currentDueDate.getFullYear(),
-      currentDueDate.getMonth(),
-      currentDueDate.getDate(),
-      currentDueDate.getHours(),
-      currentDueDate.getMinutes(),
-      currentDueDate.getSeconds()
-    ));
+    const localAsUtc = new Date(
+      Date.UTC(
+        currentDueDate.getFullYear(),
+        currentDueDate.getMonth(),
+        currentDueDate.getDate(),
+        currentDueDate.getHours(),
+        currentDueDate.getMinutes(),
+        currentDueDate.getSeconds(),
+      ),
+    );
 
     const options: Partial<import('rrule').Options> = {
       freq: rruleFrequency,
@@ -94,7 +96,7 @@ export const RecurrenceService = {
       nextUtc.getUTCDate(),
       nextUtc.getUTCHours(),
       nextUtc.getUTCMinutes(),
-      nextUtc.getUTCSeconds()
+      nextUtc.getUTCSeconds(),
     );
 
     // Check if next due date exceeds end date
@@ -118,7 +120,7 @@ export const RecurrenceService = {
     const dueDateNormalized = new Date(
       dueDate.getFullYear(),
       dueDate.getMonth(),
-      dueDate.getDate()
+      dueDate.getDate(),
     );
 
     return dueDateNormalized < today ? 'overdue' : 'pending';
@@ -136,12 +138,7 @@ export const RecurrenceService = {
     const candidates = await db
       .select()
       .from(bills)
-      .where(
-        and(
-          eq(bills.status, 'pending'),
-          eq(bills.isArchived, false)
-        )
-      );
+      .where(and(eq(bills.status, 'pending'), eq(bills.isArchived, false)));
 
     // 2. Fetch global weekend adjustment setting once per batch
     const globalStrategy = await SettingsService.getWeekendAdjustment();
@@ -155,13 +152,13 @@ export const RecurrenceService = {
       // Resolve effective weekend adjustment strategy
       const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
         bill.weekendAdjustment,
-        globalStrategy
+        globalStrategy,
       );
 
       // Calculate adjusted due date using anchor date from database
       const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
         bill.dueDate, // Anchor date
-        effectiveStrategy
+        effectiveStrategy,
       );
 
       // Compare adjusted date against today for overdue determination
@@ -177,11 +174,7 @@ export const RecurrenceService = {
               updatedAt: new Date(),
             })
             .where(
-              and(
-                eq(bills.id, bill.id),
-                eq(bills.status, 'pending'),
-                eq(bills.isArchived, false)
-              )
+              and(eq(bills.id, bill.id), eq(bills.status, 'pending'), eq(bills.isArchived, false)),
             )
             .returning({ id: bills.id });
 
@@ -195,14 +188,11 @@ export const RecurrenceService = {
                 billTitle: bill.title,
                 dueDate: bill.dueDate.toISOString(),
               },
-              'Bill marked overdue'
+              'Bill marked overdue',
             );
           }
         } catch (error) {
-          logger.error(
-            error,
-            `Failed to update bill "${bill.title}" (${bill.id})`
-          );
+          logger.error(error, `Failed to update bill "${bill.title}" (${bill.id})`);
         }
       }
     }

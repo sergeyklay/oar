@@ -2,11 +2,11 @@ import type { BillFrequency } from '@/lib/types';
 
 export const RANGE_KEYS = ['0', '1', '3', '5', '7', '10', '14', '20', '30'] as const;
 
-export type RangeKey = typeof RANGE_KEYS[number];
+export type RangeKey = (typeof RANGE_KEYS)[number];
 
 export const ALLOWED_RANGE_VALUES = [0, 1, 3, 5, 7, 10, 14, 20, 30] as const;
 
-export type AllowedRangeValue = typeof ALLOWED_RANGE_VALUES[number];
+export type AllowedRangeValue = (typeof ALLOWED_RANGE_VALUES)[number];
 
 /** Labels for future-looking ranges (Due Soon) */
 export const FUTURE_RANGE_LABELS: Record<string, string> = {

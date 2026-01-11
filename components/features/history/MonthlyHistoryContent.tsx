@@ -49,12 +49,7 @@ export async function MonthlyHistoryContent({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0">
-        <MonthlyHistoryGraph
-          month={month}
-          tag={tag}
-          currency={currency}
-          locale={locale}
-        />
+        <MonthlyHistoryGraph month={month} tag={tag} currency={currency} locale={locale} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
         <ScrollableContainer>
@@ -78,4 +73,3 @@ export async function MonthlyHistoryContent({
     </div>
   );
 }
-

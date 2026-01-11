@@ -17,9 +17,7 @@ interface MonthlyHistoryPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function MonthlyHistoryPage({
-  searchParams,
-}: MonthlyHistoryPageProps) {
+export default async function MonthlyHistoryPage({ searchParams }: MonthlyHistoryPageProps) {
   const { month, tag } = await historySearchParamsCache.parse(searchParams);
 
   const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -56,4 +54,3 @@ export default async function MonthlyHistoryPage({
     </AppShellClient>
   );
 }
-

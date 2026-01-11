@@ -22,12 +22,7 @@ interface ForecastContentProps {
  *
  * Render Mode: Server Component (fetches data, renders UI)
  */
-export async function ForecastContent({
-  month,
-  tag,
-  currency,
-  locale,
-}: ForecastContentProps) {
+export async function ForecastContent({ month, tag, currency, locale }: ForecastContentProps) {
   const forecastResult = await getForecastData({
     month,
     tag: tag ?? undefined,
@@ -49,22 +44,11 @@ export async function ForecastContent({
   return (
     <div className="flex flex-col h-full">
       <div className="flex-shrink-0">
-        <ForecastGraph
-          month={month}
-          tag={tag}
-          currency={currency}
-          locale={locale}
-        />
+        <ForecastGraph month={month} tag={tag} currency={currency} locale={locale} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] border-t border-border flex-1 min-h-0">
         <ScrollableContainer>
-          <ForecastList
-            bills={bills}
-            currency={currency}
-            locale={locale}
-            month={month}
-            tag={tag}
-          />
+          <ForecastList bills={bills} currency={currency} locale={locale} month={month} tag={tag} />
         </ScrollableContainer>
         <ReportSidebar>
           <ForecastSummary
@@ -79,4 +63,3 @@ export async function ForecastContent({
     </div>
   );
 }
-

@@ -23,9 +23,9 @@ To view detailed information about a specific payment:
 
 The form displays three fields in read-only mode:
 
-* **Payment Date:** The date you recorded the payment, formatted as DD/MM/YYYY
-* **Amount:** The payment amount in your currency
-* **Note:** Any notes you added when logging the payment, or empty if none
+- **Payment Date:** The date you recorded the payment, formatted as DD/MM/YYYY
+- **Amount:** The payment amount in your currency
+- **Note:** Any notes you added when logging the payment, or empty if none
 
 Above the form, you'll see a header labeled "Selected Payment" with two buttons on the right: a trash icon for deletion and an "Edit" button for making changes.
 
@@ -53,10 +53,10 @@ For example: You have a $200 monthly bill. You logged a full payment that advanc
 
 When you change the payment date, Oar performs a full recalculation. The system:
 
-* Recalculates the total amount paid in the current cycle
-* Updates the amount due based on the new total
-* Adjusts the due date if the payment total now covers the full amount due
-* Updates the bill's status (pending, overdue, or paid) based on the new due date
+- Recalculates the total amount paid in the current cycle
+- Updates the amount due based on the new total
+- Adjusts the due date if the payment total now covers the full amount due
+- Updates the bill's status (pending, overdue, or paid) based on the new due date
 
 For example: You have a $200 monthly bill with $50 remaining. You realize you logged a $100 payment as $150. After editing the payment to $100, Oar recalculates and shows $150 remaining instead of $50, because the corrected payment total is lower.
 
@@ -80,11 +80,11 @@ After deletion, the payment disappears from the history list. If the deleted pay
 
 If you delete a payment that was part of the current billing cycle, Oar:
 
-* Removes the payment from the transaction history
-* Recalculates the total amount paid in the current cycle using only the remaining payments
-* Updates the amount due based on the new total
-* Adjusts the due date if necessary (for example, if deleting the payment means the cycle no longer advanced)
-* Updates the bill's status based on the new calculations
+- Removes the payment from the transaction history
+- Recalculates the total amount paid in the current cycle using only the remaining payments
+- Updates the amount due based on the new total
+- Adjusts the due date if necessary (for example, if deleting the payment means the cycle no longer advanced)
+- Updates the bill's status based on the new calculations
 
 For example: You have a $200 monthly bill. You logged a full payment that advanced the due date to next month. Later, you realize that payment never occurred. After deleting it, Oar reverts the due date back to the original date and resets the amount due to $200, because the cycle advancement was based on a payment that no longer exists.
 
@@ -188,6 +188,5 @@ To confirm one-time bill editing behavior:
 
 ## Related Documents
 
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill

@@ -26,9 +26,12 @@ const STRATEGY_LABELS: Record<WeekendAdjustmentStrategy, string> = {
 };
 
 const STRATEGY_DESCRIPTIONS: Record<WeekendAdjustmentStrategy, string> = {
-  unchanged: 'Keep the original date even if it falls on a weekend. Use this for bills that process on weekends, like digital subscriptions.',
-  next_business_day: 'If a bill is due on Saturday or Sunday, show it as due on Monday instead. This matches how most banks handle payments.',
-  previous_business_day: 'If a bill is due on Saturday or Sunday, show it as due on Friday instead. This ensures you pay before the weekend.',
+  unchanged:
+    'Keep the original date even if it falls on a weekend. Use this for bills that process on weekends, like digital subscriptions.',
+  next_business_day:
+    'If a bill is due on Saturday or Sunday, show it as due on Monday instead. This matches how most banks handle payments.',
+  previous_business_day:
+    'If a bill is due on Saturday or Sunday, show it as due on Friday instead. This ensures you pay before the weekend.',
 };
 
 export function WeekendAdjustmentDropdown({
@@ -43,11 +46,7 @@ export function WeekendAdjustmentDropdown({
 
   return (
     <div className="space-y-2">
-      <Select
-        value={displayValue}
-        onValueChange={handleValueChange}
-        disabled={isPending}
-      >
+      <Select value={displayValue} onValueChange={handleValueChange} disabled={isPending}>
         <SelectTrigger className="w-[250px]">
           <SelectValue>
             {isPending ? (
@@ -68,10 +67,7 @@ export function WeekendAdjustmentDropdown({
           ))}
         </SelectContent>
       </Select>
-      <p className="text-xs text-muted-foreground">
-        {STRATEGY_DESCRIPTIONS[displayValue]}
-      </p>
+      <p className="text-xs text-muted-foreground">{STRATEGY_DESCRIPTIONS[displayValue]}</p>
     </div>
   );
 }
-

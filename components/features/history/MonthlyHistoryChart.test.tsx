@@ -7,12 +7,8 @@ jest.mock('recharts', () => ({
       {children}
     </div>
   ),
-  Bar: ({ dataKey }: { dataKey: string }) => (
-    <div data-testid={`bar-${dataKey}`} />
-  ),
-  XAxis: ({ dataKey }: { dataKey: string }) => (
-    <div data-testid="x-axis" data-key={dataKey} />
-  ),
+  Bar: ({ dataKey }: { dataKey: string }) => <div data-testid={`bar-${dataKey}`} />,
+  XAxis: ({ dataKey }: { dataKey: string }) => <div data-testid="x-axis" data-key={dataKey} />,
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
 }));
 
@@ -29,9 +25,7 @@ jest.mock('@/components/ui/chart', () => ({
     <div
       data-testid="chart-container"
       data-config={JSON.stringify(config)}
-      data-initial-dimension={
-        initialDimension ? JSON.stringify(initialDimension) : null
-      }
+      data-initial-dimension={initialDimension ? JSON.stringify(initialDimension) : null}
     >
       {children}
     </div>
@@ -56,22 +50,14 @@ jest.mock('@/components/ui/chart', () => ({
     };
     return <div data-testid="chart-tooltip">{content(mockProps)}</div>;
   },
-  ChartLegend: ({
-    content,
-  }: {
-    content?: (props: unknown) => React.ReactNode;
-  }) => {
+  ChartLegend: ({ content }: { content?: (props: unknown) => React.ReactNode }) => {
     const mockProps = {
       payload: [
         { value: 'currentYear', id: 'currentYear', color: '#000' },
         { value: 'lastYear', id: 'lastYear', color: '#000' },
       ],
     };
-    return (
-      <div data-testid="chart-legend">
-        {content ? content(mockProps) : null}
-      </div>
-    );
+    return <div data-testid="chart-legend">{content ? content(mockProps) : null}</div>;
   },
   ChartLegendContent: ({ config }: { config: Record<string, unknown> }) => (
     <div data-testid="chart-legend-content" data-config={JSON.stringify(config)} />
@@ -105,39 +91,21 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('renders chart with provided data', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 
   it('renders both bars for currentYear and lastYear', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('bar-currentYear')).toBeInTheDocument();
     expect(screen.getByTestId('bar-lastYear')).toBeInTheDocument();
   });
 
   it('renders X-axis with monthLabel dataKey', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     const xAxis = screen.getByTestId('x-axis');
     expect(xAxis).toBeInTheDocument();
@@ -145,38 +113,20 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('renders cartesian grid', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('cartesian-grid')).toBeInTheDocument();
   });
 
   it('renders chart legend', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-legend')).toBeInTheDocument();
     expect(screen.getByTestId('chart-legend-content')).toBeInTheDocument();
   });
 
   it('includes currentYear and lastYear in legend config', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     const container = screen.getByTestId('chart-container');
     const config = JSON.parse(container.getAttribute('data-config') || '{}');
@@ -188,13 +138,7 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('formats tooltip values using formatMoney', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     screen.getByTestId('chart-tooltip');
 
@@ -203,13 +147,7 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('displays formatted currency values in tooltip', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     const tooltip = screen.getByTestId('chart-tooltip');
     expect(tooltip).toHaveTextContent('$2080.00');
@@ -217,34 +155,18 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('handles empty data array', () => {
-    render(
-      <MonthlyHistoryChart
-        data={[]}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={[]} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument();
   });
 
   it('passes correct currency and locale to formatMoney', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="PLN"
-        locale="pl-PL"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="PLN" locale="pl-PL" />);
 
     screen.getByTestId('chart-tooltip');
 
-    expect(formatMoney).toHaveBeenCalledWith(
-      expect.any(Number),
-      'PLN',
-      'pl-PL'
-    );
+    expect(formatMoney).toHaveBeenCalledWith(expect.any(Number), 'PLN', 'pl-PL');
   });
 
   it('handles months with zero values', () => {
@@ -257,13 +179,7 @@ describe('MonthlyHistoryChart', () => {
       },
     ];
 
-    render(
-      <MonthlyHistoryChart
-        data={dataWithZeros}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={dataWithZeros} currency="USD" locale="en-US" />);
 
     expect(screen.getByTestId('chart-container')).toBeInTheDocument();
     expect(screen.getByTestId('bar-currentYear')).toBeInTheDocument();
@@ -271,13 +187,7 @@ describe('MonthlyHistoryChart', () => {
   });
 
   it('passes initialDimension to ChartContainer for SSR support', () => {
-    render(
-      <MonthlyHistoryChart
-        data={mockData}
-        currency="USD"
-        locale="en-US"
-      />
-    );
+    render(<MonthlyHistoryChart data={mockData} currency="USD" locale="en-US" />);
 
     const container = screen.getByTestId('chart-container');
     const dimensionAttr = container.getAttribute('data-initial-dimension');
@@ -286,4 +196,3 @@ describe('MonthlyHistoryChart', () => {
     expect(initialDimension).toEqual({ width: 800, height: 400 });
   });
 });
-

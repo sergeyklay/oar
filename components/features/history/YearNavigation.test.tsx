@@ -62,4 +62,3 @@ describe('YearNavigation', () => {
     expect(mockSetYear).toHaveBeenCalledWith('2025');
   });
 });
-

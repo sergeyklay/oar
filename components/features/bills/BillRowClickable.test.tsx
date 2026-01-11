@@ -25,7 +25,7 @@ describe('BillRowClickable', () => {
             <td>Test Content</td>
           </BillRowClickable>
         </tbody>
-      </table>
+      </table>,
     );
   };
 

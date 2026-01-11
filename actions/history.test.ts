@@ -1,4 +1,8 @@
-import { getMonthlyHistoryData, getMonthlyHistoryChartData, getAnnualSpendingData } from './history';
+import {
+  getMonthlyHistoryData,
+  getMonthlyHistoryChartData,
+  getAnnualSpendingData,
+} from './history';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { getLogger } from '@/lib/logger';
 import type { PaymentWithBill, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
@@ -159,9 +163,7 @@ describe('getMonthlyHistoryChartData', () => {
   ];
 
   it('returns monthly totals for valid range', async () => {
-    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getMonthlyHistoryChartData({
       startMonth: '2025-12',
@@ -176,14 +178,12 @@ describe('getMonthlyHistoryChartData', () => {
       '2025-12',
       12,
       undefined,
-      0
+      0,
     );
   });
 
   it('passes tag filter when provided', async () => {
-    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getMonthlyHistoryChartData({
       startMonth: '2025-12',
@@ -196,14 +196,12 @@ describe('getMonthlyHistoryChartData', () => {
       '2025-12',
       12,
       'utilities',
-      0
+      0,
     );
   });
 
   it('passes months value to TransactionService', async () => {
-    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     await getMonthlyHistoryChartData({
       startMonth: '2025-12',
@@ -214,7 +212,7 @@ describe('getMonthlyHistoryChartData', () => {
       '2025-12',
       12,
       undefined,
-      0
+      0,
     );
   });
 
@@ -294,7 +292,7 @@ describe('getMonthlyHistoryChartData', () => {
 
     for (const startMonth of validMonths) {
       (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(
-        mockMonthlyTotals
+        mockMonthlyTotals,
       );
       const result = await getMonthlyHistoryChartData({
         startMonth,
@@ -305,9 +303,7 @@ describe('getMonthlyHistoryChartData', () => {
   });
 
   it('accepts months values from 1 to 24', async () => {
-    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (TransactionService.getMonthlyPaymentTotals as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const validCounts = [1, 12, 24];
 
@@ -321,7 +317,7 @@ describe('getMonthlyHistoryChartData', () => {
         '2025-12',
         months,
         undefined,
-        0
+        0,
       );
     }
   });
@@ -353,7 +349,7 @@ describe('getAnnualSpendingData', () => {
 
   it('returns aggregated data for valid year', async () => {
     (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockResolvedValue(
-      mockAggregatedData
+      mockAggregatedData,
     );
 
     const result = await getAnnualSpendingData({ year: '2025' });
@@ -436,7 +432,7 @@ describe('getAnnualSpendingData', () => {
 
     for (const year of validYears) {
       (TransactionService.getPaymentsByYearAggregatedByBill as jest.Mock).mockResolvedValue(
-        mockAggregatedData
+        mockAggregatedData,
       );
       const result = await getAnnualSpendingData({ year });
       expect(result.success).toBe(true);
@@ -455,4 +451,3 @@ describe('getAnnualSpendingData', () => {
     }
   });
 });
-

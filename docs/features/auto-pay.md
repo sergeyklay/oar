@@ -28,6 +28,7 @@ You open the Log Payment dialog through the [Bill Detail Panel](./bill-detail-pa
 The "Update Due Date" toggle determines how your payment affects the bill:
 
 **Toggle ON (full payment).** This is the standard flow. After logging:
+
 - The due date advances to the next cycle based on the bill's repeat interval
 - The amount due resets to the base bill amount (or zero for variable bills)
 - The bill stays active for the next cycle
@@ -37,6 +38,7 @@ For example: a $150 monthly bill due March 1. You log a payment with the toggle 
 For variable bills (like utility bills), the amount due resets to zero when the cycle advances, not the base amount. This reflects that each billing cycle for variable bills is independent; you don't carry residual debt forward. For example: an electric bill with a $100 estimate. You log a $95 payment with the toggle on. The due date moves to next month, and the amount due resets to zero, ready for the next cycle's estimate.
 
 **Toggle OFF (partial payment).** Use this when you're paying part of a bill now and the rest later:
+
 - The due date stays the same
 - The amount due decreases by what you paid
 - The bill remains in your current obligations
@@ -46,6 +48,7 @@ For example: a $200 bill due March 15. You log $75 with the toggle off. The due 
 ## One-time bills
 
 Bills with a "Never" repeat interval behave differently. After you log a full payment:
+
 - The amount due zeroes out
 - The status changes to "paid"
 - The bill ends its lifecycle
@@ -66,16 +69,16 @@ The "Update Due Date" toggle disappears for historical payments since it doesn't
 
 **How the system calculates billing cycle boundaries:**
 
-| Repeat interval | Current cycle starts |
-|-----------------|---------------------|
-| Weekly | 7 days before due date |
-| Biweekly | 14 days before due date |
-| Twice monthly | 14 days before due date |
-| Monthly | 1 month before due date |
-| Bimonthly | 2 months before due date |
-| Quarterly | 3 months before due date |
-| Yearly | 1 year before due date |
-| One-time | N/A (no historical detection) |
+| Repeat interval | Current cycle starts          |
+| --------------- | ----------------------------- |
+| Weekly          | 7 days before due date        |
+| Biweekly        | 14 days before due date       |
+| Twice monthly   | 14 days before due date       |
+| Monthly         | 1 month before due date       |
+| Bimonthly       | 2 months before due date      |
+| Quarterly       | 3 months before due date      |
+| Yearly          | 1 year before due date        |
+| One-time        | N/A (no historical detection) |
 
 One-time bills don't have billing cycles, so early payments are always treated as current payments. If you pay a one-time bill before its due date, the payment marks the bill as paid.
 
@@ -141,7 +144,7 @@ To confirm historical payment detection works:
 
 ## Related Documents
 
-* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
-* [Background Jobs](./background-jobs.md) - Automated system tasks
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+- [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+- [Background Jobs](./background-jobs.md) - Automated system tasks
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

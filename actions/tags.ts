@@ -11,10 +11,7 @@ const logger = getLogger('Actions:Tags');
 
 /** Validation schema for tag creation */
 const createTagSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Tag name is required')
-    .max(50, 'Tag name must be 50 characters or less'),
+  name: z.string().min(1, 'Tag name is required').max(50, 'Tag name must be 50 characters or less'),
 });
 
 export type CreateTagInput = z.infer<typeof createTagSchema>;
@@ -33,7 +30,7 @@ interface ActionResult<T = void> {
  * - Returns existing tag if slug already exists (idempotent)
  */
 export async function createTag(
-  input: CreateTagInput
+  input: CreateTagInput,
 ): Promise<ActionResult<{ id: string; name: string; slug: string }>> {
   const parsed = createTagSchema.safeParse(input);
 
@@ -49,10 +46,7 @@ export async function createTag(
 
   try {
     // Check if tag with this slug already exists
-    const [existingTag] = await db
-      .select()
-      .from(tags)
-      .where(eq(tags.slug, slug));
+    const [existingTag] = await db.select().from(tags).where(eq(tags.slug, slug));
 
     if (existingTag) {
       // Return existing tag (idempotent behavior)

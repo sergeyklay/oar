@@ -28,11 +28,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Toggle } from '@/components/common/Toggle';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -107,10 +103,7 @@ export function LogPaymentDialog({
 
   const isHistorical = useMemo(() => {
     if (!watchedPaidAt) return false;
-    return isPaymentHistorical(
-      { dueDate: bill.dueDate, frequency: bill.frequency },
-      watchedPaidAt
-    );
+    return isPaymentHistorical({ dueDate: bill.dueDate, frequency: bill.frequency }, watchedPaidAt);
   }, [watchedPaidAt, bill.dueDate, bill.frequency]);
 
   // Handle dialog open state change
@@ -167,9 +160,7 @@ export function LogPaymentDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Log Payment</DialogTitle>
-          <DialogDescription>
-            Record a payment for &ldquo;{bill.title}&rdquo;
-          </DialogDescription>
+          <DialogDescription>Record a payment for &ldquo;{bill.title}&rdquo;</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -182,12 +173,7 @@ export function LogPaymentDialog({
                 <FormItem>
                   <FormLabel>Amount</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="0.00"
-                    />
+                    <Input {...field} type="text" inputMode="decimal" placeholder="0.00" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -208,14 +194,10 @@ export function LogPaymentDialog({
                           variant="outline"
                           className={cn(
                             'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
+                            !field.value && 'text-muted-foreground',
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -260,9 +242,7 @@ export function LogPaymentDialog({
               <div className="flex items-start gap-3 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3">
                 <Clock className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                 <div className="space-y-0.5">
-                  <p className="text-sm font-medium text-amber-500">
-                    Historical payment
-                  </p>
+                  <p className="text-sm font-medium text-amber-500">Historical payment</p>
                   <p className="text-xs text-muted-foreground">
                     This payment will be recorded without changing the due date.
                   </p>
@@ -302,9 +282,7 @@ export function LogPaymentDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Log Payment
               </Button>
             </DialogFooter>

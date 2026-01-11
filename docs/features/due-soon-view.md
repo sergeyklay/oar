@@ -16,11 +16,13 @@ By default, the view shows all unpaid bills within your configured range, includ
 Both views filter for unpaid bills, but they use different time windows:
 
 **Due This Month:**
+
 - Fixed to the current calendar month (1st through last day)
 - Scope never changes; the month determines visibility
 - Ideal for monthly budgeting and cash flow planning
 
 **Due Soon:**
+
 - Uses a rolling window from today forward
 - Configurable from 0 to 30 days in Settings
 - Adapts to your preferred review frequency
@@ -31,17 +33,17 @@ A bill due in 10 days appears on Due Soon if your range is set to 14 days, but d
 
 Navigate to Settings > Behavior Options to adjust the "Due Soon Range" preference. Available options:
 
-| Setting | Subtitle displays as |
-|---------|---------------------|
-| 0 | Today |
-| 1 | Today or tomorrow |
-| 3 | In next 3 days |
-| 5 | In next 5 days |
-| 7 | In next 7 days (default) |
-| 10 | In next 10 days |
-| 14 | In next 14 days |
-| 20 | In next 20 days |
-| 30 | In next 30 days |
+| Setting | Subtitle displays as     |
+| ------- | ------------------------ |
+| 0       | Today                    |
+| 1       | Today or tomorrow        |
+| 3       | In next 3 days           |
+| 5       | In next 5 days           |
+| 7       | In next 7 days (default) |
+| 10      | In next 10 days          |
+| 14      | In next 14 days          |
+| 20      | In next 20 days          |
+| 30      | In next 30 days          |
 
 The setting takes effect immediately. The sidebar subtitle and Due Soon page content both update to reflect your new range.
 
@@ -50,6 +52,7 @@ The setting takes effect immediately. The sidebar subtitle and Due Soon page con
 Click "Due Soon" in the sidebar to open the page. The page displays unpaid bills within your configured range.
 
 The sidebar menu item shows a summary:
+
 - **With unpaid bills:** "3 bills - 1250 zl" (or your currency)
 - **With variable bills:** "3 bills - 1250 zl (est.)"
 - **No upcoming bills:** "No bills"
@@ -74,6 +77,7 @@ Setting it to 1 (Today or tomorrow) shows bills due within the next two days.
 At the default of 7 days, bills due within the next week are visible, including both today and the 7th day.
 
 For example, if today is December 21 and your range is 7:
+
 - A bill due December 21 appears (today)
 - A bill due December 28 appears (7th day)
 - A bill due December 29 does not appear (outside range)
@@ -129,7 +133,6 @@ To confirm the Due Soon feature works:
 
 ## Related Documents
 
-* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Include Automatic Bills Setting](./include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views
-
+- [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Include Automatic Bills Setting](./include-automatic-bills-setting.md) - Control whether automatic bills appear in Due Soon and Due This Month views

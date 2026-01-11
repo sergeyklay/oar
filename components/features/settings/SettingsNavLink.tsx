@@ -38,4 +38,3 @@ export function SettingsNavLink({ slug, name }: SettingsNavLinkProps) {
     </button>
   );
 }
-

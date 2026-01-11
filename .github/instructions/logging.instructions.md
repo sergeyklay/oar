@@ -80,14 +80,14 @@ catch (error) {
 
 ## 4. Log Levels
 
-| Level | Use Case | Example |
-|-------|----------|---------|
-| `fatal` | System unusable, crash imminent | DB connection lost |
-| `error` | Operation failed, app continues | Failed to save bill |
-| `warn` | Unexpected but handled | Retry succeeded after failure |
-| `info` | Lifecycle events | Job started, Job complete |
-| `debug` | Development details | Query results, state changes |
-| `trace` | Extremely verbose | Loop iterations |
+| Level   | Use Case                        | Example                       |
+| ------- | ------------------------------- | ----------------------------- |
+| `fatal` | System unusable, crash imminent | DB connection lost            |
+| `error` | Operation failed, app continues | Failed to save bill           |
+| `warn`  | Unexpected but handled          | Retry succeeded after failure |
+| `info`  | Lifecycle events                | Job started, Job complete     |
+| `debug` | Development details             | Query results, state changes  |
+| `trace` | Extremely verbose               | Loop iterations               |
 
 ## 5. Environment Behavior
 

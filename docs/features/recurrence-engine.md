@@ -17,18 +17,19 @@ When you log a payment and keep the "Update Due Date" toggle on (the default), t
 
 ### Interval rules
 
-| Interval | Behavior |
-|-----------|----------|
-| Every Week | Advances 7 days |
-| Every 2 Weeks | Advances 14 days |
+| Interval        | Behavior                                                     |
+| --------------- | ------------------------------------------------------------ |
+| Every Week      | Advances 7 days                                              |
+| Every 2 Weeks   | Advances 14 days                                             |
 | Twice Per Month | Advances to the 15th or 1st (e.g., Jan 1 -> Jan 15 -> Feb 1) |
-| Every Month | Advances to the same day next month |
-| Every 2 Months | Advances to the same day in 2 months |
-| Every 3 Months | Advances to the same day in 3 months |
-| Every Year | Advances to the same day next year |
-| Never | No next date; bill marked as paid |
+| Every Month     | Advances to the same day next month                          |
+| Every 2 Months  | Advances to the same day in 2 months                         |
+| Every 3 Months  | Advances to the same day in 3 months                         |
+| Every Year      | Advances to the same day next year                           |
+| Never           | No next date; bill marked as paid                            |
 
 **Examples:**
+
 - A weekly bill due January 1 moves to January 8 after payment.
 - A bi-weekly bill due January 1 moves to January 15.
 - A twice-monthly bill due January 1 moves to January 15; if due January 15, it moves to February 1.
@@ -41,12 +42,14 @@ When you log a payment and keep the "Update Due Date" toggle on (the default), t
 At midnight each day, a [background job](./background-jobs.md) scans all pending bills. Any bill with a due date before today gets marked "overdue." This happens automatically without user action.
 
 **Status determination:**
+
 - Due date is today or in the future → pending
 - Due date is in the past → overdue
 
 ### UI behavior
 
 The bill list displays status badges based on these calculations:
+
 - **Pending:** Due date hasn't passed yet
 - **Overdue:** Due date passed without payment logged
 - **Paid:** One-time bill (Interval: Never) fully paid
@@ -62,6 +65,7 @@ Bill forms and the payment logging modal interact with these services through se
 The system uses "anchor dates" for recurrence calculations to prevent date drift. When a bill's due date falls on a weekend, the system stores the anchor date (the actual weekend date) but displays an adjusted payment date based on your weekend adjustment strategy.
 
 **Example:** A monthly bill due January 15 (Saturday) with "Move to Previous Business Day" strategy:
+
 - Anchor date stored: January 15 (used for recurrence calculations)
 - Payment date displayed: January 14 (Friday, adjusted for display)
 - After payment, next anchor date: February 15 (preserves the monthly pattern)
@@ -122,6 +126,6 @@ To confirm the recurrence engine works:
 
 ## Related Documents
 
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Background Jobs](./background-jobs.md) - Automated system tasks
-* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Background Jobs](./background-jobs.md) - Automated system tasks
+- [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

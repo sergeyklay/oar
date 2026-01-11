@@ -22,4 +22,3 @@ const mockLoggerInstance: MockLogger = {
 };
 
 export const getLogger = jest.fn(() => mockLoggerInstance as unknown as pino.Logger);
-

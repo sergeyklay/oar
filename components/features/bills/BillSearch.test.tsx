@@ -360,7 +360,7 @@ describe('BillSearch', () => {
         <div>
           <div data-testid="outside">Outside</div>
           <BillSearch />
-        </div>
+        </div>,
       );
 
       const input = screen.getByPlaceholderText('Search');

@@ -6,7 +6,7 @@ describe('ScrollableContainer', () => {
     render(
       <ScrollableContainer>
         <div>Test Content</div>
-      </ScrollableContainer>
+      </ScrollableContainer>,
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -17,7 +17,7 @@ describe('ScrollableContainer', () => {
       <ScrollableContainer>
         <div>First</div>
         <div>Second</div>
-      </ScrollableContainer>
+      </ScrollableContainer>,
     );
 
     expect(screen.getByText('First')).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('ScrollableContainer', () => {
     const { container } = render(
       <ScrollableContainer>
         <div>Content</div>
-      </ScrollableContainer>
+      </ScrollableContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -39,7 +39,7 @@ describe('ScrollableContainer', () => {
     const { container } = render(
       <ScrollableContainer className="custom-class">
         <div>Content</div>
-      </ScrollableContainer>
+      </ScrollableContainer>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -47,4 +47,3 @@ describe('ScrollableContainer', () => {
     expect(wrapper).toHaveClass('custom-class');
   });
 });
-

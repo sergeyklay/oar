@@ -22,7 +22,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       expect(result.current.isPending).toBe(false);
@@ -38,7 +38,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       act(() => {
@@ -62,7 +62,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -81,7 +81,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -97,7 +97,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -116,7 +116,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           successMessage: 'Action completed',
-        })
+        }),
       );
 
       await act(async () => {
@@ -136,7 +136,7 @@ describe('useAsyncAction', () => {
           action: mockAction,
           successMessage: 'Action completed',
           successDescription: 'The action was successful',
-        })
+        }),
       );
 
       await act(async () => {
@@ -154,7 +154,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -172,7 +172,7 @@ describe('useAsyncAction', () => {
           action: mockAction,
           successMessage: 'Action completed',
           showSuccessToast: false,
-        })
+        }),
       );
 
       await act(async () => {
@@ -193,7 +193,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onSuccess,
-        })
+        }),
       );
 
       await act(async () => {
@@ -213,7 +213,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onSuccess,
-        })
+        }),
       );
 
       await act(async () => {
@@ -234,7 +234,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -256,7 +256,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           errorMessage: 'Custom error message',
-        })
+        }),
       );
 
       await act(async () => {
@@ -277,7 +277,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -297,7 +297,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -319,7 +319,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           showErrorToast: false,
-        })
+        }),
       );
 
       await act(async () => {
@@ -339,7 +339,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           errorMessage: null,
-        })
+        }),
       );
 
       await act(async () => {
@@ -361,7 +361,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onError,
-        })
+        }),
       );
 
       await act(async () => {
@@ -381,7 +381,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -399,7 +399,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onError,
-        })
+        }),
       );
 
       await act(async () => {
@@ -418,7 +418,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -436,7 +436,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onSettled,
-        })
+        }),
       );
 
       await act(async () => {
@@ -457,7 +457,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onSettled,
-        })
+        }),
       );
 
       await act(async () => {
@@ -475,7 +475,7 @@ describe('useAsyncAction', () => {
         useAsyncAction({
           action: mockAction,
           onSettled,
-        })
+        }),
       );
 
       await act(async () => {
@@ -493,7 +493,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -509,7 +509,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -525,7 +525,7 @@ describe('useAsyncAction', () => {
       const { result } = renderHook(() =>
         useAsyncAction({
           action: mockAction,
-        })
+        }),
       );
 
       await act(async () => {
@@ -552,7 +552,7 @@ describe('useAsyncAction', () => {
           successDescription: 'Operation completed',
           onSuccess,
           onSettled,
-        })
+        }),
       );
 
       await act(async () => {
@@ -582,7 +582,7 @@ describe('useAsyncAction', () => {
           errorMessage: 'Custom error',
           onError,
           onSettled,
-        })
+        }),
       );
 
       await act(async () => {
@@ -602,4 +602,3 @@ describe('useAsyncAction', () => {
     });
   });
 });
-

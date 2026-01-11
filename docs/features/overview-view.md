@@ -35,20 +35,20 @@ The due date column shows when a bill is due using everyday language instead of 
 
 ### Relative date formats
 
-| Days until due | Display |
-|----------------|---------|
-| Past due, 1 day | Overdue by 1 day |
-| Past due, multiple days | Overdue by 46 days |
-| Today | Due today |
-| Tomorrow | Due tomorrow |
-| 2-6 days | Due in 3 days |
-| 7 days | Due in 1 week |
-| 8-13 days | Due in 10 days |
-| 14-27 days | Due in 2 weeks |
-| 28-45 days | Due in about 1 month |
-| 2-5 months | Due in 3 months |
-| 6+ months | Due in over 6 months |
-| One-time bill, paid | Paid |
+| Days until due          | Display              |
+| ----------------------- | -------------------- |
+| Past due, 1 day         | Overdue by 1 day     |
+| Past due, multiple days | Overdue by 46 days   |
+| Today                   | Due today            |
+| Tomorrow                | Due tomorrow         |
+| 2-6 days                | Due in 3 days        |
+| 7 days                  | Due in 1 week        |
+| 8-13 days               | Due in 10 days       |
+| 14-27 days              | Due in 2 weeks       |
+| 28-45 days              | Due in about 1 month |
+| 2-5 months              | Due in 3 months      |
+| 6+ months               | Due in over 6 months |
+| One-time bill, paid     | Paid                 |
 
 One-time bills (Interval: Never) that have been paid show "Paid" instead of the relative date. Recurring bills never show "Paid" because after payment their due date advances to the next billing cycle.
 
@@ -56,12 +56,12 @@ One-time bills (Interval: Never) that have been paid show "Paid" instead of the 
 
 The vertical bar on the left edge of the due date cell indicates urgency:
 
-| Color | Meaning |
-|-------|---------|
-| Red | Overdue. The due date has passed and the bill remains unpaid. |
-| Amber | Due soon. The bill is due within the next 30 days. |
-| Blue | Due later. The bill is due more than 30 days from now. |
-| Green | Paid. For one-time bills that have been paid. |
+| Color | Meaning                                                       |
+| ----- | ------------------------------------------------------------- |
+| Red   | Overdue. The due date has passed and the bill remains unpaid. |
+| Amber | Due soon. The bill is due within the next 30 days.            |
+| Blue  | Due later. The bill is due more than 30 days from now.        |
+| Green | Paid. For one-time bills that have been paid.                 |
 
 The bar spans the full height of the cell, making it easy to scan down the column and spot bills needing attention.
 
@@ -69,19 +69,19 @@ The bar spans the full height of the cell, making it easy to scan down the colum
 
 The subtitle below the bill name combines the repeat interval with the payment mode (Auto or Manual). This reinforces the "Active Payer" philosophy by explicitly signaling how each bill is handled.
 
-* **Repeat interval.** Shows how often the bill recurs (e.g., "Every month").
-* **Payment mode.** Indicates if the bill is paid automatically by your bank ("Auto") or if you must execute the payment yourself ("Manual").
+- **Repeat interval.** Shows how often the bill recurs (e.g., "Every month").
+- **Payment mode.** Indicates if the bill is paid automatically by your bank ("Auto") or if you must execute the payment yourself ("Manual").
 
-| Internal value | Display label |
-|----------------|---------------|
-| weekly | Every week |
-| biweekly | Every 2 weeks |
-| twicemonthly | Twice per month |
-| monthly | Every month |
-| bimonthly | Every 2 months |
-| quarterly | Every 3 months |
-| yearly | Every year |
-| once | Never |
+| Internal value | Display label   |
+| -------------- | --------------- |
+| weekly         | Every week      |
+| biweekly       | Every 2 weeks   |
+| twicemonthly   | Twice per month |
+| monthly        | Every month     |
+| bimonthly      | Every 2 months  |
+| quarterly      | Every 3 months  |
+| yearly         | Every year      |
+| once           | Never           |
 
 The combined label appears as `Every month • Auto` or `Every month • Manual`.
 
@@ -142,6 +142,6 @@ To confirm the Overview view works:
 
 ## Related Documents
 
-* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Archive View](./archive-view.md) - Viewing and managing archived bills
+- [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Archive View](./archive-view.md) - Viewing and managing archived bills

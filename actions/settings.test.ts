@@ -103,7 +103,9 @@ describe('updateDueSoonRange', () => {
   });
 
   it('returns validation error for invalid range value', async () => {
-    const result = await updateDueSoonRange({ range: '99' as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30' });
+    const result = await updateDueSoonRange({
+      range: '99' as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30',
+    });
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Validation failed');
@@ -113,7 +115,9 @@ describe('updateDueSoonRange', () => {
   });
 
   it('returns validation error for non-enum range value', async () => {
-    const result = await updateDueSoonRange({ range: 'invalid' as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30' });
+    const result = await updateDueSoonRange({
+      range: 'invalid' as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30',
+    });
 
     expect(result.success).toBe(false);
     expect(result.error).toBe('Validation failed');
@@ -139,7 +143,9 @@ describe('updateDueSoonRange', () => {
     const validRanges = ['0', '1', '3', '5', '7', '10', '14', '20', '30'];
 
     for (const range of validRanges) {
-      await updateDueSoonRange({ range: range as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30' });
+      await updateDueSoonRange({
+        range: range as '0' | '1' | '3' | '5' | '7' | '10' | '14' | '20' | '30',
+      });
       expect(SettingsService.setDueSoonRange).toHaveBeenCalledWith(parseInt(range, 10));
     }
   });
@@ -348,7 +354,7 @@ describe('updateViewOptions', () => {
 
       expect(result.success).toBe(true);
       expect(SettingsService.setViewOptions).toHaveBeenCalledWith(
-        expect.objectContaining({ weekStart: day })
+        expect.objectContaining({ weekStart: day }),
       );
     }
   });
@@ -407,19 +413,20 @@ describe('updateWeekendAdjustment', () => {
     jest.clearAllMocks();
   });
 
-  it.each([
-    ['unchanged'],
-    ['next_business_day'],
-    ['previous_business_day'],
-  ])('updates weekend adjustment setting successfully for %s', async (strategy) => {
-    (SettingsService.setWeekendAdjustment as jest.Mock).mockResolvedValue(undefined);
+  it.each([['unchanged'], ['next_business_day'], ['previous_business_day']])(
+    'updates weekend adjustment setting successfully for %s',
+    async (strategy) => {
+      (SettingsService.setWeekendAdjustment as jest.Mock).mockResolvedValue(undefined);
 
-    const result = await updateWeekendAdjustment({ strategy: strategy as 'unchanged' | 'next_business_day' | 'previous_business_day' });
+      const result = await updateWeekendAdjustment({
+        strategy: strategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
+      });
 
-    expect(result.success).toBe(true);
-    expect(SettingsService.setWeekendAdjustment).toHaveBeenCalledWith(strategy);
-    expect(revalidatePath).toHaveBeenCalledWith('/settings');
-  });
+      expect(result.success).toBe(true);
+      expect(SettingsService.setWeekendAdjustment).toHaveBeenCalledWith(strategy);
+      expect(revalidatePath).toHaveBeenCalledWith('/settings');
+    },
+  );
 
   it('returns validation error for invalid strategy value', async () => {
     // @ts-expect-error Testing invalid input

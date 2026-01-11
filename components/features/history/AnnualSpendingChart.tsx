@@ -2,11 +2,7 @@
 
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell } from 'recharts';
-import {
-  ChartContainer,
-  ChartTooltip,
-  type ChartConfig,
-} from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, type ChartConfig } from '@/components/ui/chart';
 import { formatMoney } from '@/lib/money';
 import type { AggregatedBillSpending } from '@/lib/types';
 
@@ -66,12 +62,10 @@ export function AnnualSpendingChart({
     });
 
     const escapedIds = mapped.map((item) => item.escapedBillId);
-    const duplicateIds = escapedIds.filter(
-      (id, index) => escapedIds.indexOf(id) !== index
-    );
+    const duplicateIds = escapedIds.filter((id, index) => escapedIds.indexOf(id) !== index);
     if (duplicateIds.length > 0) {
       throw new Error(
-        `Chart config collision: Multiple billIds escape to the same value: ${duplicateIds.join(', ')}`
+        `Chart config collision: Multiple billIds escape to the same value: ${duplicateIds.join(', ')}`,
       );
     }
 
@@ -149,9 +143,7 @@ export function AnnualSpendingChart({
                 <div className="rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-md">
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-muted-foreground">{name}</span>
-                    <span className="font-medium font-mono tabular-nums">
-                      {formatted}
-                    </span>
+                    <span className="font-medium font-mono tabular-nums">{formatted}</span>
                   </div>
                 </div>
               );
@@ -162,4 +154,3 @@ export function AnnualSpendingChart({
     </div>
   );
 }
-

@@ -11,6 +11,7 @@ gh auth status
 ```
 
 **Success output:**
+
 ```
 github.com
   ✓ Logged in to github.com account <username> (...)
@@ -21,6 +22,7 @@ github.com
 ```
 
 **Failed output (examples):**
+
 ```
 You are not logged in to any GitHub hosts.
 ```
@@ -89,6 +91,7 @@ git pull
 **Symptom:** Operations fail with permission errors
 **Check:** `gh auth status` shows wrong account
 **Fix:**
+
 ```bash
 gh auth logout
 gh auth login --web
@@ -97,11 +100,13 @@ gh auth login --web
 ### Multiple Accounts
 
 **List accounts:**
+
 ```bash
 gh auth status
 ```
 
 **Switch active account:**
+
 ```bash
 gh auth switch
 ```
@@ -141,20 +146,20 @@ gh <command> --help
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | General error (check stderr) |
-| 4 | Authentication required |
+| Code | Meaning                      |
+| ---- | ---------------------------- |
+| 0    | Success                      |
+| 1    | General error (check stderr) |
+| 4    | Authentication required      |
 
 ## Environment Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `GH_TOKEN` | Override authentication token |
-| `GH_HOST` | Override default host (github.com) |
-| `GH_REPO` | Override repository detection |
-| `NO_COLOR` | Disable colored output |
+| Variable   | Purpose                            |
+| ---------- | ---------------------------------- |
+| `GH_TOKEN` | Override authentication token      |
+| `GH_HOST`  | Override default host (github.com) |
+| `GH_REPO`  | Override repository detection      |
+| `NO_COLOR` | Disable colored output             |
 
 ## Best Practices
 

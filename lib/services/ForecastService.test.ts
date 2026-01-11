@@ -45,7 +45,7 @@ describe('ForecastService', () => {
 
   const createDbMock = (billsToReturn: BillWithTags[]) => {
     const filteredBills = billsToReturn.filter(
-      (bill) => !bill.isArchived && bill.status !== 'paid'
+      (bill) => !bill.isArchived && bill.status !== 'paid',
     );
     const joinedBills = filteredBills.map((bill) => ({
       bill: {
@@ -80,10 +80,10 @@ describe('ForecastService', () => {
   const createDbMockWithTagFilter = (
     billsToReturn: BillWithTags[],
     tagSlug: string,
-    tagId = 'tag-1'
+    tagId = 'tag-1',
   ) => {
     const filteredBills = billsToReturn.filter(
-      (bill) => !bill.isArchived && bill.status !== 'paid'
+      (bill) => !bill.isArchived && bill.status !== 'paid',
     );
     const joinedBills = filteredBills.map((bill) => ({
       bill: {
@@ -136,9 +136,7 @@ describe('ForecastService', () => {
     it('returns forecast bills for a specific month', async () => {
       const mockBills: BillWithTags[] = [createMockBill()];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -150,9 +148,7 @@ describe('ForecastService', () => {
     it('filters bills by tag when tag is provided', async () => {
       const mockBills: BillWithTags[] = [createMockBill({ id: 'bill-tagged' })];
       createDbMockWithTagFilter(mockBills, 'utilities', 'tag-utilities');
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-tagged', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-tagged', []]]));
 
       await ForecastService.getBillsForMonth('2025-03', 'utilities');
 
@@ -169,7 +165,7 @@ describe('ForecastService', () => {
         new Map([
           ['bill-1', []],
           ['bill-2', []],
-        ])
+        ]),
       );
 
       const result = await ForecastService.getBillsForMonth('2025-03');
@@ -188,7 +184,7 @@ describe('ForecastService', () => {
         new Map([
           ['bill-1', []],
           ['bill-2', []],
-        ])
+        ]),
       );
 
       const result = await ForecastService.getBillsForMonth('2025-03');
@@ -205,9 +201,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -222,9 +216,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -241,9 +233,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-06');
 
@@ -261,9 +251,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -281,9 +269,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -298,9 +284,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -315,9 +299,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -333,9 +315,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -350,9 +330,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
       (EstimationService.estimateAmount as jest.Mock).mockResolvedValue(15000);
 
       const result = await ForecastService.getBillsForMonth('2025-03');
@@ -360,10 +338,7 @@ describe('ForecastService', () => {
       expect(result).toHaveLength(1);
       expect(result[0].displayAmount).toBe(15000);
       expect(result[0].isEstimated).toBe(true);
-      expect(EstimationService.estimateAmount).toHaveBeenCalledWith(
-        'bill-1',
-        expect.any(Date)
-      );
+      expect(EstimationService.estimateAmount).toHaveBeenCalledWith('bill-1', expect.any(Date));
     });
 
     it('sorts bills by due date', async () => {
@@ -387,7 +362,7 @@ describe('ForecastService', () => {
           ['bill-1', []],
           ['bill-2', []],
           ['bill-3', []],
-        ])
+        ]),
       );
 
       const result = await ForecastService.getBillsForMonth('2025-03');
@@ -422,15 +397,13 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-            new Map([['bill-1', []]])
-          );
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth(targetMonth);
 
           expect(result.length).toBeGreaterThan(0);
           expect(result[0].dueDate.getDate()).toBe(expectedDate);
-        }
+        },
       );
 
       it.each([
@@ -447,15 +420,13 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-            new Map([['bill-1', []]])
-          );
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth('2025-02');
 
           expect(result.length).toBe(1);
           expect(result[0].dueDate.getDate()).toBe(expectedDate);
-        }
+        },
       );
 
       it.each([
@@ -471,15 +442,13 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-            new Map([['bill-1', []]])
-          );
+          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth(targetMonth);
 
           expect(result.length).toBe(1);
           expect(result[0].dueDate.getDate()).toBe(expectedDate);
-        }
+        },
       );
     });
 
@@ -551,27 +520,22 @@ describe('ForecastService', () => {
           expectedDate: 31,
           description: 'preserves 31st in December (31 days)',
         },
-      ])(
-        '$description',
-        async ({ targetMonth, expectedMonth, expectedDate }) => {
-          const mockBills: BillWithTags[] = [
-            createMockBill({
-              dueDate: new Date('2025-01-31'),
-              frequency: 'monthly' as const,
-            }),
-          ];
-          createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-            new Map([['bill-1', []]])
-          );
+      ])('$description', async ({ targetMonth, expectedMonth, expectedDate }) => {
+        const mockBills: BillWithTags[] = [
+          createMockBill({
+            dueDate: new Date('2025-01-31'),
+            frequency: 'monthly' as const,
+          }),
+        ];
+        createDbMock(mockBills);
+        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
-          const result = await ForecastService.getBillsForMonth(targetMonth);
+        const result = await ForecastService.getBillsForMonth(targetMonth);
 
-          expect(result).toHaveLength(1);
-          expect(result[0].dueDate.getMonth()).toBe(expectedMonth);
-          expect(result[0].dueDate.getDate()).toBe(expectedDate);
-        }
-      );
+        expect(result).toHaveLength(1);
+        expect(result[0].dueDate.getMonth()).toBe(expectedMonth);
+        expect(result[0].dueDate.getDate()).toBe(expectedDate);
+      });
     });
 
     it('projects quarterly bill due on 31st to last day of shorter months', async () => {
@@ -582,9 +546,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
-        new Map([['bill-1', []]])
-      );
+      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       // April (3 months later, 30 days) - should clamp to Apr 30
       const aprResult = await ForecastService.getBillsForMonth('2025-04');
@@ -706,7 +668,7 @@ describe('ForecastService', () => {
     const createMockForecastBill = (
       id: string,
       displayAmount: number,
-      amortizationAmount: number | null = null
+      amortizationAmount: number | null = null,
     ): ForecastBill => ({
       id,
       title: `Bill ${id}`,

@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button';
 
 const navButtonClass = cn(
   buttonVariants({ variant: 'ghost' }),
-  'h-4 w-4 p-0 opacity-50 hover:opacity-100 cursor-pointer inline-flex items-center justify-center [&_svg]:size-3'
+  'h-4 w-4 p-0 opacity-50 hover:opacity-100 cursor-pointer inline-flex items-center justify-center [&_svg]:size-3',
 );
 
 interface YearNavigationProps {
@@ -60,4 +60,3 @@ export function YearNavigation({ currentYear }: YearNavigationProps) {
     </div>
   );
 }
-

@@ -43,7 +43,7 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
   // shallow: false triggers server component re-render
   const [, setSelectedBill] = useQueryState(
     'selectedBill',
-    parseAsString.withOptions({ shallow: false })
+    parseAsString.withOptions({ shallow: false }),
   );
 
   const handleClick: Prop<'tr', 'onClick'> = (e) => {
@@ -83,8 +83,10 @@ export function BillRowClickable({ billId, isSelected, children }: BillRowClicka
           e.preventDefault();
 
           // Don't handle keyboard events if any dialog or popover is currently open
-          const hasOpenDialog = document.querySelector('[role="dialog"][data-state="open"]') !== null;
-          const hasOpenPopover = document.querySelector('[data-radix-popper-content-wrapper]') !== null;
+          const hasOpenDialog =
+            document.querySelector('[role="dialog"][data-state="open"]') !== null;
+          const hasOpenPopover =
+            document.querySelector('[data-radix-popper-content-wrapper]') !== null;
           if (hasOpenDialog || hasOpenPopover) {
             return;
           }

@@ -17,9 +17,7 @@ interface ForecastPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function ForecastPage({
-  searchParams,
-}: ForecastPageProps) {
+export default async function ForecastPage({ searchParams }: ForecastPageProps) {
   const { month, tag } = await forecastSearchParamsCache.parse(searchParams);
 
   const [settings, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -56,4 +54,3 @@ export default async function ForecastPage({
     </AppShellClient>
   );
 }
-
