@@ -1,13 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  XAxis,
-  type BarRectangleItem,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, type BarRectangleItem } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
@@ -49,17 +43,7 @@ const ConditionalBarShape = (
   }
 
   // Render rectangle for non-zero values
-  return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      fill={fill}
-      rx={8}
-      ry={8}
-    />
-  );
+  return <rect x={x} y={y} width={width} height={height} fill={fill} rx={8} ry={8} />;
 };
 
 /**
@@ -70,11 +54,7 @@ const ConditionalBarShape = (
  *
  * Render Mode: Client Component (requires Recharts and chart primitives)
  */
-export function MonthlyHistoryChart({
-  data,
-  currency,
-  locale,
-}: MonthlyHistoryChartProps) {
+export function MonthlyHistoryChart({ data, currency, locale }: MonthlyHistoryChartProps) {
   const chartConfig: ChartConfig = {
     currentYear: {
       label: 'Current Year',
@@ -111,15 +91,10 @@ export function MonthlyHistoryChart({
                     const value = item.value as number;
                     const formatted = formatMoney(value, currency, locale);
                     const dataKey = item.dataKey as keyof typeof chartConfig;
-                    const label =
-                      (dataKey && chartConfig[dataKey]?.label) ||
-                      (item.name as string);
+                    const label = (dataKey && chartConfig[dataKey]?.label) || (item.name as string);
                     const color = item.color;
                     return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between gap-4"
-                      >
+                      <div key={index} className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                           {color && (
                             <div
@@ -129,9 +104,7 @@ export function MonthlyHistoryChart({
                           )}
                           <span className="text-muted-foreground">{label}</span>
                         </div>
-                        <span className="font-medium font-mono tabular-nums">
-                          {formatted}
-                        </span>
+                        <span className="font-medium font-mono tabular-nums">{formatted}</span>
                       </div>
                     );
                   })}
@@ -178,4 +151,3 @@ export function MonthlyHistoryChart({
     </div>
   );
 }
-

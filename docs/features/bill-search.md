@@ -47,7 +47,7 @@ The dropdown closes when you click outside the search component, press the Escap
 
 **No results.** If your search matches no bills, the dropdown doesn't appear. The search input remains visible, and you can modify your query or clear it.
 
-**Whitespace handling.** Leading and trailing whitespace in your query is trimmed before searching. Multiple spaces between words are treated as a single separator. For example, "  electric   bill  " becomes "electric bill" before matching.
+**Whitespace handling.** Leading and trailing whitespace in your query is trimmed before searching. Multiple spaces between words are treated as a single separator. For example, " electric bill " becomes "electric bill" before matching.
 
 **Word matching.** The search matches the start of words, not substrings within words. Searching for "bill" matches "Electric Bill" and "Monthly Bill" but not "Billing Statement" because "billing" doesn't start with "bill". This word-boundary matching keeps results relevant.
 
@@ -73,8 +73,7 @@ The dropdown closes when you click outside the search component, press the Escap
 
 ## Related Documents
 
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Archive View](./archive-view.md) - Viewing and managing archived bills
-* [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Page Header](./page-header.md) - Common header controls available on all pages
-
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Archive View](./archive-view.md) - Viewing and managing archived bills
+- [Bill Detail Panel](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+- [Page Header](./page-header.md) - Common header controls available on all pages

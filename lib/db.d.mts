@@ -12,7 +12,4 @@ export declare const DEFAULT_DATABASE_PATH: string;
  * @param baseDir - Base directory for resolving relative paths (defaults to cwd)
  * @returns The resolved database path
  */
-export declare function resolveDatabasePath(
-  envPath?: string | undefined,
-  baseDir?: string
-): string;
+export declare function resolveDatabasePath(envPath?: string | undefined, baseDir?: string): string;

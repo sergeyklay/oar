@@ -26,11 +26,13 @@ The setting applies only to Due Soon and Due This Month views. Other views like 
 The system identifies automatic bills using the `isAutoPay` flag. When you create or edit a bill, you can mark it as automatic payment. Bills marked this way are subject to the setting's filter.
 
 **When the setting is enabled:**
+
 - Automatic bills appear in Due Soon view if they fall within your configured range
 - Automatic bills appear in Due This Month view if they're due in the current month
 - The sidebar subtitles include automatic bills in their counts and totals
 
 **When the setting is disabled:**
+
 - Automatic bills are excluded from Due Soon view, even if they fall within your configured range
 - Automatic bills are excluded from Due This Month view, even if they're due in the current month
 - The sidebar subtitles exclude automatic bills from their counts and totals
@@ -91,8 +93,7 @@ To test with tag filtering:
 
 ## Related Documents
 
-* [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
-* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
-* [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-
+- [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
+- [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+- [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection

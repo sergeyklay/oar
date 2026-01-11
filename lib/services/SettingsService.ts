@@ -40,7 +40,7 @@ async function enrichSectionsWithCounts(sections: SettingsSection[]): Promise<En
         displayOrder: section.displayOrder,
         settingsCount: Number(countResult?.count ?? 0),
       };
-    })
+    }),
   );
 }
 
@@ -91,13 +91,13 @@ export const SettingsService = {
         acc[row.key] = row.value;
         return acc;
       },
-      {} as Record<string, string>
+      {} as Record<string, string>,
     );
 
     const weekStartValue = parseInt(settingsMap['weekStart'] ?? '0', 10);
-    const weekStart = (weekStartValue >= 0 && weekStartValue <= 6
-      ? weekStartValue
-      : DEFAULT_SETTINGS.weekStart) as WeekStartDay;
+    const weekStart = (
+      weekStartValue >= 0 && weekStartValue <= 6 ? weekStartValue : DEFAULT_SETTINGS.weekStart
+    ) as WeekStartDay;
 
     const includeAutoPayInDueSoonValue = settingsMap['includeAutoPayInDueSoon'];
     const includeAutoPayInDueSoon =
@@ -145,10 +145,7 @@ export const SettingsService = {
    * @param {UserSettings[K]} value - The new value to persist.
    * @returns {Promise<void>} Resolves when the setting is saved.
    */
-  async set<K extends keyof UserSettings>(
-    key: K,
-    value: UserSettings[K]
-  ): Promise<void> {
+  async set<K extends keyof UserSettings>(key: K, value: UserSettings[K]): Promise<void> {
     await db
       .insert(settings)
       .values({ key, value: String(value) })
@@ -213,10 +210,7 @@ export const SettingsService = {
    */
   async initialize(): Promise<void> {
     for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
-      const [existing] = await db
-        .select()
-        .from(settings)
-        .where(eq(settings.key, key));
+      const [existing] = await db.select().from(settings).where(eq(settings.key, key));
 
       if (!existing) {
         await db.insert(settings).values({ key, value: String(value) });
@@ -302,11 +296,7 @@ export const SettingsService = {
    * @remarks Logs an error when an invalid value is encountered.
    */
   async getDueSoonRange(): Promise<number> {
-    const [row] = await db
-      .select()
-      .from(settings)
-      .where(eq(settings.key, 'dueSoonRange'))
-      .limit(1);
+    const [row] = await db.select().from(settings).where(eq(settings.key, 'dueSoonRange')).limit(1);
 
     if (!row) {
       return 7;
@@ -319,7 +309,7 @@ export const SettingsService = {
         {
           invalidValue: row.value,
         },
-        'Invalid dueSoonRange value, defaulting to 7'
+        'Invalid dueSoonRange value, defaulting to 7',
       );
       return 7;
     }
@@ -337,7 +327,9 @@ export const SettingsService = {
    */
   async setDueSoonRange(days: AllowedRangeValue): Promise<void> {
     if (!ALLOWED_RANGE_VALUES.includes(days)) {
-      throw new Error(`Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`);
+      throw new Error(
+        `Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`,
+      );
     }
 
     const [behaviorOptionsSection] = await db
@@ -386,7 +378,7 @@ export const SettingsService = {
         {
           invalidValue: row.value,
         },
-        'Invalid paidRecentlyRange value, defaulting to 7'
+        'Invalid paidRecentlyRange value, defaulting to 7',
       );
       return 7;
     }
@@ -403,7 +395,9 @@ export const SettingsService = {
    */
   async setPaidRecentlyRange(days: AllowedRangeValue): Promise<void> {
     if (!ALLOWED_RANGE_VALUES.includes(days)) {
-      throw new Error(`Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`);
+      throw new Error(
+        `Invalid days value: ${days}. Must be one of: ${ALLOWED_RANGE_VALUES.join(', ')}`,
+      );
     }
 
     const [behaviorOptionsSection] = await db
@@ -529,7 +523,7 @@ export const SettingsService = {
       strategy !== 'previous_business_day'
     ) {
       throw new Error(
-        `Invalid strategy value: ${strategy}. Must be 'unchanged', 'next_business_day', or 'previous_business_day'`
+        `Invalid strategy value: ${strategy}. Must be 'unchanged', 'next_business_day', or 'previous_business_day'`,
       );
     }
 
@@ -585,7 +579,7 @@ export const SettingsService = {
       {
         invalidValue: row.value,
       },
-      'Invalid includeAutoPayInDueSoon value, defaulting to true'
+      'Invalid includeAutoPayInDueSoon value, defaulting to true',
     );
     return true;
   },
@@ -619,7 +613,7 @@ export const SettingsService = {
       {
         invalidValue: row.value,
       },
-      'Invalid autoLogAutoPay value, defaulting to true'
+      'Invalid autoLogAutoPay value, defaulting to true',
     );
     return true;
   },
@@ -664,10 +658,7 @@ export const SettingsService = {
    * but always ensures all default settings exist.
    */
   async initializeDefaults(): Promise<void> {
-    const [existingCategory] = await db
-      .select()
-      .from(settingsCategories)
-      .limit(1);
+    const [existingCategory] = await db.select().from(settingsCategories).limit(1);
 
     if (!existingCategory) {
       // First-time initialization: create all categories, sections, and settings
@@ -751,7 +742,7 @@ export const SettingsService = {
             sectionSlug: setting.sectionSlug,
             settingKey: setting.key,
           },
-          'Section not found, skipping setting'
+          'Section not found, skipping setting',
         );
         continue;
       }

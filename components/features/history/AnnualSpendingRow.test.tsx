@@ -44,7 +44,7 @@ function renderRow(props?: {
       <tbody>
         <AnnualSpendingRow {...defaultProps} />
       </tbody>
-    </table>
+    </table>,
   );
 }
 
@@ -206,4 +206,3 @@ describe('AnnualSpendingRow', () => {
     });
   });
 });
-

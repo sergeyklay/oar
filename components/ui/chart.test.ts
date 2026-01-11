@@ -1,7 +1,4 @@
-import {
-  escapeCssIdentifier,
-  sanitizeColorValue,
-} from './chart';
+import { escapeCssIdentifier, sanitizeColorValue } from './chart';
 
 describe('escapeCssIdentifier', () => {
   it('preserves alphanumeric characters and hyphens', () => {
@@ -166,7 +163,7 @@ describe('sanitizeColorValue', () => {
   describe('CSS injection prevention', () => {
     it('rejects CSS injection attempts in color values', () => {
       expect(sanitizeColorValue('red; } body { background: url(evil) } div {')).toBe(
-        'hsl(var(--chart-1))'
+        'hsl(var(--chart-1))',
       );
       expect(sanitizeColorValue('red } body {')).toBe('hsl(var(--chart-1))');
       expect(sanitizeColorValue('red; } /* */')).toBe('hsl(var(--chart-1))');
@@ -192,4 +189,3 @@ describe('sanitizeColorValue', () => {
     });
   });
 });
-

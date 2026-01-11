@@ -86,6 +86,7 @@ docker compose up --build -d
 ```
 
 This command:
+
 - Builds the Docker image using BuildKit secrets (if `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` is set in `.env`, it's securely passed during build)
 - Creates the necessary volumes and networks
 - Starts the container in detached mode
@@ -158,14 +159,14 @@ docker run -d \
 
 **Flag breakdown:**
 
-| Flag | Purpose |
-|------|---------|
-| `-d` | Run in detached mode (background) |
-| `-p 8080:8080` | Map host port 8080 to container port 8080 |
-| `-v oar_data:/app/data` | Mount a named volume for SQLite persistence |
-| `-e DATABASE_URL` | Set the database file location (can be relative or absolute path) |
-| `-e NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Set the Server Actions encryption key |
-| `--name oar_app` | Assign a memorable container name |
+| Flag                                    | Purpose                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `-d`                                    | Run in detached mode (background)                                 |
+| `-p 8080:8080`                          | Map host port 8080 to container port 8080                         |
+| `-v oar_data:/app/data`                 | Mount a named volume for SQLite persistence                       |
+| `-e DATABASE_URL`                       | Set the database file location (can be relative or absolute path) |
+| `-e NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Set the Server Actions encryption key                             |
+| `--name oar_app`                        | Assign a memorable container name                                 |
 
 **Expected output:** Docker returns the container ID (a long hexadecimal string).
 
@@ -183,12 +184,12 @@ You should see `oar_app` listed with status `Up`.
 
 ### Environment variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DATABASE_URL` | `/app/data/oar.db` | Absolute or relative path to the SQLite database file |
-| `PORT` | `8080` | Port the application listens on |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Optional | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). If set, must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). If not set, Next.js generates a random key during the build and embeds it in the image. |
-| `OAR_MEMORY_LIMIT` | `128MiB` | Memory limit for the container (docker-compose only) |
+| Variable                             | Default            | Description                                                                                                                                                                                                                                                                                    |
+| ------------------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                       | `/app/data/oar.db` | Absolute or relative path to the SQLite database file                                                                                                                                                                                                                                          |
+| `PORT`                               | `8080`             | Port the application listens on                                                                                                                                                                                                                                                                |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Optional           | Encryption key for Next.js Server Actions (generate with `openssl rand -base64 32`). If set, must match exactly between build-time (BuildKit secret) and runtime (`-e` or docker-compose environment). If not set, Next.js generates a random key during the build and embeds it in the image. |
+| `OAR_MEMORY_LIMIT`                   | `128MiB`           | Memory limit for the container (docker-compose only)                                                                                                                                                                                                                                           |
 
 ### Database path handling
 
@@ -232,6 +233,7 @@ docker logs oar_app
 ```
 
 Look for:
+
 - `Running database migrations...` followed by migration status
 - `Starting Next.js server...`
 - `Ready in XXms` indicating the server started successfully
@@ -249,7 +251,7 @@ If you see errors about "Failed to find Server Action", see the troubleshooting 
 
 ```yaml
 ports:
-  - 3000:8080  # Change host port to 3000
+  - 3000:8080 # Change host port to 3000
 ```
 
 Then access the app at `http://localhost:3000`.
@@ -273,6 +275,7 @@ docker logs oar_app
 ```
 
 Common causes:
+
 - Missing `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` environment variable
 - Encryption key mismatch between build-time and runtime
 - Database directory creation failure (check permissions)

@@ -95,4 +95,3 @@ runs:
         echo "PR #$PR_NUMBER needs rebase (reason: $REASON). Requesting Dependabot to rebase..."
         gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body "@dependabot rebase"
         echo "::warning::PR #$PR_NUMBER - Requested @dependabot rebase (reason: $REASON)"
-

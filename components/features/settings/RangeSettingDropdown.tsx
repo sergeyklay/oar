@@ -34,11 +34,7 @@ export function RangeSettingDropdown({
 
   return (
     <div className="flex items-center gap-2">
-      <Select
-        value={displayValue}
-        onValueChange={handleValueChange}
-        disabled={isPending}
-      >
+      <Select value={displayValue} onValueChange={handleValueChange} disabled={isPending}>
         <SelectTrigger className="w-[200px]">
           <SelectValue>
             {isPending ? (
@@ -62,4 +58,3 @@ export function RangeSettingDropdown({
     </div>
   );
 }
-

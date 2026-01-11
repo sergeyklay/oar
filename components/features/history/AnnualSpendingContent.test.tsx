@@ -288,4 +288,3 @@ describe('AnnualSpendingContent', () => {
     });
   });
 });
-

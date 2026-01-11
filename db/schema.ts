@@ -13,7 +13,9 @@ import { relations } from 'drizzle-orm';
  * Groups are stored for future use but not currently displayed in UI.
  */
 export const billCategoryGroups = sqliteTable('bill_category_groups', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   /** Display name (e.g., "Housing & Essential Services") */
   name: text('name').notNull(),
   /** URL-safe slug for potential future filtering */
@@ -33,7 +35,9 @@ export const billCategoryGroups = sqliteTable('bill_category_groups', {
  * Each category has a unique icon for visual identification.
  */
 export const billCategories = sqliteTable('bill_categories', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   /** Foreign key to bill_category_groups */
   groupId: text('group_id')
     .notNull()
@@ -58,7 +62,9 @@ export const billCategories = sqliteTable('bill_categories', {
 
 /** Bills table for tracking recurring and one-time payments. */
 export const bills = sqliteTable('bills', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   title: text('title').notNull(),
   /** Amount in minor units (e.g., 4999 = 49.99 PLN). This is the base recurring amount. */
   amount: integer('amount').notNull(),
@@ -86,15 +92,19 @@ export const bills = sqliteTable('bills', {
       'monthly',
       'bimonthly',
       'quarterly',
-      'yearly'
+      'yearly',
     ],
-  }).notNull().default('monthly'),
+  })
+    .notNull()
+    .default('monthly'),
   isAutoPay: integer('is_auto_pay', { mode: 'boolean' }).notNull().default(false),
   /** Distinguishes fixed amounts (Rent) from variable estimates (Electric) */
   isVariable: integer('is_variable', { mode: 'boolean' }).notNull().default(false),
   status: text('status', {
     enum: ['pending', 'paid', 'overdue'],
-  }).notNull().default('pending'),
+  })
+    .notNull()
+    .default('pending'),
   isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
   /**
    * Weekend adjustment strategy for this bill.
@@ -134,7 +144,9 @@ export const bills = sqliteTable('bills', {
  * - Debugging recurrence issues
  */
 export const transactions = sqliteTable('transactions', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   /** Foreign key to bills table */
   billId: text('bill_id')
     .notNull()
@@ -158,7 +170,9 @@ export const transactions = sqliteTable('transactions', {
  * Categories are displayed as major sections on the Settings page.
  */
 export const settingsCategories = sqliteTable('settings_categories', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
   /** URL-safe identifier (e.g., "general", "notification", "logging") */
   slug: text('slug').notNull().unique(),
   /** Display name (e.g., "General", "Notification", "Logging") */
@@ -177,28 +191,34 @@ export const settingsCategories = sqliteTable('settings_categories', {
  * Sub-organization within categories (e.g., General → View Options, Behavior Options).
  * Sections group related settings together.
  */
-export const settingsSections = sqliteTable('settings_sections', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  /** Foreign key to settings_categories */
-  categoryId: text('category_id')
-    .notNull()
-    .references(() => settingsCategories.id, { onDelete: 'cascade' }),
-  /** URL-safe identifier (e.g., "view-options", "behavior-options") */
-  slug: text('slug').notNull(),
-  /** Display name (e.g., "View Options", "Behavior Options") */
-  name: text('name').notNull(),
-  /** Optional description for the section */
-  description: text('description'),
-  /** Display order within category (lower numbers appear first) */
-  displayOrder: integer('display_order').notNull().default(0),
-  /** Creation timestamp */
-  createdAt: integer('created_at', { mode: 'timestamp_ms' })
-    .notNull()
-    .$defaultFn(() => new Date()),
-}, (table) => [
-  // Composite unique constraint: slug must be unique within each category
-  uniqueIndex('category_slug_unique').on(table.categoryId, table.slug),
-]);
+export const settingsSections = sqliteTable(
+  'settings_sections',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    /** Foreign key to settings_categories */
+    categoryId: text('category_id')
+      .notNull()
+      .references(() => settingsCategories.id, { onDelete: 'cascade' }),
+    /** URL-safe identifier (e.g., "view-options", "behavior-options") */
+    slug: text('slug').notNull(),
+    /** Display name (e.g., "View Options", "Behavior Options") */
+    name: text('name').notNull(),
+    /** Optional description for the section */
+    description: text('description'),
+    /** Display order within category (lower numbers appear first) */
+    displayOrder: integer('display_order').notNull().default(0),
+    /** Creation timestamp */
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    // Composite unique constraint: slug must be unique within each category
+    uniqueIndex('category_slug_unique').on(table.categoryId, table.slug),
+  ],
+);
 
 /** Key-value settings table for user preferences. */
 export const settings = sqliteTable('settings', {
@@ -219,7 +239,9 @@ export const settings = sqliteTable('settings', {
  */
 export const tags = sqliteTable('tags', {
   // Primary Key: CUID2 for distributed-friendly unique IDs
-  id: text('id').primaryKey().$defaultFn(() => createId()),
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
 
   // Display name (e.g., "Business Expenses")
   name: text('name').notNull(),
@@ -238,18 +260,22 @@ export const tags = sqliteTable('tags', {
  *
  * Many-to-Many relationship between bills and tags.
  */
-export const billsToTags = sqliteTable('bills_to_tags', {
-  billId: text('bill_id')
-    .notNull()
-    .references(() => bills.id, { onDelete: 'cascade' }),
+export const billsToTags = sqliteTable(
+  'bills_to_tags',
+  {
+    billId: text('bill_id')
+      .notNull()
+      .references(() => bills.id, { onDelete: 'cascade' }),
 
-  tagId: text('tag_id')
-    .notNull()
-    .references(() => tags.id, { onDelete: 'cascade' }),
-}, (table) => [
-  // Composite primary key prevents duplicate bill-tag pairs
-  primaryKey({ columns: [table.billId, table.tagId] }),
-]);
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    // Composite primary key prevents duplicate bill-tag pairs
+    primaryKey({ columns: [table.billId, table.tagId] }),
+  ],
+);
 
 // ============================================
 // DRIZZLE RELATIONS (for relational queries)
@@ -330,7 +356,15 @@ export interface BillWithTags extends Omit<Bill, 'endDate'> {
   endDate: Date | null;
 }
 
-export type BillFrequency = 'once' | 'weekly' | 'biweekly' | 'twicemonthly' | 'monthly' | 'bimonthly' | 'quarterly' | 'yearly';
+export type BillFrequency =
+  | 'once'
+  | 'weekly'
+  | 'biweekly'
+  | 'twicemonthly'
+  | 'monthly'
+  | 'bimonthly'
+  | 'quarterly'
+  | 'yearly';
 export type BillStatus = 'pending' | 'paid' | 'overdue';
 
 export type BillCategoryGroup = typeof billCategoryGroups.$inferSelect;

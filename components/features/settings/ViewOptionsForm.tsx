@@ -14,11 +14,7 @@ import { FormItem } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Toggle } from '@/components/common/Toggle';
 import { updateViewOptions } from '@/actions/settings';
-import {
-  CURRENCY_OPTIONS,
-  LOCALE_OPTIONS,
-  WEEK_START_OPTIONS,
-} from '@/lib/constants';
+import { CURRENCY_OPTIONS, LOCALE_OPTIONS, WEEK_START_OPTIONS } from '@/lib/constants';
 
 type FieldKey = 'currency' | 'locale' | 'weekStart' | 'includeAutoPayInDueSoon';
 
@@ -59,7 +55,7 @@ export function ViewOptionsForm({
 
   const updateAction = async (
     prevState: ViewOptionsState,
-    payload: UpdatePayload
+    payload: UpdatePayload,
   ): Promise<ViewOptionsState> => {
     const { field, value } = payload;
     const newCurrency = field === 'currency' ? value : prevState.currency;
@@ -157,7 +153,7 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                CURRENCY_OPTIONS.find((c) => c.code === state.currency)?.label ?? state.currency
+                (CURRENCY_OPTIONS.find((c) => c.code === state.currency)?.label ?? state.currency)
               )}
             </SelectValue>
           </SelectTrigger>
@@ -189,7 +185,7 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                LOCALE_OPTIONS.find((l) => l.code === state.locale)?.label ?? state.locale
+                (LOCALE_OPTIONS.find((l) => l.code === state.locale)?.label ?? state.locale)
               )}
             </SelectValue>
           </SelectTrigger>
@@ -221,8 +217,8 @@ export function ViewOptionsForm({
                   Updating...
                 </span>
               ) : (
-                WEEK_START_OPTIONS.find((w) => w.value === state.weekStart)
-                  ?.label ?? String(state.weekStart)
+                (WEEK_START_OPTIONS.find((w) => w.value === state.weekStart)?.label ??
+                String(state.weekStart))
               )}
             </SelectValue>
           </SelectTrigger>
@@ -245,9 +241,7 @@ export function ViewOptionsForm({
           label="Include automatic bills in bills due soon"
           description="Show automatic bills in Due Soon and Due This Month views"
           checked={state.includeAutoPayInDueSoon}
-          onCheckedChange={(checked) =>
-            handleUpdate('includeAutoPayInDueSoon', String(checked))
-          }
+          onCheckedChange={(checked) => handleUpdate('includeAutoPayInDueSoon', String(checked))}
           isLoading={isIncludeAutoPayInDueSoonUpdating}
           disabled={isPending}
         />

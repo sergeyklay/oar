@@ -26,7 +26,7 @@ describe('ForecastSummary', () => {
         currency="USD"
         locale="en-US"
         month="2026-01"
-      />
+      />,
     );
 
     expect(screen.getByRole('heading', { name: /january 2026/i })).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('Bills Due')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('Bills Due')).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('1')).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('4')).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       const totalDueLabel = screen.getByText('Total Due');
@@ -143,7 +143,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('Total to Save')).toBeInTheDocument();
@@ -164,7 +164,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       expect(screen.getByText('Grand Total')).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe('ForecastSummary', () => {
           currency="USD"
           locale="en-US"
           month="2026-01"
-        />
+        />,
       );
 
       const grandTotalLabel = screen.getByText('Grand Total');
@@ -194,4 +194,3 @@ describe('ForecastSummary', () => {
     });
   });
 });
-

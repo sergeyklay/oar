@@ -15,10 +15,7 @@ import type { BillFrequency } from '@/db/schema';
  * @param frequency - Bill frequency
  * @returns Start date of the current billing cycle, or null for one-time bills
  */
-export function getCycleStartDate(
-  dueDate: Date,
-  frequency: BillFrequency
-): Date | null {
+export function getCycleStartDate(dueDate: Date, frequency: BillFrequency): Date | null {
   switch (frequency) {
     case 'once':
       return null;
@@ -56,7 +53,7 @@ export function getCycleStartDate(
  */
 export function isPaymentHistorical(
   bill: { dueDate: Date; frequency: BillFrequency },
-  paidAt: Date
+  paidAt: Date,
 ): boolean {
   // One-time bills have no billing cycles, so payments are never historical
   if (bill.frequency === 'once') {
@@ -72,4 +69,3 @@ export function isPaymentHistorical(
   const cycleStartDay = startOfDay(cycleStart);
   return isBefore(paidAtDay, cycleStartDay);
 }
-

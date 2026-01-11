@@ -29,11 +29,12 @@ import { DateAdjustmentService } from './DateAdjustmentService';
 import { getLogger } from '@/lib/logger';
 
 describe('RecurrenceService', () => {
-
   beforeEach(() => {
     jest.clearAllMocks();
     (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockImplementation((billStrategy, globalStrategy) => billStrategy ?? globalStrategy);
+    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockImplementation(
+      (billStrategy, globalStrategy) => billStrategy ?? globalStrategy,
+    );
     (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockImplementation((date) => date);
   });
 
@@ -438,7 +439,7 @@ describe('RecurrenceService', () => {
         expect.objectContaining({
           status: 'overdue',
           updatedAt: expect.any(Date),
-        })
+        }),
       );
 
       jest.useRealTimers();
@@ -509,8 +510,20 @@ describe('RecurrenceService', () => {
       const tomorrow = new Date('2025-01-16T00:00:00.000Z');
 
       const mockBills = [
-        { id: 'bill-1', title: 'Overdue Bill', dueDate: yesterday, status: 'pending', weekendAdjustment: null },
-        { id: 'bill-2', title: 'Future Bill', dueDate: tomorrow, status: 'pending', weekendAdjustment: null },
+        {
+          id: 'bill-1',
+          title: 'Overdue Bill',
+          dueDate: yesterday,
+          status: 'pending',
+          weekendAdjustment: null,
+        },
+        {
+          id: 'bill-2',
+          title: 'Future Bill',
+          dueDate: tomorrow,
+          status: 'pending',
+          weekendAdjustment: null,
+        },
       ];
 
       mockSelect.mockReturnValue({
@@ -543,8 +556,20 @@ describe('RecurrenceService', () => {
       const yesterday = new Date('2025-01-14T00:00:00.000Z');
 
       const mockBills = [
-        { id: 'bill-1', title: 'Old Overdue', dueDate: twoDaysAgo, status: 'pending', weekendAdjustment: null },
-        { id: 'bill-2', title: 'Recent Overdue', dueDate: yesterday, status: 'pending', weekendAdjustment: null },
+        {
+          id: 'bill-1',
+          title: 'Old Overdue',
+          dueDate: twoDaysAgo,
+          status: 'pending',
+          weekendAdjustment: null,
+        },
+        {
+          id: 'bill-2',
+          title: 'Recent Overdue',
+          dueDate: yesterday,
+          status: 'pending',
+          weekendAdjustment: null,
+        },
       ];
 
       mockSelect.mockReturnValue({
@@ -607,7 +632,7 @@ describe('RecurrenceService', () => {
           billTitle: 'Rent Payment',
           dueDate: expect.any(String),
         },
-        'Bill marked overdue'
+        'Bill marked overdue',
       );
 
       jest.useRealTimers();
@@ -685,7 +710,9 @@ describe('RecurrenceService', () => {
       });
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'next_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
 
       mockUpdate.mockReturnValue({
@@ -699,8 +726,14 @@ describe('RecurrenceService', () => {
       const result = await RecurrenceService.checkDailyBills();
 
       expect(result.updated).toBe(1);
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('next_business_day', 'unchanged');
-      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'next_business_day');
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+        'next_business_day',
+        'unchanged',
+      );
+      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(
+        saturday,
+        'next_business_day',
+      );
 
       jest.useRealTimers();
     });
@@ -728,7 +761,9 @@ describe('RecurrenceService', () => {
       });
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'next_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
 
       const result = await RecurrenceService.checkDailyBills();
@@ -761,8 +796,12 @@ describe('RecurrenceService', () => {
         }),
       });
 
-      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('previous_business_day');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
+      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue(
+        'previous_business_day',
+      );
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'previous_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
 
       mockUpdate.mockReturnValue({
@@ -776,7 +815,10 @@ describe('RecurrenceService', () => {
       await RecurrenceService.checkDailyBills();
 
       expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(null, 'previous_business_day');
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+        null,
+        'previous_business_day',
+      );
 
       jest.useRealTimers();
     });

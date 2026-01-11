@@ -36,7 +36,7 @@ describe('useCalendarState', () => {
         month: '2026-01',
         date: null,
         selectedBill: null,
-      })
+      }),
     );
   });
 
@@ -51,7 +51,7 @@ describe('useCalendarState', () => {
       expect.objectContaining({
         date: '2025-12-25',
         selectedBill: null,
-      })
+      }),
     );
   });
 
@@ -66,7 +66,7 @@ describe('useCalendarState', () => {
       expect.objectContaining({
         date: null,
         selectedBill: null,
-      })
+      }),
     );
   });
 
@@ -81,8 +81,7 @@ describe('useCalendarState', () => {
       expect.objectContaining({
         date: null,
         selectedBill: null,
-      })
+      }),
     );
   });
 });
-

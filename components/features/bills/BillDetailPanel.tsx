@@ -25,11 +25,7 @@ import { LogPaymentDialog } from './LogPaymentDialog';
 import { BillFormDialog } from './BillFormDialog';
 import { CloseDetailButton } from './CloseDetailButton';
 import { PaymentHistorySection } from './PaymentHistorySection';
-import type {
-  BillWithTags,
-  Tag,
-  BillCategoryGroupWithCategories,
-} from '@/lib/types';
+import type { BillWithTags, Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
 interface BillDetailPanelProps {
   bill: BillWithTags;
@@ -68,7 +64,7 @@ export function BillDetailPanel({
 
   const [, setSelectedBill] = useQueryState(
     'selectedBill',
-    parseAsString.withOptions({ shallow: false })
+    parseAsString.withOptions({ shallow: false }),
   );
 
   const isPaid = bill.status === 'paid';
@@ -115,13 +111,9 @@ export function BillDetailPanel({
   return (
     <aside className="calendar-panel bg-card p-4 flex flex-col h-full">
       {/* Header */}
-      <div
-        className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${headerBgColor}`}
-      >
+      <div className={`flex items-start justify-between mb-6 -mt-4 -mx-4 p-4 ${headerBgColor}`}>
         <div className="flex-1 min-w-0">
-          <h2 className={`text-lg font-semibold truncate ${headerTextColor}`}>
-            {bill.title}
-          </h2>
+          <h2 className={`text-lg font-semibold truncate ${headerTextColor}`}>{bill.title}</h2>
         </div>
         <div className="ml-2">
           <CloseDetailButton />
@@ -129,19 +121,29 @@ export function BillDetailPanel({
       </div>
 
       {/* Details */}
-      <div className={`flex-1 space-y-6 ${isHistoryExpanded ? 'overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden'}`}>
+      <div
+        className={`flex-1 space-y-6 ${isHistoryExpanded ? 'overflow-hidden flex flex-col' : 'overflow-y-auto overflow-x-hidden'}`}
+      >
         {/* Status / Date / Amount Block - Hidden when history expanded */}
         {!isHistoryExpanded && (
           <div className="space-y-1">
             <p className={`text-xl font-medium ${headerTextColor}`}>
-              {bill.isArchived ? 'Never' : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
+              {bill.isArchived
+                ? 'Never'
+                : DueDateService.formatRelativeDueDate(bill.dueDate, bill.status)}
             </p>
             <p className={`text-sm ${dateTextColor}`}>
-              {bill.isArchived ? 'Archived' : <ClientDate date={bill.dueDate} format="EEEE, d MMMM yyyy" className={dateTextColor} />}
+              {bill.isArchived ? (
+                'Archived'
+              ) : (
+                <ClientDate
+                  date={bill.dueDate}
+                  format="EEEE, d MMMM yyyy"
+                  className={dateTextColor}
+                />
+              )}
             </p>
-            <p
-              className={`text-sm font-bold font-mono ${amountTextColor}`}
-            >
+            <p className={`text-sm font-bold font-mono ${amountTextColor}`}>
               {bill.amountDue < bill.amount && bill.status !== 'paid' && bill.amountDue > 0 ? (
                 <>
                   {formatMoney(bill.amountDue, currency, locale)}
@@ -154,9 +156,7 @@ export function BillDetailPanel({
               )}
             </p>
             {bill.isVariable && (
-              <p className="text-xs text-muted-foreground mt-1">
-                (Variable amount - estimate)
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">(Variable amount - estimate)</p>
             )}
           </div>
         )}
@@ -203,9 +203,7 @@ export function BillDetailPanel({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-muted-foreground mb-1">Notes</p>
-              <p className="text-sm whitespace-pre-wrap break-words">
-                {bill.notes}
-              </p>
+              <p className="text-sm whitespace-pre-wrap break-words">{bill.notes}</p>
             </div>
           </div>
         )}
@@ -234,7 +232,13 @@ export function BillDetailPanel({
             onClick={() => handleArchive(!bill.isArchived)}
             disabled={isArchiving || isDeleting}
           >
-            {isArchiving ? (bill.isArchived ? 'Unarchiving...' : 'Archiving...') : (bill.isArchived ? 'Unarchive' : 'Archive')}
+            {isArchiving
+              ? bill.isArchived
+                ? 'Unarchiving...'
+                : 'Archiving...'
+              : bill.isArchived
+                ? 'Unarchive'
+                : 'Archive'}
           </Button>
           <Button
             variant="secondary"
@@ -279,9 +283,8 @@ export function BillDetailPanel({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Bill</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{bill.title}&quot;? This
-              action cannot be undone and will also delete all payment history
-              for this bill.
+              Are you sure you want to delete &quot;{bill.title}&quot;? This action cannot be undone
+              and will also delete all payment history for this bill.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

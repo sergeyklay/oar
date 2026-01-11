@@ -52,7 +52,7 @@ describe('TagFilter', () => {
       'tag',
       expect.objectContaining({
         shallow: false,
-      })
+      }),
     );
   });
 
@@ -76,4 +76,3 @@ describe('TagFilter', () => {
     expect(mockSetSelectedTag).toHaveBeenCalledWith(null);
   });
 });
-

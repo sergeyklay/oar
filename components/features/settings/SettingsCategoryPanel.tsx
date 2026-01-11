@@ -14,4 +14,3 @@ export function SettingsCategoryPanel({ category }: SettingsCategoryPanelProps) 
     </div>
   );
 }
-

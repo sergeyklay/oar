@@ -92,11 +92,11 @@ npm run dev
 
 The application uses the following environment variables:
 
-| Variable | Description | Default |
-| -------- | ----------- | ------- |
-| `DATABASE_URL` | Path to the SQLite database file. | `./data/oar.db` |
-| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Key for Server Actions. | Required |
-| `OAR_MEMORY_LIMIT` | Docker memory limit. | `128MiB` |
+| Variable                             | Description                       | Default         |
+| ------------------------------------ | --------------------------------- | --------------- |
+| `DATABASE_URL`                       | Path to the SQLite database file. | `./data/oar.db` |
+| `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | Key for Server Actions.           | Required        |
+| `OAR_MEMORY_LIMIT`                   | Docker memory limit.              | `128MiB`        |
 
 `OAR_MEMORY_LIMIT` is used only for Docker deployment.
 For more see [Local Docker Deployment](./local-docker.md).
@@ -146,4 +146,4 @@ To learn about Local Docker deployment, see [Local Docker Deployment](./local-do
 
 ## Related Documents
 
-* [Local Docker Deployment](./local-docker.md) - Running Oar locally with Docker
+- [Local Docker Deployment](./local-docker.md) - Running Oar locally with Docker

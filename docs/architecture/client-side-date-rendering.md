@@ -98,4 +98,3 @@ You know this strategy is working correctly when:
 3. Dates appear after a brief moment (less than 100ms) on initial page load
 4. All date formatting in the codebase uses `<ClientDate />` instead of direct `format()` calls
 5. Tests that verify date rendering wait for the component to mount before asserting
-

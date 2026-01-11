@@ -27,7 +27,17 @@ jest.mock('recharts', () => ({
       </div>
     );
   },
-  Cell: ({ onClick, fill, strokeWidth, style }: { onClick?: () => void; fill?: string; strokeWidth?: number; style?: React.CSSProperties }) => {
+  Cell: ({
+    onClick,
+    fill,
+    strokeWidth,
+    style,
+  }: {
+    onClick?: () => void;
+    fill?: string;
+    strokeWidth?: number;
+    style?: React.CSSProperties;
+  }) => {
     const cellIndex = mockCellOnClickHandlers.length;
     if (onClick) {
       mockCellOnClickHandlers.push(onClick);
@@ -58,9 +68,7 @@ jest.mock('@/components/ui/chart', () => ({
     <div
       data-testid="chart-container"
       data-config={JSON.stringify(config)}
-      data-initial-dimension={
-        initialDimension ? JSON.stringify(initialDimension) : null
-      }
+      data-initial-dimension={initialDimension ? JSON.stringify(initialDimension) : null}
     >
       {children}
     </div>
@@ -111,39 +119,21 @@ describe('AnnualSpendingChart', () => {
 
   describe('rendering', () => {
     it('renders chart container with data', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       expect(screen.getByTestId('chart-container')).toBeInTheDocument();
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
     });
 
     it('renders pie segments for each bill', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       expect(screen.getByTestId('pie-segment-bill-1')).toBeInTheDocument();
       expect(screen.getByTestId('pie-segment-bill-2')).toBeInTheDocument();
     });
 
     it('configures chart with bill data', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const container = screen.getByTestId('chart-container');
       const config = JSON.parse(container.getAttribute('data-config') || '{}');
@@ -155,13 +145,7 @@ describe('AnnualSpendingChart', () => {
     });
 
     it('passes initialDimension for SSR support', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const container = screen.getByTestId('chart-container');
       const dimensionAttr = container.getAttribute('data-initial-dimension');
@@ -173,13 +157,7 @@ describe('AnnualSpendingChart', () => {
 
   describe('empty state', () => {
     it('displays neutral placeholder when data is empty', () => {
-      const { container } = render(
-        <AnnualSpendingChart
-          data={[]}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      const { container } = render(<AnnualSpendingChart data={[]} currency="USD" locale="en-US" />);
 
       const placeholder = container.querySelector('.bg-muted');
       expect(placeholder).toBeInTheDocument();
@@ -198,11 +176,7 @@ describe('AnnualSpendingChart', () => {
       ];
 
       const { container } = render(
-        <AnnualSpendingChart
-          data={zeroData}
-          currency="USD"
-          locale="en-US"
-        />
+        <AnnualSpendingChart data={zeroData} currency="USD" locale="en-US" />,
       );
 
       const placeholder = container.querySelector('.bg-muted');
@@ -221,7 +195,7 @@ describe('AnnualSpendingChart', () => {
           currency="USD"
           locale="en-US"
           onBillClick={mockOnBillClick}
-        />
+        />,
       );
 
       const cells = screen.getAllByTestId('pie-cell');
@@ -234,13 +208,7 @@ describe('AnnualSpendingChart', () => {
     it('does not call onBillClick when handler is not provided', async () => {
       const user = userEvent.setup();
 
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const segment = screen.getByTestId('pie-segment-bill-1');
       await user.click(segment);
@@ -258,7 +226,7 @@ describe('AnnualSpendingChart', () => {
           currency="USD"
           locale="en-US"
           onBillClick={mockOnBillClick}
-        />
+        />,
       );
 
       const cells = screen.getAllByTestId('pie-cell');
@@ -279,30 +247,22 @@ describe('AnnualSpendingChart', () => {
           currency="USD"
           locale="en-US"
           highlightedBillId="bill-1"
-        />
+        />,
       );
 
       const cells = screen.getAllByTestId('pie-cell');
       const highlightedCell = cells.find((cell) =>
-        cell.getAttribute('data-fill')?.includes('primary')
+        cell.getAttribute('data-fill')?.includes('primary'),
       );
 
       expect(highlightedCell).toBeDefined();
     });
 
     it('does not highlight when no bill is highlighted', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const cells = screen.getAllByTestId('pie-cell');
-      const hasHighlight = cells.some((cell) =>
-        cell.getAttribute('data-stroke-width') === '3'
-      );
+      const hasHighlight = cells.some((cell) => cell.getAttribute('data-stroke-width') === '3');
 
       expect(hasHighlight).toBe(false);
     });
@@ -314,7 +274,7 @@ describe('AnnualSpendingChart', () => {
           currency="USD"
           locale="en-US"
           highlightedBillId="bill-1"
-        />
+        />,
       );
 
       rerender(
@@ -323,7 +283,7 @@ describe('AnnualSpendingChart', () => {
           currency="USD"
           locale="en-US"
           highlightedBillId="bill-2"
-        />
+        />,
       );
 
       expect(screen.getByTestId('chart-container')).toBeInTheDocument();
@@ -332,13 +292,7 @@ describe('AnnualSpendingChart', () => {
 
   describe('tooltip', () => {
     it('formats tooltip values using formatMoney', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       screen.getByTestId('chart-tooltip');
 
@@ -346,13 +300,7 @@ describe('AnnualSpendingChart', () => {
     });
 
     it('displays bill name and formatted amount in tooltip', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const tooltip = screen.getByTestId('chart-tooltip');
       expect(tooltip).toHaveTextContent('Rent');
@@ -360,33 +308,17 @@ describe('AnnualSpendingChart', () => {
     });
 
     it('passes correct currency and locale to formatMoney', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="PLN"
-          locale="pl-PL"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="PLN" locale="pl-PL" />);
 
       screen.getByTestId('chart-tooltip');
 
-      expect(formatMoney).toHaveBeenCalledWith(
-        expect.any(Number),
-        'PLN',
-        'pl-PL'
-      );
+      expect(formatMoney).toHaveBeenCalledWith(expect.any(Number), 'PLN', 'pl-PL');
     });
   });
 
   describe('data transformation', () => {
     it('transforms bill data to chart format correctly', () => {
-      render(
-        <AnnualSpendingChart
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={mockData} currency="USD" locale="en-US" />);
 
       const pie = screen.getByTestId('pie');
       const pieData = JSON.parse(pie.getAttribute('data-pie-data') || '[]');
@@ -407,13 +339,7 @@ describe('AnnualSpendingChart', () => {
     it('handles single bill correctly', () => {
       const singleBill: AggregatedBillSpending[] = [mockData[0]];
 
-      render(
-        <AnnualSpendingChart
-          data={singleBill}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingChart data={singleBill} currency="USD" locale="en-US" />);
 
       const pie = screen.getByTestId('pie');
       const pieData = JSON.parse(pie.getAttribute('data-pie-data') || '[]');
@@ -423,4 +349,3 @@ describe('AnnualSpendingChart', () => {
     });
   });
 });
-

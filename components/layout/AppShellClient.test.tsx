@@ -18,7 +18,7 @@ describe('AppShellClient', () => {
     const { container } = render(
       <AppShellClient>
         <div data-testid="child">Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -31,7 +31,7 @@ describe('AppShellClient', () => {
     const { container } = render(
       <AppShellClient>
         <div data-testid="child">Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -44,7 +44,7 @@ describe('AppShellClient', () => {
     const { getByTestId } = render(
       <AppShellClient>
         <div data-testid="child">Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     expect(getByTestId('child')).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('AppShellClient', () => {
     const { container } = render(
       <AppShellClient className="custom-class">
         <div>Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -70,7 +70,7 @@ describe('AppShellClient', () => {
     const { container } = render(
       <AppShellClient className="custom-class">
         <div>Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     const wrapper = container.firstChild as HTMLElement;
@@ -84,11 +84,10 @@ describe('AppShellClient', () => {
     render(
       <AppShellClient>
         <div>Content</div>
-      </AppShellClient>
+      </AppShellClient>,
     );
 
     expect(useQueryState).toHaveBeenCalledWith('sidebar', expect.anything());
     expect(parseAsStringLiteral).toHaveBeenCalledWith(['hidden']);
   });
 });
-

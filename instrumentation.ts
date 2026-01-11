@@ -8,7 +8,6 @@ const logger = getLogger('Instrumentation');
  * This file is called ONCE when a new Next.js server instance starts.
  * It initializes background services like the scheduler.
  *
- * Location: Project root (not in app/ or src/)
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation
  */
 
@@ -30,9 +29,7 @@ export async function register() {
     // This ensures bills that became overdue or auto-pay bills that became due
     // during downtime are processed immediately on startup.
     try {
-      const { StartupCatchUpService } = await import(
-        '@/lib/services/StartupCatchUpService'
-      );
+      const { StartupCatchUpService } = await import('@/lib/services/StartupCatchUpService');
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -41,7 +38,7 @@ export async function register() {
           overdueUpdated: result.overdueCheck.updated,
           autoPayProcessed: result.autoPay.processed,
         },
-        'Startup catch-up complete'
+        'Startup catch-up complete',
       );
     } catch (error) {
       // Log error but don't prevent startup - data will be corrected at next scheduled cron run
@@ -52,4 +49,3 @@ export async function register() {
     logger.info('Skipping scheduler (edge runtime)');
   }
 }
-

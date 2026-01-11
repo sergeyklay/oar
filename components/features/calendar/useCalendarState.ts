@@ -24,7 +24,7 @@ export function useCalendarState() {
     },
     {
       shallow: false, // Trigger server re-render
-    }
+    },
   );
 
   const setMonth = useCallback(
@@ -35,7 +35,7 @@ export function useCalendarState() {
         selectedBill: null, // Clear selection when navigating
       });
     },
-    [setParams]
+    [setParams],
   );
 
   const setDate = useCallback(
@@ -50,7 +50,7 @@ export function useCalendarState() {
         selectedBill: null, // Clear selection when selecting a day
       });
     },
-    [setParams]
+    [setParams],
   );
 
   const clearDate = useCallback(() => {

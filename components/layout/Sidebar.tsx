@@ -1,5 +1,19 @@
-import { LayoutDashboard, TrendingUp, Settings, Calendar, Bell, CheckCircle, Archive, History } from 'lucide-react';
-import { getBillsForCurrentMonthStats, getAllBillsStats, getBillsForDueSoonStats, getArchivedBillsStats } from '@/actions/bills';
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Settings,
+  Calendar,
+  Bell,
+  CheckCircle,
+  Archive,
+  History,
+} from 'lucide-react';
+import {
+  getBillsForCurrentMonthStats,
+  getAllBillsStats,
+  getBillsForDueSoonStats,
+  getArchivedBillsStats,
+} from '@/actions/bills';
 import { getRecentPaymentsStats } from '@/actions/transactions';
 import { SettingsService } from '@/lib/services/SettingsService';
 import { formatMoney } from '@/lib/money';
@@ -90,8 +104,20 @@ function getStatsSubtitle(item: NavItem, stats: StatsData): string | null {
 const billsNavItems: NavItem[] = [
   { href: '/', icon: LayoutDashboard, label: 'Overview', showStats: true, statsType: 'all' },
   { href: '/due-soon', icon: Bell, label: 'Due Soon', showStats: true, statsType: 'dueSoon' },
-  { href: '/due-this-month', icon: Calendar, label: 'Due This Month', showStats: true, statsType: 'currentMonth' },
-  { href: '/paid-recently', icon: CheckCircle, label: 'Paid Recently', showStats: true, statsType: 'paidRecently' },
+  {
+    href: '/due-this-month',
+    icon: Calendar,
+    label: 'Due This Month',
+    showStats: true,
+    statsType: 'currentMonth',
+  },
+  {
+    href: '/paid-recently',
+    icon: CheckCircle,
+    label: 'Paid Recently',
+    showStats: true,
+    statsType: 'paidRecently',
+  },
 ];
 
 const reportsNavItems: NavItem[] = [
@@ -116,13 +142,7 @@ const settingsItem: NavItem = {
  * @param props.item - Navigation item configuration with icon and label.
  * @param props.statsSubtitle - Optional subtitle text showing counts/totals.
  */
-function NavLinkContent({
-  item,
-  statsSubtitle,
-}: {
-  item: NavItem;
-  statsSubtitle: string | null;
-}) {
+function NavLinkContent({ item, statsSubtitle }: { item: NavItem; statsSubtitle: string | null }) {
   const Icon = item.icon;
   return (
     <>
@@ -130,9 +150,7 @@ function NavLinkContent({
       {statsSubtitle ? (
         <div className="flex flex-col">
           <span>{item.label}</span>
-          <span className="nav-subtitle text-xs text-muted-foreground">
-            {statsSubtitle}
-          </span>
+          <span className="nav-subtitle text-xs text-muted-foreground">{statsSubtitle}</span>
         </div>
       ) : (
         <span>{item.label}</span>
@@ -149,7 +167,14 @@ function NavLinkContent({
  * Settings link is pinned to the bottom of the sidebar.
  */
 export async function Sidebar() {
-  const [currentMonthStats, allBillsStats, dueSoonStats, paidRecentlyStats, archivedBillsStats, settings] = await Promise.all([
+  const [
+    currentMonthStats,
+    allBillsStats,
+    dueSoonStats,
+    paidRecentlyStats,
+    archivedBillsStats,
+    settings,
+  ] = await Promise.all([
     getBillsForCurrentMonthStats(),
     getAllBillsStats(),
     getBillsForDueSoonStats(),
@@ -171,9 +196,7 @@ export async function Sidebar() {
     <aside className="sidebar bg-card flex flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center px-6 border-b border-border shrink-0">
-        <span className="text-xl font-bold tracking-tight">
-          ⛵ Oar
-        </span>
+        <span className="text-xl font-bold tracking-tight">⛵ Oar</span>
       </div>
 
       {/* Navigation */}

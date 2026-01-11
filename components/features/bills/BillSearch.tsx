@@ -153,4 +153,3 @@ export function BillSearch({ className }: BillSearchProps) {
     </div>
   );
 }
-

@@ -16,9 +16,7 @@ interface DashboardPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: DashboardPageProps) {
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   // In Next.js 15+, searchParams is a Promise that must be awaited
   const { date, tag, selectedBill } = await searchParamsCache.parse(searchParams);
 
@@ -51,13 +49,9 @@ export default async function DashboardPage({
               categoriesGrouped={categoriesGrouped}
               defaultCategoryId={defaultCategoryId}
             />
-        }
+          }
         >
-          <BillList
-            date={date ?? undefined}
-            tag={tag ?? undefined}
-            selectedBillId={selectedBill}
-          />
+          <BillList date={date ?? undefined} tag={tag ?? undefined} selectedBillId={selectedBill} />
         </MainContent>
       </AppShell>
     </AppShellClient>

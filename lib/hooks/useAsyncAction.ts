@@ -145,7 +145,7 @@ interface UseAsyncActionReturn<TData, TInput extends unknown[]> {
  * });
  */
 export function useAsyncAction<TData = void, TInput extends unknown[] = []>(
-  options: UseAsyncActionOptions<TData, TInput>
+  options: UseAsyncActionOptions<TData, TInput>,
 ): UseAsyncActionReturn<TData, TInput> {
   const [isPending, setIsPending] = useState(false);
 
@@ -159,8 +159,7 @@ export function useAsyncAction<TData = void, TInput extends unknown[] = []>(
 
         if (result.success) {
           const shouldShowSuccess =
-            options.showSuccessToast !== false &&
-            options.successMessage !== undefined;
+            options.showSuccessToast !== false && options.successMessage !== undefined;
 
           if (shouldShowSuccess) {
             toast.success(options.successMessage, {
@@ -212,9 +211,8 @@ export function useAsyncAction<TData = void, TInput extends unknown[] = []>(
         throw error;
       }
     },
-    [options]
+    [options],
   );
 
   return { execute, isPending };
 }
-

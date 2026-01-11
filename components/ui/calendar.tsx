@@ -39,7 +39,7 @@ function formatWeekdayName(date: Date): string {
 
 const navButtonClass = cn(
   buttonVariants({ variant: 'ghost' }),
-  'h-4 w-4 p-0 opacity-50 hover:opacity-100 cursor-pointer inline-flex items-center justify-center [&_svg]:size-3'
+  'h-4 w-4 p-0 opacity-50 hover:opacity-100 cursor-pointer inline-flex items-center justify-center [&_svg]:size-3',
 );
 
 interface CalendarHeaderProps {
@@ -123,16 +123,12 @@ function Calendar({
       }
       onMonthChange?.(newMonth);
     },
-    [isControlled, onMonthChange]
+    [isControlled, onMonthChange],
   );
 
-  const canGoToPreviousMonth = startMonth
-    ? isAfterMonth(displayMonth, startMonth)
-    : true;
+  const canGoToPreviousMonth = startMonth ? isAfterMonth(displayMonth, startMonth) : true;
 
-  const canGoToNextMonth = endMonth
-    ? isBeforeMonth(displayMonth, endMonth)
-    : true;
+  const canGoToNextMonth = endMonth ? isBeforeMonth(displayMonth, endMonth) : true;
 
   const handlePreviousMonth = () => {
     const prevMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1);
@@ -177,23 +173,22 @@ function Calendar({
           caption_label: 'hidden',
           month_grid: 'border-collapse',
           weekdays: 'flex',
-          weekday:
-            'text-muted-foreground w-10 font-medium text-[0.7rem] uppercase tracking-wide',
+          weekday: 'text-muted-foreground w-10 font-medium text-[0.7rem] uppercase tracking-wide',
           week: 'flex mt-1',
           day: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-transparent rounded-full',
           day_button: cn(
             buttonVariants({ variant: 'ghost' }),
-            'h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full cursor-pointer'
+            'h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-full cursor-pointer',
           ),
           range_start: 'day-range-start rounded-l-full',
           range_end: 'day-range-end rounded-r-full',
           selected:
             'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-full',
           today: 'bg-accent text-accent-foreground rounded-full',
-          outside: 'outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground',
+          outside:
+            'outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground',
           disabled: 'text-muted-foreground opacity-50',
-          range_middle:
-            'aria-selected:bg-accent aria-selected:text-accent-foreground',
+          range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
           hidden: 'invisible',
           ...classNames,
         }}

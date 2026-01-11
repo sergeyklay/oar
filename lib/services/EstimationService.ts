@@ -65,7 +65,7 @@ export class HistoricalMonthStrategy implements EstimationStrategy {
     const transactions = await TransactionService.getByBillIdAndMonth(
       billId,
       targetMonth,
-      targetYear
+      targetYear,
     );
 
     if (transactions.length === 0) {
@@ -119,4 +119,3 @@ export const EstimationService = {
     return bill.amount;
   },
 };
-

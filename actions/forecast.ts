@@ -24,9 +24,7 @@ const forecastQuerySchema = z.object({
  * Zod schema for forecast range query parameters
  */
 const forecastRangeQuerySchema = z.object({
-  startMonth: z
-    .string()
-    .regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format'),
+  startMonth: z.string().regex(/^\d{4}-\d{2}$/, 'Month must be in YYYY-MM format'),
   months: z.number().int().min(1).max(24).default(12),
   tag: z.string().optional(),
 });
@@ -38,7 +36,7 @@ const forecastRangeQuerySchema = z.object({
  * @returns Forecast bills with estimates and amortization calculations
  */
 export async function getForecastData(
-  input: z.infer<typeof forecastQuerySchema>
+  input: z.infer<typeof forecastQuerySchema>,
 ): Promise<ActionResult<ForecastBill[]>> {
   const parsed = forecastQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -53,7 +51,7 @@ export async function getForecastData(
     const bills = await ForecastService.getBillsForMonth(
       parsed.data.month,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -75,7 +73,7 @@ export async function getForecastData(
  * @returns Monthly forecast totals for chart visualization
  */
 export async function getForecastDataForRange(
-  input: z.infer<typeof forecastRangeQuerySchema>
+  input: z.infer<typeof forecastRangeQuerySchema>,
 ): Promise<ActionResult<MonthlyForecastTotal[]>> {
   const parsed = forecastRangeQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -91,7 +89,7 @@ export async function getForecastDataForRange(
       parsed.data.startMonth,
       parsed.data.months,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -105,4 +103,3 @@ export async function getForecastDataForRange(
     };
   }
 }
-

@@ -17,9 +17,7 @@ interface DueThisMonthPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function DueThisMonthPage({
-  searchParams,
-}: DueThisMonthPageProps) {
+export default async function DueThisMonthPage({ searchParams }: DueThisMonthPageProps) {
   const { tag, selectedBill, date } = await searchParamsCache.parse(searchParams);
 
   const [settings, includeAutoPay, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
@@ -66,4 +64,3 @@ export default async function DueThisMonthPage({
     </AppShellClient>
   );
 }
-

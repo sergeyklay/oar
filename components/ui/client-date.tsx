@@ -42,9 +42,7 @@ export function ClientDate({
     return <span className={className}>&nbsp;</span>;
   }
 
-  const dateObj = typeof date === 'string' || typeof date === 'number'
-    ? new Date(date)
-    : date;
+  const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
 
   if (!isValid(dateObj)) {
     return null;
@@ -52,4 +50,3 @@ export function ClientDate({
 
   return <span className={className}>{format(dateObj, formatStr)}</span>;
 }
-

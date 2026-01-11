@@ -13,11 +13,7 @@ jest.mock('./AnnualSpendingRow', () => ({
     isHighlighted: boolean;
     onClick?: () => void;
   }) => (
-    <tr
-      data-testid={`row-${bill.billId}`}
-      data-highlighted={isHighlighted}
-      onClick={onClick}
-    >
+    <tr data-testid={`row-${bill.billId}`} data-highlighted={isHighlighted} onClick={onClick}>
       <td>{bill.billTitle}</td>
       <td>{bill.paymentCount}</td>
       <td>{bill.totalAmount}</td>
@@ -56,7 +52,9 @@ const defaultProps = {
 };
 
 function renderList(
-  overrides: Partial<typeof defaultProps & { highlightedBillId?: string; onBillClick?: (billId: string) => void }> = {}
+  overrides: Partial<
+    typeof defaultProps & { highlightedBillId?: string; onBillClick?: (billId: string) => void }
+  > = {},
 ) {
   return render(<AnnualSpendingList {...defaultProps} {...overrides} />);
 }
@@ -144,9 +142,7 @@ describe('AnnualSpendingList', () => {
       let row1 = screen.getByTestId('row-bill-1');
       expect(row1).toHaveAttribute('data-highlighted', 'true');
 
-      rerender(
-        <AnnualSpendingList {...defaultProps} highlightedBillId="bill-2" />
-      );
+      rerender(<AnnualSpendingList {...defaultProps} highlightedBillId="bill-2" />);
 
       row1 = screen.getByTestId('row-bill-1');
       const row2 = screen.getByTestId('row-bill-2');
@@ -182,7 +178,6 @@ describe('AnnualSpendingList', () => {
       expect(mockOnBillClick).toHaveBeenCalledWith('bill-2');
       expect(mockOnBillClick).toHaveBeenCalledTimes(2);
     });
-
   });
 
   describe('table structure', () => {
@@ -214,4 +209,3 @@ describe('AnnualSpendingList', () => {
     });
   });
 });
-

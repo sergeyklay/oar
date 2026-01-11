@@ -18,7 +18,7 @@ interface SidebarToggleProps {
 export function SidebarToggle({ className }: SidebarToggleProps) {
   const [sidebarState, setSidebarState] = useQueryState(
     'sidebar',
-    parseAsStringLiteral(['hidden'])
+    parseAsStringLiteral(['hidden']),
   );
 
   function handleToggle() {
@@ -37,4 +37,3 @@ export function SidebarToggle({ className }: SidebarToggleProps) {
     </Button>
   );
 }
-

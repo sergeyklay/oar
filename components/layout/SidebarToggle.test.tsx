@@ -85,4 +85,3 @@ describe('SidebarToggle', () => {
     expect(parseAsStringLiteral).toHaveBeenCalledWith(['hidden']);
   });
 });
-

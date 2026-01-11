@@ -14,12 +14,14 @@ The range is configurable from 0 to 30 days, letting you adjust how far back you
 Bill views like Overview, Due Soon, and Due This Month show unpaid bills - what you still need to pay. The Paid Recently view shows completed payments - what you've already paid. These views complement each other: one shows obligations, the other shows completed transactions.
 
 **Bill views:**
+
 - Show unpaid bills with due dates
 - Focus on upcoming obligations
 - Use colored status indicators (red, amber, blue, green)
 - Calendar shows bill status dots
 
 **Paid Recently:**
+
 - Shows completed payments with payment dates
 - Focuses on past activity
 - No status indicators (payments are complete)
@@ -29,17 +31,17 @@ Bill views like Overview, Due Soon, and Due This Month show unpaid bills - what 
 
 Navigate to Settings > Behavior Options to adjust the "Paid Recently Range" preference. Available options:
 
-| Setting | Subtitle displays as |
-|---------|---------------------|
-| 0 | Today |
-| 1 | Today or yesterday |
-| 3 | Last 3 days |
-| 5 | Last 5 days |
-| 7 | Last 7 days (default) |
-| 10 | Last 10 days |
-| 14 | Last 14 days |
-| 20 | Last 20 days |
-| 30 | Last 30 days |
+| Setting | Subtitle displays as  |
+| ------- | --------------------- |
+| 0       | Today                 |
+| 1       | Today or yesterday    |
+| 3       | Last 3 days           |
+| 5       | Last 5 days           |
+| 7       | Last 7 days (default) |
+| 10      | Last 10 days          |
+| 14      | Last 14 days          |
+| 20      | Last 20 days          |
+| 30      | Last 30 days          |
 
 The setting takes effect immediately. The page content updates to reflect your new range.
 
@@ -74,6 +76,7 @@ Setting it to 1 (Today or yesterday) shows payments made within the last two day
 At the default of 7 days, payments made within the last week are visible, including both today and payments from 7 days ago.
 
 For example, if today is December 21 and your range is 7:
+
 - A payment made December 21 appears (today)
 - A payment made December 15 appears (7 days ago)
 - A payment made December 14 does not appear (outside range)
@@ -128,6 +131,5 @@ To confirm the Paid Recently feature works:
 
 ## Related Documents
 
-* [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-
+- [Due Soon View](./due-soon-view.md) - Bills due within a configurable time range
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection

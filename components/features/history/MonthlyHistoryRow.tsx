@@ -17,11 +17,7 @@ interface MonthlyHistoryRowProps {
  *
  * Render Mode: Server Component (no hooks, pure presentation)
  */
-export function MonthlyHistoryRow({
-  payment,
-  currency,
-  locale,
-}: MonthlyHistoryRowProps) {
+export function MonthlyHistoryRow({ payment, currency, locale }: MonthlyHistoryRowProps) {
   return (
     <tr>
       <td className="w-10 text-center">
@@ -41,4 +37,3 @@ export function MonthlyHistoryRow({
     </tr>
   );
 }
-

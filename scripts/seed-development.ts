@@ -27,11 +27,20 @@ type SeedTransaction = SQLiteTransaction<
  */
 const CATEGORY_SEED_DATA = [
   {
-    group: { name: 'Housing & Essential Services', slug: 'housing-essential-services', displayOrder: 1 },
+    group: {
+      name: 'Housing & Essential Services',
+      slug: 'housing-essential-services',
+      displayOrder: 1,
+    },
     categories: [
       { name: 'Home, Mortgage & Rent', slug: 'home-mortgage-rent', icon: 'house', displayOrder: 1 },
       { name: 'Credit Cards', slug: 'credit-cards', icon: 'credit-card', displayOrder: 2 },
-      { name: 'Cellphone & Mobile Service', slug: 'cellphone-mobile-service', icon: 'smartphone', displayOrder: 3 },
+      {
+        name: 'Cellphone & Mobile Service',
+        slug: 'cellphone-mobile-service',
+        icon: 'smartphone',
+        displayOrder: 3,
+      },
       { name: 'Auto & Car', slug: 'auto-car', icon: 'car', displayOrder: 4 },
       { name: 'Insurance', slug: 'insurance', icon: 'shield', displayOrder: 5 },
     ],
@@ -42,7 +51,12 @@ const CATEGORY_SEED_DATA = [
       { name: 'Electric & Utilities', slug: 'electric-utilities', icon: 'zap', displayOrder: 1 },
       { name: 'Gas', slug: 'gas', icon: 'flame', displayOrder: 2 },
       { name: 'Internet & Broadband', slug: 'internet-broadband', icon: 'wifi', displayOrder: 3 },
-      { name: 'Phone & Business Communication', slug: 'phone-business-communication', icon: 'phone', displayOrder: 4 },
+      {
+        name: 'Phone & Business Communication',
+        slug: 'phone-business-communication',
+        icon: 'phone',
+        displayOrder: 4,
+      },
       { name: 'Trash', slug: 'trash', icon: 'trash-2', displayOrder: 5 },
       { name: 'Water', slug: 'water', icon: 'droplet', displayOrder: 6 },
     ],
@@ -52,14 +66,28 @@ const CATEGORY_SEED_DATA = [
     categories: [
       { name: 'Boat & Marine', slug: 'boat-marine', icon: 'ship', displayOrder: 1 },
       { name: 'Motorcycle', slug: 'motorcycle', icon: 'bike', displayOrder: 2 },
-      { name: 'Maintenance & Repairs', slug: 'maintenance-repairs', icon: 'wrench', displayOrder: 3 },
+      {
+        name: 'Maintenance & Repairs',
+        slug: 'maintenance-repairs',
+        icon: 'wrench',
+        displayOrder: 3,
+      },
       { name: 'Travel', slug: 'travel', icon: 'plane', displayOrder: 4 },
     ],
   },
   {
-    group: { name: 'Digital Services & Subscriptions', slug: 'digital-services-subscriptions', displayOrder: 4 },
+    group: {
+      name: 'Digital Services & Subscriptions',
+      slug: 'digital-services-subscriptions',
+      displayOrder: 4,
+    },
     categories: [
-      { name: 'Video Streaming & Television', slug: 'video-streaming-television', icon: 'tv', displayOrder: 1 },
+      {
+        name: 'Video Streaming & Television',
+        slug: 'video-streaming-television',
+        icon: 'tv',
+        displayOrder: 1,
+      },
       { name: 'Apps', slug: 'apps', icon: 'app-window', displayOrder: 2 },
       { name: 'Cloud Services', slug: 'cloud-services', icon: 'cloud', displayOrder: 3 },
       { name: 'Music Subscriptions', slug: 'music-subscriptions', icon: 'music', displayOrder: 4 },
@@ -67,40 +95,88 @@ const CATEGORY_SEED_DATA = [
     ],
   },
   {
-    group: { name: 'Home Maintenance & Household', slug: 'home-maintenance-household', displayOrder: 5 },
+    group: {
+      name: 'Home Maintenance & Household',
+      slug: 'home-maintenance-household',
+      displayOrder: 5,
+    },
     categories: [
       { name: 'Cleaning', slug: 'cleaning', icon: 'sparkles', displayOrder: 1 },
       { name: 'Food', slug: 'food', icon: 'utensils', displayOrder: 2 },
       { name: 'Lawn & Garden', slug: 'lawn-garden', icon: 'tree-deciduous', displayOrder: 3 },
-      { name: 'Alarm & Reminder Services', slug: 'alarm-reminder-services', icon: 'bell', displayOrder: 4 },
+      {
+        name: 'Alarm & Reminder Services',
+        slug: 'alarm-reminder-services',
+        icon: 'bell',
+        displayOrder: 4,
+      },
     ],
   },
   {
     group: { name: 'Goods & Shopping', slug: 'goods-shopping', displayOrder: 6 },
     categories: [
       { name: 'Appliances', slug: 'appliances', icon: 'refrigerator', displayOrder: 1 },
-      { name: 'Television, Audio & Computer Equipment', slug: 'television-audio-computer', icon: 'monitor', displayOrder: 2 },
+      {
+        name: 'Television, Audio & Computer Equipment',
+        slug: 'television-audio-computer',
+        icon: 'monitor',
+        displayOrder: 2,
+      },
       { name: 'Furniture', slug: 'furniture', icon: 'armchair', displayOrder: 3 },
       { name: 'Gaming', slug: 'gaming', icon: 'gamepad-2', displayOrder: 4 },
       { name: 'Jewelry', slug: 'jewelry', icon: 'gem', displayOrder: 5 },
-      { name: 'Watches & Smartwatches', slug: 'watches-smartwatches', icon: 'watch', displayOrder: 6 },
-      { name: 'Shopping & Purchases', slug: 'shopping-purchases', icon: 'shopping-bag', displayOrder: 7 },
+      {
+        name: 'Watches & Smartwatches',
+        slug: 'watches-smartwatches',
+        icon: 'watch',
+        displayOrder: 6,
+      },
+      {
+        name: 'Shopping & Purchases',
+        slug: 'shopping-purchases',
+        icon: 'shopping-bag',
+        displayOrder: 7,
+      },
       { name: 'Childcare', slug: 'childcare', icon: 'baby', displayOrder: 8 },
-      { name: 'Community & Organizations', slug: 'community-organizations', icon: 'users', displayOrder: 9 },
-      { name: 'Concerts, Tickets & Events', slug: 'concerts-tickets-events', icon: 'ticket', displayOrder: 10 },
+      {
+        name: 'Community & Organizations',
+        slug: 'community-organizations',
+        icon: 'users',
+        displayOrder: 9,
+      },
+      {
+        name: 'Concerts, Tickets & Events',
+        slug: 'concerts-tickets-events',
+        icon: 'ticket',
+        displayOrder: 10,
+      },
       { name: 'Dental', slug: 'dental', icon: 'smile', displayOrder: 11 },
       { name: 'Gifts & Donations', slug: 'gifts-donations', icon: 'gift', displayOrder: 12 },
       { name: 'Gym', slug: 'gym', icon: 'dumbbell', displayOrder: 13 },
-      { name: 'Health, Hospital & Medicine', slug: 'health-hospital-medicine', icon: 'heart-pulse', displayOrder: 14 },
+      {
+        name: 'Health, Hospital & Medicine',
+        slug: 'health-hospital-medicine',
+        icon: 'heart-pulse',
+        displayOrder: 14,
+      },
       { name: 'Legal', slug: 'legal', icon: 'scale', displayOrder: 15 },
       { name: 'Personal Care', slug: 'personal-care', icon: 'user', displayOrder: 16 },
       { name: 'Pet', slug: 'pet', icon: 'paw-print', displayOrder: 17 },
-      { name: 'School & Student Loans', slug: 'school-student-loans', icon: 'graduation-cap', displayOrder: 18 },
+      {
+        name: 'School & Student Loans',
+        slug: 'school-student-loans',
+        icon: 'graduation-cap',
+        displayOrder: 18,
+      },
       { name: 'Sports', slug: 'sports', icon: 'trophy', displayOrder: 19 },
     ],
   },
   {
-    group: { name: 'Financial Management & Business', slug: 'financial-management-business', displayOrder: 7 },
+    group: {
+      name: 'Financial Management & Business',
+      slug: 'financial-management-business',
+      displayOrder: 7,
+    },
     categories: [
       { name: 'Business', slug: 'business', icon: 'briefcase', displayOrder: 1 },
       { name: 'Storage & Security', slug: 'storage-security', icon: 'lock', displayOrder: 2 },
@@ -127,16 +203,16 @@ const CATEGORY_SEED_DATA = [
 const BILL_AMOUNTS: Record<string, { min: number; max: number; typical?: number }> = {
   'home-mortgage-rent': { min: 140000, max: 250000, typical: 163200 }, // $1,400-$2,500 (avg $1,632)
   'electric-utilities': { min: 10000, max: 18000, typical: 14226 }, // $100-$180 (avg $142.26)
-  'gas': { min: 3500, max: 20000, typical: 11000 }, // $35-$200 (avg $110, variable)
+  gas: { min: 3500, max: 20000, typical: 11000 }, // $35-$200 (avg $110, variable)
   'internet-broadband': { min: 5500, max: 9500, typical: 7500 }, // $55-$95 (avg $75)
-  'water': { min: 4000, max: 6000, typical: 5000 }, // $40-$60 (avg $50)
+  water: { min: 4000, max: 6000, typical: 5000 }, // $40-$60 (avg $50)
   'cellphone-mobile-service': { min: 6000, max: 15000, typical: 9000 }, // $60-$150 (avg $90)
-  'insurance': { min: 8000, max: 15000, typical: 12000 }, // $80-$150/mo (varies by type)
-  'gym': { min: 3000, max: 8000, typical: 5000 }, // $30-$80 (avg $50)
+  insurance: { min: 8000, max: 15000, typical: 12000 }, // $80-$150/mo (varies by type)
+  gym: { min: 3000, max: 8000, typical: 5000 }, // $30-$80 (avg $50)
   'music-subscriptions': { min: 1000, max: 2000, typical: 1500 }, // $10-$20 (avg $15)
   'video-streaming-television': { min: 1000, max: 2500, typical: 1800 }, // $10-$25 (avg $18)
   'cloud-services': { min: 500, max: 3000, typical: 1500 }, // $5-$30 (varies widely)
-  'subscriptions': { min: 500, max: 3000, typical: 1500 }, // $5-$30 (varies)
+  subscriptions: { min: 500, max: 3000, typical: 1500 }, // $5-$30 (varies)
   'health-hospital-medicine': { min: 15000, max: 80000, typical: 40000 }, // $150-$800 (varies)
   'maintenance-repairs': { min: 5000, max: 50000, typical: 25000 }, // $50-$500 (varies)
   'gifts-donations': { min: 2000, max: 10000, typical: 5000 }, // $20-$100 (varies)
@@ -297,18 +373,29 @@ const SCENARIO_BILLS: ScenarioBill[] = [
  * Traditional bills use banking behavior ('next_business_day').
  * Most bills use null to inherit global default.
  */
-function determineWeekendAdjustment(
-  title: string,
-  slug: string
-): WeekendAdjustmentStrategy | null {
+function determineWeekendAdjustment(title: string, slug: string): WeekendAdjustmentStrategy | null {
   // Digital subscriptions process on weekends
   const digitalSubscriptionKeywords = [
-    'spotify', 'netflix', 'amazon prime', 'discord', 'subscription',
-    'streaming', 'music', 'video', 'cloud', 'icloud', 'aws', 'google',
-    'coursera', 'cursor', 'coderabbit', '1password', 'fastmail'
+    'spotify',
+    'netflix',
+    'amazon prime',
+    'discord',
+    'subscription',
+    'streaming',
+    'music',
+    'video',
+    'cloud',
+    'icloud',
+    'aws',
+    'google',
+    'coursera',
+    'cursor',
+    'coderabbit',
+    '1password',
+    'fastmail',
   ];
   const isDigitalSubscription = digitalSubscriptionKeywords.some(
-    keyword => title.toLowerCase().includes(keyword) || slug.includes(keyword)
+    (keyword) => title.toLowerCase().includes(keyword) || slug.includes(keyword),
   );
 
   if (isDigitalSubscription) {
@@ -317,11 +404,18 @@ function determineWeekendAdjustment(
 
   // Traditional bills use banking behavior (70% next_business_day, 30% null for global default)
   const traditionalBillKeywords = [
-    'rent', 'mortgage', 'insurance', 'electric', 'water', 'gas',
-    'phone', 'internet', 'utilities'
+    'rent',
+    'mortgage',
+    'insurance',
+    'electric',
+    'water',
+    'gas',
+    'phone',
+    'internet',
+    'utilities',
   ];
   const isTraditionalBill = traditionalBillKeywords.some(
-    keyword => title.toLowerCase().includes(keyword) || slug.includes(keyword)
+    (keyword) => title.toLowerCase().includes(keyword) || slug.includes(keyword),
   );
 
   if (isTraditionalBill) {
@@ -339,23 +433,108 @@ function determineWeekendAdjustment(
  * Amounts are realistic based on 2024 market averages.
  */
 const BILL_TEMPLATES = [
-  { title: 'CodeRabbit Subscription', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 1500, max: 3000 } },
-  { title: 'AWS', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 1000, max: 3000 } },
-  { title: 'Google AI Pro (2TB)', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 2000, max: 3000 } },
-  { title: 'Apple iCloud', slug: 'cloud-services', frequency: 'monthly', amountRange: { min: 300, max: 1000 } },
-  { title: 'Coursera', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 5000, max: 6000 } },
-  { title: 'Cursor Subscription', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 2000, max: 2500 } },
-  { title: '1Password', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 3600, max: 5000 } },
-  { title: 'Discord Nitro', slug: 'subscriptions', frequency: 'monthly', amountRange: { min: 1000, max: 1200 } },
-  { title: 'Fastmail', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 3000, max: 5000 } },
-  { title: 'Netflix', slug: 'video-streaming-television', frequency: 'monthly', amountRange: { min: 1500, max: 2300 } },
-  { title: 'Amazon Prime', slug: 'subscriptions', frequency: 'yearly', amountRange: { min: 14000, max: 16000 } },
-  { title: 'Gym Membership', slug: 'gym', frequency: 'monthly', amountRange: { min: 3000, max: 8000 } },
-  { title: 'Health Insurance', slug: 'insurance', frequency: 'monthly', amountRange: { min: 20000, max: 60000 } },
-  { title: 'Phone Bill', slug: 'cellphone-mobile-service', frequency: 'monthly', amountRange: { min: 6000, max: 15000 } },
-  { title: 'Car Repair', slug: 'maintenance-repairs', frequency: 'once', amountRange: { min: 5000, max: 50000 } },
-  { title: 'Medical Checkup', slug: 'health-hospital-medicine', frequency: 'once', amountRange: { min: 15000, max: 50000 } },
-  { title: 'Birthday Gift', slug: 'gifts-donations', frequency: 'once', amountRange: { min: 2000, max: 10000 } },
+  {
+    title: 'CodeRabbit Subscription',
+    slug: 'subscriptions',
+    frequency: 'monthly',
+    amountRange: { min: 1500, max: 3000 },
+  },
+  {
+    title: 'AWS',
+    slug: 'cloud-services',
+    frequency: 'monthly',
+    amountRange: { min: 1000, max: 3000 },
+  },
+  {
+    title: 'Google AI Pro (2TB)',
+    slug: 'cloud-services',
+    frequency: 'monthly',
+    amountRange: { min: 2000, max: 3000 },
+  },
+  {
+    title: 'Apple iCloud',
+    slug: 'cloud-services',
+    frequency: 'monthly',
+    amountRange: { min: 300, max: 1000 },
+  },
+  {
+    title: 'Coursera',
+    slug: 'subscriptions',
+    frequency: 'monthly',
+    amountRange: { min: 5000, max: 6000 },
+  },
+  {
+    title: 'Cursor Subscription',
+    slug: 'subscriptions',
+    frequency: 'monthly',
+    amountRange: { min: 2000, max: 2500 },
+  },
+  {
+    title: '1Password',
+    slug: 'subscriptions',
+    frequency: 'yearly',
+    amountRange: { min: 3600, max: 5000 },
+  },
+  {
+    title: 'Discord Nitro',
+    slug: 'subscriptions',
+    frequency: 'monthly',
+    amountRange: { min: 1000, max: 1200 },
+  },
+  {
+    title: 'Fastmail',
+    slug: 'subscriptions',
+    frequency: 'yearly',
+    amountRange: { min: 3000, max: 5000 },
+  },
+  {
+    title: 'Netflix',
+    slug: 'video-streaming-television',
+    frequency: 'monthly',
+    amountRange: { min: 1500, max: 2300 },
+  },
+  {
+    title: 'Amazon Prime',
+    slug: 'subscriptions',
+    frequency: 'yearly',
+    amountRange: { min: 14000, max: 16000 },
+  },
+  {
+    title: 'Gym Membership',
+    slug: 'gym',
+    frequency: 'monthly',
+    amountRange: { min: 3000, max: 8000 },
+  },
+  {
+    title: 'Health Insurance',
+    slug: 'insurance',
+    frequency: 'monthly',
+    amountRange: { min: 20000, max: 60000 },
+  },
+  {
+    title: 'Phone Bill',
+    slug: 'cellphone-mobile-service',
+    frequency: 'monthly',
+    amountRange: { min: 6000, max: 15000 },
+  },
+  {
+    title: 'Car Repair',
+    slug: 'maintenance-repairs',
+    frequency: 'once',
+    amountRange: { min: 5000, max: 50000 },
+  },
+  {
+    title: 'Medical Checkup',
+    slug: 'health-hospital-medicine',
+    frequency: 'once',
+    amountRange: { min: 15000, max: 50000 },
+  },
+  {
+    title: 'Birthday Gift',
+    slug: 'gifts-donations',
+    frequency: 'once',
+    amountRange: { min: 2000, max: 10000 },
+  },
 ] as const;
 
 interface BillState {
@@ -372,11 +551,7 @@ interface BillState {
  * @param now - Reference date for generation
  * @returns Generated status, due date, and amount due
  */
-function generateBillState(
-  frequency: string,
-  amount: number,
-  now: Date
-): BillState {
+function generateBillState(frequency: string, amount: number, now: Date): BillState {
   if (frequency === 'once') {
     const oneTimeStatuses = ['pending', 'pending', 'paid', 'paid', 'overdue'] as const;
     const status = faker.helpers.arrayElement(oneTimeStatuses);
@@ -401,11 +576,7 @@ function generateBillState(
       status,
       dueDate: faker.date.between({
         from: now,
-        to: faker.helpers.arrayElement([
-          addMonths(now, 60),
-          addMonths(now, 8),
-          addMonths(now, 15),
-        ]),
+        to: faker.helpers.arrayElement([addMonths(now, 60), addMonths(now, 8), addMonths(now, 15)]),
       }),
       amountDue: amount,
     };
@@ -461,11 +632,7 @@ function generateBillState(
  * @returns True if categories were seeded, false if they already existed
  */
 function seedCategories(): boolean {
-  const existingCount = db
-    .select()
-    .from(schema.billCategoryGroups)
-    .all()
-    .length;
+  const existingCount = db.select().from(schema.billCategoryGroups).all().length;
 
   if (existingCount > 0) {
     logger.info({ existingCount }, 'Found existing category groups, skipping category seed');
@@ -481,33 +648,34 @@ function seedCategories(): boolean {
     for (const { group, categories } of CATEGORY_SEED_DATA) {
       const groupId = createId();
 
-      tx.insert(schema.billCategoryGroups).values({
-        id: groupId,
-        name: group.name,
-        slug: group.slug,
-        displayOrder: group.displayOrder,
-        createdAt: now,
-      }).run();
+      tx.insert(schema.billCategoryGroups)
+        .values({
+          id: groupId,
+          name: group.name,
+          slug: group.slug,
+          displayOrder: group.displayOrder,
+          createdAt: now,
+        })
+        .run();
 
       for (const category of categories) {
-        tx.insert(schema.billCategories).values({
-          id: createId(),
-          groupId,
-          name: category.name,
-          slug: category.slug,
-          icon: category.icon,
-          displayOrder: category.displayOrder,
-          createdAt: now,
-        }).run();
+        tx.insert(schema.billCategories)
+          .values({
+            id: createId(),
+            groupId,
+            name: category.name,
+            slug: category.slug,
+            icon: category.icon,
+            displayOrder: category.displayOrder,
+            createdAt: now,
+          })
+          .run();
         totalCategories++;
       }
     }
   });
 
-  logger.info(
-    { totalCategories, groupCount: CATEGORY_SEED_DATA.length },
-    'Seeded categories'
-  );
+  logger.info({ totalCategories, groupCount: CATEGORY_SEED_DATA.length }, 'Seeded categories');
   return true;
 }
 
@@ -539,7 +707,7 @@ function wipeData(tx: SeedTransaction): void {
  * @param tx - Database transaction instance
  * @returns Array of inserted tag records
  */
-function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
+function seedTags(tx: SeedTransaction): (typeof schema.tags.$inferSelect)[] {
   logger.info('Seeding tags...');
 
   const tagNames = [
@@ -552,14 +720,14 @@ function seedTags(tx: SeedTransaction): typeof schema.tags.$inferSelect[] {
     'Health',
     'Transport',
     'Education',
-    'Leisure'
+    'Leisure',
   ];
 
-  const tags = tagNames.map(name => ({
+  const tags = tagNames.map((name) => ({
     id: createId(),
     name,
     slug: name.toLowerCase().replace(/\s+/g, '-'),
-    createdAt: new Date()
+    createdAt: new Date(),
   }));
 
   tx.insert(schema.tags).values(tags).run();
@@ -582,18 +750,18 @@ async function seedSettings(): Promise<void> {
  *
  * @returns Array of category records for bill assignment
  */
-function getCategories(): typeof schema.billCategories.$inferSelect[] {
+function getCategories(): (typeof schema.billCategories.$inferSelect)[] {
   const filteredCategories = db
     .select()
     .from(schema.billCategories)
     .innerJoin(
       schema.billCategoryGroups,
-      eq(schema.billCategories.groupId, schema.billCategoryGroups.id)
+      eq(schema.billCategories.groupId, schema.billCategoryGroups.id),
     )
     .where(lt(schema.billCategoryGroups.displayOrder, 999))
     .all();
 
-  return filteredCategories.map(row => row.bill_categories);
+  return filteredCategories.map((row) => row.bill_categories);
 }
 
 /**
@@ -609,17 +777,17 @@ function getCategories(): typeof schema.billCategories.$inferSelect[] {
  */
 function seedBills(
   tx: SeedTransaction,
-  tags: typeof schema.tags.$inferSelect[],
-  categories: typeof schema.billCategories.$inferSelect[]
-): typeof schema.bills.$inferInsert[] {
+  tags: (typeof schema.tags.$inferSelect)[],
+  categories: (typeof schema.billCategories.$inferSelect)[],
+): (typeof schema.bills.$inferInsert)[] {
   logger.info('Seeding bills (scenarios + random templates)...');
 
   if (categories.length === 0) {
     throw new Error('No categories found. Categories must be seeded first.');
   }
 
-  const billsToInsert: typeof schema.bills.$inferInsert[] = [];
-  const billsToTagsToInsert: typeof schema.billsToTags.$inferInsert[] = [];
+  const billsToInsert: (typeof schema.bills.$inferInsert)[] = [];
+  const billsToTagsToInsert: (typeof schema.billsToTags.$inferInsert)[] = [];
   const usedBillTitles = new Set<string>(); // Track bill titles to prevent duplicates
 
   const now = new Date();
@@ -635,13 +803,16 @@ function seedBills(
     // Get category by slug, throw error if not found (deterministic scenarios require exact categories)
     const category = categoryMap.get(scenario.slug);
     if (!category) {
-      throw new Error(`Category not found for slug: ${scenario.slug}. Required for scenario: ${scenario.title}`);
+      throw new Error(
+        `Category not found for slug: ${scenario.slug}. Required for scenario: ${scenario.title}`,
+      );
     }
 
     // Calculate due date from now (days take precedence over months)
-    const dueDate = scenario.dueDateDaysFromNow !== undefined
-      ? addDays(now, scenario.dueDateDaysFromNow)
-      : addMonths(now, scenario.dueDateMonthsFromNow ?? 1);
+    const dueDate =
+      scenario.dueDateDaysFromNow !== undefined
+        ? addDays(now, scenario.dueDateDaysFromNow)
+        : addMonths(now, scenario.dueDateMonthsFromNow ?? 1);
 
     // For pending bills, amountDue equals amount. For paid bills, amountDue is 0.
     const amountDue = scenario.status === 'paid' ? 0 : scenario.amount;
@@ -669,22 +840,27 @@ function seedBills(
     usedBillTitles.add(scenario.title);
 
     // Assign 1-2 relevant tags to each bill
-    const relevantTags = tags.filter(t =>
-      t.name.toLowerCase().includes(scenario.slug.split('-')[0]) ||
-      (scenario.slug === 'insurance' && t.name === 'Insurance') ||
-      (scenario.slug === 'subscriptions' && t.name === 'Subscriptions') ||
-      (scenario.slug === 'gas' && t.name === 'Utilities') ||
-      (scenario.slug === 'home-mortgage-rent' && t.name === 'Rent')
+    const relevantTags = tags.filter(
+      (t) =>
+        t.name.toLowerCase().includes(scenario.slug.split('-')[0]) ||
+        (scenario.slug === 'insurance' && t.name === 'Insurance') ||
+        (scenario.slug === 'subscriptions' && t.name === 'Subscriptions') ||
+        (scenario.slug === 'gas' && t.name === 'Utilities') ||
+        (scenario.slug === 'home-mortgage-rent' && t.name === 'Rent'),
     );
-    const selectedTags = relevantTags.length > 0
-      ? faker.helpers.arrayElements(relevantTags, { min: 1, max: Math.min(2, relevantTags.length) })
-      : faker.helpers.arrayElements(tags, { min: 1, max: 2 });
+    const selectedTags =
+      relevantTags.length > 0
+        ? faker.helpers.arrayElements(relevantTags, {
+            min: 1,
+            max: Math.min(2, relevantTags.length),
+          })
+        : faker.helpers.arrayElements(tags, { min: 1, max: 2 });
 
     billsToTagsToInsert.push(
       ...selectedTags.map((tag) => ({
         billId: id,
         tagId: tag.id,
-      }))
+      })),
     );
   }
 
@@ -752,7 +928,7 @@ function seedBills(
       ...selectedTags.map((tag) => ({
         billId: id,
         tagId: tag.id,
-      }))
+      })),
     );
   }
 
@@ -761,7 +937,10 @@ function seedBills(
   const initialBillCount = billsToInsert.length;
   let attempts = 0;
   const maxAttempts = 50; // Prevent infinite loop
-  while (billsToInsert.length < initialBillCount + targetAdditionalBills && attempts < maxAttempts) {
+  while (
+    billsToInsert.length < initialBillCount + targetAdditionalBills &&
+    attempts < maxAttempts
+  ) {
     attempts++;
 
     const frequencies = [
@@ -860,7 +1039,7 @@ function seedBills(
       ...selectedTags.map((tag) => ({
         billId: id,
         tagId: tag.id,
-      }))
+      })),
     );
   }
 
@@ -870,7 +1049,6 @@ function seedBills(
   logger.info({ billCount: billsToInsert.length }, 'Seeded bills (scenarios + random)');
   return billsToInsert;
 }
-
 
 /**
  * Generates a transaction amount for variable bills with realistic variance.
@@ -906,11 +1084,11 @@ function generateTransactionAmount(baseAmount: number, isVariable: boolean): num
  * @param tx - Database transaction instance
  * @param bills - Array of bill records to generate transactions for
  */
-function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$inferInsert[]): void {
+function seedTransactions(tx: SeedTransaction, bills: (typeof schema.bills.$inferInsert)[]): void {
   logger.info('Seeding transactions with YoY data...');
 
-  const transactionsToInsert: typeof schema.transactions.$inferInsert[] = [];
-  const scenarioTitles = new Set(SCENARIO_BILLS.map(s => s.title));
+  const transactionsToInsert: (typeof schema.transactions.$inferInsert)[] = [];
+  const scenarioTitles = new Set(SCENARIO_BILLS.map((s) => s.title));
   const now = new Date();
 
   for (const bill of bills) {
@@ -925,8 +1103,18 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     if (bill.title === 'Winter Heating / Gas' && isVariable) {
       // Current year: 12 months with varying amounts
       const currentYearAmounts = [
-        11000, 12000, 10000, 11500, 12500, 10500, // First 6 months
-        11000, 13000, 10000, 11500, 12000, 10500, // Last 6 months
+        11000,
+        12000,
+        10000,
+        11500,
+        12500,
+        10500, // First 6 months
+        11000,
+        13000,
+        10000,
+        11500,
+        12000,
+        10500, // Last 6 months
       ];
 
       for (let i = 0; i < 12; i++) {
@@ -943,8 +1131,18 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
 
       // Previous year: 12 months with slightly different amounts for comparison
       const previousYearAmounts = [
-        10500, 11500, 9500, 11000, 12000, 10000, // First 6 months
-        10500, 12500, 9500, 11000, 11500, 10000, // Last 6 months
+        10500,
+        11500,
+        9500,
+        11000,
+        12000,
+        10000, // First 6 months
+        10500,
+        12500,
+        9500,
+        11000,
+        11500,
+        10000, // Last 6 months
       ];
 
       for (let i = 0; i < 12; i++) {
@@ -1202,7 +1400,7 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     const filteredCount = transactionsToInsert.length - validTransactions.length;
     logger.warn(
       { filteredCount, totalCount: transactionsToInsert.length },
-      'Filtered out future-dated transactions'
+      'Filtered out future-dated transactions',
     );
   }
 
@@ -1210,10 +1408,7 @@ function seedTransactions(tx: SeedTransaction, bills: typeof schema.bills.$infer
     tx.insert(schema.transactions).values(validTransactions).run();
   }
 
-  logger.info(
-    { transactionCount: validTransactions.length },
-    'Seeded transactions'
-  );
+  logger.info({ transactionCount: validTransactions.length }, 'Seeded transactions');
 }
 
 /**

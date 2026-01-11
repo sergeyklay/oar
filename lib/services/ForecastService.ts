@@ -112,7 +112,7 @@ function convertFrequencyToMonths(frequency: BillFrequency): number {
 function calculateAmortization(
   bill: BillWithTags,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _targetMonth: Date
+  _targetMonth: Date,
 ): AmortizationResult {
   const recurrenceMonths = convertFrequencyToMonths(bill.frequency);
 
@@ -152,7 +152,7 @@ const FREQUENCY_MAP: Record<BillFrequency, Frequency | null> = {
 function projectOccurrenceInMonth(
   bill: BillWithTags,
   targetMonthStart: Date,
-  targetMonthEnd: Date
+  targetMonthEnd: Date,
 ): Date | null {
   // One-time bills: only include if their dueDate falls in target month
   if (bill.frequency === 'once') {
@@ -185,8 +185,8 @@ function projectOccurrenceInMonth(
       bill.dueDate.getDate(),
       bill.dueDate.getHours(),
       bill.dueDate.getMinutes(),
-      bill.dueDate.getSeconds()
-    )
+      bill.dueDate.getSeconds(),
+    ),
   );
 
   const options: Partial<import('rrule').Options> = {
@@ -215,8 +215,8 @@ function projectOccurrenceInMonth(
         bill.endDate.getDate(),
         bill.endDate.getHours(),
         bill.endDate.getMinutes(),
-        bill.endDate.getSeconds()
-      )
+        bill.endDate.getSeconds(),
+      ),
     );
     options.until = endDateUtc;
   }
@@ -231,8 +231,8 @@ function projectOccurrenceInMonth(
       targetMonthStart.getDate(),
       0,
       0,
-      0
-    )
+      0,
+    ),
   );
   const targetEndUtc = new Date(
     Date.UTC(
@@ -241,8 +241,8 @@ function projectOccurrenceInMonth(
       targetMonthEnd.getDate(),
       23,
       59,
-      59
-    )
+      59,
+    ),
   );
 
   // For monthly/bimonthly/quarterly bills with due dates on 29th-31st,
@@ -276,11 +276,7 @@ function projectOccurrenceInMonth(
 
     if (shouldOccur) {
       // Create the occurrence date in the target month with end-of-month clamping
-      const clampedDate = clampToEndOfMonth(
-        targetMonthStart,
-        originalDueDay,
-        bill.dueDate
-      );
+      const clampedDate = clampToEndOfMonth(targetMonthStart, originalDueDay, bill.dueDate);
 
       // Verify the clamped date is within the target month bounds
       if (
@@ -311,7 +307,7 @@ function projectOccurrenceInMonth(
     firstOccurrenceUtc.getUTCDate(),
     firstOccurrenceUtc.getUTCHours(),
     firstOccurrenceUtc.getUTCMinutes(),
-    firstOccurrenceUtc.getUTCSeconds()
+    firstOccurrenceUtc.getUTCSeconds(),
   );
 }
 
@@ -333,7 +329,7 @@ export const ForecastService = {
   async getBillsForMonth(
     month: string,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<ForecastBill[]> {
     // Parse month string to Date object
     const targetDate = parse(month, 'yyyy-MM', new Date());
@@ -348,7 +344,7 @@ export const ForecastService = {
       yearNum,
       monthNum,
       boundaries,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
 
     // Fetch ALL active bills (not filtered by month)
@@ -357,10 +353,7 @@ export const ForecastService = {
     // Apply tag filter if provided
     let billIds: string[] | undefined;
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -418,11 +411,7 @@ export const ForecastService = {
       };
 
       // Project occurrence in target month (returns anchor date)
-      const anchorDate = projectOccurrenceInMonth(
-        billWithTags,
-        targetMonthStart,
-        targetMonthEnd
-      );
+      const anchorDate = projectOccurrenceInMonth(billWithTags, targetMonthStart, targetMonthEnd);
 
       // Skip if no occurrence in target month
       if (!anchorDate) {
@@ -432,13 +421,13 @@ export const ForecastService = {
       // Resolve effective weekend adjustment strategy
       const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
         bill.weekendAdjustment,
-        globalStrategy
+        globalStrategy,
       );
 
       // Apply weekend adjustment to anchor date for display
       const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
         anchorDate,
-        effectiveStrategy
+        effectiveStrategy,
       );
 
       // Create forecast bill with adjusted due date
@@ -461,10 +450,7 @@ export const ForecastService = {
       // If recurrence > 1 month, calculate amortization
       const recurrenceMonths = convertFrequencyToMonths(bill.frequency);
       if (recurrenceMonths > 1) {
-        const amortizationResult = calculateAmortization(
-          forecastBill,
-          targetMonthStart
-        );
+        const amortizationResult = calculateAmortization(forecastBill, targetMonthStart);
         forecastBill.amortizationAmount = amortizationResult.monthlyAmount;
       }
 
@@ -475,8 +461,8 @@ export const ForecastService = {
     if (variableBillsToEstimate.length > 0) {
       const estimates = await Promise.all(
         variableBillsToEstimate.map(({ billId }) =>
-          EstimationService.estimateAmount(billId, targetDate)
-        )
+          EstimationService.estimateAmount(billId, targetDate),
+        ),
       );
 
       // Merge estimates back into forecast bills
@@ -493,7 +479,7 @@ export const ForecastService = {
 
     // Post-projection filtering: exclude bills outside timezone-aware month boundaries
     const filteredBills = forecastBills.filter((bill) =>
-      isTimestampInMonth(bill.dueDate, filterBoundaries)
+      isTimestampInMonth(bill.dueDate, filterBoundaries),
     );
 
     return filteredBills;
@@ -537,7 +523,7 @@ export const ForecastService = {
     startMonth: string,
     count: number,
     tag?: string,
-    userTimezoneOffset: number = 0
+    userTimezoneOffset: number = 0,
   ): Promise<MonthlyForecastTotal[]> {
     const startDate = parse(startMonth, 'yyyy-MM', new Date());
     const results: MonthlyForecastTotal[] = [];
@@ -562,4 +548,3 @@ export const ForecastService = {
     return results;
   },
 };
-

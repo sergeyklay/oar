@@ -96,7 +96,7 @@ describe('SettingsService', () => {
           { key: 'weekStart', value: '1' },
           { key: 'includeAutoPayInDueSoon', value: 'false' },
           { key: 'autoLogAutoPay', value: 'false' },
-        ])
+        ]),
       );
 
       const result = await SettingsService.getAll();
@@ -122,7 +122,7 @@ describe('SettingsService', () => {
 
     it('parses weekStart as number', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'weekStart', value: '6' }])
+        createSelectBuilderSync([{ key: 'weekStart', value: '6' }]),
       );
 
       const result = await SettingsService.getAll();
@@ -138,7 +138,7 @@ describe('SettingsService', () => {
       ['10', 0],
     ])('uses default weekStart for invalid value %s', async (value, expected) => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'weekStart', value }])
+        createSelectBuilderSync([{ key: 'weekStart', value }]),
       );
 
       const result = await SettingsService.getAll();
@@ -153,7 +153,7 @@ describe('SettingsService', () => {
       ['', true],
     ])('parses includeAutoPayInDueSoon value %s correctly', async (value, expected) => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value }])
+        createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value }]),
       );
 
       const result = await SettingsService.getAll();
@@ -173,7 +173,7 @@ describe('SettingsService', () => {
   describe('get', () => {
     it('returns stored value for currency', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'currency', value: 'EUR' }])
+        createSelectBuilderSync([{ key: 'currency', value: 'EUR' }]),
       );
 
       const result = await SettingsService.get('currency');
@@ -183,7 +183,7 @@ describe('SettingsService', () => {
 
     it('returns stored value for locale', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'locale', value: 'de-DE' }])
+        createSelectBuilderSync([{ key: 'locale', value: 'de-DE' }]),
       );
 
       const result = await SettingsService.get('locale');
@@ -193,7 +193,7 @@ describe('SettingsService', () => {
 
     it('returns stored value for weekStart', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'weekStart', value: '1' }])
+        createSelectBuilderSync([{ key: 'weekStart', value: '1' }]),
       );
 
       const result = await SettingsService.get('weekStart');
@@ -203,7 +203,7 @@ describe('SettingsService', () => {
 
     it('returns stored value for includeAutoPayInDueSoon', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value: 'false' }])
+        createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value: 'false' }]),
       );
 
       const result = await SettingsService.get('includeAutoPayInDueSoon');
@@ -280,7 +280,7 @@ describe('SettingsService', () => {
   describe('setViewOptions', () => {
     it('upserts all view options settings within a transaction', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'view-options-section-id' }])
+        createSelectBuilderSync([{ id: 'view-options-section-id' }]),
       );
 
       const runMock = jest.fn();
@@ -316,14 +316,12 @@ describe('SettingsService', () => {
           locale: 'en-US',
           weekStart: 0,
           includeAutoPayInDueSoon: true,
-        })
+        }),
       ).rejects.toThrow('View Options section not found');
     });
 
     it('converts weekStart number to string for storage', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const runMock = jest.fn();
       const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
@@ -344,14 +342,12 @@ describe('SettingsService', () => {
       });
 
       expect(valuesMock).toHaveBeenCalledWith(
-        expect.objectContaining({ key: 'weekStart', value: '6' })
+        expect.objectContaining({ key: 'weekStart', value: '6' }),
       );
     });
 
     it('converts includeAutoPayInDueSoon boolean to string for storage', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const runMock = jest.fn();
       const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
@@ -372,7 +368,7 @@ describe('SettingsService', () => {
       });
 
       expect(valuesMock).toHaveBeenCalledWith(
-        expect.objectContaining({ key: 'includeAutoPayInDueSoon', value: 'false' })
+        expect.objectContaining({ key: 'includeAutoPayInDueSoon', value: 'false' }),
       );
     });
   });
@@ -461,14 +457,10 @@ describe('SettingsService', () => {
         }
 
         if (columns && typeof columns === 'object' && 'count' in columns) {
-          return createSelectBuilderSync([
-            { count: selectCallCount === 3 ? 2 : 1 },
-          ]);
+          return createSelectBuilderSync([{ count: selectCallCount === 3 ? 2 : 1 }]);
         }
 
-        return createSelectBuilderSync([
-          { count: selectCallCount === 3 ? 2 : 1 },
-        ]);
+        return createSelectBuilderSync([{ count: selectCallCount === 3 ? 2 : 1 }]);
       });
 
       const result = await SettingsService.getCategoryBySlug('general');
@@ -526,9 +518,7 @@ describe('SettingsService', () => {
         }
 
         if (selectCallCount === 2) {
-          return createSelectBuilderSync(
-            mockSections.filter((s) => s.categoryId === 'cat-1')
-          );
+          return createSelectBuilderSync(mockSections.filter((s) => s.categoryId === 'cat-1'));
         }
 
         if (columns && typeof columns === 'object' && 'count' in columns) {
@@ -542,9 +532,7 @@ describe('SettingsService', () => {
         }
 
         if (selectCallCount === 5) {
-          return createSelectBuilderSync(
-            mockSections.filter((s) => s.categoryId === 'cat-2')
-          );
+          return createSelectBuilderSync(mockSections.filter((s) => s.categoryId === 'cat-2'));
         }
 
         return createSelectBuilderSync([{ count: 1 }]);
@@ -570,9 +558,7 @@ describe('SettingsService', () => {
 
   describe('getDueSoonRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('returns stored value %d when valid', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: String(value) }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
 
       const result = await SettingsService.getDueSoonRange();
 
@@ -589,40 +575,34 @@ describe('SettingsService', () => {
 
     it('returns default (7) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getDueSoonRange();
 
       expect(result).toBe(7);
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: 'invalid' },
-        'Invalid dueSoonRange value, defaulting to 7'
+        'Invalid dueSoonRange value, defaulting to 7',
       );
     });
 
     it('returns default (7) when stored value is out of allowed range', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: '99' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: '99' }]));
 
       const result = await SettingsService.getDueSoonRange();
 
       expect(result).toBe(7);
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: '99' },
-        'Invalid dueSoonRange value, defaulting to 7'
+        'Invalid dueSoonRange value, defaulting to 7',
       );
     });
   });
 
   describe('setDueSoonRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('updates setting when valid value %d', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
       (db.insert as jest.Mock).mockReturnValue({
@@ -640,7 +620,7 @@ describe('SettingsService', () => {
     it('throws error when value is invalid', async () => {
       await expect(
         // @ts-expect-error Testing invalid input
-        SettingsService.setDueSoonRange(99)
+        SettingsService.setDueSoonRange(99),
       ).rejects.toThrow('Invalid days value');
     });
 
@@ -648,16 +628,14 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setDueSoonRange(7)).rejects.toThrow(
-        'Behavior Options section not found'
+        'Behavior Options section not found',
       );
     });
   });
 
   describe('getPaidRecentlyRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('returns stored value %d when valid', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: String(value) }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
 
       const result = await SettingsService.getPaidRecentlyRange();
 
@@ -674,25 +652,21 @@ describe('SettingsService', () => {
 
     it('returns default (7) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getPaidRecentlyRange();
 
       expect(result).toBe(7);
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: 'invalid' },
-        'Invalid paidRecentlyRange value, defaulting to 7'
+        'Invalid paidRecentlyRange value, defaulting to 7',
       );
     });
   });
 
   describe('setPaidRecentlyRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('updates setting when valid value %d', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
       (db.insert as jest.Mock).mockReturnValue({
@@ -710,7 +684,7 @@ describe('SettingsService', () => {
     it('throws error when value is invalid', async () => {
       await expect(
         // @ts-expect-error Testing invalid input
-        SettingsService.setPaidRecentlyRange(99)
+        SettingsService.setPaidRecentlyRange(99),
       ).rejects.toThrow('Invalid days value');
     });
 
@@ -718,16 +692,14 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setPaidRecentlyRange(7)).rejects.toThrow(
-        'Behavior Options section not found'
+        'Behavior Options section not found',
       );
     });
   });
 
   describe('getBillEndAction', () => {
     it('returns stored value when set to archive', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'archive' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'archive' }]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -736,7 +708,7 @@ describe('SettingsService', () => {
 
     it('returns mark_as_paid when stored value is mark_as_paid', async () => {
       (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'mark_as_paid' }])
+        createSelectBuilderSync([{ value: 'mark_as_paid' }]),
       );
 
       const result = await SettingsService.getBillEndAction();
@@ -753,9 +725,7 @@ describe('SettingsService', () => {
     });
 
     it('returns mark_as_paid for any value other than archive', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -764,31 +734,29 @@ describe('SettingsService', () => {
   });
 
   describe('setBillEndAction', () => {
-    it.each([
-      ['mark_as_paid' as const],
-      ['archive' as const],
-    ])('updates setting when valid action %s provided', async (action) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+    it.each([['mark_as_paid' as const], ['archive' as const]])(
+      'updates setting when valid action %s provided',
+      async (action) => {
+        (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          onConflictDoUpdate: onConflictDoUpdateMock,
-        }),
-      });
+        const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
+        (db.insert as jest.Mock).mockReturnValue({
+          values: jest.fn().mockReturnValue({
+            onConflictDoUpdate: onConflictDoUpdateMock,
+          }),
+        });
 
-      await SettingsService.setBillEndAction(action);
+        await SettingsService.setBillEndAction(action);
 
-      expect(db.insert).toHaveBeenCalledWith(settings);
-      expect(onConflictDoUpdateMock).toHaveBeenCalled();
-    });
+        expect(db.insert).toHaveBeenCalledWith(settings);
+        expect(onConflictDoUpdateMock).toHaveBeenCalled();
+      },
+    );
 
     it('throws error when action value is invalid', async () => {
       await expect(
         // @ts-expect-error Testing invalid input
-        SettingsService.setBillEndAction('invalid')
+        SettingsService.setBillEndAction('invalid'),
       ).rejects.toThrow('Invalid action value');
     });
 
@@ -796,7 +764,7 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setBillEndAction('archive')).rejects.toThrow(
-        'Behavior Options section not found'
+        'Behavior Options section not found',
       );
     });
   });
@@ -807,9 +775,7 @@ describe('SettingsService', () => {
       ['next_business_day' as const],
       ['previous_business_day' as const],
     ])('returns stored value when set to %s', async (strategy) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: strategy }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: strategy }]));
 
       const result = await SettingsService.getWeekendAdjustment();
 
@@ -825,9 +791,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default for invalid value', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getWeekendAdjustment();
 
@@ -841,9 +805,7 @@ describe('SettingsService', () => {
       ['next_business_day' as const],
       ['previous_business_day' as const],
     ])('updates setting when valid strategy %s provided', async (strategy) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
       (db.insert as jest.Mock).mockReturnValue({
@@ -861,7 +823,7 @@ describe('SettingsService', () => {
     it('throws error when strategy value is invalid', async () => {
       await expect(
         // @ts-expect-error Testing invalid input
-        SettingsService.setWeekendAdjustment('invalid')
+        SettingsService.setWeekendAdjustment('invalid'),
       ).rejects.toThrow('Invalid strategy value');
     });
 
@@ -869,16 +831,14 @@ describe('SettingsService', () => {
       (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setWeekendAdjustment('unchanged')).rejects.toThrow(
-        'Behavior Options section not found'
+        'Behavior Options section not found',
       );
     });
   });
 
   describe('getIncludeAutoPayInDueSoon', () => {
     it('returns true when stored value is "true"', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'true' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -886,9 +846,7 @@ describe('SettingsService', () => {
     });
 
     it('returns false when stored value is "false"', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'false' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -905,25 +863,21 @@ describe('SettingsService', () => {
 
     it('returns default (true) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
       expect(result).toBe(true);
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: 'invalid' },
-        'Invalid includeAutoPayInDueSoon value, defaulting to true'
+        'Invalid includeAutoPayInDueSoon value, defaulting to true',
       );
     });
   });
 
   describe('getAutoLogAutoPay', () => {
     it('returns true when stored value is "true"', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'true' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -931,9 +885,7 @@ describe('SettingsService', () => {
     });
 
     it('returns false when stored value is "false"', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'false' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -950,16 +902,14 @@ describe('SettingsService', () => {
 
     it('returns default (true) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'invalid' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
       expect(result).toBe(true);
       expect(mockLogger.error).toHaveBeenCalledWith(
         { invalidValue: 'invalid' },
-        'Invalid autoLogAutoPay value, defaulting to true'
+        'Invalid autoLogAutoPay value, defaulting to true',
       );
     });
   });
@@ -969,9 +919,7 @@ describe('SettingsService', () => {
       [true, 'true'],
       [false, 'false'],
     ])('updates setting when value is %s', async (value, expectedString) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ id: 'section-id' }])
-      );
+      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
       const valuesMock = jest.fn().mockReturnValue({
         onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
@@ -991,9 +939,9 @@ describe('SettingsService', () => {
     it('throws error when section not found', async () => {
       (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
 
-      await expect(
-        SettingsService.setIncludeAutoPayInDueSoon(true)
-      ).rejects.toThrow('View Options section not found');
+      await expect(SettingsService.setIncludeAutoPayInDueSoon(true)).rejects.toThrow(
+        'View Options section not found',
+      );
     });
   });
 
@@ -1045,7 +993,7 @@ describe('SettingsService', () => {
             slug: cat.slug,
             name: cat.name,
             displayOrder: cat.displayOrder,
-          })
+          }),
         );
         callIndex++;
       }
@@ -1061,7 +1009,7 @@ describe('SettingsService', () => {
             description: section.description,
             displayOrder: section.displayOrder,
             categoryId: expect.any(String),
-          })
+          }),
         );
         callIndex++;
       }
@@ -1075,7 +1023,7 @@ describe('SettingsService', () => {
             key: setting.key,
             value: setting.value,
             sectionId: expect.any(String),
-          })
+          }),
         );
         callIndex++;
       }

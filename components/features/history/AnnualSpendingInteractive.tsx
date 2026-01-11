@@ -6,7 +6,10 @@ import { AnnualSpendingList } from './AnnualSpendingList';
 import { AnnualSpendingSummary } from './AnnualSpendingSummary';
 import { ScrollableContainer } from '@/components/common/ScrollableContainer';
 import { ReportSidebar } from '@/components/layout/ReportSidebar';
-import type { AggregatedBillSpending, AnnualSpendingSummary as AnnualSpendingSummaryType } from '@/lib/types';
+import type {
+  AggregatedBillSpending,
+  AnnualSpendingSummary as AnnualSpendingSummaryType,
+} from '@/lib/types';
 
 interface AnnualSpendingInteractiveProps {
   data: AggregatedBillSpending[];
@@ -71,4 +74,3 @@ export function AnnualSpendingInteractive({
     </div>
   );
 }
-

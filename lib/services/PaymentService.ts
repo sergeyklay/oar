@@ -93,10 +93,13 @@ export const PaymentService = {
    * @returns PaymentResult with new bill state values
    */
   processPayment(
-    bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'endDate' | 'isVariable'>,
+    bill: Pick<
+      Bill,
+      'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'endDate' | 'isVariable'
+    >,
     paymentAmount: number,
     paidAt: Date,
-    updateDueDate: boolean
+    updateDueDate: boolean,
   ): PaymentResult {
     // Validate paidAt before processing
     validatePaymentDate(paidAt);
@@ -119,7 +122,7 @@ export const PaymentService = {
       const nextDueDate = RecurrenceService.calculateNextDueDate(
         bill.dueDate,
         bill.frequency,
-        bill.endDate ?? null
+        bill.endDate ?? null,
       );
 
       // One-time bill or end date reached (nextDueDate is null)
@@ -204,11 +207,11 @@ export const PaymentService = {
    */
   recalculateBillFromPayments(
     bill: Pick<Bill, 'amount' | 'amountDue' | 'dueDate' | 'frequency' | 'status' | 'isVariable'>,
-    transactions: Transaction[]
+    transactions: Transaction[],
   ): BillState {
     // Filter transactions to current cycle only
     const currentCycleTransactions = transactions.filter(
-      (tx) => !isPaymentHistorical(bill, tx.paidAt)
+      (tx) => !isPaymentHistorical(bill, tx.paidAt),
     );
 
     // If no payments in current cycle, check if we need to revert to previous cycle
@@ -220,7 +223,7 @@ export const PaymentService = {
         // Check if there are payments in the previous cycle
         const previousBill = { dueDate: previousDueDate, frequency: bill.frequency };
         const previousCycleTransactions = transactions.filter(
-          (tx) => !isPaymentHistorical(previousBill, tx.paidAt)
+          (tx) => !isPaymentHistorical(previousBill, tx.paidAt),
         );
 
         if (previousCycleTransactions.length === 0) {
@@ -233,10 +236,7 @@ export const PaymentService = {
         }
 
         // There are payments in previous cycle, calculate based on those
-        const totalPaid = previousCycleTransactions.reduce(
-          (sum, tx) => sum + tx.amount,
-          0
-        );
+        const totalPaid = previousCycleTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
         // Variable bills: if cycle advanced (totalPaid > 0), preserve current cycle
         // Don't revert based on amount mismatch - each cycle is independent
@@ -284,18 +284,12 @@ export const PaymentService = {
     }
 
     // Calculate total paid in current cycle
-    const totalPaid = currentCycleTransactions.reduce(
-      (sum, tx) => sum + tx.amount,
-      0
-    );
+    const totalPaid = currentCycleTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
     // Determine if cycle should advance
     // If total paid >= amountDue, advance cycle
     if (totalPaid >= bill.amountDue) {
-      const nextDueDate = RecurrenceService.calculateNextDueDate(
-        bill.dueDate,
-        bill.frequency
-      );
+      const nextDueDate = RecurrenceService.calculateNextDueDate(bill.dueDate, bill.frequency);
 
       if (nextDueDate === null) {
         // One-time bill fully paid
@@ -347,7 +341,7 @@ export const PaymentService = {
    */
   doesPaymentAffectCurrentCycle(
     bill: Pick<Bill, 'dueDate' | 'frequency'>,
-    transaction: Transaction
+    transaction: Transaction,
   ): boolean {
     // Check if payment is in current cycle (not historical)
     if (!isPaymentHistorical(bill, transaction.paidAt)) {
@@ -368,4 +362,3 @@ export const PaymentService = {
     return !isPaymentHistorical(previousCycleBill, transaction.paidAt);
   },
 };
-

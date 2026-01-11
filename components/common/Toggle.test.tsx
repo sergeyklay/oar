@@ -44,12 +44,7 @@ describe('Toggle', () => {
   });
 
   it('renders description when provided', () => {
-    render(
-      <Toggle
-        {...defaultProps}
-        description="This is a test description"
-      />
-    );
+    render(<Toggle {...defaultProps} description="This is a test description" />);
 
     expect(screen.getByText('This is a test description')).toBeInTheDocument();
   });
@@ -100,12 +95,7 @@ describe('Toggle', () => {
   });
 
   it('applies custom className to container', () => {
-    render(
-      <Toggle
-        {...defaultProps}
-        className="rounded-lg border p-3"
-      />
-    );
+    render(<Toggle {...defaultProps} className="rounded-lg border p-3" />);
 
     const switchElement = document.getElementById('test-toggle');
     expect(switchElement).toBeInTheDocument();

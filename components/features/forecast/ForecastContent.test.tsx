@@ -201,4 +201,3 @@ describe('ForecastContent', () => {
     expect(screen.getByTestId('forecast-summary')).toBeInTheDocument();
   });
 });
-

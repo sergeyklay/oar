@@ -12,7 +12,12 @@ interface CalendarPanelProps {
   getDateData?: (month: string) => Promise<DateStatusMap | PaymentDateMap>;
 }
 
-export function CalendarPanel({ weekStartsOn = 0, disableDateFilter = false, dotMode, getDateData }: CalendarPanelProps) {
+export function CalendarPanel({
+  weekStartsOn = 0,
+  disableDateFilter = false,
+  dotMode,
+  getDateData,
+}: CalendarPanelProps) {
   return (
     <aside className="calendar-panel bg-card px-4 pt-4">
       <CalendarWidget

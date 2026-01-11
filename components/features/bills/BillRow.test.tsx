@@ -30,15 +30,10 @@ const renderBillRow = (bill: BillWithTags, isArchived?: boolean) => {
     <table>
       <tbody>
         <tr>
-          <BillRow
-            bill={bill}
-            currency="USD"
-            locale="en-US"
-            isArchived={isArchived}
-          />
+          <BillRow bill={bill} currency="USD" locale="en-US" isArchived={isArchived} />
         </tr>
       </tbody>
-    </table>
+    </table>,
   );
 };
 
@@ -91,7 +86,9 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      expect(screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}`),
+      ).toBeInTheDocument();
     });
 
     it('displays bill frequency as human-readable label with auto indicator', () => {
@@ -99,19 +96,45 @@ describe('BillRow', () => {
 
       renderBillRow(bill);
 
-      expect(screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.auto}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.auto}`),
+      ).toBeInTheDocument();
     });
 
     it('displays correct human-readable label for all frequency types', () => {
       const frequencies: Array<{ freq: BillFrequency; expected: string }> = [
-        { freq: 'weekly', expected: `${FREQUENCY_DISPLAY_LABELS.weekly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'biweekly', expected: `${FREQUENCY_DISPLAY_LABELS.biweekly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'twicemonthly', expected: `${FREQUENCY_DISPLAY_LABELS.twicemonthly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'monthly', expected: `${FREQUENCY_DISPLAY_LABELS.monthly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'bimonthly', expected: `${FREQUENCY_DISPLAY_LABELS.bimonthly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'quarterly', expected: `${FREQUENCY_DISPLAY_LABELS.quarterly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'yearly', expected: `${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}` },
-        { freq: 'once', expected: `${FREQUENCY_DISPLAY_LABELS.once} • ${PAYMENT_MODE_LABELS.manual}` },
+        {
+          freq: 'weekly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.weekly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'biweekly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.biweekly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'twicemonthly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.twicemonthly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'monthly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.monthly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'bimonthly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.bimonthly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'quarterly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.quarterly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'yearly',
+          expected: `${FREQUENCY_DISPLAY_LABELS.yearly} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
+        {
+          freq: 'once',
+          expected: `${FREQUENCY_DISPLAY_LABELS.once} • ${PAYMENT_MODE_LABELS.manual}`,
+        },
       ];
 
       for (const { freq, expected } of frequencies) {
@@ -124,9 +147,7 @@ describe('BillRow', () => {
 
     it('does not display tags in row (tags shown in detail panel only)', () => {
       const bill = createMockBill({
-        tags: [
-          { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
-        ],
+        tags: [{ id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() }],
       });
 
       renderBillRow(bill);
@@ -213,7 +234,11 @@ describe('BillRow', () => {
     });
 
     it('displays normal due date when isArchived is false', () => {
-      const activeBill = createMockBill({ isArchived: false, dueDate: new Date('2025-12-15'), status: 'pending' });
+      const activeBill = createMockBill({
+        isArchived: false,
+        dueDate: new Date('2025-12-15'),
+        status: 'pending',
+      });
 
       renderBillRow(activeBill, false);
 
@@ -223,7 +248,11 @@ describe('BillRow', () => {
     });
 
     it('displays normal due date when isArchived prop is undefined', () => {
-      const activeBill = createMockBill({ isArchived: false, dueDate: new Date('2025-12-15'), status: 'pending' });
+      const activeBill = createMockBill({
+        isArchived: false,
+        dueDate: new Date('2025-12-15'),
+        status: 'pending',
+      });
 
       renderBillRow(activeBill);
 

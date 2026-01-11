@@ -19,11 +19,7 @@ interface ForecastRowProps {
  *
  * Render Mode: Server Component (no hooks, pure presentation)
  */
-export function ForecastRow({
-  bill,
-  currency,
-  locale,
-}: ForecastRowProps) {
+export function ForecastRow({ bill, currency, locale }: ForecastRowProps) {
   return (
     <tr>
       <td className="w-10 text-center">
@@ -33,23 +29,17 @@ export function ForecastRow({
         <div className="flex flex-col">
           <span className="font-medium">{bill.title}</span>
           <span className="text-xs text-muted-foreground">
-            {FREQUENCY_DISPLAY_LABELS[bill.frequency]} • {bill.isAutoPay ? PAYMENT_MODE_LABELS.auto : PAYMENT_MODE_LABELS.manual}
+            {FREQUENCY_DISPLAY_LABELS[bill.frequency]} •{' '}
+            {bill.isAutoPay ? PAYMENT_MODE_LABELS.auto : PAYMENT_MODE_LABELS.manual}
           </span>
         </div>
       </td>
       <td className="text-right">
         <div className="flex flex-col items-end">
-          <span
-            className={cn(
-              'font-mono',
-              bill.isEstimated && 'text-muted-foreground'
-            )}
-          >
+          <span className={cn('font-mono', bill.isEstimated && 'text-muted-foreground')}>
             {formatMoney(bill.displayAmount, currency, locale)}
           </span>
-          {bill.isEstimated && (
-            <span className="text-xs text-muted-foreground">(estimate)</span>
-          )}
+          {bill.isEstimated && <span className="text-xs text-muted-foreground">(estimate)</span>}
         </div>
       </td>
       <td className="text-right">
@@ -72,4 +62,3 @@ export function ForecastRow({
     </tr>
   );
 }
-

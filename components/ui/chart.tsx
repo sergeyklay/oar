@@ -52,21 +52,17 @@ export function sanitizeColorValue(value: string): string {
   }
 
   // Allow hex colors (# followed by exactly 3, 4, 6, or 8 hex digits)
-  if (/^#[0-9a-fA-F]{3}$/.test(trimmed) ||
-      /^#[0-9a-fA-F]{4}$/.test(trimmed) ||
-      /^#[0-9a-fA-F]{6}$/.test(trimmed) ||
-      /^#[0-9a-fA-F]{8}$/.test(trimmed)) {
+  if (
+    /^#[0-9a-fA-F]{3}$/.test(trimmed) ||
+    /^#[0-9a-fA-F]{4}$/.test(trimmed) ||
+    /^#[0-9a-fA-F]{6}$/.test(trimmed) ||
+    /^#[0-9a-fA-F]{8}$/.test(trimmed)
+  ) {
     return trimmed;
   }
 
   // Allow basic named colors (whitelist approach for safety)
-  const safeNamedColors = [
-    'transparent',
-    'currentcolor',
-    'inherit',
-    'initial',
-    'unset',
-  ];
+  const safeNamedColors = ['transparent', 'currentcolor', 'inherit', 'initial', 'unset'];
   const normalized = trimmed.toLowerCase();
   if (safeNamedColors.includes(normalized)) {
     return normalized;
@@ -90,9 +86,7 @@ const ChartContainer = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'> & {
     config: ChartConfig;
-    children: React.ComponentProps<
-      typeof RechartsPrimitive.ResponsiveContainer
-    >['children'];
+    children: React.ComponentProps<typeof RechartsPrimitive.ResponsiveContainer>['children'];
     initialDimension?: { width: number; height: number };
   }
 >(({ id, className, children, config, initialDimension, ...props }, ref) => {
@@ -105,14 +99,12 @@ const ChartContainer = React.forwardRef<
       ref={ref}
       className={cn(
         'flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke="#ccc"]]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke="#fff"]]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke="#ccc"]]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke="#fff"]]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none',
-        className
+        className,
       )}
       {...props}
     >
       <ChartStyle id={chartId} config={config} />
-      <RechartsPrimitive.ResponsiveContainer
-        initialDimension={initialDimension}
-      >
+      <RechartsPrimitive.ResponsiveContainer initialDimension={initialDimension}>
         {children}
       </RechartsPrimitive.ResponsiveContainer>
     </div>
@@ -132,7 +124,7 @@ ChartContainer.displayName = 'Chart';
  */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
-    ([, configItem]) => configItem.theme || configItem.color
+    ([, configItem]) => configItem.theme || configItem.color,
   );
 
   if (!colorConfig.length) {
@@ -152,10 +144,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
             const escapedKey = escapeCssIdentifier(key);
 
             // Sanitize color values to prevent CSS injection
-            const rawColor =
-              itemConfig.theme?.light || itemConfig.color || 'hsl(var(--chart-1))';
-            const rawDark =
-              itemConfig.theme?.dark || itemConfig.color || 'hsl(var(--chart-1))';
+            const rawColor = itemConfig.theme?.light || itemConfig.color || 'hsl(var(--chart-1))';
+            const rawDark = itemConfig.theme?.dark || itemConfig.color || 'hsl(var(--chart-1))';
             const color = sanitizeColorValue(rawColor);
             const dark = sanitizeColorValue(rawDark);
 
@@ -201,7 +191,7 @@ interface ChartTooltipContentProps {
     name: unknown,
     item: unknown,
     index: number,
-    payload: unknown
+    payload: unknown,
   ) => React.ReactNode;
   className?: string;
   labelClassName?: string;
@@ -219,22 +209,14 @@ interface TooltipIndicatorProps {
   nestLabel: boolean;
 }
 
-const TooltipIndicator = ({
-  indicator,
-  color,
-  nestLabel,
-}: TooltipIndicatorProps) => (
+const TooltipIndicator = ({ indicator, color, nestLabel }: TooltipIndicatorProps) => (
   <div
-    className={cn(
-      'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
-      {
-        'h-2.5 w-2.5': indicator === 'dot',
-        'w-1': indicator === 'line',
-        'w-0 border-[1.5px] border-dashed bg-transparent':
-          indicator === 'dashed',
-        'my-0.5': nestLabel && indicator === 'dashed',
-      }
-    )}
+    className={cn('shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]', {
+      'h-2.5 w-2.5': indicator === 'dot',
+      'w-1': indicator === 'line',
+      'w-0 border-[1.5px] border-dashed bg-transparent': indicator === 'dashed',
+      'my-0.5': nestLabel && indicator === 'dashed',
+    })}
     style={
       {
         '--color-bg': color,
@@ -244,9 +226,7 @@ const TooltipIndicator = ({
   />
 );
 
-type TooltipPayloadItem = NonNullable<
-  ChartTooltipContentProps['payload']
->[number];
+type TooltipPayloadItem = NonNullable<ChartTooltipContentProps['payload']>[number];
 
 interface TooltipItemContentProps {
   item: TooltipPayloadItem;
@@ -271,43 +251,26 @@ const TooltipItemContent = ({
   formatter,
   formatterIndex,
 }: TooltipItemContentProps) => {
-  const shouldUseFormatter =
-    formatter && item?.value !== undefined && item.name;
+  const shouldUseFormatter = formatter && item?.value !== undefined && item.name;
 
   if (shouldUseFormatter) {
-    return (
-      <>
-        {formatter(
-          item.value,
-          item.name,
-          item,
-          formatterIndex,
-          item.payload || {}
-        )}
-      </>
-    );
+    return <>{formatter(item.value, item.name, item, formatterIndex, item.payload || {})}</>;
   }
 
   return (
     <>
       {itemConfig && !hideIndicator && (
-        <TooltipIndicator
-          indicator={indicator}
-          color={indicatorColor}
-          nestLabel={nestLabel}
-        />
+        <TooltipIndicator indicator={indicator} color={indicatorColor} nestLabel={nestLabel} />
       )}
       <div
         className={cn(
           'flex flex-1 justify-between leading-none',
-          nestLabel ? 'items-end' : 'items-center'
+          nestLabel ? 'items-end' : 'items-center',
         )}
       >
         <div className="grid gap-1.5">
           {nestLabel && tooltipLabel}
-          <span className="text-muted-foreground">
-            {itemConfig?.label || item.name}
-          </span>
+          <span className="text-muted-foreground">{itemConfig?.label || item.name}</span>
         </div>
         {item.value != null && (
           <span className="font-mono font-medium tabular-nums text-foreground">
@@ -333,10 +296,7 @@ const TooltipItemContent = ({
  * @param {Function} labelFormatter - Optional function to format tooltip label.
  * @returns Tooltip content element, or null if not active or no payload.
  */
-const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
-  ChartTooltipContentProps
->(
+const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>(
   (
     {
       active,
@@ -353,7 +313,7 @@ const ChartTooltipContent = React.forwardRef<
       nameKey,
       labelKey,
     },
-    ref
+    ref,
   ) => {
     const tooltipLabel = React.useMemo(() => {
       if (hideLabel || !payload?.length) {
@@ -366,9 +326,7 @@ const ChartTooltipContent = React.forwardRef<
 
       if (labelFormatter) {
         return (
-          <div className={cn('font-medium', labelClassName)}>
-            {labelFormatter(label, payload)}
-          </div>
+          <div className={cn('font-medium', labelClassName)}>{labelFormatter(label, payload)}</div>
         );
       }
 
@@ -381,14 +339,7 @@ const ChartTooltipContent = React.forwardRef<
           {typeof label === 'string' ? label : itemConfig?.label || key}
         </div>
       );
-    }, [
-      label,
-      labelFormatter,
-      payload,
-      hideLabel,
-      labelClassName,
-      labelKey,
-    ]);
+    }, [label, labelFormatter, payload, hideLabel, labelClassName, labelKey]);
 
     if (!active || !payload?.length) {
       return null;
@@ -401,7 +352,7 @@ const ChartTooltipContent = React.forwardRef<
         ref={ref}
         className={cn(
           'grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
-          className
+          className,
         )}
       >
         {!nestLabel && tooltipLabel}
@@ -409,15 +360,14 @@ const ChartTooltipContent = React.forwardRef<
           {payload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || 'value'}`;
             const itemConfig = item.payload?.config?.[key];
-            const indicatorColor =
-              color || item.payload?.fill || item.color || '';
+            const indicatorColor = color || item.payload?.fill || item.color || '';
 
             return (
               <div
                 key={item.dataKey ?? `item-${index}`}
                 className={cn(
                   'flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground',
-                  indicator === 'dot' && 'items-center'
+                  indicator === 'dot' && 'items-center',
                 )}
               >
                 <TooltipItemContent
@@ -437,7 +387,7 @@ const ChartTooltipContent = React.forwardRef<
         </div>
       </div>
     );
-  }
+  },
 );
 ChartTooltipContent.displayName = 'ChartTooltipContent';
 
@@ -476,11 +426,7 @@ const ChartLegendContent = React.forwardRef<
   }
 
   return (
-    <div
-      ref={ref}
-      className={cn('flex flex-wrap items-center gap-4', className)}
-      {...props}
-    >
+    <div ref={ref} className={cn('flex flex-wrap items-center gap-4', className)} {...props}>
       {payload.map((item) => {
         const key = item.value || item.id || '';
         const itemConfig = config?.[key];
@@ -492,13 +438,8 @@ const ChartLegendContent = React.forwardRef<
 
         return (
           <div key={item.id || key} className="flex items-center gap-2">
-            <div
-              className="h-3 w-3 rounded-sm"
-              style={{ backgroundColor: color }}
-            />
-            <span className="text-xs text-muted-foreground">
-              {itemConfig?.label || item.value}
-            </span>
+            <div className="h-3 w-3 rounded-sm" style={{ backgroundColor: color }} />
+            <span className="text-xs text-muted-foreground">{itemConfig?.label || item.value}</span>
           </div>
         );
       })}
@@ -539,4 +480,3 @@ export {
   ChartStyle,
   type ChartConfig,
 };
-

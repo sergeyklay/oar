@@ -12,11 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { calendarSearchParams } from '@/lib/search-params';
 import type { Tag } from '@/lib/types';
@@ -35,7 +31,7 @@ interface TagFilterProps {
 export function TagFilter({ tags }: TagFilterProps) {
   const [selectedTag, setSelectedTag] = useQueryState(
     'tag',
-    calendarSearchParams.tag.withOptions({ shallow: false })
+    calendarSearchParams.tag.withOptions({ shallow: false }),
   );
 
   const activeTag = tags.find((t) => t.slug === selectedTag);

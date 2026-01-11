@@ -61,9 +61,7 @@
       "indexes": {
         "bill_categories_slug_unique": {
           "name": "bill_categories_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -72,12 +70,8 @@
           "name": "bill_categories_group_id_bill_category_groups_id_fk",
           "tableFrom": "bill_categories",
           "tableTo": "bill_category_groups",
-          "columnsFrom": [
-            "group_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["group_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -129,9 +123,7 @@
       "indexes": {
         "bill_category_groups_slug_unique": {
           "name": "bill_category_groups_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -268,12 +260,8 @@
           "name": "bills_category_id_bill_categories_id_fk",
           "tableFrom": "bills",
           "tableTo": "bill_categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -306,12 +294,8 @@
           "name": "bills_to_tags_bill_id_bills_id_fk",
           "tableFrom": "bills_to_tags",
           "tableTo": "bills",
-          "columnsFrom": [
-            "bill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -319,22 +303,15 @@
           "name": "bills_to_tags_tag_id_tags_id_fk",
           "tableFrom": "bills_to_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "bills_to_tags_bill_id_tag_id_pk": {
-          "columns": [
-            "bill_id",
-            "tag_id"
-          ],
+          "columns": ["bill_id", "tag_id"],
           "name": "bills_to_tags_bill_id_tag_id_pk"
         }
       },
@@ -379,12 +356,8 @@
           "name": "settings_section_id_settings_sections_id_fk",
           "tableFrom": "settings",
           "tableTo": "settings_sections",
-          "columnsFrom": [
-            "section_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["section_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -436,9 +409,7 @@
       "indexes": {
         "settings_categories_slug_unique": {
           "name": "settings_categories_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -504,10 +475,7 @@
       "indexes": {
         "category_slug_unique": {
           "name": "category_slug_unique",
-          "columns": [
-            "category_id",
-            "slug"
-          ],
+          "columns": ["category_id", "slug"],
           "isUnique": true
         }
       },
@@ -516,12 +484,8 @@
           "name": "settings_sections_category_id_settings_categories_id_fk",
           "tableFrom": "settings_sections",
           "tableTo": "settings_categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -565,9 +529,7 @@
       "indexes": {
         "tags_slug_unique": {
           "name": "tags_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -628,12 +590,8 @@
           "name": "transactions_bill_id_bills_id_fk",
           "tableFrom": "transactions",
           "tableTo": "bills",
-          "columnsFrom": [
-            "bill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

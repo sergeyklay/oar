@@ -20,7 +20,7 @@ const isTest = process.env.NODE_ENV === 'test';
 function createBaseLogger(): pino.Logger {
   if (isTest) {
     return pino({
-      level: 'silent'
+      level: 'silent',
     });
   }
 
@@ -75,4 +75,3 @@ const baseLogger = createBaseLogger();
 export function getLogger(name: string): pino.Logger {
   return baseLogger.child({ name });
 }
-

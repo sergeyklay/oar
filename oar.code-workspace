@@ -1,27 +1,22 @@
 {
   "folders": [
     {
-      "path": "."
-    }
+      "path": ".",
+    },
   ],
   "settings": {
-    "editor.rulers": [
-      100
-    ],
+    "editor.rulers": [100],
     "terminal.integrated.env.linux": {
-      "PAGER": "cat"
+      "PAGER": "cat",
     },
     "terminal.integrated.env.osx": {
-      "PAGER": "cat"
+      "PAGER": "cat",
     },
     "terminal.integrated.env.windows": {
-      "PAGER": "cat"
-    }
+      "PAGER": "cat",
+    },
   },
   "extensions": {
-    "recommendations": [
-      "mkhl.direnv",
-      "elagil.pre-commit-helper"
-    ]
-  }
+    "recommendations": ["mkhl.direnv", "elagil.pre-commit-helper"],
+  },
 }

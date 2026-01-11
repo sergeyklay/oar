@@ -14,7 +14,7 @@ describe('AppShell', () => {
     render(
       <AppShell>
         <div>Test Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -24,7 +24,7 @@ describe('AppShell', () => {
     render(
       <AppShell>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.getByTestId('calendar-panel')).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe('AppShell', () => {
     render(
       <AppShell rightPanel={null}>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.queryByTestId('calendar-panel')).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('AppShell', () => {
     render(
       <AppShell rightPanel={<div data-testid="custom-panel">Custom</div>}>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.getByTestId('custom-panel')).toBeInTheDocument();
@@ -55,10 +55,9 @@ describe('AppShell', () => {
     render(
       <AppShell rightPanel={null}>
         <div>Content</div>
-      </AppShell>
+      </AppShell>,
     );
 
     expect(screen.getByTestId('sidebar')).toBeInTheDocument();
   });
 });
-

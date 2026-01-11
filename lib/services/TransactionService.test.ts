@@ -94,7 +94,8 @@ const createTransactionQueryBuilder = (returnValue: Transaction[]): QueryBuilder
   const limitMock = jest.fn((limit: number) => Promise.resolve(returnValue.slice(0, limit)));
   const orderByMock = jest.fn().mockReturnValue({
     limit: limitMock,
-    then: (onResolve: (value: Transaction[]) => unknown) => Promise.resolve(returnValue).then(onResolve),
+    then: (onResolve: (value: Transaction[]) => unknown) =>
+      Promise.resolve(returnValue).then(onResolve),
   });
   const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
   const fromMock = jest.fn().mockReturnValue({ where: whereMock });
@@ -112,7 +113,8 @@ const createTransactionQueryBuilder = (returnValue: Transaction[]): QueryBuilder
 
 const createTagQueryBuilder = (returnValue: { id: string }[]) => {
   const whereMock = jest.fn().mockReturnValue({
-    then: (onResolve: (value: { id: string }[]) => unknown) => Promise.resolve(returnValue).then(onResolve),
+    then: (onResolve: (value: { id: string }[]) => unknown) =>
+      Promise.resolve(returnValue).then(onResolve),
   });
   const fromMock = jest.fn().mockReturnValue({ where: whereMock });
 
@@ -121,7 +123,8 @@ const createTagQueryBuilder = (returnValue: { id: string }[]) => {
 
 const createBillsToTagsQueryBuilder = (returnValue: { billId: string }[]) => {
   const whereMock = jest.fn().mockReturnValue({
-    then: (onResolve: (value: { billId: string }[]) => unknown) => Promise.resolve(returnValue).then(onResolve),
+    then: (onResolve: (value: { billId: string }[]) => unknown) =>
+      Promise.resolve(returnValue).then(onResolve),
   });
   const fromMock = jest.fn().mockReturnValue({ where: whereMock });
 
@@ -184,8 +187,14 @@ describe('TransactionService', () => {
 
         await TransactionService.getRecentPayments(0);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterStartUTC));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterEndUTC));
+        expect(mockGte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(boundaries.filterStartUTC),
+        );
+        expect(mockLte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(boundaries.filterEndUTC),
+        );
       });
 
       it('includes yesterday when days is 1 (UTC)', async () => {
@@ -199,8 +208,14 @@ describe('TransactionService', () => {
 
         await TransactionService.getRecentPayments(1);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
+        expect(mockGte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(startBoundaries.filterStartUTC),
+        );
+        expect(mockLte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(endBoundaries.filterEndUTC),
+        );
       });
 
       it('includes last 7 days when days is 7 (UTC)', async () => {
@@ -214,8 +229,14 @@ describe('TransactionService', () => {
 
         await TransactionService.getRecentPayments(7);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
+        expect(mockGte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(startBoundaries.filterStartUTC),
+        );
+        expect(mockLte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(endBoundaries.filterEndUTC),
+        );
       });
 
       it('includes last 30 days when days is 30 (UTC)', async () => {
@@ -229,8 +250,14 @@ describe('TransactionService', () => {
 
         await TransactionService.getRecentPayments(30);
 
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(startBoundaries.filterStartUTC));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(endBoundaries.filterEndUTC));
+        expect(mockGte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(startBoundaries.filterStartUTC),
+        );
+        expect(mockLte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(endBoundaries.filterEndUTC),
+        );
       });
 
       it('combines date conditions with and()', async () => {
@@ -240,7 +267,7 @@ describe('TransactionService', () => {
 
         expect(mockAnd).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'gte' }),
-          expect.objectContaining({ type: 'lte' })
+          expect.objectContaining({ type: 'lte' }),
         );
       });
     });
@@ -324,8 +351,14 @@ describe('TransactionService', () => {
         await TransactionService.getPaymentsByDate('2025-12-15');
 
         const boundaries = calculateDayFilterBoundaries('2025-12-15', 0);
-        expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterStartUTC));
-        expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, new Date(boundaries.filterEndUTC));
+        expect(mockGte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(boundaries.filterStartUTC),
+        );
+        expect(mockLte).toHaveBeenCalledWith(
+          transactions.paidAt,
+          new Date(boundaries.filterEndUTC),
+        );
       });
 
       it('orders results by paidAt descending', async () => {
@@ -343,7 +376,7 @@ describe('TransactionService', () => {
 
         expect(mockAnd).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'gte' }),
-          expect.objectContaining({ type: 'lte' })
+          expect.objectContaining({ type: 'lte' }),
         );
       });
 
@@ -385,37 +418,37 @@ describe('TransactionService', () => {
     describe('when date is invalid', () => {
       it('throws error for non-date string', async () => {
         await expect(TransactionService.getPaymentsByDate('not-a-date')).rejects.toThrow(
-          'Invalid date format: "not-a-date". Expected YYYY-MM-DD format.'
+          'Invalid date format: "not-a-date". Expected YYYY-MM-DD format.',
         );
       });
 
       it('throws error for invalid month', async () => {
         await expect(TransactionService.getPaymentsByDate('2025-13-01')).rejects.toThrow(
-          'Invalid date format: "2025-13-01". Expected YYYY-MM-DD format.'
+          'Invalid date format: "2025-13-01". Expected YYYY-MM-DD format.',
         );
       });
 
       it('throws error for invalid day', async () => {
         await expect(TransactionService.getPaymentsByDate('2025-12-32')).rejects.toThrow(
-          'Invalid date format: "2025-12-32". Expected YYYY-MM-DD format.'
+          'Invalid date format: "2025-12-32". Expected YYYY-MM-DD format.',
         );
       });
 
       it('throws error for invalid day in February', async () => {
         await expect(TransactionService.getPaymentsByDate('2025-02-30')).rejects.toThrow(
-          'Invalid date format: "2025-02-30". Expected YYYY-MM-DD format.'
+          'Invalid date format: "2025-02-30". Expected YYYY-MM-DD format.',
         );
       });
 
       it('throws error for empty string', async () => {
         await expect(TransactionService.getPaymentsByDate('')).rejects.toThrow(
-          'Invalid date format: "". Expected YYYY-MM-DD format.'
+          'Invalid date format: "". Expected YYYY-MM-DD format.',
         );
       });
 
       it('throws error for incomplete date', async () => {
         await expect(TransactionService.getPaymentsByDate('2025-12')).rejects.toThrow(
-          'Invalid date format: "2025-12". Expected YYYY-MM-DD format.'
+          'Invalid date format: "2025-12". Expected YYYY-MM-DD format.',
         );
       });
     });
@@ -565,7 +598,7 @@ describe('TransactionService', () => {
         expect(mockAnd).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'eq' }),
           expect.objectContaining({ type: 'gte' }),
-          expect.objectContaining({ type: 'lte' })
+          expect.objectContaining({ type: 'lte' }),
         );
       });
 
@@ -747,7 +780,7 @@ describe('TransactionService', () => {
 
         expect(mockAnd).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'gte' }),
-          expect.objectContaining({ type: 'lte' })
+          expect.objectContaining({ type: 'lte' }),
         );
       });
 
@@ -968,9 +1001,7 @@ describe('TransactionService', () => {
 
     describe('when fetching without tag filter', () => {
       it('returns monthly totals for specified range', async () => {
-        createTotalsQueryBuilder([
-          { amount: 208000, paidAt: new Date('2025-12-15').getTime() },
-        ]);
+        createTotalsQueryBuilder([{ amount: 208000, paidAt: new Date('2025-12-15').getTime() }]);
 
         const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1);
 
@@ -1064,7 +1095,11 @@ describe('TransactionService', () => {
         const tagBuilder = createTagQueryBuilder([]);
         (db.select as jest.Mock).mockReturnValue({ from: tagBuilder.from });
 
-        const result = await TransactionService.getMonthlyPaymentTotals('2025-12', 1, 'nonexistent');
+        const result = await TransactionService.getMonthlyPaymentTotals(
+          '2025-12',
+          1,
+          'nonexistent',
+        );
 
         expect(result).toEqual([]);
       });
@@ -1086,7 +1121,7 @@ describe('TransactionService', () => {
       billTitle: string,
       categoryIcon: string,
       amount: number,
-      paidAt?: Date
+      paidAt?: Date,
     ): YearAggregationResult => ({
       billId,
       billTitle,
@@ -1138,7 +1173,7 @@ describe('TransactionService', () => {
       expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, expectedYearEnd);
       expect(mockAnd).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'gte' }),
-        expect.objectContaining({ type: 'lte' })
+        expect.objectContaining({ type: 'lte' }),
       );
     });
 
@@ -1298,7 +1333,9 @@ describe('TransactionService', () => {
 
       const expectedYearStart = parseISO('2024-12-31T10:00:00.000Z');
       expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, expectedYearStart);
-      expect(paymentAtMidnightUTCPlus1.getTime()).toBeGreaterThanOrEqual(expectedYearStart.getTime());
+      expect(paymentAtMidnightUTCPlus1.getTime()).toBeGreaterThanOrEqual(
+        expectedYearStart.getTime(),
+      );
     });
 
     it('uses consistent UTC boundaries regardless of server timezone', async () => {
@@ -1317,7 +1354,7 @@ describe('TransactionService', () => {
 
       // Verify timestamps match expected values for UTC+14 (earliest) and UTC-12 (latest)
       expect(yearStartTimestamp).toBe(1735639200000); // 2024-12-31T10:00:00.000Z
-      expect(yearEndTimestamp).toBe(1767268799999);   // 2026-01-01T11:59:59.999Z
+      expect(yearEndTimestamp).toBe(1767268799999); // 2026-01-01T11:59:59.999Z
     });
 
     it('includes yearly boundary payments for a bill with monthly payments spanning the year', async () => {
@@ -1341,7 +1378,7 @@ describe('TransactionService', () => {
       const yearEnd = parseISO('2026-01-01T11:59:59.999Z');
 
       it('includes payment from UTC+14 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (14 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - 14 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2024-12-31T10:00:00.000Z');
@@ -1350,7 +1387,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC+12 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (12 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - 12 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2024-12-31T12:00:00.000Z');
@@ -1359,7 +1396,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC+7 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (7 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - 7 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2024-12-31T17:00:00.000Z');
@@ -1368,7 +1405,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC+2 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (2 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - 2 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2024-12-31T22:00:00.000Z');
@@ -1377,7 +1414,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC+1 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (1 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - 1 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2024-12-31T23:00:00.000Z');
@@ -1395,7 +1432,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC-5 logged on Jan 1, 2025 at midnight local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - (-5 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 0, 1, 0, 0, 0, 0) - -5 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2025-01-01T05:00:00.000Z');
@@ -1404,7 +1441,7 @@ describe('TransactionService', () => {
       });
 
       it('includes payment from UTC-12 logged on Dec 31, 2025 at 23:59:59 local time', async () => {
-        const paymentUtcTimestamp = Date.UTC(2025, 11, 31, 23, 59, 59, 999) - (-12 * 60 * 60 * 1000);
+        const paymentUtcTimestamp = Date.UTC(2025, 11, 31, 23, 59, 59, 999) - -12 * 60 * 60 * 1000;
         const paymentDate = new Date(paymentUtcTimestamp);
 
         expect(paymentDate.toISOString()).toBe('2026-01-01T11:59:59.999Z');
@@ -1420,26 +1457,113 @@ describe('TransactionService', () => {
         expect(mockGte).toHaveBeenCalledWith(transactions.paidAt, yearStart);
         expect(mockLte).toHaveBeenCalledWith(transactions.paidAt, yearEnd);
 
-        const timezoneOffsets: Array<{ offset: number; year: number; month: number; day: number; hour: number; minute: number; second: number; millisecond: number }> = [
-          { offset: 14, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: 12, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: 7, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: 2, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: 1, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: 0, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: -5, year: 2025, month: 0, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0 },
-          { offset: -12, year: 2025, month: 11, day: 31, hour: 23, minute: 59, second: 59, millisecond: 999 },
+        const timezoneOffsets: Array<{
+          offset: number;
+          year: number;
+          month: number;
+          day: number;
+          hour: number;
+          minute: number;
+          second: number;
+          millisecond: number;
+        }> = [
+          {
+            offset: 14,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: 12,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: 7,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: 2,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: 1,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: 0,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: -5,
+            year: 2025,
+            month: 0,
+            day: 1,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            millisecond: 0,
+          },
+          {
+            offset: -12,
+            year: 2025,
+            month: 11,
+            day: 31,
+            hour: 23,
+            minute: 59,
+            second: 59,
+            millisecond: 999,
+          },
         ];
 
-        timezoneOffsets.forEach(({ offset, year, month, day, hour, minute, second, millisecond }) => {
-          const paymentUtcTimestamp = Date.UTC(year, month, day, hour, minute, second, millisecond) - (offset * 60 * 60 * 1000);
-          const paymentDate = new Date(paymentUtcTimestamp);
-          const isWithinBounds = paymentDate.getTime() >= yearStart.getTime() && paymentDate.getTime() <= yearEnd.getTime();
+        timezoneOffsets.forEach(
+          ({ offset, year, month, day, hour, minute, second, millisecond }) => {
+            const paymentUtcTimestamp =
+              Date.UTC(year, month, day, hour, minute, second, millisecond) -
+              offset * 60 * 60 * 1000;
+            const paymentDate = new Date(paymentUtcTimestamp);
+            const isWithinBounds =
+              paymentDate.getTime() >= yearStart.getTime() &&
+              paymentDate.getTime() <= yearEnd.getTime();
 
-          expect(isWithinBounds).toBe(true);
-          expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
-          expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
-        });
+            expect(isWithinBounds).toBe(true);
+            expect(paymentDate.getTime()).toBeGreaterThanOrEqual(yearStart.getTime());
+            expect(paymentDate.getTime()).toBeLessThanOrEqual(yearEnd.getTime());
+          },
+        );
       });
     });
   });

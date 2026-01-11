@@ -80,8 +80,8 @@ export const AutoPayService = {
           ne(bills.status, 'paid'),
           lte(bills.dueDate, addDays(today, 2)),
           eq(bills.isArchived, false),
-          gt(bills.amountDue, 0)
-        )
+          gt(bills.amountDue, 0),
+        ),
       );
 
     let processed = 0;
@@ -93,13 +93,13 @@ export const AutoPayService = {
         // Resolve effective weekend adjustment strategy
         const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
           bill.weekendAdjustment,
-          globalStrategy
+          globalStrategy,
         );
 
         // Calculate adjusted due date using anchor date from database
         const adjustedDueDate = DateAdjustmentService.adjustPaymentDate(
           bill.dueDate, // Anchor date
-          effectiveStrategy
+          effectiveStrategy,
         );
 
         // Compare current moment against adjusted date (not anchor date) for eligibility
@@ -108,8 +108,12 @@ export const AutoPayService = {
         if (adjustedDueDate > now) {
           // Adjusted date hasn't arrived yet, skip this bill
           logger.debug(
-            { billId: bill.id, adjustedDueDate: adjustedDueDate.toISOString(), now: now.toISOString() },
-            'Skipping bill: due date not yet reached'
+            {
+              billId: bill.id,
+              adjustedDueDate: adjustedDueDate.toISOString(),
+              now: now.toISOString(),
+            },
+            'Skipping bill: due date not yet reached',
           );
           continue;
         }
@@ -118,7 +122,7 @@ export const AutoPayService = {
         const nextAnchorDate = RecurrenceService.calculateNextDueDate(
           bill.dueDate, // Use anchor, not adjusted
           bill.frequency,
-          bill.endDate ?? null
+          bill.endDate ?? null,
         );
 
         // Execute atomic transaction
@@ -173,10 +177,9 @@ export const AutoPayService = {
         processed,
         failed,
       },
-      'Processing complete'
+      'Processing complete',
     );
 
     return { processed, failed, failedIds };
   },
 };
-

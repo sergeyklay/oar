@@ -4,8 +4,12 @@ import { Calendar } from './calendar';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  Triangle: ({ className }: { className: string }) => <span data-testid="triangle-icon" className={className} />,
-  Circle: ({ className }: { className: string }) => <span data-testid="circle-icon" className={className} />,
+  Triangle: ({ className }: { className: string }) => (
+    <span data-testid="triangle-icon" className={className} />
+  ),
+  Circle: ({ className }: { className: string }) => (
+    <span data-testid="circle-icon" className={className} />
+  ),
 }));
 
 const MOCK_DATE = new Date('2025-06-15T12:00:00.000Z');
@@ -68,13 +72,10 @@ describe('Calendar UI Component', () => {
     expect(onGoToToday).toHaveBeenCalled();
   });
 
-  it.each(['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'])(
-    'renders %s weekday label',
-    (day) => {
-      render(<Calendar month={currentMonth} />);
-      expect(screen.getByText(day)).toBeInTheDocument();
-    }
-  );
+  it.each(['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'])('renders %s weekday label', (day) => {
+    render(<Calendar month={currentMonth} />);
+    expect(screen.getByText(day)).toBeInTheDocument();
+  });
 
   it('renders outside days by default', () => {
     render(<Calendar month={currentMonth} />);
@@ -181,4 +182,3 @@ describe('Calendar UI Component', () => {
     });
   });
 });
-

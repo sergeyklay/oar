@@ -12,7 +12,7 @@ describe('ReportSidebar', () => {
     render(
       <ReportSidebar>
         <div>Test Content</div>
-      </ReportSidebar>
+      </ReportSidebar>,
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -22,7 +22,7 @@ describe('ReportSidebar', () => {
     render(
       <ReportSidebar>
         <div>Content</div>
-      </ReportSidebar>
+      </ReportSidebar>,
     );
 
     expect(screen.getByTestId('scrollable-container')).toBeInTheDocument();
@@ -34,11 +34,10 @@ describe('ReportSidebar', () => {
       <ReportSidebar>
         <div>First</div>
         <div>Second</div>
-      </ReportSidebar>
+      </ReportSidebar>,
     );
 
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();
   });
 });
-

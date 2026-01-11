@@ -88,7 +88,9 @@ describe('PaymentHistorySection', () => {
     });
 
     it('displays last payment info when transactions exist', async () => {
-      const transactions = [createMockTransaction({ amount: 16420, paidAt: new Date('2025-06-20') })];
+      const transactions = [
+        createMockTransaction({ amount: 16420, paidAt: new Date('2025-06-20') }),
+      ];
       (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...defaultProps} />);
 
@@ -160,7 +162,12 @@ describe('PaymentHistorySection', () => {
     it('displays transaction list with formatted data', async () => {
       const transactions = [
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
-        createMockTransaction({ id: 'tx-2', amount: 15845, paidAt: new Date('2025-05-26'), notes: 'May payment' }),
+        createMockTransaction({
+          id: 'tx-2',
+          amount: 15845,
+          paidAt: new Date('2025-05-26'),
+          notes: 'May payment',
+        }),
       ];
       (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...expandedProps} />);
@@ -229,7 +236,10 @@ describe('PaymentHistorySection', () => {
       });
       expect(getTransactionsByBillId).toHaveBeenCalledTimes(1);
 
-      const newTransaction = createMockTransaction({ amount: 5000, paidAt: new Date('2025-07-15') });
+      const newTransaction = createMockTransaction({
+        amount: 5000,
+        paidAt: new Date('2025-07-15'),
+      });
       (getTransactionsByBillId as jest.Mock).mockResolvedValue([newTransaction]);
 
       rerender(<PaymentHistorySection {...defaultProps} refreshKey={1} />);
@@ -250,7 +260,10 @@ describe('PaymentHistorySection', () => {
   describe('handleDelete', () => {
     const expandedProps = { ...defaultProps, isExpanded: true };
 
-    async function selectAndDeleteTransaction(user: ReturnType<typeof userEvent.setup>, dateText: string) {
+    async function selectAndDeleteTransaction(
+      user: ReturnType<typeof userEvent.setup>,
+      dateText: string,
+    ) {
       await waitFor(() => {
         expect(screen.getByText(dateText)).toBeInTheDocument();
       });

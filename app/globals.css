@@ -238,11 +238,11 @@
   transition: background-color 0.15s ease;
 }
 
-.bill-row-clickable[data-selected="true"] {
+.bill-row-clickable[data-selected='true'] {
   background: hsl(var(--primary) / 0.15);
 }
 
-.bill-row-clickable[data-selected="true"]:hover {
+.bill-row-clickable[data-selected='true']:hover {
   background: hsl(var(--primary) / 0.2);
 }
 

@@ -148,9 +148,8 @@ To confirm the Forecast View works correctly:
 
 ## Related Documents
 
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
-* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
-* [Organizing Bills with Tags](./organizing-bills-with-tags.md) - Categorizing bills with tags
-* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
-
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Due This Month View](./due-this-month.md) - Bills due in the current calendar month
+- [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+- [Organizing Bills with Tags](./organizing-bills-with-tags.md) - Categorizing bills with tags
+- [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

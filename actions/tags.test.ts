@@ -48,11 +48,13 @@ describe('createTag', () => {
 
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{
-          id: 'new-id',
-          name: 'Personal',
-          slug: 'personal',
-        }]),
+        returning: jest.fn().mockResolvedValue([
+          {
+            id: 'new-id',
+            name: 'Personal',
+            slug: 'personal',
+          },
+        ]),
       }),
     });
 
@@ -77,11 +79,13 @@ describe('createTag', () => {
 
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{
-          id: 'new-id',
-          name: 'Business Expenses',
-          slug: 'business-expenses',
-        }]),
+        returning: jest.fn().mockResolvedValue([
+          {
+            id: 'new-id',
+            name: 'Business Expenses',
+            slug: 'business-expenses',
+          },
+        ]),
       }),
     });
 
@@ -102,11 +106,13 @@ describe('createTag', () => {
 
     (db.insert as jest.Mock).mockReturnValue({
       values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{
-          id: 'new-id',
-          name: 'My Credit Card!',
-          slug: 'my-credit-card',
-        }]),
+        returning: jest.fn().mockResolvedValue([
+          {
+            id: 'new-id',
+            name: 'My Credit Card!',
+            slug: 'my-credit-card',
+          },
+        ]),
       }),
     });
 

@@ -42,13 +42,7 @@ jest.mock('./AnnualSpendingList', () => ({
 }));
 
 jest.mock('./AnnualSpendingSummary', () => ({
-  AnnualSpendingSummary: ({
-    summary,
-    year,
-  }: {
-    summary: AnnualSpendingSummary;
-    year: string;
-  }) => (
+  AnnualSpendingSummary: ({ summary, year }: { summary: AnnualSpendingSummary; year: string }) => (
     <div data-testid="annual-spending-summary" data-year={year}>
       <div>Total Bills: {summary.totalBills}</div>
       <div>Total Payments: {summary.totalPayments}</div>
@@ -92,7 +86,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-graph')).toBeInTheDocument();
@@ -106,7 +100,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-list')).toBeInTheDocument();
@@ -120,7 +114,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-summary')).toBeInTheDocument();
@@ -134,7 +128,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('Total Bills: 2')).toBeInTheDocument();
@@ -150,7 +144,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2024"
-        />
+        />,
       );
 
       const summary = screen.getByTestId('annual-spending-summary');
@@ -167,7 +161,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const graph = screen.getByTestId('annual-spending-graph');
@@ -187,7 +181,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const graph = screen.getByTestId('annual-spending-graph');
@@ -210,7 +204,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const list = screen.getByTestId('annual-spending-list');
@@ -233,7 +227,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const graph = screen.getByTestId('annual-spending-graph');
@@ -261,7 +255,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const graph = screen.getByTestId('annual-spending-graph');
@@ -291,7 +285,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const graph = screen.getByTestId('annual-spending-graph');
@@ -308,7 +302,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const list = screen.getByTestId('annual-spending-list');
@@ -331,7 +325,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-graph')).toBeInTheDocument();
@@ -346,7 +340,7 @@ describe('AnnualSpendingInteractive', () => {
           currency="PLN"
           locale="pl-PL"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-graph')).toBeInTheDocument();
@@ -354,4 +348,3 @@ describe('AnnualSpendingInteractive', () => {
     });
   });
 });
-

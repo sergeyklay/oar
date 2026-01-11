@@ -34,7 +34,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByRole('heading', { name: '2025' })).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2024"
-        />
+        />,
       );
 
       expect(screen.getByRole('heading', { name: '2024' })).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const navigation = screen.getByTestId('year-navigation');
@@ -81,7 +81,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('Total Bills')).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const totalBillsLabel = screen.getByText('Total Bills');
@@ -116,7 +116,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('50')).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('Total Payments')).toBeInTheDocument();
@@ -149,7 +149,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const totalPaymentsLabel = screen.getByText('Total Payments');
@@ -170,7 +170,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('120')).toBeInTheDocument();
@@ -189,7 +189,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('Amount Paid')).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(formatMoney).toHaveBeenCalledWith(1350000, 'USD', 'en-US');
@@ -220,7 +220,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(screen.getByText('Amount Paid')).toBeInTheDocument();
@@ -238,7 +238,7 @@ describe('AnnualSpendingSummary', () => {
           currency="PLN"
           locale="pl-PL"
           year="2025"
-        />
+        />,
       );
 
       expect(formatMoney).toHaveBeenCalledWith(1350000, 'PLN', 'pl-PL');
@@ -255,7 +255,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const amountPaidLabel = screen.getByText('Amount Paid');
@@ -277,7 +277,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       expect(formatMoney).toHaveBeenCalledWith(99999999, 'USD', 'en-US');
@@ -296,7 +296,7 @@ describe('AnnualSpendingSummary', () => {
           currency="USD"
           locale="en-US"
           year="2025"
-        />
+        />,
       );
 
       const heading = screen.getByRole('heading', { name: '2025' });
@@ -311,4 +311,3 @@ describe('AnnualSpendingSummary', () => {
     });
   });
 });
-

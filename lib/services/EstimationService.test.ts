@@ -20,9 +20,30 @@ describe('EstimationService', () => {
     it('calculates average of last 3 payments', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 12000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-3', billId: 'bill-1', amount: 11000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 12000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-3',
+          billId: 'bill-1',
+          amount: 11000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -39,9 +60,30 @@ describe('EstimationService', () => {
     it('rounds average to nearest integer', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 11000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-3', billId: 'bill-1', amount: 12000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 11000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-3',
+          billId: 'bill-1',
+          amount: 12000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -54,9 +96,30 @@ describe('EstimationService', () => {
     it('rounds up when average is fractional and >= 0.5', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-3', billId: 'bill-1', amount: 10002, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-3',
+          billId: 'bill-1',
+          amount: 10002,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -69,9 +132,30 @@ describe('EstimationService', () => {
     it('rounds down when average is fractional and < 0.5', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-3', billId: 'bill-1', amount: 10001, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-3',
+          billId: 'bill-1',
+          amount: 10001,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -94,7 +178,14 @@ describe('EstimationService', () => {
     it('works with single transaction', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 15000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 15000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -107,8 +198,22 @@ describe('EstimationService', () => {
     it('works with two transactions', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 10000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 20000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 10000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 20000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
@@ -285,9 +390,30 @@ describe('EstimationService', () => {
     it('falls back to average strategy when historical month has no data', async () => {
       const targetDate = new Date('2025-03-15');
       const mockTransactions: Transaction[] = [
-        { id: 'tx-1', billId: 'bill-1', amount: 22000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-2', billId: 'bill-1', amount: 23000, paidAt: new Date(), notes: null, createdAt: new Date() },
-        { id: 'tx-3', billId: 'bill-1', amount: 24000, paidAt: new Date(), notes: null, createdAt: new Date() },
+        {
+          id: 'tx-1',
+          billId: 'bill-1',
+          amount: 22000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-2',
+          billId: 'bill-1',
+          amount: 23000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'tx-3',
+          billId: 'bill-1',
+          amount: 24000,
+          paidAt: new Date(),
+          notes: null,
+          createdAt: new Date(),
+        },
       ];
 
       (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue([]);
@@ -324,9 +450,8 @@ describe('EstimationService', () => {
       (BillService.getWithTags as jest.Mock).mockResolvedValue(null);
 
       await expect(EstimationService.estimateAmount('bill-1', targetDate)).rejects.toThrow(
-        'Bill not found: bill-1'
+        'Bill not found: bill-1',
       );
     });
   });
 });
-

@@ -46,7 +46,7 @@ const updateRangeSchema = z.object({
  * @returns ActionResult indicating success or failure
  */
 export async function updateDueSoonRange(
-  input: z.infer<typeof updateRangeSchema>
+  input: z.infer<typeof updateRangeSchema>,
 ): Promise<ActionResult<void>> {
   const parsed = updateRangeSchema.safeParse(input);
 
@@ -80,7 +80,7 @@ export async function updateDueSoonRange(
  * @returns ActionResult indicating success or failure
  */
 export async function updatePaidRecentlyRange(
-  input: z.infer<typeof updateRangeSchema>
+  input: z.infer<typeof updateRangeSchema>,
 ): Promise<ActionResult<void>> {
   const parsed = updateRangeSchema.safeParse(input);
 
@@ -127,7 +127,7 @@ const updateViewOptionsSchema = z.object({
  * @returns ActionResult indicating success or failure
  */
 export async function updateViewOptions(
-  input: z.infer<typeof updateViewOptionsSchema>
+  input: z.infer<typeof updateViewOptionsSchema>,
 ): Promise<ActionResult<void>> {
   const parsed = updateViewOptionsSchema.safeParse(input);
 
@@ -161,14 +161,13 @@ export async function updateViewOptions(
  * @param action - The action to take when a bill ends ('mark_as_paid' or 'archive')
  * @returns ActionResult indicating success or failure
  */
-export async function updateBillEndAction(
-  action: BillEndAction
-): Promise<ActionResult<void>> {
+export async function updateBillEndAction(action: BillEndAction): Promise<ActionResult<void>> {
   const parsed = billEndActionSchema.safeParse(action);
 
   if (!parsed.success) {
     const flattened = z.flattenError(parsed.error);
-    const errorMessage = flattened.formErrors[0] || parsed.error.issues[0]?.message || 'Invalid bill end action';
+    const errorMessage =
+      flattened.formErrors[0] || parsed.error.issues[0]?.message || 'Invalid bill end action';
     return {
       success: false,
       error: errorMessage,
@@ -203,7 +202,7 @@ const updateAutoLogAutoPaySchema = z.object({
  * @returns ActionResult indicating success or failure
  */
 export async function updateWeekendAdjustment(
-  input: z.infer<typeof updateWeekendAdjustmentSchema>
+  input: z.infer<typeof updateWeekendAdjustmentSchema>,
 ): Promise<ActionResult<void>> {
   const parsed = updateWeekendAdjustmentSchema.safeParse(input);
 
@@ -256,7 +255,7 @@ export async function getWeekendAdjustment(): Promise<ActionResult<WeekendAdjust
  * @returns ActionResult indicating success or failure
  */
 export async function updateAutoLogAutoPay(
-  input: z.infer<typeof updateAutoLogAutoPaySchema>
+  input: z.infer<typeof updateAutoLogAutoPaySchema>,
 ): Promise<ActionResult<void>> {
   const parsed = updateAutoLogAutoPaySchema.safeParse(input);
 
@@ -280,4 +279,3 @@ export async function updateAutoLogAutoPay(
     };
   }
 }
-

@@ -18,10 +18,7 @@ interface ReportSidebarProps {
 export function ReportSidebar({ children }: ReportSidebarProps) {
   return (
     <div className="bg-card border-l border-border p-6">
-      <ScrollableContainer>
-        {children}
-      </ScrollableContainer>
+      <ScrollableContainer>{children}</ScrollableContainer>
     </div>
   );
 }
-

@@ -49,7 +49,7 @@ Bills appear sorted by total amount in descending order, so the bills you spent 
 
 The table supports interactive highlighting. When you click a row, the corresponding segment in the pie chart highlights, and the table row itself receives a visual emphasis (accent background color). Clicking the same row again removes the highlight. This synchronization works in both directions: clicking the chart highlights the table, and clicking the table highlights the chart.
 
-If no payments exist for the selected year, the table shows an empty state message: "No payments in *year*." The message suggests trying a different year. This can happen when you navigate to a year before you started logging payments.
+If no payments exist for the selected year, the table shows an empty state message: "No payments in _year_." The message suggests trying a different year. This can happen when you navigate to a year before you started logging payments.
 
 ## The summary panel
 
@@ -131,8 +131,7 @@ To confirm the Annual Spending View works correctly:
 
 ## Related Documents
 
-* [Monthly History View](./monthly-history-view.md) - Reviewing actual payment history with year-over-year comparison
-* [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
-* [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-
+- [Monthly History View](./monthly-history-view.md) - Reviewing actual payment history with year-over-year comparison
+- [Forecast View](./forecast-view.md) - Projecting future financial liabilities by month
+- [Paid Recently View](./paid-recently-view.md) - Payments made within a configurable lookback period
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection

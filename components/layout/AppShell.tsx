@@ -14,9 +14,7 @@ export function AppShell({ children, rightPanel }: AppShellProps) {
   return (
     <div className={cn('app-shell', !showRightPanel && 'no-right-panel')}>
       <Sidebar />
-      <main className="main-content">
-        {children}
-      </main>
+      <main className="main-content">{children}</main>
       {showRightPanel && (rightPanel ?? <CalendarPanel />)}
     </div>
   );

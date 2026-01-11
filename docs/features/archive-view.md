@@ -114,7 +114,6 @@ To confirm the Archive feature works as expected:
 
 ## Related Documents
 
-* [Overview View](./overview-view.md) - The main view for managing all bills
-* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [After a Bill Ends Setting](./after-a-bill-ends-setting.md) - What happens when a bill ends
-
+- [Overview View](./overview-view.md) - The main view for managing all bills
+- [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+- [After a Bill Ends Setting](./after-a-bill-ends-setting.md) - What happens when a bill ends

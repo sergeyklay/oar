@@ -95,8 +95,7 @@ To test the "Never" interval scenario:
 
 ## Related Documents
 
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
-* [Archive View](./archive-view.md) - Viewing and managing archived bills
-* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
-
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Bill Detail Panel & Skip Payment](./bill-detail-panel-and-skip-payment.md) - The panel for managing a specific bill
+- [Archive View](./archive-view.md) - Viewing and managing archived bills
+- [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance

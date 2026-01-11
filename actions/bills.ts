@@ -17,10 +17,7 @@ const logger = getLogger('Actions:Bills');
 
 /** Validation schema for bill creation. */
 const createBillSchema = z.object({
-  title: z
-    .string()
-    .min(1, 'Title is required')
-    .max(100, 'Title must be 100 characters or less'),
+  title: z.string().min(1, 'Title is required').max(100, 'Title must be 100 characters or less'),
   amount: z
     .string()
     .min(1, 'Amount is required')
@@ -30,18 +27,12 @@ const createBillSchema = z.object({
   dueDate: z.coerce.date({
     message: 'Please select a valid date',
   }),
-  frequency: z.enum([
-    'once',
-    'weekly',
-    'biweekly',
-    'twicemonthly',
-    'monthly',
-    'bimonthly',
-    'quarterly',
-    'yearly'
-  ], {
-    message: 'Please select a repeat interval',
-  }),
+  frequency: z.enum(
+    ['once', 'weekly', 'biweekly', 'twicemonthly', 'monthly', 'bimonthly', 'quarterly', 'yearly'],
+    {
+      message: 'Please select a repeat interval',
+    },
+  ),
   isAutoPay: z.boolean().default(false),
   isVariable: z.boolean().default(false),
   categoryId: z.string().min(1, 'Category is required'),
@@ -76,9 +67,7 @@ interface ActionResult<T = void> {
  * @param input - Bill data from form submission
  * @returns Action result with created bill ID or validation errors
  */
-export async function createBill(
-  input: CreateBillInput
-): Promise<ActionResult<{ id: string }>> {
+export async function createBill(input: CreateBillInput): Promise<ActionResult<{ id: string }>> {
   const parsed = createBillSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -90,7 +79,16 @@ export async function createBill(
   }
 
   const {
-    title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes, weekendAdjustment,
+    title,
+    amount,
+    dueDate,
+    frequency,
+    isAutoPay,
+    isVariable,
+    categoryId,
+    tagIds,
+    notes,
+    weekendAdjustment,
   } = parsed.data;
 
   try {
@@ -122,7 +120,7 @@ export async function createBill(
         tagIds.map((tagId) => ({
           billId: newBill.id,
           tagId,
-        }))
+        })),
       );
     }
 
@@ -148,11 +146,7 @@ export async function createBill(
  */
 export async function getBills(includeArchived = false) {
   if (!includeArchived) {
-    return db
-      .select()
-      .from(bills)
-      .where(eq(bills.isArchived, false))
-      .orderBy(bills.dueDate);
+    return db.select().from(bills).where(eq(bills.isArchived, false)).orderBy(bills.dueDate);
   }
 
   return db.select().from(bills).orderBy(bills.dueDate);
@@ -166,16 +160,17 @@ export async function getBills(includeArchived = false) {
  * - When `month` is provided (and no `date`), filters by calendar month
  * - When neither is provided, returns all bills sorted by closest payment date
  */
-export async function getBillsFiltered(
-  options: GetBillsOptions = {}
-): Promise<BillWithTags[]> {
+export async function getBillsFiltered(options: GetBillsOptions = {}): Promise<BillWithTags[]> {
   const userTimezoneOffset = await getUserTimezoneOffset();
   return BillService.getFiltered({ ...options, userTimezoneOffset });
 }
 
 /** Validation schema for bill search input. */
 const searchBillsInputSchema = z.object({
-  query: z.string().min(3, 'Query must be at least 3 characters').max(100, 'Query must be 100 characters or less'),
+  query: z
+    .string()
+    .min(3, 'Query must be at least 3 characters')
+    .max(100, 'Query must be 100 characters or less'),
 });
 
 /** Return type for search results. */
@@ -194,7 +189,7 @@ export interface BillSearchResult {
  * @returns ActionResult with array of matching bills (limited to 20 results)
  */
 export async function searchBills(
-  input: z.infer<typeof searchBillsInputSchema>
+  input: z.infer<typeof searchBillsInputSchema>,
 ): Promise<ActionResult<BillSearchResult[]>> {
   const parsed = searchBillsInputSchema.safeParse(input);
 
@@ -325,9 +320,7 @@ export async function getArchivedBillsStats(): Promise<{
  * @param input - Bill data with ID for update
  * @returns Action result with updated bill ID or validation errors
  */
-export async function updateBill(
-  input: UpdateBillInput
-): Promise<ActionResult<{ id: string }>> {
+export async function updateBill(input: UpdateBillInput): Promise<ActionResult<{ id: string }>> {
   const parsed = updateBillSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -339,7 +332,17 @@ export async function updateBill(
   }
 
   const {
-    id, title, amount, dueDate, frequency, isAutoPay, isVariable, categoryId, tagIds, notes, weekendAdjustment,
+    id,
+    title,
+    amount,
+    dueDate,
+    frequency,
+    isAutoPay,
+    isVariable,
+    categoryId,
+    tagIds,
+    notes,
+    weekendAdjustment,
   } = parsed.data;
 
   try {
@@ -388,7 +391,7 @@ export async function updateBill(
         tagIds.map((tagId) => ({
           billId: id,
           tagId,
-        }))
+        })),
       );
     }
 
@@ -413,15 +416,9 @@ export async function updateBill(
  * @param id - Bill ID
  * @param isArchived - Archive state (default: true)
  */
-export async function archiveBill(
-  id: string,
-  isArchived: boolean = true
-): Promise<ActionResult> {
+export async function archiveBill(id: string, isArchived: boolean = true): Promise<ActionResult> {
   try {
-    await db
-      .update(bills)
-      .set({ isArchived, updatedAt: new Date() })
-      .where(eq(bills.id, id));
+    await db.update(bills).set({ isArchived, updatedAt: new Date() }).where(eq(bills.id, id));
 
     revalidatePath('/');
 
@@ -443,13 +440,10 @@ export async function archiveBill(
  */
 export async function updateBillStatus(
   id: string,
-  status: 'pending' | 'paid' | 'overdue'
+  status: 'pending' | 'paid' | 'overdue',
 ): Promise<ActionResult> {
   try {
-    await db
-      .update(bills)
-      .set({ status, updatedAt: new Date() })
-      .where(eq(bills.id, id));
+    await db.update(bills).set({ status, updatedAt: new Date() }).where(eq(bills.id, id));
 
     revalidatePath('/');
 
@@ -493,9 +487,7 @@ const billIdSchema = z.string().min(1, 'Bill ID is required');
  * @param billId - Bill ID to fetch category for
  * @returns ActionResult with categoryId or null
  */
-export async function getBillCategory(
-  billId: string
-): Promise<ActionResult<string | null>> {
+export async function getBillCategory(billId: string): Promise<ActionResult<string | null>> {
   const parsed = billIdSchema.safeParse(billId);
 
   if (!parsed.success) {
@@ -535,9 +527,7 @@ export async function getBillCategory(
  * @param billId - Bill ID to fetch tags for
  * @returns ActionResult with tags array (data always present)
  */
-export async function getBillTags(
-  billId: string
-): Promise<ActionResult<Tag[]>> {
+export async function getBillTags(billId: string): Promise<ActionResult<Tag[]>> {
   const parsed = billIdSchema.safeParse(billId);
 
   if (!parsed.success) {
@@ -581,9 +571,7 @@ type SkipPaymentInput = z.infer<typeof skipPaymentSchema>;
  * @param input - Object containing billId
  * @returns Action result
  */
-export async function skipPayment(
-  input: SkipPaymentInput
-): Promise<ActionResult<void>> {
+export async function skipPayment(input: SkipPaymentInput): Promise<ActionResult<void>> {
   const parsed = skipPaymentSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -610,7 +598,7 @@ export async function skipPayment(
     const nextDueDate = RecurrenceService.calculateNextDueDate(
       bill.dueDate,
       bill.frequency,
-      bill.endDate ?? null
+      bill.endDate ?? null,
     );
 
     if (!nextDueDate) {
@@ -619,7 +607,8 @@ export async function skipPayment(
 
     const newStatus = RecurrenceService.deriveStatus(nextDueDate);
 
-    await db.update(bills)
+    await db
+      .update(bills)
       .set({
         dueDate: nextDueDate,
         amountDue: bill.amount,

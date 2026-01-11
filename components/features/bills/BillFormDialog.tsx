@@ -69,7 +69,7 @@ const formSchema = z.object({
     'monthly',
     'bimonthly',
     'quarterly',
-    'yearly'
+    'yearly',
   ]),
   isAutoPay: z.boolean(),
   isVariable: z.boolean(),
@@ -160,7 +160,10 @@ export function BillFormDialog({
         // Fetch existing tags for this bill
         getBillTags(bill.id).then((result) => {
           if (result.success && result.data) {
-            form.setValue('tagIds', result.data.map((t) => t.id));
+            form.setValue(
+              'tagIds',
+              result.data.map((t) => t.id),
+            );
           }
         });
 
@@ -270,12 +273,7 @@ export function BillFormDialog({
                 <FormItem>
                   <FormLabel>Amount Due ({currencySymbol})</FormLabel>
                   <FormControl>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="49.99"
-                      {...field}
-                    />
+                    <Input type="text" inputMode="decimal" placeholder="49.99" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -331,7 +329,7 @@ export function BillFormDialog({
                           variant="outline"
                           className={cn(
                             'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
+                            !field.value && 'text-muted-foreground',
                           )}
                         >
                           {field.value ? (
@@ -450,7 +448,9 @@ export function BillFormDialog({
                       <SelectItem value="use-global">Use global default</SelectItem>
                       <SelectItem value="unchanged">Leave Unchanged</SelectItem>
                       <SelectItem value="next_business_day">Move to Next Business Day</SelectItem>
-                      <SelectItem value="previous_business_day">Move to Previous Business Day</SelectItem>
+                      <SelectItem value="previous_business_day">
+                        Move to Previous Business Day
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">

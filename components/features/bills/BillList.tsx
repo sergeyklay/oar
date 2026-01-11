@@ -107,12 +107,8 @@ export async function BillList({
 
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="text-lg text-muted-foreground">
-          {emptyMessage}
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {emptySubtitle}
-        </p>
+        <p className="text-lg text-muted-foreground">{emptyMessage}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{emptySubtitle}</p>
       </div>
     );
   }
@@ -129,11 +125,7 @@ export async function BillList({
       </thead>
       <tbody>
         {bills.map((bill) => (
-          <BillRowClickable
-            key={bill.id}
-            billId={bill.id}
-            isSelected={bill.id === selectedBillId}
-          >
+          <BillRowClickable key={bill.id} billId={bill.id} isSelected={bill.id === selectedBillId}>
             <BillRow
               bill={bill}
               currency={settings.currency}

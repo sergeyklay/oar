@@ -36,9 +36,7 @@ describe('StartupCatchUpService', () => {
         failedIds: [] as string[],
       };
 
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(
-        overdueResult
-      );
+      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(overdueResult);
       (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue(autoPayResult);
 
       const result = await StartupCatchUpService.runCatchUp();
@@ -59,7 +57,7 @@ describe('StartupCatchUpService', () => {
       };
 
       (RecurrenceService.checkDailyBills as jest.Mock).mockRejectedValue(
-        new Error('Database error')
+        new Error('Database error'),
       );
       (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue(autoPayResult);
 
@@ -70,22 +68,15 @@ describe('StartupCatchUpService', () => {
       expect(result.overdueCheck).toEqual({ checked: 0, updated: 0 });
       expect(result.autoPay).toEqual(autoPayResult);
       const logger = getLogger('test');
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.any(Error),
-        'Failed to check overdue bills'
-      );
+      expect(logger.error).toHaveBeenCalledWith(expect.any(Error), 'Failed to check overdue bills');
       expect(globalThis.__oar_catchup_executed).toBe(true);
     });
 
     it('handles error from processAutoPay and still returns result', async () => {
       const overdueResult = { checked: 5, updated: 2 };
 
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(
-        overdueResult
-      );
-      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(
-        new Error('AutoPay error')
-      );
+      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(overdueResult);
+      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(new Error('AutoPay error'));
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -100,18 +91,16 @@ describe('StartupCatchUpService', () => {
       const logger = getLogger('test');
       expect(logger.error).toHaveBeenCalledWith(
         expect.any(Error),
-        'Failed to process auto-pay bills'
+        'Failed to process auto-pay bills',
       );
       expect(globalThis.__oar_catchup_executed).toBe(true);
     });
 
     it('handles errors from both services and still returns valid result', async () => {
       (RecurrenceService.checkDailyBills as jest.Mock).mockRejectedValue(
-        new Error('Recurrence error')
+        new Error('Recurrence error'),
       );
-      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(
-        new Error('AutoPay error')
-      );
+      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(new Error('AutoPay error'));
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -144,9 +133,7 @@ describe('StartupCatchUpService', () => {
       });
       expect(result.completedAt).toBeInstanceOf(Date);
       const logger = getLogger('test');
-      expect(logger.info).toHaveBeenCalledWith(
-        'Already executed, skipping'
-      );
+      expect(logger.info).toHaveBeenCalledWith('Already executed, skipping');
     });
 
     it('marks as executed after successful completion', async () => {
@@ -205,27 +192,22 @@ describe('StartupCatchUpService', () => {
       await StartupCatchUpService.runCatchUp();
 
       const logger = getLogger('test');
-      expect(logger.info).toHaveBeenCalledWith(
-        'Starting catch-up logic...'
-      );
+      expect(logger.info).toHaveBeenCalledWith('Starting catch-up logic...');
       expect(logger.info).toHaveBeenCalledWith(
         {
           checked: 5,
           updated: 2,
         },
-        'Overdue check complete'
+        'Overdue check complete',
       );
       expect(logger.info).toHaveBeenCalledWith(
         {
           processed: 1,
           failed: 0,
         },
-        'Auto-pay processing complete'
+        'Auto-pay processing complete',
       );
-      expect(logger.info).toHaveBeenCalledWith(
-        'Catch-up logic complete'
-      );
+      expect(logger.info).toHaveBeenCalledWith('Catch-up logic complete');
     });
   });
 });
-

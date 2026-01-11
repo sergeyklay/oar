@@ -21,10 +21,7 @@ const OPTIONS = [
   { value: 'archive' as const, label: 'Move to the Archive' },
 ] as const;
 
-export function BillEndActionDropdown({
-  currentValue,
-  onUpdate,
-}: BillEndActionDropdownProps) {
+export function BillEndActionDropdown({ currentValue, onUpdate }: BillEndActionDropdownProps) {
   const { displayValue, isPending, handleValueChange } = useSettingDropdown({
     currentValue,
     onUpdate,
@@ -33,11 +30,7 @@ export function BillEndActionDropdown({
 
   return (
     <div className="flex items-center gap-2">
-      <Select
-        value={displayValue}
-        onValueChange={handleValueChange}
-        disabled={isPending}
-      >
+      <Select value={displayValue} onValueChange={handleValueChange} disabled={isPending}>
         <SelectTrigger className="w-[200px]">
           <SelectValue>
             {isPending ? (
@@ -61,4 +54,3 @@ export function BillEndActionDropdown({
     </div>
   );
 }
-

@@ -18,9 +18,33 @@ const mockSystemGroup: BillCategoryGroup = {
 };
 
 const mockCategories: BillCategory[] = [
-  { id: 'cat-1', groupId: 'group-1', name: 'Rent', slug: 'rent', icon: 'house', displayOrder: 1, createdAt: new Date() },
-  { id: 'cat-2', groupId: 'group-1', name: 'Mortgage', slug: 'mortgage', icon: 'house', displayOrder: 2, createdAt: new Date() },
-  { id: 'cat-3', groupId: 'group-2', name: 'Electric', slug: 'electric', icon: 'zap', displayOrder: 1, createdAt: new Date() },
+  {
+    id: 'cat-1',
+    groupId: 'group-1',
+    name: 'Rent',
+    slug: 'rent',
+    icon: 'house',
+    displayOrder: 1,
+    createdAt: new Date(),
+  },
+  {
+    id: 'cat-2',
+    groupId: 'group-1',
+    name: 'Mortgage',
+    slug: 'mortgage',
+    icon: 'house',
+    displayOrder: 2,
+    createdAt: new Date(),
+  },
+  {
+    id: 'cat-3',
+    groupId: 'group-2',
+    name: 'Electric',
+    slug: 'electric',
+    icon: 'zap',
+    displayOrder: 1,
+    createdAt: new Date(),
+  },
 ];
 
 const mockUncategorized: BillCategory = {
@@ -239,7 +263,7 @@ describe('getDefaultCategoryId', () => {
 
     createFilteredBuilder(
       [firstGroup, secondGroup],
-      [firstGroupCategory, secondGroupCategoryLowerOrder]
+      [firstGroupCategory, secondGroupCategoryLowerOrder],
     );
 
     const result = await getDefaultCategoryId();
@@ -247,4 +271,3 @@ describe('getDefaultCategoryId', () => {
     expect(result).toBe('cat-first-group');
   });
 });
-

@@ -79,25 +79,26 @@ describe('BillService.getFiltered', () => {
 
   const createSelectMock = (activeBills: BillWithTags[], paidBills: BillWithTags[] = []) => {
     // Convert BillWithTags[] to the format returned by the JOIN query
-    const mapToJoined = (bills: BillWithTags[]) => bills.map((bill) => ({
-      bill: {
-        id: bill.id,
-        title: bill.title,
-        amount: bill.amount,
-        amountDue: bill.amountDue,
-        dueDate: bill.dueDate,
-        frequency: bill.frequency,
-        isAutoPay: bill.isAutoPay,
-        isVariable: bill.isVariable,
-        status: bill.status,
-        isArchived: bill.isArchived,
-        notes: bill.notes,
-        categoryId: bill.categoryId,
-        createdAt: bill.createdAt,
-        updatedAt: bill.updatedAt,
-      },
-      categoryIcon: bill.categoryIcon,
-    }));
+    const mapToJoined = (bills: BillWithTags[]) =>
+      bills.map((bill) => ({
+        bill: {
+          id: bill.id,
+          title: bill.title,
+          amount: bill.amount,
+          amountDue: bill.amountDue,
+          dueDate: bill.dueDate,
+          frequency: bill.frequency,
+          isAutoPay: bill.isAutoPay,
+          isVariable: bill.isVariable,
+          status: bill.status,
+          isArchived: bill.isArchived,
+          notes: bill.notes,
+          categoryId: bill.categoryId,
+          createdAt: bill.createdAt,
+          updatedAt: bill.updatedAt,
+        },
+        categoryIcon: bill.categoryIcon,
+      }));
 
     const activeJoined = mapToJoined(activeBills);
     const paidJoined = mapToJoined(paidBills);
@@ -106,9 +107,7 @@ describe('BillService.getFiltered', () => {
       from: jest.fn().mockReturnThis(),
       innerJoin: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn()
-        .mockResolvedValueOnce(activeJoined)
-        .mockResolvedValueOnce(paidJoined),
+      orderBy: jest.fn().mockResolvedValueOnce(activeJoined).mockResolvedValueOnce(paidJoined),
     };
     (db.select as jest.Mock).mockReturnValue(mockBuilder);
     return mockBuilder;
@@ -132,7 +131,7 @@ describe('BillService.getFiltered', () => {
   });
 
   it('returns active bills before paid bills when no filter provided', async () => {
-      const activeBills: BillWithTags[] = [
+    const activeBills: BillWithTags[] = [
       {
         ...mockBills[0],
         id: 'active-1',
@@ -322,7 +321,7 @@ describe('BillService.getFiltered', () => {
 
     const result = await BillService.getFiltered({});
 
-    expect(result.every(bill => !bill.isArchived)).toBe(true);
+    expect(result.every((bill) => !bill.isArchived)).toBe(true);
     expect(db.select).toHaveBeenCalled();
   });
 
@@ -331,15 +330,17 @@ describe('BillService.getFiltered', () => {
     const mockBuilder = createSelectMock(billsWithTag);
     jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
-    (db.select as jest.Mock).mockReturnValueOnce({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]),
-      }),
-    }).mockReturnValueOnce({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
-      }),
-    });
+    (db.select as jest.Mock)
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: jest.fn().mockReturnValue({
+          where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
+        }),
+      });
 
     const result = await BillService.getFiltered({ tag: 'utilities' });
 
@@ -365,14 +366,17 @@ describe('BillService.getFiltered', () => {
     const billsWithTags = [mockBills[0]];
     createSelectMock(billsWithTags);
     const tagsMap = new Map([
-      ['bill-1', [
-        {
-          id: 'tag-1',
-          name: 'Utilities',
-          slug: 'utilities',
-          createdAt: new Date('2025-01-01'),
-        },
-      ]],
+      [
+        'bill-1',
+        [
+          {
+            id: 'tag-1',
+            name: 'Utilities',
+            slug: 'utilities',
+            createdAt: new Date('2025-01-01'),
+          },
+        ],
+      ],
     ]);
     jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
 
@@ -619,11 +623,12 @@ describe('BillService.searchByTitle', () => {
 
   const mockCategoryIcon = 'house';
 
-  const createSearchMock = (matchingBills: typeof mockBill[] = []) => {
-    const mapToJoined = (bills: typeof mockBill[]) => bills.map((bill) => ({
-      bill,
-      categoryIcon: mockCategoryIcon,
-    }));
+  const createSearchMock = (matchingBills: (typeof mockBill)[] = []) => {
+    const mapToJoined = (bills: (typeof mockBill)[]) =>
+      bills.map((bill) => ({
+        bill,
+        categoryIcon: mockCategoryIcon,
+      }));
 
     const joined = mapToJoined(matchingBills);
 
@@ -785,14 +790,17 @@ describe('BillService.searchByTitle', () => {
       const mockBuilder = createSearchMock([mockBill]);
       (db.select as jest.Mock).mockReturnValue(mockBuilder);
       const tagsMap = new Map([
-        ['bill-1', [
-          {
-            id: 'tag-1',
-            name: 'Utilities',
-            slug: 'utilities',
-            createdAt: new Date('2025-01-01'),
-          },
-        ]],
+        [
+          'bill-1',
+          [
+            {
+              id: 'tag-1',
+              name: 'Utilities',
+              slug: 'utilities',
+              createdAt: new Date('2025-01-01'),
+            },
+          ],
+        ],
       ]);
       jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
 
@@ -939,65 +947,82 @@ describe('BillService.searchByTitle', () => {
 });
 
 describe('BillService.getAdjustedDueDate', () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    it('returns adjusted date when bill has override strategy', async () => {
-      const saturday = new Date('2025-01-11');
-      const friday = new Date('2025-01-10');
-      const bill = {
-        dueDate: saturday,
-        weekendAdjustment: 'previous_business_day' as const,
-      };
+  it('returns adjusted date when bill has override strategy', async () => {
+    const saturday = new Date('2025-01-11');
+    const friday = new Date('2025-01-10');
+    const bill = {
+      dueDate: saturday,
+      weekendAdjustment: 'previous_business_day' as const,
+    };
 
-      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
-      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
+    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
+    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+      'previous_business_day',
+    );
+    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
 
-      const result = await BillService.getAdjustedDueDate(bill);
+    const result = await BillService.getAdjustedDueDate(bill);
 
-      expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('previous_business_day', 'unchanged');
-      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'previous_business_day');
-      expect(result).toEqual(friday);
-    });
+    expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
+    expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+      'previous_business_day',
+      'unchanged',
+    );
+    expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(
+      saturday,
+      'previous_business_day',
+    );
+    expect(result).toEqual(friday);
+  });
 
-    it('uses global strategy when bill override is null', async () => {
-      const saturday = new Date('2025-01-11');
-      const monday = new Date('2025-01-13');
-      const bill = {
-        dueDate: saturday,
-        weekendAdjustment: null,
-      };
+  it('uses global strategy when bill override is null', async () => {
+    const saturday = new Date('2025-01-11');
+    const monday = new Date('2025-01-13');
+    const bill = {
+      dueDate: saturday,
+      weekendAdjustment: null,
+    };
 
-      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
-      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
+    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
+    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
 
-      const result = await BillService.getAdjustedDueDate(bill);
+    const result = await BillService.getAdjustedDueDate(bill);
 
-      expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(null, 'next_business_day');
-      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'next_business_day');
-      expect(result).toEqual(monday);
-    });
+    expect(SettingsService.getWeekendAdjustment).toHaveBeenCalled();
+    expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+      null,
+      'next_business_day',
+    );
+    expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(
+      saturday,
+      'next_business_day',
+    );
+    expect(result).toEqual(monday);
+  });
 
-    it('returns unchanged date when strategy is unchanged', async () => {
-      const saturday = new Date('2025-01-11');
-      const bill = {
-        dueDate: saturday,
-        weekendAdjustment: 'unchanged' as const,
-      };
+  it('returns unchanged date when strategy is unchanged', async () => {
+    const saturday = new Date('2025-01-11');
+    const bill = {
+      dueDate: saturday,
+      weekendAdjustment: 'unchanged' as const,
+    };
 
-      (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
-      (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(saturday);
+    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
+    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(saturday);
 
-      const result = await BillService.getAdjustedDueDate(bill);
+    const result = await BillService.getAdjustedDueDate(bill);
 
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('unchanged', 'next_business_day');
-      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'unchanged');
-      expect(result).toEqual(saturday);
-    });
+    expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+      'unchanged',
+      'next_business_day',
+    );
+    expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'unchanged');
+    expect(result).toEqual(saturday);
+  });
 });

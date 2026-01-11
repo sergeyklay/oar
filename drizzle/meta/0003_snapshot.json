@@ -112,12 +112,8 @@
           "name": "bills_to_tags_bill_id_bills_id_fk",
           "tableFrom": "bills_to_tags",
           "tableTo": "bills",
-          "columnsFrom": [
-            "bill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -125,22 +121,15 @@
           "name": "bills_to_tags_tag_id_tags_id_fk",
           "tableFrom": "bills_to_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "bills_to_tags_bill_id_tag_id_pk": {
-          "columns": [
-            "bill_id",
-            "tag_id"
-          ],
+          "columns": ["bill_id", "tag_id"],
           "name": "bills_to_tags_bill_id_tag_id_pk"
         }
       },
@@ -213,9 +202,7 @@
       "indexes": {
         "tags_slug_unique": {
           "name": "tags_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -276,12 +263,8 @@
           "name": "transactions_bill_id_bills_id_fk",
           "tableFrom": "transactions",
           "tableTo": "bills",
-          "columnsFrom": [
-            "bill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bill_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

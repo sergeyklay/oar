@@ -1,9 +1,6 @@
 import { cookies } from 'next/headers';
 
-import {
-  TIMEZONE_COOKIE_NAME,
-  DEFAULT_TIMEZONE_OFFSET_HOURS,
-} from './constants';
+import { TIMEZONE_COOKIE_NAME, DEFAULT_TIMEZONE_OFFSET_HOURS } from './constants';
 
 /**
  * Get the user's timezone offset from the cookie.

@@ -28,7 +28,16 @@ interface RightPanelProps {
  *
  * Server Component: calls BillService directly for read-only data.
  */
-export async function RightPanel({ selectedBillId, currency, locale, weekStart, includeArchived = false, disableDateFilter = false, dotMode = 'status', getDateData }: RightPanelProps) {
+export async function RightPanel({
+  selectedBillId,
+  currency,
+  locale,
+  weekStart,
+  includeArchived = false,
+  disableDateFilter = false,
+  dotMode = 'status',
+  getDateData,
+}: RightPanelProps) {
   if (!selectedBillId) {
     return (
       <CalendarPanel
@@ -69,4 +78,3 @@ export async function RightPanel({ selectedBillId, currency, locale, weekStart, 
     />
   );
 }
-

@@ -26,7 +26,13 @@ jest.mock('sonner', () => ({
 }));
 
 jest.mock('./LogPaymentDialog', () => ({
-  LogPaymentDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+  LogPaymentDialog: ({
+    open,
+    onOpenChange,
+  }: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+  }) =>
     open ? (
       <div role="dialog">
         Mock Log Payment Dialog
@@ -36,7 +42,13 @@ jest.mock('./LogPaymentDialog', () => ({
 }));
 
 jest.mock('./BillFormDialog', () => ({
-  BillFormDialog: ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) =>
+  BillFormDialog: ({
+    open,
+    onOpenChange,
+  }: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+  }) =>
     open ? (
       <div role="dialog">
         Mock Bill Form Dialog
@@ -303,9 +315,7 @@ describe('BillDetailPanel', () => {
   describe('tags display', () => {
     it('displays tags when present', () => {
       const bill = createMockBill({
-        tags: [
-          { id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() },
-        ],
+        tags: [{ id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() }],
       });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 

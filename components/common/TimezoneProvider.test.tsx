@@ -46,7 +46,7 @@ describe('TimezoneProvider', () => {
 
     expect(cookieSetter).toHaveBeenCalledTimes(1);
     expect(cookieSetter).toHaveBeenCalledWith(
-      `${TIMEZONE_COOKIE_NAME}=1; path=/; max-age=${oneYearInSeconds}; SameSite=Lax`
+      `${TIMEZONE_COOKIE_NAME}=1; path=/; max-age=${oneYearInSeconds}; SameSite=Lax`,
     );
   });
 
@@ -56,15 +56,18 @@ describe('TimezoneProvider', () => {
     { offsetMinutes: -540, expectedHours: 9, timezone: 'UTC+9 (JST)' },
     { offsetMinutes: 0, expectedHours: 0, timezone: 'UTC+0' },
     { offsetMinutes: -330, expectedHours: 5.5, timezone: 'UTC+5:30 (IST)' },
-  ])('converts $offsetMinutes minutes to $expectedHours hours ($timezone)', ({ offsetMinutes, expectedHours }) => {
-    jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(offsetMinutes);
+  ])(
+    'converts $offsetMinutes minutes to $expectedHours hours ($timezone)',
+    ({ offsetMinutes, expectedHours }) => {
+      jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(offsetMinutes);
 
-    render(<TimezoneProvider />);
+      render(<TimezoneProvider />);
 
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=${expectedHours}`)
-    );
-  });
+      expect(cookieSetter).toHaveBeenCalledWith(
+        expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=${expectedHours}`),
+      );
+    },
+  );
 
   it('does not update cookie if value is already correct', () => {
     jest.spyOn(Date.prototype, 'getTimezoneOffset').mockReturnValue(-60);
@@ -81,9 +84,7 @@ describe('TimezoneProvider', () => {
 
     render(<TimezoneProvider />);
 
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`)
-    );
+    expect(cookieSetter).toHaveBeenCalledWith(expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`));
   });
 
   it('only runs once per component instance', () => {
@@ -121,7 +122,7 @@ describe('TimezoneProvider', () => {
     render(<TimezoneProvider />);
 
     expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=5.5`)
+      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=5.5`),
     );
   });
 
@@ -131,8 +132,6 @@ describe('TimezoneProvider', () => {
 
     render(<TimezoneProvider />);
 
-    expect(cookieSetter).toHaveBeenCalledWith(
-      expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`)
-    );
+    expect(cookieSetter).toHaveBeenCalledWith(expect.stringContaining(`${TIMEZONE_COOKIE_NAME}=1`));
   });
 });

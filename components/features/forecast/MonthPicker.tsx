@@ -4,11 +4,7 @@ import { useQueryState } from 'nuqs';
 import { parseAsString } from 'nuqs';
 import { format, parse, startOfMonth } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { ClientDate } from '@/components/ui/client-date';
@@ -30,7 +26,7 @@ export function MonthPicker({ defaultMonth }: MonthPickerProps) {
     'month',
     parseAsString.withDefault(defaultMonth ?? getCurrentMonth()).withOptions({
       shallow: false,
-    })
+    }),
   );
 
   const monthDate = month ? parse(month, 'yyyy-MM', new Date()) : new Date();
@@ -59,4 +55,3 @@ export function MonthPicker({ defaultMonth }: MonthPickerProps) {
     </Popover>
   );
 }
-

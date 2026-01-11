@@ -40,4 +40,3 @@ export interface SettingsLayoutProps {
   /** Main content area. */
   children: React.ReactNode;
 }
-

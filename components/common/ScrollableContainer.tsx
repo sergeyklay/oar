@@ -16,14 +16,6 @@ interface ScrollableContainerProps {
  *
  * Render Mode: Server Component (pure presentational wrapper)
  */
-export function ScrollableContainer({
-  children,
-  className,
-}: ScrollableContainerProps) {
-  return (
-    <div className={cn('bill-list-container', className)}>
-      {children}
-    </div>
-  );
+export function ScrollableContainer({ children, className }: ScrollableContainerProps) {
+  return <div className={cn('bill-list-container', className)}>{children}</div>;
 }
-

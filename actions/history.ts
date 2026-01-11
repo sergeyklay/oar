@@ -1,7 +1,12 @@
 'use server';
 
 import { z } from 'zod';
-import type { ActionResult, PaymentWithBill, MonthlyPaymentTotal, AggregatedBillSpending } from '@/lib/types';
+import type {
+  ActionResult,
+  PaymentWithBill,
+  MonthlyPaymentTotal,
+  AggregatedBillSpending,
+} from '@/lib/types';
 import { TransactionService } from '@/lib/services/TransactionService';
 import { getLogger } from '@/lib/logger';
 import { getUserTimezoneOffset } from '@/lib/timezone';
@@ -39,7 +44,7 @@ const annualSpendingQuerySchema = z.object({
  * @returns Payments with bill information and category icons
  */
 export async function getMonthlyHistoryData(
-  input: z.infer<typeof historyQuerySchema>
+  input: z.infer<typeof historyQuerySchema>,
 ): Promise<ActionResult<PaymentWithBill[]>> {
   const parsed = historyQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -54,7 +59,7 @@ export async function getMonthlyHistoryData(
     const payments = await TransactionService.getPaymentsByMonth(
       parsed.data.month,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -76,7 +81,7 @@ export async function getMonthlyHistoryData(
  * @returns Monthly payment totals for chart visualization
  */
 export async function getMonthlyHistoryChartData(
-  input: z.infer<typeof historyRangeQuerySchema>
+  input: z.infer<typeof historyRangeQuerySchema>,
 ): Promise<ActionResult<MonthlyPaymentTotal[]>> {
   const parsed = historyRangeQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -92,7 +97,7 @@ export async function getMonthlyHistoryChartData(
       parsed.data.startMonth,
       parsed.data.months,
       parsed.data.tag,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -114,7 +119,7 @@ export async function getMonthlyHistoryChartData(
  * @returns Aggregated bill spending data with payment counts, totals, and averages
  */
 export async function getAnnualSpendingData(
-  input: z.infer<typeof annualSpendingQuerySchema>
+  input: z.infer<typeof annualSpendingQuerySchema>,
 ): Promise<ActionResult<AggregatedBillSpending[]>> {
   const parsed = annualSpendingQuerySchema.safeParse(input);
   if (!parsed.success) {
@@ -128,7 +133,7 @@ export async function getAnnualSpendingData(
     const userTimezoneOffset = await getUserTimezoneOffset();
     const aggregatedData = await TransactionService.getPaymentsByYearAggregatedByBill(
       parsed.data.year,
-      userTimezoneOffset
+      userTimezoneOffset,
     );
     return {
       success: true,
@@ -142,4 +147,3 @@ export async function getAnnualSpendingData(
     };
   }
 }
-

@@ -64,9 +64,7 @@ export function Toggle({
         </Label>
         {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
       </div>
-      {description && (
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      )}
+      {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
     </div>
   );
 }

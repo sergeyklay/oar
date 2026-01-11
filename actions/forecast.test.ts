@@ -170,9 +170,7 @@ describe('getForecastDataForRange', () => {
   ];
 
   it('returns monthly totals for valid range', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -183,18 +181,11 @@ describe('getForecastDataForRange', () => {
     if (result.success) {
       expect(result.data).toEqual(mockMonthlyTotals);
     }
-    expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
-      '2025-03',
-      12,
-      undefined,
-      0
-    );
+    expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith('2025-03', 12, undefined, 0);
   });
 
   it('passes tag filter when provided', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -207,26 +198,19 @@ describe('getForecastDataForRange', () => {
       '2025-03',
       12,
       'utilities',
-      0
+      0,
     );
   });
 
   it('passes months value to ForecastService', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     await getForecastDataForRange({
       startMonth: '2025-03',
       months: 12,
     });
 
-    expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith(
-      '2025-03',
-      12,
-      undefined,
-      0
-    );
+    expect(ForecastService.getBillsForMonthRange).toHaveBeenCalledWith('2025-03', 12, undefined, 0);
   });
 
   it('returns error for invalid startMonth format', async () => {
@@ -283,10 +267,7 @@ describe('getForecastDataForRange', () => {
     }
 
     const logger = getLogger('Actions:Forecast');
-    expect(logger.error).toHaveBeenCalledWith(
-      dbError,
-      'Failed to fetch forecast data for range'
-    );
+    expect(logger.error).toHaveBeenCalledWith(dbError, 'Failed to fetch forecast data for range');
   });
 
   it('handles empty array from ForecastService', async () => {
@@ -307,9 +288,7 @@ describe('getForecastDataForRange', () => {
     const validMonths = ['2025-01', '2025-12', '2024-03', '2026-06'];
 
     for (const startMonth of validMonths) {
-      (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
-        mockMonthlyTotals
-      );
+      (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
       const result = await getForecastDataForRange({
         startMonth,
         months: 12,
@@ -319,9 +298,7 @@ describe('getForecastDataForRange', () => {
   });
 
   it('accepts months values from 1 to 24', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(
-      mockMonthlyTotals
-    );
+    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
 
     const validCounts = [1, 12, 24];
 
@@ -335,9 +312,8 @@ describe('getForecastDataForRange', () => {
         '2025-03',
         months,
         undefined,
-        0
+        0,
       );
     }
   });
 });
-

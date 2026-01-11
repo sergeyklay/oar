@@ -27,17 +27,15 @@ export function MonthlyHistoryList({
 }: MonthlyHistoryListProps) {
   if (payments.length === 0) {
     const monthDate = parse(month, 'yyyy-MM', new Date());
-    const emptyMessage = tag
-      ? (
-          <>
-            No payments with this tag in <ClientDate date={monthDate} format="MMMM yyyy" />
-          </>
-        )
-      : (
-          <>
-            No payments in <ClientDate date={monthDate} format="MMMM yyyy" />
-          </>
-        );
+    const emptyMessage = tag ? (
+      <>
+        No payments with this tag in <ClientDate date={monthDate} format="MMMM yyyy" />
+      </>
+    ) : (
+      <>
+        No payments in <ClientDate date={monthDate} format="MMMM yyyy" />
+      </>
+    );
     const emptySubtitle = tag
       ? 'Try selecting a different tag or month.'
       : 'Try selecting a different month.';
@@ -73,4 +71,3 @@ export function MonthlyHistoryList({
     </table>
   );
 }
-

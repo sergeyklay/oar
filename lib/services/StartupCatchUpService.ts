@@ -84,7 +84,7 @@ export const StartupCatchUpService = {
           checked: overdueCheckResult.checked,
           updated: overdueCheckResult.updated,
         },
-        'Overdue check complete'
+        'Overdue check complete',
       );
     } catch (error) {
       logger.error(error, 'Failed to check overdue bills');
@@ -99,7 +99,7 @@ export const StartupCatchUpService = {
           processed: autoPayResult.processed,
           failed: autoPayResult.failed,
         },
-        'Auto-pay processing complete'
+        'Auto-pay processing complete',
       );
     } catch (error) {
       logger.error(error, 'Failed to process auto-pay bills');
@@ -120,4 +120,3 @@ export const StartupCatchUpService = {
     return result;
   },
 };
-

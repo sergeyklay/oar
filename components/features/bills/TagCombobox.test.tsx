@@ -32,7 +32,7 @@ describe('TagCombobox', () => {
         selectedIds={selectedIds}
         onChange={mockOnChange}
         placeholder="Select tags..."
-      />
+      />,
     );
   };
 
@@ -83,7 +83,7 @@ describe('TagCombobox', () => {
             onChange={mockOnChange}
             placeholder="Select tags..."
           />
-        </div>
+        </div>,
       );
 
       await user.click(screen.getByRole('combobox'));
@@ -104,7 +104,7 @@ describe('TagCombobox', () => {
             onChange={mockOnChange}
             placeholder="Select tags..."
           />
-        </div>
+        </div>,
       );
 
       const removeButton = screen.getByRole('button', { name: /Remove Business/i });
@@ -126,7 +126,7 @@ describe('TagCombobox', () => {
             onChange={mockOnChange}
             placeholder="Select tags..."
           />
-        </div>
+        </div>,
       );
 
       const removeButton = screen.getByRole('button', { name: /Remove Business/i });

@@ -55,7 +55,7 @@ const JOB_DEFINITIONS: JobDefinition[] = [
           checked: result.checked,
           updated: result.updated,
         },
-        'Daily bill check complete'
+        'Daily bill check complete',
       );
     },
     runOnInit: false,
@@ -75,7 +75,7 @@ const JOB_DEFINITIONS: JobDefinition[] = [
           processed: result.processed,
           failed: result.failed,
         },
-        'Auto-pay complete'
+        'Auto-pay complete',
       );
 
       if (result.failed > 0) {
@@ -83,7 +83,7 @@ const JOB_DEFINITIONS: JobDefinition[] = [
           {
             failedIds: result.failedIds,
           },
-          'Failed bill IDs'
+          'Failed bill IDs',
         );
       }
     },
@@ -149,7 +149,7 @@ export const SchedulerService = {
           jobName: definition.name,
           cronTime: definition.cronTime,
         },
-        'Registered job'
+        'Registered job',
       );
     }
 
@@ -196,4 +196,3 @@ export const SchedulerService = {
     return globalThis.__oar_scheduler?.length ?? 0;
   },
 };
-

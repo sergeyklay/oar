@@ -49,13 +49,7 @@ const mockData: AggregatedBillSpending[] = [
 describe('AnnualSpendingGraph', () => {
   describe('rendering with data', () => {
     it('renders chart component with data', () => {
-      render(
-        <AnnualSpendingGraph
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={mockData} currency="USD" locale="en-US" />);
 
       const chart = screen.getByTestId('annual-spending-chart');
       expect(chart).toBeInTheDocument();
@@ -63,13 +57,7 @@ describe('AnnualSpendingGraph', () => {
     });
 
     it('passes currency and locale to chart', () => {
-      render(
-        <AnnualSpendingGraph
-          data={mockData}
-          currency="PLN"
-          locale="pl-PL"
-        />
-      );
+      render(<AnnualSpendingGraph data={mockData} currency="PLN" locale="pl-PL" />);
 
       const chart = screen.getByTestId('annual-spending-chart');
       expect(chart).toHaveAttribute('data-currency', 'PLN');
@@ -83,7 +71,7 @@ describe('AnnualSpendingGraph', () => {
           currency="USD"
           locale="en-US"
           highlightedBillId="bill-1"
-        />
+        />,
       );
 
       const chart = screen.getByTestId('annual-spending-chart');
@@ -99,7 +87,7 @@ describe('AnnualSpendingGraph', () => {
           currency="USD"
           locale="en-US"
           onBillClick={mockOnBillClick}
-        />
+        />,
       );
 
       expect(screen.getByTestId('annual-spending-chart')).toBeInTheDocument();
@@ -108,13 +96,7 @@ describe('AnnualSpendingGraph', () => {
 
   describe('empty state', () => {
     it('passes empty data to chart component', () => {
-      render(
-        <AnnualSpendingGraph
-          data={[]}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={[]} currency="USD" locale="en-US" />);
 
       expect(screen.getByTestId('annual-spending-chart')).toBeInTheDocument();
       const chart = screen.getByTestId('annual-spending-chart');
@@ -124,13 +106,7 @@ describe('AnnualSpendingGraph', () => {
 
   describe('data passing', () => {
     it('passes all bills to chart component', () => {
-      render(
-        <AnnualSpendingGraph
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={mockData} currency="USD" locale="en-US" />);
 
       const chart = screen.getByTestId('annual-spending-chart');
       expect(chart).toHaveAttribute('data-bill-count', '2');
@@ -139,13 +115,7 @@ describe('AnnualSpendingGraph', () => {
     it('handles single bill correctly', () => {
       const singleBill = [mockData[0]];
 
-      render(
-        <AnnualSpendingGraph
-          data={singleBill}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={singleBill} currency="USD" locale="en-US" />);
 
       const chart = screen.getByTestId('annual-spending-chart');
       expect(chart).toHaveAttribute('data-bill-count', '1');
@@ -161,13 +131,7 @@ describe('AnnualSpendingGraph', () => {
         averageAmount: 10000,
       }));
 
-      render(
-        <AnnualSpendingGraph
-          data={manyBills}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={manyBills} currency="USD" locale="en-US" />);
 
       const chart = screen.getByTestId('annual-spending-chart');
       expect(chart).toHaveAttribute('data-bill-count', '10');
@@ -176,17 +140,10 @@ describe('AnnualSpendingGraph', () => {
 
   describe('wrapper styling', () => {
     it('applies correct wrapper classes', () => {
-      render(
-        <AnnualSpendingGraph
-          data={mockData}
-          currency="USD"
-          locale="en-US"
-        />
-      );
+      render(<AnnualSpendingGraph data={mockData} currency="USD" locale="en-US" />);
 
       const wrapper = screen.getByTestId('annual-spending-chart').parentElement;
       expect(wrapper).toHaveClass('bg-card', 'border', 'border-border');
     });
   });
 });
-

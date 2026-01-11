@@ -123,7 +123,7 @@ describe('AutoPayService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
         'monthly',
-        null
+        null,
       );
     });
 
@@ -205,7 +205,7 @@ describe('AutoPayService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
         'once',
-        null
+        null,
       );
       // deriveStatus should NOT be called for one-time bills
       expect(RecurrenceService.deriveStatus).not.toHaveBeenCalled();
@@ -238,7 +238,7 @@ describe('AutoPayService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         threeDaysAgo,
         'monthly',
-        null
+        null,
       );
     });
 
@@ -416,7 +416,7 @@ describe('AutoPayService', () => {
       expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
         mockBill.dueDate,
         'yearly',
-        null
+        null,
       );
     });
 
@@ -537,7 +537,7 @@ describe('AutoPayService', () => {
       const logger = getLogger('test');
       expect(logger.error).toHaveBeenCalledWith(
         expect.any(Error),
-        'Failed to process bill bill-error'
+        'Failed to process bill bill-error',
       );
     });
 
@@ -570,7 +570,9 @@ describe('AutoPayService', () => {
       mockSelectBills([mockBill]);
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'previous_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
 
       const nextMonth = new Date('2025-02-11T00:00:00.000Z');
@@ -582,9 +584,19 @@ describe('AutoPayService', () => {
       const result = await AutoPayService.processAutoPay();
 
       expect(result.processed).toBe(1);
-      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith('previous_business_day', 'unchanged');
-      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(saturday, 'previous_business_day');
-      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(saturday, 'monthly', null);
+      expect(DateAdjustmentService.getEffectiveStrategy).toHaveBeenCalledWith(
+        'previous_business_day',
+        'unchanged',
+      );
+      expect(DateAdjustmentService.adjustPaymentDate).toHaveBeenCalledWith(
+        saturday,
+        'previous_business_day',
+      );
+      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
+        saturday,
+        'monthly',
+        null,
+      );
 
       jest.useRealTimers();
     });
@@ -605,7 +617,9 @@ describe('AutoPayService', () => {
       mockSelectBills([mockBill]);
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'next_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
 
       const result = await AutoPayService.processAutoPay();
@@ -632,7 +646,9 @@ describe('AutoPayService', () => {
       mockSelectBills([mockBill]);
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'previous_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
 
       const nextMonth = new Date('2025-02-11T00:00:00.000Z');
@@ -641,8 +657,16 @@ describe('AutoPayService', () => {
 
       await AutoPayService.processAutoPay();
 
-      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(saturday, 'monthly', null);
-      expect(RecurrenceService.calculateNextDueDate).not.toHaveBeenCalledWith(friday, 'monthly', null);
+      expect(RecurrenceService.calculateNextDueDate).toHaveBeenCalledWith(
+        saturday,
+        'monthly',
+        null,
+      );
+      expect(RecurrenceService.calculateNextDueDate).not.toHaveBeenCalledWith(
+        friday,
+        'monthly',
+        null,
+      );
 
       jest.useRealTimers();
     });
@@ -663,7 +687,9 @@ describe('AutoPayService', () => {
       mockSelectBills([mockBill]);
 
       (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('previous_business_day');
+      (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
+        'previous_business_day',
+      );
       (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
 
       const nextMonth = new Date('2025-02-11T00:00:00.000Z');
@@ -701,7 +727,9 @@ describe('AutoPayService', () => {
         (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
         (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
         (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockImplementation((date) => date);
-        (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(new Date('2026-02-02T23:00:00.000Z'));
+        (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(
+          new Date('2026-02-02T23:00:00.000Z'),
+        );
         (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
       });
 
@@ -772,7 +800,7 @@ describe('AutoPayService', () => {
             expect(result.processed).toBe(0);
             expect(db.transaction).not.toHaveBeenCalled();
           }
-        }
+        },
       );
     });
   });

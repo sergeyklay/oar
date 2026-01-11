@@ -31,12 +31,7 @@ interface ForecastChartProps {
  *
  * Render Mode: Client Component (requires Recharts and optional onClick handlers)
  */
-export function ForecastChart({
-  data,
-  currency,
-  locale,
-  onBarClick,
-}: ForecastChartProps) {
+export function ForecastChart({ data, currency, locale, onBarClick }: ForecastChartProps) {
   const chartConfig: ChartConfig = {
     totalDue: {
       label: 'Amount Due',
@@ -80,15 +75,10 @@ export function ForecastChart({
                     const value = item.value as number;
                     const formatted = formatMoney(value, currency, locale);
                     const dataKey = item.dataKey as keyof typeof chartConfig;
-                    const label =
-                      (dataKey && chartConfig[dataKey]?.label) ||
-                      (item.name as string);
+                    const label = (dataKey && chartConfig[dataKey]?.label) || (item.name as string);
                     const color = item.color;
                     return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between gap-4"
-                      >
+                      <div key={index} className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-2">
                           {color && (
                             <div
@@ -98,9 +88,7 @@ export function ForecastChart({
                           )}
                           <span className="text-muted-foreground">{label}</span>
                         </div>
-                        <span className="font-medium font-mono tabular-nums">
-                          {formatted}
-                        </span>
+                        <span className="font-medium font-mono tabular-nums">{formatted}</span>
                       </div>
                     );
                   })}
@@ -136,8 +124,7 @@ export function ForecastChart({
             radius={8}
             {...(onBarClick && {
               onClick: (data: unknown) => {
-                const payload = (data as { payload?: { month?: string } })
-                  ?.payload;
+                const payload = (data as { payload?: { month?: string } })?.payload;
                 if (payload?.month) {
                   onBarClick(payload.month);
                 }
@@ -150,8 +137,7 @@ export function ForecastChart({
             radius={8}
             {...(onBarClick && {
               onClick: (data: unknown) => {
-                const payload = (data as { payload?: { month?: string } })
-                  ?.payload;
+                const payload = (data as { payload?: { month?: string } })?.payload;
                 if (payload?.month) {
                   onBarClick(payload.month);
                 }
@@ -163,4 +149,3 @@ export function ForecastChart({
     </div>
   );
 }
-

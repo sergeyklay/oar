@@ -30,6 +30,7 @@ This reduces manual work for bills you've already delegated to your bank. You ma
 ### When auto-pay bills get processed
 
 The job only processes bills when the "Automatically log automatic bills" setting is enabled. A bill is processed when all these conditions are true:
+
 - The auto-log setting is enabled
 - You marked it as auto-pay
 - The due date has arrived (today or earlier)
@@ -39,6 +40,7 @@ The job only processes bills when the "Automatically log automatic bills" settin
 The amount due check ensures bills that are already fully paid in the current cycle (from partial payments) or variable bills after cycle advance (where amount due resets to zero) are not processed until the next cycle when an amount is due.
 
 Once processed:
+
 - A payment record appears in the bill's history with the note "Logged by Oar"
 - The due date advances to the next cycle (for recurring bills)
 - One-time auto-pay bills are marked as paid
@@ -52,8 +54,7 @@ To confirm background jobs are running:
 
 ## Related Documents
 
-* [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
-* [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
-* [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
-* [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality
-
+- [Recurrence Engine](./recurrence-engine.md) - How recurring and one-time payments advance
+- [Logging Payments](./auto-pay.md) - Recording payments, partial payments, and historical payment detection
+- [Active Payer Signals](./active-payer-signals.md) - Explicit payment mode indicators (Auto/Manual) for each bill
+- [Weekend Payment Date Adjustment](./weekend-payment-date-adjustment.md) - How weekend due dates are adjusted for banking reality

@@ -23,34 +23,19 @@ describe('BillEndActionDropdown', () => {
   });
 
   it('renders with current value mark_as_paid', () => {
-    render(
-      <BillEndActionDropdown
-        currentValue="mark_as_paid"
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
     expect(screen.getByText('Mark as Never Due')).toBeInTheDocument();
   });
 
   it('renders with current value archive', () => {
-    render(
-      <BillEndActionDropdown
-        currentValue="archive"
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<BillEndActionDropdown currentValue="archive" onUpdate={mockOnUpdate} />);
 
     expect(screen.getByText('Move to the Archive')).toBeInTheDocument();
   });
 
   it('renders select component', () => {
-    render(
-      <BillEndActionDropdown
-        currentValue="mark_as_paid"
-        onUpdate={mockOnUpdate}
-      />
-    );
+    render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
     expect(screen.getByRole('combobox')).toBeInTheDocument();
   });
@@ -58,12 +43,7 @@ describe('BillEndActionDropdown', () => {
   describe('user interactions', () => {
     it('calls onUpdate with correct value when changed to archive', async () => {
       mockOnUpdate.mockResolvedValue({ success: true });
-      render(
-        <BillEndActionDropdown
-          currentValue="mark_as_paid"
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -87,12 +67,7 @@ describe('BillEndActionDropdown', () => {
 
     it('calls onUpdate with correct value when changed to mark_as_paid', async () => {
       mockOnUpdate.mockResolvedValue({ success: true });
-      render(
-        <BillEndActionDropdown
-          currentValue="archive"
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<BillEndActionDropdown currentValue="archive" onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -116,12 +91,7 @@ describe('BillEndActionDropdown', () => {
 
     it('persists new value when onUpdate resolves successfully', async () => {
       mockOnUpdate.mockResolvedValue({ success: true });
-      render(
-        <BillEndActionDropdown
-          currentValue="mark_as_paid"
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -149,12 +119,7 @@ describe('BillEndActionDropdown', () => {
         success: false,
         error: 'Update failed',
       });
-      render(
-        <BillEndActionDropdown
-          currentValue="mark_as_paid"
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -185,12 +150,7 @@ describe('BillEndActionDropdown', () => {
         resolveUpdate = resolve;
       });
       mockOnUpdate.mockReturnValue(updatePromise);
-      render(
-        <BillEndActionDropdown
-          currentValue="mark_as_paid"
-          onUpdate={mockOnUpdate}
-        />
-      );
+      render(<BillEndActionDropdown currentValue="mark_as_paid" onUpdate={mockOnUpdate} />);
 
       const select = screen.getByRole('combobox');
       await act(async () => {
@@ -223,4 +183,3 @@ describe('BillEndActionDropdown', () => {
     });
   });
 });
-

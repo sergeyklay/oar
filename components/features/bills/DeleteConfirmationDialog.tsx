@@ -37,16 +37,13 @@ export function DeleteConfirmationDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Payment Record</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <span className="block">
-              Are you sure you want to delete this payment record?
-            </span>
+            <span className="block">Are you sure you want to delete this payment record?</span>
             <span className="block font-medium text-foreground">
               {formatMoney(transaction.amount, currency, locale)} on{' '}
               <ClientDate date={transaction.paidAt} format="PPP" />
             </span>
             <span className="block text-amber-600 dark:text-amber-500">
-              ⚠️ This will recalculate the billing cycle if this payment affected the current
-              cycle.
+              ⚠️ This will recalculate the billing cycle if this payment affected the current cycle.
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -63,4 +60,3 @@ export function DeleteConfirmationDialog({
     </AlertDialog>
   );
 }
-

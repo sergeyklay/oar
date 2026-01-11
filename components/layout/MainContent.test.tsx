@@ -12,7 +12,7 @@ describe('MainContent', () => {
     render(
       <MainContent header={<h1>Page Header</h1>}>
         <div>Content</div>
-      </MainContent>
+      </MainContent>,
     );
 
     expect(screen.getByRole('heading', { name: 'Page Header' })).toBeInTheDocument();
@@ -22,7 +22,7 @@ describe('MainContent', () => {
     render(
       <MainContent header={<div>Header</div>}>
         <div>Main Content</div>
-      </MainContent>
+      </MainContent>,
     );
 
     expect(screen.getByText('Main Content')).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('MainContent', () => {
     render(
       <MainContent header={<div>Header</div>}>
         <div>Content</div>
-      </MainContent>
+      </MainContent>,
     );
 
     expect(screen.getByTestId('scrollable-container')).toBeInTheDocument();
@@ -41,12 +41,10 @@ describe('MainContent', () => {
 
   it('renders header and children together', () => {
     render(
-      <MainContent
-        header={<nav>Navigation</nav>}
-      >
+      <MainContent header={<nav>Navigation</nav>}>
         <div>First</div>
         <div>Second</div>
-      </MainContent>
+      </MainContent>,
     );
 
     expect(screen.getByText('Navigation')).toBeInTheDocument();
@@ -54,4 +52,3 @@ describe('MainContent', () => {
     expect(screen.getByText('Second')).toBeInTheDocument();
   });
 });
-

@@ -18,18 +18,17 @@ interface PaidRecentlyPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function PaidRecentlyPage({
-  searchParams,
-}: PaidRecentlyPageProps) {
+export default async function PaidRecentlyPage({ searchParams }: PaidRecentlyPageProps) {
   const { date, tag } = await searchParamsCache.parse(searchParams);
 
-  const [settings, paidRecentlyRange, tags, categoriesGrouped, defaultCategoryId] = await Promise.all([
-    SettingsService.getAll(),
-    SettingsService.getPaidRecentlyRange(),
-    getTags(),
-    getCategoriesGrouped(),
-    getDefaultCategoryId(),
-  ]);
+  const [settings, paidRecentlyRange, tags, categoriesGrouped, defaultCategoryId] =
+    await Promise.all([
+      SettingsService.getAll(),
+      SettingsService.getPaidRecentlyRange(),
+      getTags(),
+      getCategoriesGrouped(),
+      getDefaultCategoryId(),
+    ]);
   const currencySymbol = getCurrencySymbol(settings.currency, settings.locale);
 
   // Use server actions to get timezone-aware payment data
@@ -37,7 +36,7 @@ export default async function PaidRecentlyPage({
     ? await getPaymentsByDate({ date, tag: tag ?? undefined })
     : await getRecentPayments({ days: paidRecentlyRange, tag: tag ?? undefined });
 
-  const payments = paymentsResult.success ? paymentsResult.data ?? [] : [];
+  const payments = paymentsResult.success ? (paymentsResult.data ?? []) : [];
 
   return (
     <AppShellClient>
@@ -73,4 +72,3 @@ export default async function PaidRecentlyPage({
     </AppShellClient>
   );
 }
-

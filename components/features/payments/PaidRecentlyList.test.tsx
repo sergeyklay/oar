@@ -18,7 +18,7 @@ describe('PaidRecentlyList', () => {
 
       expect(screen.getByText('No payments in this time range.')).toBeInTheDocument();
       expect(
-        screen.getByText('Payments will appear here when you log them on your bills.')
+        screen.getByText('Payments will appear here when you log them on your bills.'),
       ).toBeInTheDocument();
     });
 
@@ -123,4 +123,3 @@ describe('PaidRecentlyList', () => {
     });
   });
 });
-

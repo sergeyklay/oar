@@ -51,7 +51,7 @@ describe('LogPaymentDialog', () => {
         onOpenChange={onOpenChange}
         currency="USD"
         {...props}
-      />
+      />,
     );
 
     return { ...utils, user, onOpenChange } as const;
@@ -124,23 +124,13 @@ describe('LogPaymentDialog', () => {
       await user.type(notesInput, 'Custom note');
 
       rerender(
-        <LogPaymentDialog
-          bill={mockBill}
-          open={false}
-          onOpenChange={jest.fn()}
-          currency="USD"
-        />
+        <LogPaymentDialog bill={mockBill} open={false} onOpenChange={jest.fn()} currency="USD" />,
       );
 
       jest.advanceTimersByTime(1000 * 60 * 60);
 
       rerender(
-        <LogPaymentDialog
-          bill={mockBill}
-          open={true}
-          onOpenChange={jest.fn()}
-          currency="USD"
-        />
+        <LogPaymentDialog bill={mockBill} open={true} onOpenChange={jest.fn()} currency="USD" />,
       );
 
       expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
@@ -174,7 +164,7 @@ describe('LogPaymentDialog', () => {
           open={true}
           onOpenChange={jest.fn()}
           currency="USD"
-        />
+        />,
       );
 
       expect(screen.getByLabelText(/amount/i)).toHaveValue('50');

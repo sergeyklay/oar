@@ -23,7 +23,12 @@ interface CalendarWidgetProps {
   getDateData?: (month: string) => Promise<DateStatusMap | PaymentDateMap>;
 }
 
-export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, dotMode = 'status', getDateData }: CalendarWidgetProps) {
+export function CalendarWidget({
+  weekStartsOn = 0,
+  disableDateFilter = false,
+  dotMode = 'status',
+  getDateData,
+}: CalendarWidgetProps) {
   const { month, date, setMonth, setDate, clearDate } = useCalendarState();
   const [dateStatuses, setDateStatuses] = useState<DateStatusMap>({});
   const [paymentDates, setPaymentDates] = useState<PaymentDateMap>({});
@@ -86,14 +91,14 @@ export function CalendarWidget({ weekStartsOn = 0, disableDateFilter = false, do
         setDate(newDate);
       }
     },
-    [date, setDate, clearDate]
+    [date, setDate, clearDate],
   );
 
   const handleMonthChange = useCallback(
     (newMonth: Date) => {
       setMonth(newMonth);
     },
-    [setMonth]
+    [setMonth],
   );
 
   const handleGoToToday = useCallback(() => {

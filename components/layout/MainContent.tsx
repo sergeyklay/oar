@@ -8,12 +8,8 @@ interface MainContentProps {
 export function MainContent({ header, children }: MainContentProps) {
   return (
     <>
-      <header className="content-header px-6 h-16 flex items-center">
-        {header}
-      </header>
-      <ScrollableContainer>
-        {children}
-      </ScrollableContainer>
+      <header className="content-header px-6 h-16 flex items-center">{header}</header>
+      <ScrollableContainer>{children}</ScrollableContainer>
     </>
   );
 }

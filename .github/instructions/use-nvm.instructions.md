@@ -17,7 +17,6 @@ The system environment might default to an older version. You MUST ensure the co
 
 **Rule:** DO NOT blindly chain `source ~/.nvm/nvm.sh` or `export` commands. It creates messy, fragile commands.
 
-
 ## Quick Reference
 
 ```bash

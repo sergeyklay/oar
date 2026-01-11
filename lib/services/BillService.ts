@@ -56,7 +56,10 @@ export const BillService = {
    * @param includeArchived - Whether to include archived bills (default: false)
    * @returns Bill with tags and category icon or null if not found
    */
-  async getWithTags(billId: string, includeArchived: boolean = false): Promise<BillWithTags | null> {
+  async getWithTags(
+    billId: string,
+    includeArchived: boolean = false,
+  ): Promise<BillWithTags | null> {
     const conditions = [eq(bills.id, billId)];
     if (!includeArchived) {
       conditions.push(eq(bills.isArchived, false));
@@ -222,7 +225,12 @@ export const BillService = {
       // Calculate timezone-aware boundaries
       const boundaries = calculateMonthBoundaries(year, monthNum);
       const { queryStart, queryEnd } = calculateExtendedQueryBoundaries(boundaries);
-      const filterBoundaries = calculateFilterBoundaries(year, monthNum, boundaries, userTimezoneOffset);
+      const filterBoundaries = calculateFilterBoundaries(
+        year,
+        monthNum,
+        boundaries,
+        userTimezoneOffset,
+      );
 
       // Check if viewing current month (for overdue inclusion)
       const today = startOfDay(new Date());
@@ -235,8 +243,8 @@ export const BillService = {
         conditions.push(
           or(
             and(gte(bills.dueDate, queryStart), lte(bills.dueDate, queryEnd)),
-            eq(bills.status, 'overdue')
-          )
+            eq(bills.status, 'overdue'),
+          ),
         );
       } else {
         // Past/future month: only bills in extended range
@@ -254,10 +262,7 @@ export const BillService = {
     }
 
     if (tag) {
-      const [tagRecord] = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.slug, tag));
+      const [tagRecord] = await db.select({ id: tags.id }).from(tags).where(eq(tags.slug, tag));
 
       if (!tagRecord) {
         return [];
@@ -400,9 +405,8 @@ export const BillService = {
     const globalStrategy = await SettingsService.getWeekendAdjustment();
     const effectiveStrategy = DateAdjustmentService.getEffectiveStrategy(
       bill.weekendAdjustment,
-      globalStrategy
+      globalStrategy,
     );
     return DateAdjustmentService.adjustPaymentDate(bill.dueDate, effectiveStrategy);
   },
 };
-
