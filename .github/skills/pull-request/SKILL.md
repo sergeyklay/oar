@@ -7,10 +7,6 @@ description: Create Pull Requests with well-structured descriptions following pr
 
 Create Pull Requests with structured descriptions that follow the project template and conventions.
 
-## References
-
-- For Pull Request Description Guidelines, see [style guide](references/pr-guidelines.md)
-
 ## Workflow
 
 ### Step 1: Verify GitHub CLI Authentication
