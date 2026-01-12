@@ -1,7 +1,7 @@
 ---
 name: createPr
-description: Commit changes and create a pull request
-argument-hint: Provide any specific details for the pull request
+description: Commit changes and create or update a pull request
+argument-hint: PR details or branch/commit context
 tools:
   - 'execute/getTerminalOutput'
   - 'execute/runInTerminal'
@@ -12,14 +12,12 @@ tools:
   - 'web/githubRepo'
 ---
 
-## Goal
+Commit staged changes and manage pull requests (PR).
 
-Commit changes and manage pull requests in the repository.
+Task:
 
-## Task
-
-- Use specific skills to create a branch, commit the changes, and open/change a pull request with a meaningful title and description.
-- If user provides specific details for the pull request, incorporate them into the context
-- Detect whether user wants to create a new PR or update an existing one based on context
+- Use specific skills to create a branch, commit the changes, and open/change a PR with a meaningful title and description
+- Incorporate provided details or context about the changes
+- Detect whether you need to create a new PR or update an existing one based on context
 - When updating, verify the PR description still accurately reflects the changes
 - Use conventional commit messages when appropriate
