@@ -12,7 +12,7 @@ gh auth status
 
 **Success output:**
 
-```
+```plaintext
 github.com
   ✓ Logged in to github.com account <username> (...)
   - Active account: true

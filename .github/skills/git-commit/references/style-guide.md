@@ -4,7 +4,7 @@ This reference provides guidance on writing commit messages following the [Conve
 
 ## Conventional Commits Format
 
-```
+```plaintext
 <type>[optional scope]: <description>
 
 [optional body]
@@ -46,14 +46,14 @@ Breaking changes MUST be indicated by:
 
 1. **Exclamation mark** before the colon:
 
-   ```
+   ```plaintext
    feat!: remove deprecated API endpoints
    fix(api)!: change response format
    ```
 
 2. **Footer** with `BREAKING CHANGE:` (uppercase):
 
-   ```
+   ```plaintext
    feat: add new authentication flow
 
    BREAKING CHANGE: previous auth tokens are no longer valid

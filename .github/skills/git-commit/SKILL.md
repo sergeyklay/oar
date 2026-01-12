@@ -1,11 +1,16 @@
 ---
 name: git-commit
-description: Create Git commits with well-crafted messages following Conventional Commits specification. Use this skill when (1) the user asks to commit, save, or persist changes to Git, (2) after completing a task where committing is the logical next step, (3) when code changes are ready to be recorded, or (4) when the agent autonomously decides to checkpoint work. Analyzes project commit history to match the established writing style and uses the gh CLI for Git operations.
+description: Create Git commits with well-crafted messages following Conventional Commits specification. Use this skill when (1) you need to commit, save, or persist changes to Git, (2) after completing a task where committing is the logical next step, (3) when code changes are ready to be recorded, or (4) when the agent autonomously decides to checkpoint work. Analyzes project commit history to match the established writing style and uses the gh CLI for Git operations.
 ---
 
 # Git Commit Skill
 
 Create Git commits using Conventional Commits format with descriptions that match the project's established writing style.
+
+## References
+
+- For GitHub CLI Reference, see [commands reference](references/REFERENCE.md)
+- For Conventional Commits Reference, see [style guide](references/style-guide.md)
 
 ## Workflow
 

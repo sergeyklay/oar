@@ -7,6 +7,10 @@ description: Create Pull Requests with well-structured descriptions following pr
 
 Create Pull Requests with structured descriptions that follow the project template and conventions.
 
+## References
+
+- For Pull Request Description Guidelines, see [style guide](references/pr-guidelines.md)
+
 ## Workflow
 
 ### Step 1: Verify GitHub CLI Authentication
@@ -33,11 +37,11 @@ gh auth status
 #### Detect Protected Branch
 
 ```bash
-# Get the repository's default branch
-gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
-
 # Get current branch
 git branch --show-current
+
+# Get the repository's default branch
+gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
 ```
 
 **Protected branches (cannot be PR source):**
@@ -46,12 +50,10 @@ git branch --show-current
 - `develop` or `development`
 - Any branch matching `release/*` or `hotfix/*` patterns
 
-#### If on Protected Branch
+If current local branch is protected:
 
-1. **STOP** - do not create PR from this branch
-2. Inform the user: "You are on the protected branch `<branch>`. PRs must be created from feature branches."
-3. Ask the user to switch to or create a feature branch first
-4. Suggest using the `git-commit` skill to create an appropriate branch
+1. Inform the user: "You are on the protected branch `<branch>`. PRs must be created from feature branches."
+2. Switch to or create a feature branch first
 
 #### Branch State Verification
 
@@ -66,10 +68,10 @@ git status --short
 
 **Pre-PR checklist:**
 
-- ✅ Current branch is NOT a protected branch
-- ✅ Branch has commits ahead of base branch
-- ✅ No uncommitted changes (commit or stash first)
-- ✅ Branch is pushed to remote
+- [ ] Current branch is NOT a protected branch
+- [ ] Branch has commits ahead of base branch
+- [ ] No uncommitted changes (commit or stash first)
+- [ ] Branch is pushed to remote
 
 ```bash
 # Push branch if needed
@@ -109,7 +111,7 @@ git diff --stat $DEFAULT_BRANCH..HEAD
 
 PR title should follow Conventional Commits format:
 
-```
+```plaintext
 <type>[optional scope]: <description>
 ```
 
@@ -138,37 +140,7 @@ Use the project template structure. See [PR Template](../../../pull_request_temp
 
 #### Example
 
-<example format="markdown">
-### 🎯 Scope & Context
-
-**Type:** Chore
-
-**Intent:** Update transaction notes in AutoPayService to reflect accurate logging information. The notes field in auto-pay transaction records is changed from "Auto-processed on due date" to "Logged by Oar" to better represent the system's logging behavior.
-
-### 🧭 Reviewer Guide
-
-**Complexity:** Low
-
-#### Entry Point
-
-[Example 1: Start with `lib/services/AutoPayService.ts` - this is where the core logic change happens. The rest of the files are just adapting to the new return type introduced here. Understanding this file first will make the other changes obvious.]
-[Example 2: Start with `lib/models/Bill.ts` - there are changes how `nextDueDate` is calculated. This looks minor but it affects validation in 3 other services. Once you see the new calculation logic, the changes in `AutoPayService` and `BillValidator` will make sense.]
-[Example 3: Start with `lib/services/PaymentProcessor.ts` - this contains the most significant change: switching from sync to async transaction handling. Pay attention to the error handling block on lines 45-60, this is where the behavior differs from before.]
-[Example 4: Start with `lib/services/AutoPayService.ts` - this file drives the change. The modifications in other files follow from the new interface defined here.]
-[Example 5: No specific entry point needed - changes are straightforward and self-contained. Each file can be reviewed independently. The `AutoPayService.ts` change is just a string update in the notes field, other files follow the same pattern.]
-
-#### Sensitive Areas
-
-- `lib/services/foo.ts`: Database transaction insertion logic with notes field value
-- `lib/services/bar.ts`: Service logic to calculate next due date for recurring bills
-- `lib/services/baz.ts`: Service logic to derive bill status based on next due date
-
-### ⚠️ Risk Assessment
-
-- **Breaking Changes:** No breaking changes
-- **Migrations/State:** No migrations or state changes
-
-</example>
+Use Pull Request example as a guide: [Example PR Description](references/pr-example.md)
 
 ### Step 6: Create the Pull Request
 
@@ -194,7 +166,7 @@ gh pr create \
   --draft
 ```
 
-**IMPORTANT:** You must NOT use double quotes for `--body` to avoid shell interpolation issues.
+**IMPORTANT:** Do NOT use double quotes for `--body` to avoid shell interpolation issues.
 
 ### Step 7: Confirm Success
 
@@ -204,8 +176,6 @@ After creating, verify and report:
 # Get PR URL
 gh pr view
 ```
-
-**IMPORTANT:** You have to use the `PAGER=cat` environment variable to avoid interactive pager blocking output.
 
 Report to the user:
 
