@@ -283,9 +283,3 @@ npm run test -- --testPathPatterns="[AffectedFile]" --no-coverage 2>&1
 2. Only when tests pass, respond with "Done" status.
 
 **Do not ask the user to test it. YOU test it.**
-
----
-
-Last Updated: 2026-01-04
-
-Maintained by: AI Agents under human supervision

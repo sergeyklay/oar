@@ -266,9 +266,3 @@ Steps to verify:
 6. If the tests AND linting AND type checks AND formatting pass, respond "Done".
 
 NEVER respond 'Done' until you have verified that the tests are complete and cover all the functionality of the source file and that there are no linting/type/formatting errors or warnings.
-
----
-
-Last Updated: 2026-01-08
-
-Maintained by: AI Agents under human supervision

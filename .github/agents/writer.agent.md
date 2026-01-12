@@ -131,12 +131,6 @@ Before completing, verify:
 2. No implementation code pasted (only logic described)?
 3. Edge cases covered?
 4. Verification section present?
-5. Writing style follows #file:../instructions/writing.instructions.md?
+5. Writing style follows #file:../instructions/writing.instructions.md
 
 Respond "Done" only after verifying all items.
-
----
-
-Last Updated: 2026-01-07
-
-Maintained by: AI Agents under human supervision

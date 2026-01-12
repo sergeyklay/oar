@@ -188,9 +188,3 @@ For a feature adding "payment reminders":
 - [ ] Run linter and type check
 - [ ] Manual test: Verify reminders display for bills due within X days
 ```
-
----
-
-Last Updated: 2026-01-04
-
-Maintained by: AI Agents under human supervision
