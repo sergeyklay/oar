@@ -2,6 +2,7 @@
 name: createPr
 description: Commit changes and create or update a pull request
 argument-hint: PR details or branch/commit context
+agent: agent
 tools:
   - 'execute/getTerminalOutput'
   - 'execute/runInTerminal'

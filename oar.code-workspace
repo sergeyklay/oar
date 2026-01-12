@@ -6,17 +6,5 @@
   ],
   "settings": {
     "editor.rulers": [100],
-    "terminal.integrated.env.linux": {
-      "PAGER": "cat",
-    },
-    "terminal.integrated.env.osx": {
-      "PAGER": "cat",
-    },
-    "terminal.integrated.env.windows": {
-      "PAGER": "cat",
-    },
-  },
-  "extensions": {
-    "recommendations": ["mkhl.direnv", "elagil.pre-commit-helper"],
   },
 }
