@@ -1,0 +1,10 @@
+# Defining attributes per path.
+#
+# For more see: https://git-scm.com/docs/gitattributes
+
+# Auto-detect text files, ensure they use LF.
+* text=auto eol=lf
+
+# Set the language for VS Config files to JSONC
+# to ensure GitHub doesn't show the comments as errors.
+.vscode/*.json   diff=json linguist-language=JSONC

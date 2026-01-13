@@ -13,11 +13,8 @@ build
 .gitignore
 *.md
 
-# IDE and editor
+# VS Code settings
 .vscode
-*.swp
-*.swo
-*.code-workspace
 
 # Ignore generated specification and plan files.
 .specs
