@@ -36,10 +36,17 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 ## Description Rules
 
 - Use imperative mood: "Add", "Fix", "Update", "Remove"
-- Keep under 72 characters
+- Subject line: keep under 72 characters
 - No period at end
 - Be specific about what changed
 - Avoid vague words: "various", "some", "minor", "stuff"
+
+## Body (Summary) Formatting
+
+- Separate from subject with a blank line
+- Wrap lines at 72 characters
+- Explain **what** and **why**, not how
+- Can be multiple paragraphs
 
 ## Breaking Changes
 
@@ -65,6 +72,22 @@ Indicate breaking changes with:
 | Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5`        | `Updated packages` |
 | Add unit test      | `test: add coverage for PaymentService edge cases` | `Tests`            |
 
+
+Full example commit message:
+
+```plaintext
+fix: resolve race condition in user auth
+
+This commit addresses the race condition that occurred
+when multiple login attempts happened simultaneously.
+The fix implements a mutex lock around the session
+creation logic.
+
+Fixes #123
+
+BREAKING CHANGE: session tokens are now single-use only
+```
+
 ## Anti-Patterns
 
 | Pattern             | Problem            | Correct Form            |
@@ -74,7 +97,7 @@ Indicate breaking changes with:
 | `fix: add feature.` | Trailing period    | `fix: add feature`      |
 | `add feature`       | Missing type       | `feat: add feature`     |
 | `fix: fix bug`      | Vague              | `fix: handle null in X` |
-| 80+ char subject    | Too long           | Keep under 72 chars     |
+| 72+ char subject    | Too long           | Keep under 72 chars     |
 | `✨ feat: add`      | Emoji in subject   | `feat: add`             |
 
 ## Multi-line Messages
