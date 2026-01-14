@@ -5,64 +5,27 @@ applyTo: '**/package.json,**/package-lock.json'
 
 # Package Manager
 
-## Core Rule
-
 **Always use `npm` as the package manager.** Never use bun, yarn, or pnpm.
 
-## Commands
-
-### ✅ Always Use npm
+## Common Commands
 
 ```bash
 # Install dependencies
-npm install package-name           # Add a new dependency
-npm install -D package-name        # Add a development dependency
-
-# To install with reproducible dependencies
-npm ci
-
-# To check the current project's packages for vulnerabilities
-npm audit --json
-
-# Remove packages
-npm remove axios                   # Remove a package
+npm ci                            # Install from lock file (CI/reproducible builds)
+npm install <package>             # Add a new dependency
+npm install -D <package>          # Add a development dependency
+npm remove <package>              # Remove a package
 
 # Run scripts
-npm run dev                        # Run development server
-npm run build                      # Build the application
-npm run lint                       # Run linting
-npm run test                       # Run tests
+npm run <script>                  # Run package.json scripts
 
 # Execute binaries
-npx drizzle-kit generate          # Generate migration files
-npx drizzle-kit push --force      # Push schema changes to SQLite
+npx <command>                     # Execute package binaries
 ```
 
-### ❌ Never Use These
+## Rules
 
-```bash
-# bun
-bun install
-bun run dev
-bunx drizzle-kit generate
-bun audit
-
-# yarn
-yarn add axios
-yarn dev
-
-# pnpm
-pnpm install
-pnpm run dev
-```
-
-## Quick Reference
-
-| Action             | Command                    |
-| ------------------ | -------------------------- |
-| Install all deps   | `npm ci`                   |
-| Add package        | `npm install <package>`    |
-| Add dev dependency | `npm install -D <package>` |
-| Remove package     | `npm remove <package>`     |
-| Run script         | `npm run <script>`         |
-| Execute binary     | `npx <command>`            |
+- Use `npm ci` for reproducible installs (CI, Docker, fresh clones)
+- Use `npm install` when adding/updating packages
+- Never use `yarn`, `pnpm`, or `bun` commands
+- Always commit `package-lock.json` changes
