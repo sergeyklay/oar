@@ -1,15 +1,11 @@
 ---
 name: pull-request
-description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. This skill handles the HOW of creating PRs (workflow steps, commands, verification). For PR title and description FORMAT rules, the pull-request-descriptions.instructions.md is automatically applied.
+description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. This skill handles the HOW of creating PRs (workflow steps, commands, verification). For PR title and description FORMAT rules, use appropriate instructions.
 ---
 
 # Pull Request Skill
 
 Execute Pull Request creation following a structured workflow that ensures authentication, branch safety, and proper change analysis.
-
-## References
-
-- [Example PR Description](assets/pr-example.md) - Sample PR description following template
 
 ## Workflow
 
