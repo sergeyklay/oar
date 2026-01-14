@@ -26,6 +26,31 @@
     }
   },
 
+  // Use instruction files for code generation requests.
+  // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+
+  // Custom instruction files for code generation requests.
+  // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+  // Note: As for 13 January 2026 this feature is in Preview stage.
+  "github.copilot.chat.reviewSelection.instructions": [
+    { "file": ".github/instructions/code-review.instructions.md" }
+  ],
+
+  // Custom instruction files for commit message generation.
+  // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "file": ".github/instructions/commit-messages.instructions.md" }
+  ],
+
+  // Custom instruction files for pull request description generation.
+  // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
+  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    { "file": ".github/instructions/pull-request-descriptions.instructions.md" }
+  ],
+
   // Enable or disable inline suggestions for specified languages.
   "github.copilot.enable": {
     "*": true,
