@@ -2,7 +2,7 @@
   // Enable the use of AGENTS.md file for agent configuration including nested agents.
   // See: https://agents.md
   "chat.useAgentsMdFile": true,
-  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  // Note: As of 13 January 2026 this feature is in Experimental stage.
   "chat.useNestedAgentsMdFiles": true,
 
   // Increase the maximum number of requests an agent can make in a single session.
@@ -10,7 +10,7 @@
   "chat.agent.maxRequests": 99,
 
   // Enable the use of agent skills: https://agentskills.io
-  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  // Note: As of 13 January 2026 this feature is in Experimental stage.
   "chat.useAgentSkills": true,
 
   // Setting PAGER to "cat" to avoid interactive pager blocking output in terminal
@@ -32,21 +32,21 @@
 
   // Custom instruction files for code generation requests.
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
-  // Note: As for 13 January 2026 this feature is in Preview stage.
+  // Note: As of 13 January 2026 this feature is in Preview stage.
   "github.copilot.chat.reviewSelection.instructions": [
     { "file": ".github/instructions/code-review.instructions.md" }
   ],
 
   // Custom instruction files for commit message generation.
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
-  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  // Note: As of 13 January 2026 this feature is in Experimental stage.
   "github.copilot.chat.commitMessageGeneration.instructions": [
     { "file": ".github/instructions/commit-messages.instructions.md" }
   ],
 
   // Custom instruction files for pull request description generation.
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
-  // Note: As for 13 January 2026 this feature is in Experimental stage.
+  // Note: As of 13 January 2026 this feature is in Experimental stage.
   "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
     { "file": ".github/instructions/pull-request-descriptions.instructions.md" }
   ],
@@ -65,7 +65,7 @@
 
   // Let Copilot guess what do you looking for in search.
   // This will enable semantic search when appropriate.
-  // Note: As for 13 January 2026 this feature is in Preview stage.
+  // Note: As of 13 January 2026 this feature is in Preview stage.
   "search.searchView.semanticSearchBehavior": "auto",
 
   // Set a ruler at 100 characters to help maintain line length.
