@@ -36,7 +36,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 ## Description Rules
 
 - Use imperative mood: "Add", "Fix", "Update", "Remove"
-- Subject line: keep under 72 characters
+- STRICT: Subject line: keep under 72 characters
 - No period at end
 - Be specific about what changed
 - Avoid vague words: "various", "some", "minor", "stuff"
@@ -72,7 +72,7 @@ Indicate breaking changes with:
 | Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5`        | `Updated packages` |
 | Add unit test      | `test: add coverage for PaymentService edge cases` | `Tests`            |
 
-Full example commit message:
+## Full Example
 
 ```plaintext
 fix: resolve race condition in user auth
