@@ -72,7 +72,6 @@ Indicate breaking changes with:
 | Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5`        | `Updated packages` |
 | Add unit test      | `test: add coverage for PaymentService edge cases` | `Tests`            |
 
-
 Full example commit message:
 
 ```plaintext
