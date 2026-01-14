@@ -67,15 +67,15 @@ Indicate breaking changes with:
 
 ## Anti-Patterns
 
-| Pattern             | Problem                | Correct Form                 |
-| ------------------- | ---------------------- | ---------------------------- |
-| `fix: added...`     | Past tense             | `fix: add...`                |
-| `fix: adding...`    | Present continuous     | `fix: add...`                |
-| `fix: add feature.` | Trailing period        | `fix: add feature`           |
-| `add feature`       | Missing type           | `feat: add feature`          |
-| `fix: fix bug`      | Vague                  | `fix: handle null in X`      |
-| 80+ char subject    | Too long               | Keep under 72 chars          |
-| `✨ feat: add`      | Emoji in subject       | `feat: add`                  |
+| Pattern             | Problem            | Correct Form            |
+| ------------------- | ------------------ | ----------------------- |
+| `fix: added...`     | Past tense         | `fix: add...`           |
+| `fix: adding...`    | Present continuous | `fix: add...`           |
+| `fix: add feature.` | Trailing period    | `fix: add feature`      |
+| `add feature`       | Missing type       | `feat: add feature`     |
+| `fix: fix bug`      | Vague              | `fix: handle null in X` |
+| 80+ char subject    | Too long           | Keep under 72 chars     |
+| `✨ feat: add`      | Emoji in subject   | `feat: add`             |
 
 ## Multi-line Messages
 
