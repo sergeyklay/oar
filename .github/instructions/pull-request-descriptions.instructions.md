@@ -72,32 +72,32 @@ Use the project template with three required sections. See [PR Template](../pull
 
 ## Formatting Constraints
 
-| Rule | Requirement |
-|------|-------------|
-| **Emojis** | Only in section headers (🎯, 🧭, ⚠️) as shown in template |
-| **No fluff** | Avoid generic intros like "This PR updates..." |
-| **All sections required** | Include all 3 sections from template |
-| **Dynamic sub-sections** | Only show sub-sections if relevant data exists |
-| **No top-level headers** | Start directly with first section |
-| **Dashes** | Use single hyphen with spaces: " - " not "—" |
-| **Filenames** | Wrap in backticks: \`lib/services/AutoPayService.ts\` |
+| Rule                      | Requirement                                               |
+| ------------------------- | --------------------------------------------------------- |
+| **Emojis**                | Only in section headers (🎯, 🧭, ⚠️) as shown in template |
+| **No fluff**              | Avoid generic intros like "This PR updates..."            |
+| **All sections required** | Include all 3 sections from template                      |
+| **Dynamic sub-sections**  | Only show sub-sections if relevant data exists            |
+| **No top-level headers**  | Start directly with first section                         |
+| **Dashes**                | Use single hyphen with spaces: " - " not "—"              |
+| **Filenames**             | Wrap in backticks: \`lib/services/AutoPayService.ts\`     |
 
 ## Complexity Assessment
 
-| Level | Criteria |
-|-------|----------|
-| **Low** | Single file or config changes, documentation, simple fixes |
-| **Medium** | Multiple related files, new features with tests, refactoring |
-| **High** | Cross-cutting changes, database migrations, breaking changes, security-sensitive |
+| Level      | Criteria                                                                         |
+| ---------- | -------------------------------------------------------------------------------- |
+| **Low**    | Single file or config changes, documentation, simple fixes                       |
+| **Medium** | Multiple related files, new features with tests, refactoring                     |
+| **High**   | Cross-cutting changes, database migrations, breaking changes, security-sensitive |
 
 ## Anti-Patterns
 
-| Pattern | Problem | Correct Form |
-|---------|---------|--------------|
-| `This PR adds...` | Fluff intro | Start with Type and Intent directly |
-| Using "—" | Em-dash causes issues | Use " - " (hyphen with spaces) |
-| Missing Entry Point | Reviewer lacks direction | Always specify where to start |
-| `file.ts` without backticks | Poor formatting | Use \`file.ts\` |
+| Pattern                     | Problem                  | Correct Form                        |
+| --------------------------- | ------------------------ | ----------------------------------- |
+| `This PR adds...`           | Fluff intro              | Start with Type and Intent directly |
+| Using "—"                   | Em-dash causes issues    | Use " - " (hyphen with spaces)      |
+| Missing Entry Point         | Reviewer lacks direction | Always specify where to start       |
+| `file.ts` without backticks | Poor formatting          | Use \`file.ts\`                     |
 
 ## Language
 
