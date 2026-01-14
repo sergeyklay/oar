@@ -78,9 +78,9 @@ Full example commit message:
 ```plaintext
 fix: resolve race condition in user auth
 
-Addresses the race condition that occurs when multiple
-login attempts happen simultaneously by implementing a
-mutex lock around the session creation logic.
+Prevents race condition during simultaneous login attempts.
+Multiple concurrent authentications were causing session
+corruption and authentication failures.
 
 Fixes #123
 
