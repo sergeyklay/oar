@@ -36,7 +36,7 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 ## Description Rules
 
 - Use imperative mood: "Add", "Fix", "Update", "Remove"
-- STRICT: Subject line: keep under 72 characters
+- STRICT: Subject line must be under 72 character
 - No period at end
 - Be specific about what changed
 - Avoid vague words: "various", "some", "minor", "stuff"
