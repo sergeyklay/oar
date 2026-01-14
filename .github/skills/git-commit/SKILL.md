@@ -1,16 +1,15 @@
 ---
 name: git-commit
-description: Create Git commits with well-crafted messages following Conventional Commits specification. Use this skill when (1) you need to commit, save, or persist changes to Git, (2) after completing a task where committing is the logical next step, (3) when code changes are ready to be recorded, or (4) when the agent autonomously decides to checkpoint work. Analyzes project commit history to match the established writing style and uses the gh CLI for Git operations.
+description: Execute Git commits with proper workflow including authentication, branch safety, atomic commits, and style analysis. Use when asked to commit, save, or persist changes to Git, after completing tasks where committing is logical, or when autonomously checkpointing work. This skill handles the HOW of committing (workflow steps, commands, branch management).
 ---
 
 # Git Commit Skill
 
-Create Git commits using Conventional Commits format with descriptions that match the project's established writing style.
+Execute Git commits following a structured workflow that ensures authentication, branch safety, atomic commits, and project style consistency.
 
 ## References
 
-- For GitHub CLI Reference, see [commands reference](references/REFERENCE.md)
-- For Conventional Commits Reference, see [style guide](references/style-guide.md)
+- [GitHub CLI Commands](references/REFERENCE.md) - Authentication and gh CLI usage
 
 ## Workflow
 
@@ -142,7 +141,7 @@ Format: `<type>/<kebab-case-description>`
 
 ### Step 4: Analyze Project Writing Style
 
-Analyze recent commits to understand the project's **writing style** for description content:
+Analyze recent commits to match the project's vocabulary and phrasing:
 
 ```bash
 git log --format="%s" -30
@@ -161,54 +160,16 @@ You have to mimic the vocabulary, detail level, and phrasing style.
 
 **Important:** The Conventional Commits format is fixed. Only adapt the vocabulary and phrasing style to match project conventions.
 
-### Step 5: Generate Commit Message
+**Identify:**
 
-**Always use Conventional Commits format.** Apply the analyzed writing style to the description.
+- Common verbs (add, implement, introduce, etc.)
+- Detail level (brief vs descriptive)
+- Scope usage patterns (`(deps)`, `(api)`, or none)
+- Domain-specific terminology
 
-#### Message Structure (Required)
+Mimic the identified style while following Conventional Commits format.
 
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-**Allowed types:**
-
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation only
-- `style` - Formatting, no code change
-- `refactor` - Code restructuring without behavior change
-- `test` - Adding or fixing tests
-- `chore` - Maintenance, dependencies, build changes
-- `perf` - Performance improvements
-- `ci` - CI/CD changes
-- `build` - Build system changes
-- `revert` - Reverting previous commit
-
-#### Description Guidelines
-
-- Use imperative mood: "Add", "Fix", "Update", "Remove", "Improve", "Refactor"
-- Keep under 72 characters
-- Do not end with a period
-- Be specific about what changed
-- Avoid vague words: "various", "some", "minor"
-
-#### Examples Based on Change Type
-
-| Change             | Good Message                                       | Bad Message        |
-| ------------------ | -------------------------------------------------- | ------------------ |
-| New API endpoint   | `feat(api): add user preferences endpoint`         | `Added new stuff`  |
-| Fix null reference | `fix: handle null user in auth middleware`         | `Fixed bug`        |
-| Update README      | `docs: clarify installation steps for Docker`      | `Update README`    |
-| Rename variable    | `refactor: rename userId to accountId for clarity` | `Refactoring`      |
-| Upgrade dependency | `chore(deps): bump zod from 4.3.4 to 4.3.5`        | `Updated packages` |
-| Add unit test      | `test: add coverage for PaymentService edge cases` | `Tests`            |
-
-### Step 6: Execute the Commit
+### Step 5: Generate and Execute Commit
 
 Stage files and create commit:
 
@@ -220,15 +181,15 @@ git add <files>
 git commit -m "<message>"
 ```
 
-**For multi-line messages:**
+For multi-line messages:
 
 ```bash
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
 ```
 
-### Step 7: Confirm Success
+### Step 6: Confirm Success
 
-After committing, verify and report:
+Verify and report:
 
 ```bash
 # Show the created commit
@@ -238,7 +199,7 @@ git log --oneline -1
 git show --stat HEAD
 ```
 
-Report to the user:
+Report to user:
 
 - Commit hash (short form)
 - Files changed count
@@ -260,37 +221,4 @@ If any `gh` command fails with authentication error:
 
 1. Run `gh auth status` to diagnose
 2. If token expired: `gh auth refresh`
-3. If no token: `gh auth login --web`
-4. Report the issue clearly to the user
-
-## Conventional Commits Format (Required)
-
-Always follow the Conventional Commits specification:
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-**Format rules:**
-
-- Description MUST immediately follow the colon and space
-- Description is a short summary of code changes
-- Body MAY provide additional context, MUST begin one blank line after description
-- Breaking changes: use `!` before `:` (e.g., `feat!: remove deprecated API`)
-- Footer `BREAKING CHANGE:` MUST be uppercase
-
-**Common scopes in this project:**
-
-- `(deps)` - dependency updates
-- `(deps-dev)` - dev dependency updates
-- No scope - most other changes
-
-**When in doubt:** Run `git log --oneline -20` to see recent writing styles
-
-## Language
-
-ALWAYS generate commit messages in **English** regardless of the language used in conversation.
+3. If no token: Report the issue clearly to the user and offer to run `gh auth login --web`
