@@ -30,7 +30,7 @@
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
 
-  // Custom instruction files for code generation requests.
+  // Custom instruction files for code review for the current selection.
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
   // Note: As of 13 January 2026 this feature is in Preview stage.
   "github.copilot.chat.reviewSelection.instructions": [
