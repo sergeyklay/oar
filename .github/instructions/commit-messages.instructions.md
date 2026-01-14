@@ -36,16 +36,19 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 ## Description Rules
 
 - Use imperative mood: "Add", "Fix", "Update", "Remove"
-- STRICT: Subject line must be under 72 character
+- **IMPORTANT:** Subject line must be under 72 character
 - No period at end
 - Be specific about what changed
 - Avoid vague words: "various", "some", "minor", "stuff"
 
 ## Body (Summary) Formatting
 
+If a body is definitely needed:
+
 - Separate from subject with a blank line
-- Wrap lines at 72 characters
+- **IMPORTANT:** Wrap lines at 72 characters
 - Explain **what** and **why**, not how
+- Reference issues/Jira task if relevant (e.g., "Fixes #123", "Related to #456", "Resolves ABC-789")
 - Can be multiple paragraphs
 
 ## Breaking Changes
@@ -96,6 +99,7 @@ BREAKING CHANGE: session tokens are now single-use only
 | `add feature`       | Missing type       | `feat: add feature`     |
 | `fix: fix bug`      | Vague              | `fix: handle null in X` |
 | 72+ char subject    | Too long           | Keep under 72 chars     |
+| body line >72 chars | Hard to read       | Wrap at 72 chars        |
 | `✨ feat: add`      | Emoji in subject   | `feat: add`             |
 
 ## Multi-line Messages
