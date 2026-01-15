@@ -1,7 +1,6 @@
 ---
 description: Use these instructions to guide your code reviews.
 excludeAgent: ['coding-agent']
-applyTo: '**'
 ---
 
 # Code Review Guidelines
@@ -14,7 +13,7 @@ Guidelines for conducting code reviews in this project. Follow these best practi
 
 1. **Correctness** — Does the code do what it claims?
 2. **Type Safety** — No `any`, unchecked nulls handled, errors propagated correctly
-3. **Architecture** — Layer boundaries and common conventions are respected (see #file:../../AGENTS.md for details)
+3. **Architecture** — Layer boundaries and common conventions are respected (see [AGENTS.md](../../AGENTS.md) for details)
 4. **Performance** — No N+1 queries, unbounded loops, unnecessary re-renders
 5. **Security** — No secrets in code/logs, input validated, no XSS vectors
 6. **Style** — Airbnb guide, 100-char lines, JSDoc on public APIs

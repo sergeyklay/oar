@@ -1,6 +1,5 @@
 ---
 description: Commit message formatting rules following Conventional Commits specification
-applyTo: '**'
 ---
 
 # Commit Message Format

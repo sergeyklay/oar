@@ -1,6 +1,5 @@
 ---
 description: Pull request title and description formatting rules
-applyTo: '**'
 ---
 
 # Pull Request Description Format
