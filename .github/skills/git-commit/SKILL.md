@@ -187,7 +187,7 @@ For multi-line messages:
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
 ```
 
-Follow the PR Description Structure from [Commit Message Format](../../instructions/commit-message-format.instructions.md).
+Follow the PR Description Structure from [Commit Message Format](../../instructions/commit-messages.instructions.md).
 
 ### Step 6: Confirm Success
 
