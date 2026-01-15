@@ -120,6 +120,8 @@ gh pr create \
   --draft
 ```
 
+Follow the PR Description Structure from [Pull Request Description Format](../../instructions/pull-request-descriptions.instructions.md).
+
 **IMPORTANT:** Do NOT use double quotes for `--body` to avoid shell interpolation issues.
 
 ### Step 5: Confirm Success
