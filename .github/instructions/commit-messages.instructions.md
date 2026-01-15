@@ -42,12 +42,17 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/
 
 ## Body (Summary) Formatting
 
-If a body is definitely needed:
+When to include a body:
+
+- When the change cannot be fully explained in the subject line
+- For non-trivial changes or behavior changes
+
+Body formatting:
 
 - Separate from subject with a blank line
 - **IMPORTANT:** Wrap lines at 72 characters
 - Explain **what** and **why**, not how
-- Reference issues/Jira task if relevant (e.g., "Fixes #123", "Related to #456", "Resolves ABC-789")
+- Reference GitHub issues/Jira tasks if relevant (e.g., "Fixes #123", "Related to #456", "Resolves ABC-789")
 - Can be multiple paragraphs
 
 ## Breaking Changes
