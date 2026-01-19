@@ -13,14 +13,12 @@ Ensure correct Node.js version before any package manager operation.
 
 1. **Detect required version:** Check in order: `.nvmrc` → `.node-version` → `package.json` engines → documentation files.
 2. **Get current version:** `node --version`
-3. **Compare:** If major versions match, skip steps 4-7 and go directly to step 8 (**Execute task**).
-4. **Source nvm:** `export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`
-5. **Check nvm:** `command -v nvm`. If NOT available → report an error and do not proceed
-6. **Switch version:**
+3. **Compare:** If major versions match, skip steps 4-5 and go directly to step 6 (**Execute task**).
+4. **Switch version:**
    - If `.nvmrc` exists: `nvm use`
    - Otherwise: `nvm install <major> && nvm use <major>`
-7. **Verify:** `node --version` must show correct version
-8. **Execute task**
+5. **Verify:** `node --version` must show correct version
+6. **Execute task**
 
 ## Detecting required version
 
@@ -52,13 +50,13 @@ Look for patterns like:
 
 ## Switching version
 
-First check if nvm is already available:
+1. First check if nvm is already available:
 
 ```bash
 command -v nvm
 ```
 
-If nvm is NOT available, try to source it (required in non-interactive shells):
+2. If nvm is NOT available, try to source it (required in non-interactive shells):
 
 ```bash
 export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -67,21 +65,25 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 **IMPORTANT:** Sourcing nvm is needed ONLY ONCE per session and ONLY if nvm is not already available.
 
-Then switch:
+3. Proceed to switch versions:
 
-```bash
-# Check installed versions
-nvm ls
+- If nvm is skill NOT available → follow the error workflow in **CRITICAL: When nvm is unavailable**.
 
-# If the required version is not listed above, install it
-nvm install <required_version>
+- If nvm is available → switch node versions:
 
-# If .nvmrc exists
-nvm use
+  ```bash
+  # Check installed versions
+  nvm ls
 
-# If .nvmrc does NOT exist
-nvm use <required_version>
-```
+  # If the required version is not listed above, install it
+  nvm install <required_version>
+
+  # If .nvmrc exists
+  nvm use
+
+  # If .nvmrc does NOT exist
+  nvm use <required_version>
+  ```
 
 ## CRITICAL: When nvm is unavailable
 
