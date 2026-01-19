@@ -67,7 +67,7 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 
 3. Proceed to switch versions:
 
-- If nvm is skill NOT available → follow the error workflow in **CRITICAL: When nvm is unavailable**.
+- If nvm is still NOT available → follow the error workflow in **CRITICAL: When nvm is unavailable**.
 
 - If nvm is available → switch node versions:
 
@@ -129,12 +129,12 @@ I cannot continue with package manager operations until the correct Node.js vers
 
 Use this table to quickly handle common Node.js and nvm issues.
 
-| Issue                        | What it means                                                               | How to fix                                                                                                                                                         |
-| ---------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `nvm: command not found`     | `nvm` is not in the PATH or not loaded in this shell.                       | Source `nvm`:<br>`export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`.<br>If that fails, install `nvm` in the environment. |
-| `N/A: version not installed` | The requested Node.js version is not installed in `nvm`.                    | Run `nvm install <required_version>` and then `nvm use <required_version>`.                                                                                        |
-| `No .nvmrc file found`       | You ran `nvm use` but the project does not have a `.nvmrc` file.            | Detect the required version from `.node-version` or `package.json` engines, then run `nvm install <required_version>` and `nvm use <required_version>`.            |
-| `Permission denied`          | The shell cannot execute a command or write to a directory that `nvm` uses. | Check file permissions on your project and `~/.nvm` directory, avoid `sudo` with `nvm`, and retry the command.                                                     |
+| Issue                        | What it means                                                               | How to fix                                                                                                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nvm: command not found`     | `nvm` is not in the PATH or not loaded in this shell.                       | Source `nvm` by running `export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`. If that fails, install `nvm` in the environment. |
+| `N/A: version not installed` | The requested Node.js version is not installed in `nvm`.                    | Run `nvm install <required_version>` and then `nvm use <required_version>`.                                                                                            |
+| `No .nvmrc file found`       | You ran `nvm use` but the project does not have a `.nvmrc` file.            | Detect the required version from `.node-version` or `package.json` engines, then run `nvm install <required_version>` and `nvm use <required_version>`.                |
+| `Permission denied`          | The shell cannot execute a command or write to a directory that `nvm` uses. | Check file permissions on your project and `~/.nvm` directory, avoid `sudo` with `nvm`, and retry the command.                                                         |
 
 ## Constraints
 
