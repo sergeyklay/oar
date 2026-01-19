@@ -63,7 +63,7 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 ```
 
-**IMPORTANT:** Sourcing nvm is needed ONLY ONCE per session and ONLY if nvm is not already available.
+**IMPORTANT:** Source nvm only once per shell session (for example, once per new terminal window/tab, CI job, or agent run), and only if nvm is not already available.
 
 3. Proceed to switch versions:
 
