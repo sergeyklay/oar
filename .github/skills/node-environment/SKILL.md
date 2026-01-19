@@ -13,7 +13,7 @@ Ensure correct Node.js version before any package manager operation.
 
 1. **Detect required version:** Check in order: `.nvmrc` → `.node-version` → `package.json` engines → documentation files.
 2. **Get current version:** `node --version`
-3. **Compare:** If major versions match → skip to step 8.
+3. **Compare:** If major versions match, skip steps 4-7 and go directly to step 8 (**Execute task**).
 4. **Source nvm:** `export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`
 5. **Check nvm:** `command -v nvm`. If NOT available → **STOP ANY EXECUTION and report error**
 6. **Switch version:**
@@ -70,11 +70,14 @@ export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 Then switch:
 
 ```bash
+# Check installed versions
+nvm ls
+
+# If the required version is not listed above, install it
+nvm install <required_version>
+
 # If .nvmrc exists
 nvm use
-
-# if `nvm ls` shows version is NOT installed
-nvm install <required_version>
 
 # If .nvmrc does NOT exist
 nvm use <required_version>
@@ -118,7 +121,18 @@ I cannot continue with package manager operations until the correct Node.js vers
 
 1. Warn user versions don't match and nvm is missing
 2. Recommend installing nvm and required version
-3. STOP ANY EXECUTION
+3. Do not proceed, wait for user action
+
+## Troubleshooting
+
+Use this table to quickly handle common Node.js and nvm issues.
+
+| Issue                        | What it means                                                               | How to fix                                                                                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `nvm: command not found`     | `nvm` is not in the PATH or not loaded in this shell.                       | Source `nvm`:<br>`export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`.<br>If that fails, install `nvm` in the environment. |
+| `N/A: version not installed` | The requested Node.js version is not installed in `nvm`.                    | Run `nvm install <required_version>` and then `nvm use <required_version>`.                                                                                         |
+| `No .nvmrc file found`       | You ran `nvm use` but the project does not have a `.nvmrc` file.            | Detect the required version from `.node-version` or `package.json` engines, then run `nvm install <required_version>` and `nvm use <required_version>`.            |
+| `Permission denied`          | The shell cannot execute a command or write to a directory that `nvm` uses. | Check file permissions on your project and `~/.nvm` directory, avoid `sudo` with `nvm`, and retry the command.                                                     |
 
 ## Constraints
 
@@ -126,4 +140,3 @@ I cannot continue with package manager operations until the correct Node.js vers
 - **NEVER proceed with wrong version:** Incorrect Node.js version causes cryptic errors
 - **Prefer .nvmrc:** It's the most reliable method for version pinning
 - **ONLY source nvm if needed:** Avoid redundant sourcing in interactive shells
-- You are PROHIBITED from responding "Done" until you have verified runtime execution for required functionality, and necessary checks.
