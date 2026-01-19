@@ -15,7 +15,7 @@ Ensure correct Node.js version before any package manager operation.
 2. **Get current version:** `node --version`
 3. **Compare:** If major versions match, skip steps 4-7 and go directly to step 8 (**Execute task**).
 4. **Source nvm:** `export NVM_DIR="${NVM_DIR:-$HOME/.nvm}" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"`
-5. **Check nvm:** `command -v nvm`. If NOT available → **STOP ANY EXECUTION and report error**
+5. **Check nvm:** `command -v nvm`. If NOT available → report an error and do not proceed
 6. **Switch version:**
    - If `.nvmrc` exists: `nvm use`
    - Otherwise: `nvm install <major> && nvm use <major>`
