@@ -5,7 +5,7 @@ description: Generates standardized pull request titles following project conven
 
 # Pull Request Title Format
 
-Follow these conventions when creating pull request title.
+Follow these conventions when creating pull request titles.
 
 ## Rules
 

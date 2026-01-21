@@ -52,7 +52,7 @@ jobs:
           SKILL_SOURCE: 'github_workflow'
         run: |
           echo "Checking if skill exists..."
-          RESPONSE=$(curl -s "https://api.anthropic.com/v1/skills?source=$SOURCE" \
+          RESPONSE=$(curl -s "https://api.anthropic.com/v1/skills?source=$SKILL_SOURCE" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "anthropic-beta: skills-2025-10-02")
@@ -101,7 +101,7 @@ jobs:
 
             ## Task
 
-            Compose concise, self-explanatory title, reflecting ONLY the main purpose of the Pull Request.
+            Compose a concise, self-explanatory title that reflects ONLY the main purpose of the Pull Request.
         run: |
           PAYLOAD=$(jq -n \
             --arg model "$MODEL" \
