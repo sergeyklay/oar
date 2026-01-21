@@ -149,5 +149,12 @@ jobs:
           NEW_TITLE: ${{ steps.generate_title.outputs.new_title }}
         run: |
           gh pr edit "$PR_NUMBER" --title "$NEW_TITLE"
-          gh pr comment "$PR_NUMBER" \
-            --body "🤖 PR title updated from **$OLD_TITLE** to **$NEW_TITLE**"
+
+          gh pr comment "$PR_NUMBER" --body-file - <<EOF
+          🤖 PR title updated:
+
+          ```diff
+          - $OLD_TITLE
+          + $NEW_TITLE
+          ```
+          EOF
