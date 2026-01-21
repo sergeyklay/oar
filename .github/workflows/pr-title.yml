@@ -28,31 +28,33 @@ jobs:
     # This will trigger when one of the following occurs:
     #
     # - A PR is opened with a title starting with "@cicdbot title"
-    # - A review comment is created containing "@cicdbot title"
-    # - An issue comment is created containing "@cicdbot title"
-    # - A PR review is submitted containing "@cicdbot title"
+    #   (restricted to PR author being OWNER or MEMBER)
+    # - A comment is created containing "@cicdbot title"
+    #   (restricted to commenter being OWNER or MEMBER)
     #
-    # Additionally, only if the PR author is a code owner or member.
+    # Security: Each trigger checks the ACTOR's association, not the PR author's.
     if: |
       (
-        (
-          github.event_name == 'pull_request' &&
-          startsWith(github.event.pull_request.title, '@cicdbot title')
-        ) ||
-        (
-          github.event_name == 'issue_comment' &&
-          startsWith(github.event.comment.body, '@cicdbot title')
-        ) ||
-        (
-          github.event_name == 'pull_request_review' &&
-          startsWith(github.event.review.body, '@cicdbot title')
-        ) ||
-        (
-          github.event_name == 'pull_request_review_comment' &&
-          contains(github.event.comment.body, '@cicdbot title')
-        )
-      ) &&
-      contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
+        github.event_name == 'pull_request' &&
+        startsWith(github.event.pull_request.title, '@cicdbot title') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.pull_request.author_association)
+      ) ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '@cicdbot title') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
+      ) ||
+      (
+        github.event_name == 'pull_request_review' &&
+        startsWith(github.event.review.body, '@cicdbot title') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.review.author_association)
+      ) ||
+      (
+        github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@cicdbot title') &&
+        contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
+      )
 
     steps:
       - name: Checkout code
@@ -74,7 +76,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           echo "Checking if skill exists..."
-          HTTP_CODE=$(curl -s "curl -s -w "%{http_code}" -o /tmp/response.json \
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
             https://api.anthropic.com/v1/skills?source=$SKILL_SOURCE" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: $ANTHROPIC_VERSION" \
@@ -95,7 +97,7 @@ jobs:
             cd .github/skills
             zip -r /tmp/pr-naming.zip pr-naming/
 
-            HTTP_CODE=$(curl -s "curl -s -w "%{http_code}" -o /tmp/response.json \
+            HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
               https://api.anthropic.com/v1/skills \
               -X POST \
               -H "x-api-key: $ANTHROPIC_API_KEY" \
