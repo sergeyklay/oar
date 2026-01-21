@@ -17,7 +17,7 @@ permissions:
 env:
   SKILL_DISPLAY_TITLE: 'Oar: PR Title Naming Convention'
   ANTHROPIC_VERSION: '2023-06-01'
-  ANTHROPIC_BETA: 'skills-2025-10-02'
+  ANTHROPIC_BETA: 'code-execution-2025-08-25,skills-2025-10-02'
 
 jobs:
   rename-pr:
@@ -165,6 +165,10 @@ jobs:
                   version: "latest"
                 }]
               },
+              tools: [{
+                type: "code_execution_20250825",
+                name: "code_execution"
+              }],
               messages: [{
                 role: "user",
                 content: ("Based on this git diff, generate an appropriate PR title:\n\n<diff>\n" + $diff + "\n</diff>")
