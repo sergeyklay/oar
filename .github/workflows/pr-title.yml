@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 env:
-  SKILL_DISPLAY_TITLE: "Oar: PR Title Naming Convention"
+  SKILL_DISPLAY_TITLE: 'Oar: PR Title Naming Convention'
 
 jobs:
   rename-pr:
