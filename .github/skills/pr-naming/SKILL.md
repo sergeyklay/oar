@@ -3,7 +3,7 @@ name: pr-naming
 description: Generates standardized pull request titles following project conventions for GitHub PRs. Use when asked to create a PR title, or when PR title generation is part of a larger PR creation workflow. This skill handles the FORMAT rules for PR titles. For the actual PR creation workflow, use appropriate skill.
 ---
 
-# Pull Request Description Format
+# Pull Request Title Format
 
 Follow these conventions when creating pull request title.
 
