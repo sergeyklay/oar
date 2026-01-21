@@ -63,7 +63,7 @@
   // See: https://code.visualstudio.com/docs/copilot/ai-powered-suggestions#_next-edit-suggestions
   "github.copilot.nextEditSuggestions.enabled": true,
 
-  // Let Copilot guess what do you looking for in search.
+  // Let Copilot guess what you are looking for in search.
   // This will enable semantic search when appropriate.
   // Note: As of 13 January 2026 this feature is in Preview stage.
   "search.searchView.semanticSearchBehavior": "auto",
