@@ -66,7 +66,7 @@ jobs:
               system: $system,
               messages: [{
                 role: "user",
-                content: ("Based on this git diff, generate an appropriate PR title:\n\n" + $diff)
+                content: ("Based on this git diff, generate an appropriate PR title:\n\n<diff>\n" + $diff + "\n</diff>")
               }]
             }')
 
