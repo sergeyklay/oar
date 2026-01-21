@@ -14,11 +14,6 @@ permissions:
   pull-requests: write
   contents: read
 
-env:
-  SKILL_DISPLAY_TITLE: 'Oar: PR Title Naming Convention'
-  ANTHROPIC_VERSION: '2023-06-01'
-  ANTHROPIC_BETA: 'code-execution-2025-08-25,skills-2025-10-02'
-
 jobs:
   rename-pr:
     name: Update PR title
@@ -69,70 +64,16 @@ jobs:
           # Get PR diff (limit to 2000 lines to stay within token limits)
           gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 2000 > /tmp/pr_diff.txt
 
-      - name: Ensure Skill exists
-        id: ensure-skill
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          echo "Checking if skill exists..."
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
-            "https://api.anthropic.com/v1/skills?source=custom" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: $ANTHROPIC_VERSION" \
-            -H "anthropic-beta: $ANTHROPIC_BETA")
-
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
-            echo "Response body from Claude API:"
-            cat /tmp/response.json || echo "No response body available."
-            exit 1
-          fi
-
-          SKILL_ID=$(jq -r '.data[] | select(.display_title == "'"$SKILL_DISPLAY_TITLE"'") | .id' /tmp/response.json | head -n1)
-
-          if [ -n "$SKILL_ID" ] && [ "$SKILL_ID" != "null" ]; then
-            echo "skill_id=$SKILL_ID" >> $GITHUB_OUTPUT
-            echo "✓ Skill already exists: $SKILL_ID"
-          else
-            echo "Creating skill..."
-            cd .github/skills
-            zip -r /tmp/pr-naming.zip pr-naming/
-
-            HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
-              https://api.anthropic.com/v1/skills \
-              -X POST \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: $ANTHROPIC_VERSION" \
-              -H "anthropic-beta: $ANTHROPIC_BETA" \
-              -F "display_title=$SKILL_DISPLAY_TITLE" \
-              -F "files[]=@/tmp/pr-naming.zip")
-
-            if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-              echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
-              echo "Response body from Claude API:"
-              cat /tmp/response.json || echo "No response body available."
-              exit 1
-            fi
-
-            SKILL_ID=$(jq -r '.id' /tmp/response.json | head -n1)
-            if [ -z "$SKILL_ID" ] || [ "$SKILL_ID" == "null" ]; then
-              echo "::error::Failed to create Skill"
-              echo "Unexpected API response from Claude API:"
-              cat /tmp/response.json || echo "No response body available."
-              exit 1
-            fi
-
-            echo "skill_id=$SKILL_ID" >> $GITHUB_OUTPUT
-            echo "✓ Created skill: $SKILL_ID"
-          fi
+          # Read skill instructions (strip YAML frontmatter)
+          sed '1{/^---$/!q;};1,/^---$/d' .github/skills/pr-naming/SKILL.md > /tmp/skill_instructions.txt
 
       - name: Generate PR title with Claude
         id: generate_title
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_VERSION: '2023-06-01'
           # Anthropic's format is claude-{family}-{major}[-{minor}]-{YYYYMMDD}
-          MODEL: claude-haiku-4-5-20251001
-          SKILL_ID: ${{ steps.ensure-skill.outputs.skill_id }}
+          ANTHROPIC_MODEL: claude-haiku-4-5-20251001
           MAX_TOKENS: 100
           TEMPERATURE: 0.3
           SYSTEM_PROMPT: |
@@ -147,28 +88,17 @@ jobs:
             Compose a concise, self-explanatory title that reflects ONLY the main purpose of the Pull Request.
         run: |
           PAYLOAD=$(jq -n \
-            --arg model "$MODEL" \
-            --arg skill_id "$SKILL_ID" \
+            --arg model "$ANTHROPIC_MODEL" \
             --arg system "$SYSTEM_PROMPT" \
             --rawfile diff /tmp/pr_diff.txt \
+            --rawfile skill /tmp/skill_instructions.txt \
             --argjson max_tokens $MAX_TOKENS \
             --argjson temperature $TEMPERATURE \
             '{
               model: $model,
               max_tokens: $max_tokens,
               temperature: $temperature,
-              system: $system,
-              container: {
-                skills: [{
-                  type: "custom",
-                  skill_id: $skill_id,
-                  version: "latest"
-                }]
-              },
-              tools: [{
-                type: "code_execution_20250825",
-                name: "code_execution"
-              }],
+              system: ($system + "\n\n" + $skill),
               messages: [{
                 role: "user",
                 content: ("Based on this git diff, generate an appropriate PR title:\n\n<diff>\n" + $diff + "\n</diff>")
@@ -180,7 +110,6 @@ jobs:
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: $ANTHROPIC_VERSION" \
-            -H "anthropic-beta: $ANTHROPIC_BETA" \
             -d "$PAYLOAD")
 
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
