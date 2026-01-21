@@ -182,6 +182,8 @@ jobs:
 
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+            echo "Response body from Claude API:"
+            cat /tmp/response.json || echo "No response body available."
             exit 1
           fi
 
@@ -190,6 +192,8 @@ jobs:
           if [ -z "$NEW_TITLE" ]; then
             ERROR_TYPE=$(jq -r '.error.type // "unknown_error"' /tmp/response.json)
             echo "::error::Failed to generate title: $ERROR_TYPE"
+            echo "Response body from Claude API:"
+            cat /tmp/response.json || echo "No response body available."
             exit 1
           fi
 
