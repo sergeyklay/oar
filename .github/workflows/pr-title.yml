@@ -50,22 +50,33 @@ jobs:
         contains(fromJSON('["OWNER", "MEMBER"]'), github.event.comment.author_association)
       )
 
+    env:
+      # Normalize PR number across different event types
+      PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Prepare inputs
+        id: prepare_inputs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Checkout the PR head ref for accurate diff
+          gh pr checkout "$PR_NUMBER" --detach
+
           # Get PR diff (limit to 2000 lines to stay within token limits)
-          gh pr diff ${{ github.event.pull_request.number }} --patch | head -n 2000 > /tmp/pr_diff.txt
+          gh pr diff "$PR_NUMBER" --patch | head -n 2000 > /tmp/pr_diff.txt
 
           # Read skill instructions (strip YAML frontmatter)
           sed '1{/^---$/!q;};1,/^---$/d' .github/skills/pr-naming/SKILL.md > /tmp/skill_instructions.txt
+
+          # Get current PR title for the update step
+          OLD_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title')
+          echo "old_title=$OLD_TITLE" >> $GITHUB_OUTPUT
 
       - name: Generate PR title with Claude
         id: generate_title
@@ -134,10 +145,9 @@ jobs:
       - name: Update PR title
         env:
           GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OLD_TITLE: ${{ steps.prepare_inputs.outputs.old_title }}
           NEW_TITLE: ${{ steps.generate_title.outputs.new_title }}
-          OLD_TITLE: ${{ github.event.pull_request.title }}
         run: |
           gh pr edit "$PR_NUMBER" --title "$NEW_TITLE"
           gh pr comment "$PR_NUMBER" \
-            --body "🤖 PR title was updated by `@cicdbot` from **$OLD_TITLE** to **$NEW_TITLE**"
+            --body "🤖 PR title updated from **$OLD_TITLE** to **$NEW_TITLE**"
