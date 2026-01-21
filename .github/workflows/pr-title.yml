@@ -10,6 +10,9 @@ permissions:
   pull-requests: write
   contents: read
 
+env:
+  SKILL_DISPLAY_TITLE: "Oar: PR Title Naming Convention"
+
 jobs:
   rename-pr:
     name: Update PR title
@@ -46,7 +49,6 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ANTHROPIC_VERSION: '2023-06-01'
           ANTHROPIC_BETA: 'skills-2025-10-02'
-          SKILL_DISPLAY_TITLE: 'PR Title Naming Convention'
           SKILL_SOURCE: 'github_workflow'
         run: |
           echo "Checking if skill exists..."
