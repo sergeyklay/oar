@@ -1,7 +1,6 @@
 ---
 name: prTitle
-description: Commit changes and create or update a pull request
-argument-hint: PR details or branch/commit context
+description: Generate a concise, descriptive pull request title
 agent: agent
 ---
 
