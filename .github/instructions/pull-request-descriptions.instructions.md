@@ -1,32 +1,10 @@
 ---
-description: Pull request title and description formatting rules
+description: Pull request description formatting rules
 ---
 
 # Pull Request Description Format
 
-Follow these conventions when creating pull request titles and descriptions.
-
-## PR Title Format
-
-Use Conventional Commits format for PR titles:
-
-```
-<type>[optional scope]: <description>
-```
-
-**Examples:**
-
-- `feat: add bill reminder notifications`
-- `fix(api): handle null user in auth middleware`
-- `refactor: extract validation logic to service`
-- `chore(deps): bump dependencies`
-
-**Rules:**
-
-- Use imperative mood: "add", "fix", "update" (not "added", "fixes")
-- **IMPORTANT:** Keep under 72 characters
-- No period at end
-- Be specific about what changed
+Follow these conventions when creating pull request description.
 
 ## PR Description Structure
 
@@ -106,4 +84,4 @@ Use the project template with three required sections. See [PR Template](../pull
 
 ## Language
 
-ALWAYS write PR titles and descriptions in **English** regardless of conversation language.
+ALWAYS write PR descriptions in **English** regardless of conversation language.

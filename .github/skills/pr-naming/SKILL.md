@@ -1,16 +1,11 @@
 ---
-name: prTitle
-description: Generate a concise, descriptive pull request title
-agent: agent
+name: pr-naming
+description: Generates standardized pull request titles following project conventions for GitHub PRs. Use when asked to create a PR title, or when PR title generation is part of a larger PR creation workflow. This skill handles the FORMAT rules for PR titles. For the actual PR creation workflow, use appropriate skill.
 ---
 
-## Role
+# Pull Request Description Format
 
-You are a helpful assistant that generates concise, descriptive Pull Request titles.
-
-## Task
-
-Compose concise, self-explanatory title, reflecting ONLY the main purpose of the Pull Request.
+Follow these conventions when creating pull request title.
 
 ## Rules
 
@@ -40,3 +35,7 @@ Compose concise, self-explanatory title, reflecting ONLY the main purpose of the
 - Fix issue with user endpoint (not specific)
 - Update docs (not descriptive)
 - feat: implement PR title generation using Claude API to enhance automation and improve workflow efficiency in CI/CD processes (too long)
+
+## Language
+
+ALWAYS write PR titles in **English** regardless of conversation language.
