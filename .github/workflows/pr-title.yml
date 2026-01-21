@@ -84,6 +84,8 @@ jobs:
 
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+            echo "Response body from Claude API:"
+            cat /tmp/response.json || echo "No response body available."
             exit 1
           fi
 
@@ -108,12 +110,16 @@ jobs:
 
             if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
               echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+              echo "Response body from Claude API:"
+              cat /tmp/response.json || echo "No response body available."
               exit 1
             fi
 
             SKILL_ID=$(jq -r '.id' /tmp/response.json | head -n1)
             if [ -z "$SKILL_ID" ] || [ "$SKILL_ID" == "null" ]; then
-              echo "::error::Failed to create skill. Unexpected API response: $(cat /tmp/response.json)"
+              echo "::error::Failed to create Skill"
+              echo "Unexpected API response from Claude API:"
+              cat /tmp/response.json || echo "No response body available."
               exit 1
             fi
 
