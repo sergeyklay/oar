@@ -4,7 +4,7 @@ description: Pull request description formatting rules
 
 # Pull Request Description Format
 
-Follow these conventions when creating pull request description.
+Follow these conventions when creating a pull request description.
 
 ## PR Description Structure
 
