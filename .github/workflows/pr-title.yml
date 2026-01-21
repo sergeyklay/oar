@@ -16,7 +16,6 @@ permissions:
 
 env:
   SKILL_DISPLAY_TITLE: 'Oar: PR Title Naming Convention'
-  SKILL_SOURCE: 'github_workflow'
   ANTHROPIC_VERSION: '2023-06-01'
   ANTHROPIC_BETA: 'skills-2025-10-02'
 
@@ -77,7 +76,7 @@ jobs:
         run: |
           echo "Checking if skill exists..."
           HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/response.json \
-            https://api.anthropic.com/v1/skills?source=$SKILL_SOURCE \
+            "https://api.anthropic.com/v1/skills?source=custom" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: $ANTHROPIC_VERSION" \
             -H "anthropic-beta: $ANTHROPIC_BETA")
@@ -150,7 +149,6 @@ jobs:
           PAYLOAD=$(jq -n \
             --arg model "$MODEL" \
             --arg skill_id "$SKILL_ID" \
-            --arg skill_source "$SKILL_SOURCE" \
             --arg system "$SYSTEM_PROMPT" \
             --rawfile diff /tmp/pr_diff.txt \
             --argjson max_tokens $MAX_TOKENS \
@@ -162,7 +160,7 @@ jobs:
               system: $system,
               container: {
                 skills: [{
-                  type: $skill_source,
+                  type: "custom",
                   skill_id: $skill_id,
                   version: "latest"
                 }]
