@@ -180,6 +180,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: $ANTHROPIC_VERSION" \
+            -H "anthropic-beta: $ANTHROPIC_BETA" \
             -d "$PAYLOAD")
 
           if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
