@@ -1,5 +1,6 @@
 ---
-description: Pull request description formatting rules
+name: pr-description
+description: Generates standardized pull request descriptions following project conventions for GitHub PRs. Use when asked to create a PR description, or when PR description generation is part of a larger PR creation workflow. This skill handles the FORMAT rules for PR descriptions. For the actual PR creation workflow, or PR title generation, use appropriate skill.
 ---
 
 # Pull Request Description Format
@@ -8,7 +9,7 @@ Follow these conventions when creating a pull request description.
 
 ## PR Description Structure
 
-Use the project template with three required sections. See [PR Template](../pull_request_template.md).
+Use the project template with three required sections. See [PR Template](./assets/pull_request_template.md).
 
 ### Section 1: Scope & Context
 

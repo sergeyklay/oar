@@ -1,6 +1,6 @@
 ---
 name: pull-request
-description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. This skill handles the HOW of creating PRs (workflow steps, commands, verification). For PR title and description FORMAT rules, use appropriate skills and instructions.
+description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. This skill handles the HOW of creating PRs (workflow steps, commands, verification). For PR title and description FORMAT rules, use appropriate skills.
 ---
 
 # Pull Request Skill
@@ -120,7 +120,7 @@ gh pr create \
   --draft
 ```
 
-Follow the PR Description Structure from [Pull Request Description Format](../../instructions/pull-request-descriptions.instructions.md).
+Follow the PR Description Convention.
 
 **IMPORTANT:** Do NOT use double quotes for `--body` to avoid shell interpolation issues.
 
