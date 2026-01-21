@@ -74,12 +74,18 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           echo "Checking if skill exists..."
-          RESPONSE=$(curl -s "https://api.anthropic.com/v1/skills?source=$SKILL_SOURCE" \
+          HTTP_CODE=$(curl -s "curl -s -w "%{http_code}" -o /tmp/response.json \
+            https://api.anthropic.com/v1/skills?source=$SKILL_SOURCE" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: $ANTHROPIC_VERSION" \
             -H "anthropic-beta: $ANTHROPIC_BETA")
 
-          SKILL_ID=$(echo "$RESPONSE" | jq -r '.data[] | select(.display_title == "'"$SKILL_DISPLAY_TITLE"'") | .id')
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+            exit 1
+          fi
+
+          SKILL_ID=$(jq -r '.data[] | select(.display_title == "'"$SKILL_DISPLAY_TITLE"'") | .id' /tmp/response.json | head -n1)
 
           if [ -n "$SKILL_ID" ] && [ "$SKILL_ID" != "null" ]; then
             echo "skill_id=$SKILL_ID" >> $GITHUB_OUTPUT
@@ -89,7 +95,8 @@ jobs:
             cd .github/skills
             zip -r /tmp/pr-naming.zip pr-naming/
 
-            RESPONSE=$(curl -s "https://api.anthropic.com/v1/skills" \
+            HTTP_CODE=$(curl -s "curl -s -w "%{http_code}" -o /tmp/response.json \
+              https://api.anthropic.com/v1/skills \
               -X POST \
               -H "x-api-key: $ANTHROPIC_API_KEY" \
               -H "anthropic-version: $ANTHROPIC_VERSION" \
@@ -97,7 +104,16 @@ jobs:
               -F "display_title=$SKILL_DISPLAY_TITLE" \
               -F "files[]=@/tmp/pr-naming.zip")
 
-            SKILL_ID=$(echo "$RESPONSE" | jq -r '.id')
+            if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+              echo "::error::Claude API request failed with HTTP status $HTTP_CODE"
+              exit 1
+            fi
+
+            SKILL_ID=$(jq -r '.id' /tmp/response.json | head -n1)
+            if [ -z "$SKILL_ID" ] || [ "$SKILL_ID" == "null" ]; then
+              echo "::error::Failed to create skill. Unexpected API response: $(cat /tmp/response.json)"
+              exit 1
+            fi
 
             echo "skill_id=$SKILL_ID" >> $GITHUB_OUTPUT
             echo "✓ Created skill: $SKILL_ID"
