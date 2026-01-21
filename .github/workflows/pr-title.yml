@@ -154,11 +154,10 @@ jobs:
       - name: Update PR title
         env:
           GH_TOKEN: ${{ secrets.CICDBOT_TOKEN }}
-          CURRENT_PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           gh pr edit ${{ github.event.pull_request.number }} \
             --title "${{ steps.generate_title.outputs.new_title }}"
 
           # Add a comment explaining the change
           gh pr comment ${{ github.event.pull_request.number }} \
-            --body "🤖 PR title was updated by `@cicdbot` from **${{ env.CURRENT_PR_TITLE }}** to **${{ steps.generate_title.outputs.new_title }}**"
+            --body "🤖 PR title was updated by `@cicdbot` from **${{ github.event.pull_request.title }}** to **${{ steps.generate_title.outputs.new_title }}**"
