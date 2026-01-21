@@ -150,11 +150,11 @@ jobs:
         run: |
           gh pr edit "$PR_NUMBER" --title "$NEW_TITLE"
 
-          gh pr comment "$PR_NUMBER" --body-file - <<EOF
+          gh pr comment "$PR_NUMBER" --body-file - <<-EOF
           🤖 PR title updated:
 
-          ```diff
+          \`\`\`diff
           - $OLD_TITLE
           + $NEW_TITLE
-          ```
+          \`\`\`
           EOF
