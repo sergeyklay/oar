@@ -59,15 +59,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Prepare inputs
         id: prepare_inputs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Checkout the PR head ref for accurate diff
-          gh pr checkout "$PR_NUMBER" --detach
-
           # Get PR diff (limit to 2000 lines to stay within token limits)
           gh pr diff "$PR_NUMBER" --patch | head -n 2000 > /tmp/pr_diff.txt
 
