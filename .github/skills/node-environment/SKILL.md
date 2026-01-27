@@ -78,6 +78,7 @@ If major versions match, proceed directly to task execution.
 ## Step 5: Switch version (conditional)
 
 **Skip this step if:**
+
 - Major versions already match (from Step 4)
 - No version manager available (from Step 1)
 
@@ -103,6 +104,7 @@ asdf set nodejs
 ```
 
 **asdf version formats:**
+
 - Exact: `20.10.0`
 - Latest in series: `latest:20`
 - System: `system`
@@ -136,14 +138,14 @@ If versions already matched in Step 4, skip verification.
 
 ## Troubleshooting
 
-| Symptom | Cause | Solution |
-|---------|-------|----------|
-| `nvm: command not found` | nvm not available | Ensure nvm is installed and shell is configured |
-| `asdf: command not found` | asdf not available | Ensure asdf is installed and shell is configured |
-| `No preset version installed` | asdf nodejs plugin missing | Run: `asdf plugin add nodejs` |
-| `N/A: version not installed` | nvm version missing | Run: `nvm install <version>` |
-| `No .nvmrc file found` | nvm use without config | Specify version: `nvm use <version>` |
-| `No version is set` (asdf) | .tool-versions missing | Run: `asdf set nodejs <version>` or create .tool-versions |
+| Symptom                       | Cause                      | Solution                                                  |
+| ----------------------------- | -------------------------- | --------------------------------------------------------- |
+| `nvm: command not found`      | nvm not available          | Ensure nvm is installed and shell is configured           |
+| `asdf: command not found`     | asdf not available         | Ensure asdf is installed and shell is configured          |
+| `No preset version installed` | asdf nodejs plugin missing | Run: `asdf plugin add nodejs`                             |
+| `N/A: version not installed`  | nvm version missing        | Run: `nvm install <version>`                              |
+| `No .nvmrc file found`        | nvm use without config     | Specify version: `nvm use <version>`                      |
+| `No version is set` (asdf)    | .tool-versions missing     | Run: `asdf set nodejs <version>` or create .tool-versions |
 
 ## When version manager unavailable
 
@@ -162,6 +164,7 @@ Required version: v20.x (from .tool-versions)
 No supported version manager (nvm or asdf) detected.
 
 To proceed:
+
 1. Install nvm: https://github.com/nvm-sh/nvm
    Or install asdf: https://asdf-vm.com/guide/getting-started.html
 2. Install and activate the required Node.js version
