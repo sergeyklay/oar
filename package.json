@@ -18,7 +18,10 @@
     "bill-management"
   ],
   "overrides": {
-    "eslint-plugin-react": "github:ledsun/eslint-plugin-react#update-deprecated-calls-v8"
+    "eslint-plugin-react": "github:ledsun/eslint-plugin-react#update-deprecated-calls-v8",
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.0"
+    }
   },
   "scripts": {
     "dev": "next dev",
