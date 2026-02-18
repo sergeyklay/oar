@@ -1,27 +1,24 @@
 ---
 name: node-environment
-description: Ensures correct Node.js version before npm operations. Use this skill BEFORE running any package manager commands (npm, npx, pnpm, yarn) or Node.js script execution. Detects required version from .nvmrc, .node-version, .tool-versions, or package.json engines, then switches using nvm or asdf.
+description: Ensures correct Node.js version before npm operations. Use BEFORE running any package manager commands (npm, npx, pnpm, yarn) or Node.js script execution. Detects required version from .nvmrc, .node-version, .tool-versions, or package.json engines, then switches using nvm or asdf.
 ---
 
-# Node.js Version Management
+# Node.js version management
 
 Ensure correct Node.js version before any package manager operation.
 
 ## Workflow
 
-Execute these steps in order BEFORE any npm/npx/pnpm/yarn command:
+Execute these steps before any npm/npx/pnpm/yarn command:
 
 1. **Detect version manager**: Check which tool is available and configured
 2. **Detect required version**: Find version specification in project files
-3. **Get current version**: `node --version`
-4. **Compare**: If major versions match, skip to step 6
-5. **Switch version**: Use appropriate version manager
-6. **Verify**: Confirm correct version is active
-7. **Execute task**
+3. **Compare versions**: Get current version and check if major version matches
+4. **Switch version**: Use appropriate version manager (skip if versions match)
+5. **Verify**: Confirm correct version is active after switching
+6. **Proceed** with the original task
 
 ## Step 1: Detect version manager
-
-Check for version manager configuration files and availability:
 
 Check which version manager is available:
 
@@ -65,7 +62,7 @@ Look for patterns like:
 - "requires Node v20"
 - "node >= 20"
 
-## Step 3-4: Compare versions
+## Step 3: Compare versions
 
 ```bash
 CURRENT=$(node --version 2>/dev/null | sed 's/v//')
@@ -73,16 +70,11 @@ CURRENT_MAJOR=$(echo "$CURRENT" | cut -d. -f1)
 # Compare CURRENT_MAJOR with required major version
 ```
 
-If major versions match, proceed directly to task execution.
+If major versions match, skip Steps 4-5 and proceed with the task.
 
-## Step 5: Switch version (conditional)
+## Step 4: Switch version
 
-**Skip this step if:**
-
-- Major versions already match (from Step 4)
-- No version manager available (from Step 1)
-
-If no version manager is available and versions don't match, stop and report to user (see "When version manager unavailable" below).
+Skip if major versions already matched in Step 3, or if no version manager is available. If no version manager is available and versions don't match, stop and report to the user (see "When version manager is unavailable" below).
 
 ### Using asdf
 
@@ -116,25 +108,23 @@ asdf set nodejs
 nvm ls
 
 # 2. Install required version (if not installed)
-nvm install
+nvm install <version>
 
 # 3. Activate version
-# If .nvmrc exists:
-nvm use
-# Otherwise:
-nvm use
+nvm use <version>
+# Or if .nvmrc exists: nvm use
 ```
 
-## Step 6: Verify (after switching)
+## Step 5: Verify (after switching)
 
-If you switched versions in Step 5, verify the change:
+If you switched versions in Step 4, verify the change:
 
 ```bash
 node --version
 # Must show expected version before proceeding
 ```
 
-If versions already matched in Step 4, skip verification.
+If versions already matched in Step 3, skip verification.
 
 ## Troubleshooting
 
@@ -147,16 +137,14 @@ If versions already matched in Step 4, skip verification.
 | `No .nvmrc file found`        | nvm use without config     | Specify version: `nvm use <version>`                      |
 | `No version is set` (asdf)    | .tool-versions missing     | Run: `asdf set nodejs <version>` or create .tool-versions |
 
-## When version manager unavailable
+## When version manager is unavailable
 
-If neither nvm nor asdf is available AND versions don't match:
+If neither nvm nor asdf is available AND versions don't match, stop and report to the user. Running commands with the wrong Node.js version produces cryptic, hard-to-diagnose errors.
 
-**DO NOT proceed with npm commands.**
+Report template:
 
-Report to user:
-
-```markdown
-⚠️ BLOCKED: Node.js version mismatch
+```
+BLOCKED: Node.js version mismatch
 
 Current version: v16.20.0
 Required version: v20.x (from .tool-versions)
@@ -164,7 +152,6 @@ Required version: v20.x (from .tool-versions)
 No supported version manager (nvm or asdf) detected.
 
 To proceed:
-
 1. Install nvm: https://github.com/nvm-sh/nvm
    Or install asdf: https://asdf-vm.com/guide/getting-started.html
 2. Install and activate the required Node.js version
@@ -173,6 +160,6 @@ To proceed:
 
 ## Constraints
 
-- **NEVER skip verification**: Always confirm version after switching
-- **NEVER proceed with wrong version**: Incorrect Node.js version causes cryptic errors
-- **Respect project config**: Use .tool-versions with asdf, .nvmrc with nvm
+- Always confirm the active version after switching — silent failures leave the wrong version active
+- Do not proceed with npm commands when versions don't match — wrong Node.js versions cause cryptic dependency and build errors
+- Use `.tool-versions` with asdf and `.nvmrc` with nvm — don't mix config files across managers
