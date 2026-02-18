@@ -48,6 +48,8 @@
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
   // Note: As of 13 January 2026 this feature is in Experimental stage.
   "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    { "file": ".github/skills/pr-description/SKILL.md" },
+    { "file": ".github/skills/pr-naming/SKILL.md" },
     { "file": ".github/skills/pull-request/SKILL.md" }
   ],
 
