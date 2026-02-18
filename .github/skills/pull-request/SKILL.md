@@ -116,7 +116,7 @@ gh pr create \
   --draft
 ```
 
-Follow the PR description format from [pull-request-descriptions.instructions.md](../../instructions/pull-request-descriptions.instructions.md).
+Follow the PR Description Convention.
 
 Use single quotes for `--body` to avoid shell interpolation issues.
 
