@@ -1,13 +1,13 @@
 ---
 name: pr-description
-description: Generates standardized pull request descriptions following project conventions for GitHub PRs. Use when asked to create a PR description, or when PR description generation is part of a larger PR creation workflow. This skill handles the FORMAT rules for PR descriptions. For the actual PR creation workflow, or PR title generation, use appropriate skill.
+description: Generates standardized pull request descriptions following project conventions for GitHub PRs. Use when asked to create a PR description, or when PR description generation is part of a larger PR creation workflow. For the actual PR creation workflow, use the pull-request skill. For PR title generation, use the pr-naming skill.
 ---
 
-# Pull Request Description Format
+# Pull request description format
 
 Follow these conventions when creating a pull request description.
 
-## PR Description Structure
+## PR description structure
 
 Use the project template with three required sections. See [PR Template](./assets/pull_request_template.md).
 
@@ -54,7 +54,7 @@ Use the project template with three required sections. See [PR Template](./asset
 - **Migrations/State:** [Required steps | No migrations or state changes]
 ```
 
-## Formatting Constraints
+## Formatting constraints
 
 | Rule                      | Requirement                                               |
 | ------------------------- | --------------------------------------------------------- |
@@ -66,7 +66,7 @@ Use the project template with three required sections. See [PR Template](./asset
 | **Dashes**                | Use single hyphen with spaces: " - " not "—"              |
 | **Filenames**             | Wrap in backticks: \`lib/services/AutoPayService.ts\`     |
 
-## Complexity Assessment
+## Complexity assessment
 
 | Level      | Criteria                                                                         |
 | ---------- | -------------------------------------------------------------------------------- |
@@ -74,7 +74,7 @@ Use the project template with three required sections. See [PR Template](./asset
 | **Medium** | Multiple related files, new features with tests, refactoring                     |
 | **High**   | Cross-cutting changes, database migrations, breaking changes, security-sensitive |
 
-## Anti-Patterns
+## Anti-patterns
 
 | Pattern                     | Problem                  | Correct Form                        |
 | --------------------------- | ------------------------ | ----------------------------------- |
@@ -85,4 +85,4 @@ Use the project template with three required sections. See [PR Template](./asset
 
 ## Language
 
-ALWAYS write PR descriptions in **English** regardless of conversation language.
+Write PR descriptions in English regardless of conversation language.

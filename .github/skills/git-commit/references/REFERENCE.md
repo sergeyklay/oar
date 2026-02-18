@@ -1,10 +1,10 @@
-# GitHub CLI Reference
+# GitHub CLI authentication reference
 
-Quick reference for `gh` CLI commands used in Git commit workflows.
+Quick reference for `gh` CLI authentication commands used in the git-commit workflow.
 
-## Authentication Commands
+## Authentication commands
 
-### Check Authentication Status
+### Check authentication status
 
 ```bash
 gh auth status
@@ -27,7 +27,7 @@ github.com
 You are not logged in to any GitHub hosts.
 ```
 
-### Login (Interactive Web Flow)
+### Login (interactive web flow)
 
 ```bash
 gh auth login --web
@@ -35,7 +35,7 @@ gh auth login --web
 
 Opens browser for OAuth authentication. Recommended for interactive sessions.
 
-### Login with Token
+### Login with token
 
 ```bash
 gh auth login --with-token < token.txt
@@ -43,7 +43,7 @@ gh auth login --with-token < token.txt
 
 For headless environments or automation.
 
-### Refresh Expired Token
+### Refresh expired token
 
 ```bash
 gh auth refresh
@@ -59,7 +59,7 @@ gh auth logout
 
 Removes stored credentials.
 
-## Git Commands via gh
+## Git commands via gh
 
 The `gh` CLI configures Git to use GitHub authentication automatically when using SSH or HTTPS protocols.
 
@@ -72,21 +72,21 @@ git push
 git pull
 ```
 
-## Error Handling Patterns
+## Error handling patterns
 
-### Authentication Required
+### Authentication required
 
 **Symptom:** Commands fail with authentication errors
 **Check:** `gh auth status`
 **Fix:** `gh auth login --web`
 
-### Token Expired
+### Token expired
 
 **Symptom:** Commands fail with "token expired" message
 **Check:** `gh auth status` shows expired token
 **Fix:** `gh auth refresh`
 
-### Wrong Account
+### Wrong account
 
 **Symptom:** Operations fail with permission errors
 **Check:** `gh auth status` shows wrong account
@@ -97,7 +97,7 @@ gh auth logout
 gh auth login --web
 ```
 
-### Multiple Accounts
+### Multiple accounts
 
 **List accounts:**
 
@@ -111,40 +111,7 @@ gh auth status
 gh auth switch
 ```
 
-## Common gh Commands for Development
-
-### View Repository Info
-
-```bash
-gh repo view
-```
-
-### Create Pull Request
-
-```bash
-gh pr create --title "Title" --body "Description"
-```
-
-### List Open PRs
-
-```bash
-gh pr list
-```
-
-### View PR Status
-
-```bash
-gh pr status
-```
-
-### Getting Help
-
-```bash
-gh help
-gh <command> --help
-```
-
-## Exit Codes
+## Exit codes
 
 | Code | Meaning                      |
 | ---- | ---------------------------- |
@@ -152,7 +119,7 @@ gh <command> --help
 | 1    | General error (check stderr) |
 | 4    | Authentication required      |
 
-## Environment Variables
+## Environment variables
 
 | Variable   | Purpose                            |
 | ---------- | ---------------------------------- |
@@ -160,10 +127,3 @@ gh <command> --help
 | `GH_HOST`  | Override default host (github.com) |
 | `GH_REPO`  | Override repository detection      |
 | `NO_COLOR` | Disable colored output             |
-
-## Best Practices
-
-1. **Always verify auth status** before Git operations in automated workflows
-2. **Use `--web` for interactive login** - more secure than token input
-3. **Check exit codes** in scripts to handle failures gracefully
-4. **Prefer SSH protocol** for Git operations when possible

@@ -1,11 +1,9 @@
 ---
 name: git-commit
-description: Execute Git commits with proper workflow including authentication, branch safety, atomic commits, and style analysis. Use when asked to commit, save, or persist changes to Git, after completing tasks where committing is logical, or when autonomously checkpointing work. This skill handles the HOW of committing (workflow steps, commands, branch management).
+description: Execute Git commits with proper workflow including authentication, branch safety, atomic commits, and style analysis. Use when asked to commit, save, or persist changes to Git, after completing tasks where committing is logical, or when autonomously checkpointing work.
 ---
 
-# Git Commit Skill
-
-Execute Git commits following a structured workflow that ensures authentication, branch safety, atomic commits, and project style consistency.
+# Git commit
 
 ## References
 
@@ -13,7 +11,7 @@ Execute Git commits following a structured workflow that ensures authentication,
 
 ## Workflow
 
-### Step 1: Verify GitHub CLI Authentication
+### Step 1: Verify GitHub CLI authentication
 
 Before any Git operation, verify authentication status:
 
@@ -38,7 +36,7 @@ gh auth status
 - "invalid token"
 - Exit code 1 with stderr output
 
-### Step 2: Identify Files to Commit
+### Step 2: Identify files to commit
 
 **Atomic commits principle:** Each commit should represent ONE logical change. Do not bundle unrelated changes into a single commit.
 
@@ -49,10 +47,7 @@ Analyze the current Git status to identify files to commit:
 git status --short
 ```
 
-Not all changed files should be committed.
-Having a branch with multiple unrelated changes makes it hard to review, revert, or understand history.
-Try to determine what the user intends to commit based on context and recent changes.
-If unclear, ask the user for clarification on which files or changes to include in the commit.
+Not all changed files should be committed. Determine what the user intends to commit based on context and recent changes. When ambiguous, ask which files or changes to include.
 
 ```bash
 # Show detailed diff for unstaged changes
@@ -61,13 +56,6 @@ git diff
 # Show detailed diff for staged changes
 git diff --cached
 ```
-
-**Grouping strategy:**
-
-1. **Analyze all pending changes** and identify logical groups
-2. **Group by purpose:** Files that serve the same change belong together
-3. **Separate unrelated changes:** Different features, fixes, or docs = separate commits
-4. **Ask user if ambiguous:** When grouping is unclear, ask for clarification
 
 **Examples of logical grouping:**
 
@@ -89,11 +77,11 @@ git diff --cached
 | "commit <specific file>"    | `git add <file>`                                             |
 | Ambiguous                   | Ask user to clarify which files and grouping                 |
 
-### Step 3: Verify Branch Safety
+### Step 3: Verify branch safety
 
-**CRITICAL:** Never commit directly to protected branches.
+Never commit directly to protected branches — doing so bypasses review and pollutes shared history.
 
-#### Detect Protected Branch
+#### Detect protected branch
 
 ```bash
 # Get the repository's default branch
@@ -109,17 +97,17 @@ Protected branches include:
 - `develop` or `development`
 - Any branch matching `release/*` or `hotfix/*` patterns
 
-#### If on Protected Branch
+#### If on protected branch
 
-1. **STOP** - do not commit directly
+1. Do not commit directly
 2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
-3. Create an appropriately named feature branch based on analysis from Step 2:
+3. Create an appropriately named feature branch based on the changes identified in Step 2:
 
 ```bash
 git checkout -b <type>/<short-description>
 ```
 
-#### Branch Naming Convention
+#### Branch naming convention
 
 Format: `<type>/<kebab-case-description>`
 
@@ -139,7 +127,7 @@ Format: `<type>/<kebab-case-description>`
 - Make it descriptive of the change intent
 - ALWAYS in English
 
-### Step 4: Analyze Project Writing Style
+### Step 4: Analyze project writing style
 
 Analyze recent commits to match the project's vocabulary and phrasing:
 
@@ -147,7 +135,7 @@ Analyze recent commits to match the project's vocabulary and phrasing:
 git log --format="%s" -30
 ```
 
-You have to mimic the vocabulary, detail level, and phrasing style.
+Mimic the vocabulary, detail level, and phrasing style.
 
 **Writing style characteristics to identify:**
 
@@ -158,18 +146,11 @@ You have to mimic the vocabulary, detail level, and phrasing style.
 | **Scope patterns** | Common scopes: `(deps)`, `(api)`, `(ui)`, or no scope              |
 | **Specificity**    | Generic vs domain-specific terminology                             |
 
-**Important:** The Conventional Commits format is fixed. Only adapt the vocabulary and phrasing style to match project conventions.
-
-**Identify:**
-
-- Common verbs (add, implement, introduce, etc.)
-- Detail level (brief vs descriptive)
-- Scope usage patterns (`(deps)`, `(api)`, or none)
-- Domain-specific terminology
+The Conventional Commits format is fixed. Adapt only the vocabulary and phrasing style to match project conventions.
 
 Mimic the identified style while following Conventional Commits format.
 
-### Step 5: Generate and Execute Commit
+### Step 5: Generate and execute commit
 
 Stage files and create commit:
 
@@ -187,9 +168,9 @@ For multi-line messages:
 git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
 ```
 
-Follow the PR Description Structure from [Commit Message Format](../../instructions/commit-messages.instructions.md).
+Follow the commit message format rules from [commit-messages.instructions.md](../../instructions/commit-messages.instructions.md).
 
-### Step 6: Confirm Success
+### Step 6: Confirm success
 
 Verify and report:
 
@@ -207,9 +188,9 @@ Report to user:
 - Files changed count
 - Insertions/deletions summary
 
-## Error Handling
+## Error handling
 
-### Git Errors
+### Git errors
 
 | Error                    | Cause                 | Resolution                          |
 | ------------------------ | --------------------- | ----------------------------------- |
@@ -217,7 +198,7 @@ Report to user:
 | "pathspec did not match" | File path incorrect   | Check file path spelling            |
 | "not a git repository"   | Not in repo directory | Navigate to correct directory       |
 
-### Authentication Errors
+### Authentication errors
 
 If any `gh` command fails with authentication error:
 

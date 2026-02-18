@@ -1,9 +1,9 @@
 ---
 name: pr-naming
-description: Generates standardized pull request titles following project conventions for GitHub PRs. Use when asked to create a PR title, or when PR title generation is part of a larger PR creation workflow. This skill handles the FORMAT rules for PR titles. For the actual PR creation workflow, use appropriate skill.
+description: Generates standardized pull request titles following project conventions for GitHub PRs. Use when asked to create a PR title, or when PR title generation is part of a larger PR creation workflow. For the actual PR creation workflow, use the pull-request skill.
 ---
 
-# Pull Request Title Format
+# Pull request title format
 
 Follow these conventions when creating pull request titles.
 
@@ -11,9 +11,8 @@ Follow these conventions when creating pull request titles.
 
 1. Use Conventional Commit format: `<type>[optional scope]: <description>`
 2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
-3. An optional scope MAY be provided to a commit's type.
-4. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis
-5. Keep under 72 characters including type and scope
+3. Scope is optional — when used, it must be a noun describing a section of the codebase in parentheses
+4. Keep under 72 characters including type and scope
 6. Be specific and descriptive
 7. Use imperative mood (e.g., 'add' not 'added')
 8. No period at the end
@@ -38,4 +37,4 @@ Follow these conventions when creating pull request titles.
 
 ## Language
 
-ALWAYS write PR titles in **English** regardless of conversation language.
+Write PR titles in English regardless of conversation language.

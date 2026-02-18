@@ -1,15 +1,13 @@
 ---
 name: pull-request
-description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. This skill handles the HOW of creating PRs (workflow steps, commands, verification). For PR title and description FORMAT rules, use the appropriate skill.
+description: Execute Pull Request creation workflow including authentication, branch verification, change analysis, and gh CLI operations. Use when asked to create a PR, open a pull request, submit changes for review, or after completing work where PR creation is logical. For PR title and description FORMAT rules, use the pull-request-descriptions instructions.
 ---
 
-# Pull Request Skill
-
-Execute Pull Request creation following a structured workflow that ensures authentication, branch safety, and proper change analysis.
+# Pull request
 
 ## Workflow
 
-### Step 1: Verify GitHub CLI Authentication
+### Step 1: Verify GitHub CLI authentication
 
 Before any GitHub operation, verify authentication status:
 
@@ -26,9 +24,9 @@ gh auth status
    ```
 3. Wait for the user to complete authentication before proceeding.
 
-### Step 2: Verify Branch State
+### Step 2: Verify branch state
 
-**CRITICAL:** Never create a PR from a protected branch.
+Never create a PR from a protected branch — it bypasses review and merges directly into shared history.
 
 ```bash
 # Get current branch
@@ -67,7 +65,7 @@ git push -u origin $(git branch --show-current)
 - [ ] No uncommitted changes (commit or stash first)
 - [ ] Branch is pushed to remote
 
-### Step 3: Analyze Changes for PR Description
+### Step 3: Analyze changes for PR description
 
 Gather context for the PR description:
 
@@ -96,13 +94,12 @@ git diff --stat $DEFAULT_BRANCH..HEAD
 | **Breaking Changes** | Look for `!` in commits or BREAKING CHANGE footer      |
 | **Migrations**       | Database or schema changes                             |
 
-### Step 4: Create the Pull Request
+### Step 4: Create the pull request
 
 ```bash
 # Get default branch for base
 DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
 
-# Do NOT use double quotes for --body
 gh pr create \
   --title "<type>: <description>" \
   --body '<generated description>' \
@@ -112,7 +109,6 @@ gh pr create \
 **For draft PRs:**
 
 ```bash
-# Do NOT use double quotes for --body
 gh pr create \
   --title "<type>: <description>" \
   --body '<generated description>' \
@@ -120,11 +116,11 @@ gh pr create \
   --draft
 ```
 
-Follow the PR Description Convention.
+Follow the PR description format from [pull-request-descriptions.instructions.md](../../instructions/pull-request-descriptions.instructions.md).
 
-**IMPORTANT:** Do NOT use double quotes for `--body` to avoid shell interpolation issues.
+Use single quotes for `--body` to avoid shell interpolation issues.
 
-### Step 5: Confirm Success
+### Step 5: Confirm success
 
 After creating, verify and report:
 
@@ -139,7 +135,7 @@ Report to the user:
 - Title
 - Base and head branches
 
-## Error Handling
+## Error handling
 
 | Error                         | Cause                     | Resolution                            |
 | ----------------------------- | ------------------------- | ------------------------------------- |
