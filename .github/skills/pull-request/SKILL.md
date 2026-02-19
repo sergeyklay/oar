@@ -26,7 +26,7 @@ gh auth status
 
 ### Step 2: Verify branch state
 
-Never create a PR from a protected branch — it bypasses review and merges directly into shared history.
+Never create a PR from a protected branch - it bypasses review and merges directly into shared history.
 
 ```bash
 # Get current branch

@@ -79,7 +79,7 @@ git diff --cached
 
 ### Step 3: Verify branch safety
 
-Never commit directly to protected branches — doing so bypasses review and pollutes shared history.
+Never commit directly to protected branches - doing so bypasses review and pollutes shared history.
 
 #### Detect protected branch
 
