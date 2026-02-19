@@ -45,7 +45,7 @@ Here are some criteria that might be important for your use case. This list is n
 
 - **Task fidelity:** How well does the model need to perform on the task? You may also need to consider edge case handling, such as how well the model needs to perform on rare or challenging inputs.
 - **Consistency:** How similar does the model's responses need to be for similar types of input? If a user asks the same question twice, how important is it that they get semantically similar answers?
-- **Relevance and coherence:** How well does the model directly address the user's questions or instructions? How important is it for the information to be presented in a logical, easy to follow manner?
+- **Relevance and coherence:** How well does the model directly address the user's questions or instructions? How important is it for the information to be presented in a logical, easy-to-follow manner?
 - **Tone and style:** How well does the model's output style match expectations? How appropriate is its language for the target audience?
 - **Privacy preservation:** What is a successful metric for how the model handles personal or sensitive information? Can it follow instructions not to use or share certain details?
 - **Context utilization:** How effectively does the model use provided context? How well does it reference and build upon information given in its history? Does the task require studying the project, searching the internet, or using instructions?
