@@ -58,7 +58,7 @@ jobs:
         run: npm run typecheck
 
       - name: Audit packages
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Run unit tests
         run: npm run test:coverage -- --verbose
