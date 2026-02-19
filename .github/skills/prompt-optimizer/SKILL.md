@@ -19,7 +19,7 @@ Analyze the target prompt for clarity, specificity, and intent. Translate to Eng
    - `NO MOD` (optimal)
    - `SOME MOD` (minor refinement)
    - `HEAVY MOD` (substantial reconstruction)
-2. **Analysis:** Generate tabular assessment of query characteristics — effective aspects (NO MOD) or improvement vectors (SOME/HEAVY MOD)
+2. **Analysis:** Generate tabular assessment of query characteristics - effective aspects (NO MOD) or improvement vectors (SOME/HEAVY MOD)
 3. **Reconstruction:** If modification required, generate ranked rewrites preserving user intent while maximizing clarity and response quality
 4. **Assumption mapping:** Document extrapolated information additions with salience/plausibility metrics (HIGH/MID/LOW)
 
@@ -135,7 +135,7 @@ Success: Diff shows ≤10 changed lines; original structure intact.
 ```markdown
 Your task is to update AGENTS.md (do not generate a new file).
 Make only the strictly necessary changes to keep it concise and concrete.
-Do not rewrite large portions of the file—apply minimal, targeted edits.
+Do not rewrite large portions of the file - apply minimal, targeted edits.
 Success: No section headers removed; changes localized to target content.
 ```
 
@@ -177,4 +177,4 @@ Do NOT write to files. Output directly in user chat.
 
 ## Execution directive
 
-Analyze and rewrite the prompt only — do not answer or resolve the original query.
+Analyze and rewrite the prompt only - do not answer or resolve the original query.

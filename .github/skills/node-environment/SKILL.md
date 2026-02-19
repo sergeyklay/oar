@@ -29,7 +29,7 @@ command -v nvm >/dev/null 2>&1 && echo "nvm"
 
 **Priority**: If both available, prefer asdf when `.tool-versions` exists, otherwise use nvm.
 
-If neither tool is available, note this and continue to detect required version — you may still proceed if versions already match.
+If neither tool is available, note this and continue to detect required version - you may still proceed if versions already match.
 
 ## Step 2: Detect required version
 
@@ -160,6 +160,6 @@ To proceed:
 
 ## Constraints
 
-- Always confirm the active version after switching — silent failures leave the wrong version active
-- Do not proceed with npm commands when versions don't match — wrong Node.js versions cause cryptic dependency and build errors
-- Use `.tool-versions` with asdf and `.nvmrc` with nvm — don't mix config files across managers
+- Always confirm the active version after switching - silent failures leave the wrong version active
+- Do not proceed with npm commands when versions don't match - wrong Node.js versions cause cryptic dependency and build errors
+- Use `.tool-versions` with asdf and `.nvmrc` with nvm - don't mix config files across managers

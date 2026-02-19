@@ -11,7 +11,7 @@ Follow these conventions when creating pull request titles.
 
 1. Use Conventional Commit format: `<type>[optional scope]: <description>`
 2. Types: feat, fix, refactor, docs, test, chore, style, perf, ci
-3. Scope is optional — when used, it must be a noun describing a section of the codebase in parentheses
+3. Scope is optional - when used, it must be a noun describing a section of the codebase in parentheses
 4. Keep under 72 characters including type and scope
 6. Be specific and descriptive
 7. Use imperative mood (e.g., 'add' not 'added')
