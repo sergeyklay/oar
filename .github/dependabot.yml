@@ -11,6 +11,11 @@ updates:
     labels:
       - dependencies
       - npm
+    ignore:
+      # ESLint 10.x ecosystem not ready — many plugins still require 9.x
+      # Skips major bumps only; minor/patch 9.x updates still come through
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
     commit-message:
       prefix: 'chore(deps): '
       prefix-development: 'chore(deps-dev): '
