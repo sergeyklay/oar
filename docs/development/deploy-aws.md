@@ -24,7 +24,7 @@ Before starting, gather these:
 
 ## How it works
 
-The deployment proceeds through three phases: infrastructure provisioning, application deployment, and security hardening. Each phase builds on the previous, so you'll have a working (if insecure) deployment before adding the security layers. This lets you verify each component independently.
+The deployment proceeds through six phases: infrastructure provisioning, application deployment, tunnel setup, access control configuration, administrative access setup, and security hardening. Each phase builds on the previous, so you'll have a working (if insecure) deployment before adding the security layers. This lets you verify each component independently.
 
 ### Phase 1: Infrastructure (domain and server)
 
@@ -242,9 +242,114 @@ At this point, anyone with your domain can access Oar. Cloudflare Zero Trust add
 
 Now visitors see a Cloudflare login page. They enter their email; only your email receives the one-time code. To verify: open your domain in an incognito window. You should see the authentication page, not the application.
 
-### Phase 5: Closing the attack surface
+### Phase 5: AWS SSM Session Manager
 
-With the tunnel running and Zero Trust configured, SSH access to your server is no longer necessary for normal operation. Close the port:
+You still need server access for deployments and maintenance, but leaving SSH open creates an attack surface. AWS Systems Manager (SSM) Session Manager provides shell access without any open ports. The SSM agent on your EC2 instance initiates an outbound connection to AWS, and you connect through that established channel. No listening ports, no key management, and full session logging if you want it.
+
+#### Creating an IAM role for EC2
+
+Your EC2 instance needs permission to communicate with the SSM service:
+
+1. In AWS Console, navigate to **IAM → Roles → Create role**
+2. **Trusted entity type:** AWS service
+3. **Service or use case:** Select EC2 from the dropdown
+4. Click **Next**
+5. Search for and select: **AmazonSSMManagedInstanceCore**
+6. Click **Next**
+7. **Role name:** EC2-SSM-Role
+8. Click **Create Role**
+
+#### Attaching the role to your instance
+
+1. Navigate to **EC2 → Instances**
+2. Select your `oar` instance
+3. **Actions → Security → Modify IAM role**
+4. Select EC2-SSM-Role
+5. Save
+
+#### Granting your IAM user SSM permissions
+
+Your AWS user account also needs permission to start SSM sessions:
+
+1. Navigate to **IAM → Users → your user**
+2. **Add permissions → Attach policies directly**
+3. Search for and add: **AmazonSSMFullAccess**
+4. Click **Add permissions**
+
+#### Verifying the SSM agent
+
+SSH into your instance one last time while port 22 is still open:
+
+```bash
+ssh -i ~/path/to/key.pem ubuntu@<EC2_PUBLIC_IP>
+sudo systemctl status snap.amazon-ssm-agent.amazon-ssm-agent
+```
+
+Ubuntu 24.04 LTS typically ships with SSM Agent pre-installed and running. If it's not installed:
+
+```bash
+sudo snap install amazon-ssm-agent --classic
+sudo systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent
+sudo systemctl start snap.amazon-ssm-agent.amazon-ssm-agent
+```
+
+#### Installing the Session Manager plugin locally
+
+Your local machine needs the Session Manager plugin to use `aws ssm` commands from the terminal.
+
+**Linux (Ubuntu/Debian/WSL):**
+
+```bash
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" \
+  -o "session-manager-plugin.deb"
+sudo dpkg -i session-manager-plugin.deb
+rm session-manager-plugin.deb
+```
+
+**macOS:**
+
+```bash
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac/sessionmanager-bundle.zip" \
+  -o "sessionmanager-bundle.zip"
+unzip sessionmanager-bundle.zip
+sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
+rm -rf sessionmanager-bundle sessionmanager-bundle.zip
+```
+
+**Windows:**
+
+Download and run the installer from AWS: [SessionManagerPluginSetup.exe](https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe)
+
+#### Testing the SSM connection
+
+Wait 2-3 minutes after attaching the IAM role for the instance to register with SSM, then:
+
+```bash
+aws ssm start-session --target <INSTANCE_ID> --region <YOUR_REGION>
+```
+
+Find your Instance ID in **EC2 → Instances**. It looks like `i-0abc1234def567890`.
+
+You should see:
+
+```plaintext
+Starting session with SessionId: youruser-abc123...
+$
+```
+
+You can also connect through the browser: **AWS Console → Systems Manager → Session Manager → Start a session** → select your instance.
+
+SSM logs you in as `ssm-user`, which doesn't have access to your project files or Docker. After connecting, switch to the `ubuntu` user:
+
+```bash
+sudo su - ubuntu
+```
+
+Now you're in `/home/ubuntu` with full access to your files and Docker.
+
+### Phase 6: Closing the attack surface
+
+Only after you've confirmed SSM is working, close the SSH port:
 
 1. In AWS Console, navigate to **EC2 → Security Groups**
 2. Find your instance's security group
@@ -252,9 +357,52 @@ With the tunnel running and Zero Trust configured, SSH access to your server is 
 4. Remove the SSH (port 22) rule
 5. Save
 
-Your server now has zero open inbound ports. All traffic flows through the authenticated, encrypted Cloudflare Tunnel.
+Your server now has zero open inbound ports. All traffic flows through authenticated, encrypted channels: Cloudflare Tunnel for the application, SSM for server administration.
 
-If you need SSH access later, you have two options: temporarily re-add the SSH rule, or configure [AWS SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) for port-free shell access.
+## Daily workflow
+
+With everything configured, here's how you'll interact with your deployment day-to-day.
+
+### Connecting to your server
+
+```bash
+aws ssm start-session --target <INSTANCE_ID> --region <YOUR_REGION>
+sudo su - ubuntu
+cd ~/oar
+```
+
+Consider adding a shell alias to your `~/.bashrc` or `~/.zshrc` for quick access:
+
+```bash
+alias oar-ssh='aws ssm start-session --target <INSTANCE_ID> --region <YOUR_REGION>'
+```
+
+Then type `oar-ssh` to connect.
+
+### Deploying updates
+
+```bash
+# After connecting via SSM:
+sudo su - ubuntu
+cd ~/oar
+git pull
+docker compose down
+docker compose up -d --build
+```
+
+### Copying files without SSH
+
+Since SSH is closed, `scp` no longer works. Use S3 as an intermediary:
+
+```bash
+# From your local machine: upload to S3
+aws s3 cp ./myfile s3://your-bucket/myfile
+
+# On EC2 via SSM: download from S3
+aws s3 cp s3://your-bucket/myfile ~/myfile
+```
+
+An S3 bucket for file transfers costs almost nothing for occasional use. If you prefer, you can temporarily re-add the SSH rule to your Security Group, use `scp`, then remove the rule again.
 
 ## Migrating an existing database
 
@@ -268,7 +416,7 @@ docker cp oar:/app/data/oar.db ./oar.db
 
 ### Copy to EC2
 
-You'll need to temporarily re-enable SSH access if you've already closed the port.
+If SSH is closed, use the S3 intermediary method described above. Otherwise:
 
 ```bash
 scp -i ~/path/to/key.pem ./oar.db ubuntu@<EC2_IP>:~/oar.db
@@ -314,7 +462,8 @@ You've completed the deployment successfully when:
 2. After authenticating with your email, you see the Oar application
 3. Your AWS security group shows zero inbound rules
 4. `sudo systemctl status cloudflared` shows `active (running)`
-5. If you migrated a database, your existing bills and payment history appear in the app
+5. `aws ssm start-session --target <INSTANCE_ID> --region <YOUR_REGION>` connects successfully
+6. If you migrated a database, your existing bills and payment history appear in the app
 
 ## Troubleshooting
 
@@ -356,3 +505,16 @@ SQLite needs write access to both the database file and its directory:
 sudo ls -la /var/lib/docker/volumes/oar_oar_data/_data/
 sudo chown 1001:1001 /var/lib/docker/volumes/oar_oar_data/_data/oar.db
 ```
+
+### SSM session not connecting
+
+If `aws ssm start-session` fails with "target is not connected":
+
+1. Verify the IAM role is attached: **EC2 → Instances → select instance → Security tab → IAM Role** should show EC2-SSM-Role
+2. Check the SSM agent is running on the instance (requires temporary SSH access):
+   ```bash
+   sudo systemctl status snap.amazon-ssm-agent.amazon-ssm-agent
+   ```
+3. Wait 2-3 minutes after attaching the IAM role for the instance to register
+4. Confirm your IAM user has `AmazonSSMFullAccess` policy attached
+5. Check the region matches where your instance is running
