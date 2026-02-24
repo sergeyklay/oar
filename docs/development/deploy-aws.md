@@ -60,13 +60,40 @@ The security group configuration looks alarming, but it's temporary. You need SS
 
 ### Phase 2: Application deployment
 
-#### Installing Docker
-
 Connect to your instance using the key pair you downloaded:
 
 ```bash
 ssh -i ~/path/to/key.pem ubuntu@<EC2_PUBLIC_IP>
 ```
+
+#### Configuring swap space
+
+A `t3.micro` instance has 1 GB of RAM. This is enough to run Oar day-to-day, but the Docker image build runs `npm install` which resolves the entire dependency tree in memory. With hundreds of transitive dependencies, this can easily exhaust available RAM, causing the build to fail with cryptic `SIGKILL` or `out of memory` errors.
+
+Creating a persistent swap file eliminates this problem:
+
+```bash
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+Make it permanent so it survives reboots:
+
+```bash
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+Verify the swap is active:
+
+```bash
+free -h
+```
+
+You should see a `Swap` row showing 4.0G total. This swap file adds negligible cost (it uses your existing EBS volume) and prevents out-of-memory failures during builds and updates.
+
+#### Installing Docker
 
 Install Docker using the convenience script:
 
