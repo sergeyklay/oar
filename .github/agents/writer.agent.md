@@ -7,6 +7,7 @@ tools:
   - read
   - edit
   - search
+  - web
 ---
 
 ## Role

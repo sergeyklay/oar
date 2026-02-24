@@ -68,6 +68,7 @@ Guides for contributors and local development.
 
 - [Getting Started](./development/getting-started.md) - Setting up your development environment
 - [Local Docker Deployment](./development/local-docker.md) - Running Oar locally with Docker
+- [Deploying Oar on AWS with Cloudflare Tunnel](./development/deploy-aws.md) - Guide to deploying Oar on AWS using Cloudflare Tunnel for secure access
 - [Logging](./development/logging.md) - Logging conventions and configuration
 
 ## Architecture
