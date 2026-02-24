@@ -256,7 +256,8 @@ cd ~/oar
 docker compose down
 
 # Remove ALL database files, including WAL/SHM
-sudo rm /var/lib/docker/volumes/oar_oar_data/_data/oar.db*
+sudo rm /var/lib/docker/volumes/oar_oar_data/_data/oar.db-wal
+sudo rm /var/lib/docker/volumes/oar_oar_data/_data/oar.db-shm
 
 # Copy your database
 sudo cp ~/oar.db /var/lib/docker/volumes/oar_oar_data/_data/oar.db
