@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Calendar } from './calendar';
 
@@ -179,6 +179,36 @@ describe('Calendar UI Component', () => {
 
       const todayMonthLabel = screen.getAllByText(/\w+ \d{4}/)[0].textContent;
       expect(todayMonthLabel).not.toBe(awayMonthLabel);
+    });
+
+    it('opens to the selected date month instead of today', () => {
+      const selectedDate = new Date(2024, 2, 15); // March 2024
+
+      render(<Calendar mode="single" selected={selectedDate} />);
+
+      const monthLabels = screen.getAllByText('March 2024');
+      expect(monthLabels.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('defaults to current month when no date is selected', () => {
+      render(<Calendar mode="single" />);
+
+      const monthLabels = screen.getAllByText('June 2025');
+      expect(monthLabels.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('Fixed Weeks', () => {
+    it.each([
+      { month: new Date(2025, 1), name: 'February 2025 (4 weeks)' },
+      { month: new Date(2025, 5), name: 'June 2025 (5 weeks)' },
+      { month: new Date(2025, 2), name: 'March 2025 (6 weeks)' },
+    ])('always renders 6 week rows for $name', ({ month }) => {
+      render(<Calendar month={month} />);
+
+      const grid = screen.getByRole('grid');
+      const weekRows = within(grid).getAllByRole('row');
+      expect(weekRows).toHaveLength(6);
     });
   });
 });

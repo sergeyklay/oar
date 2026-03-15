@@ -107,10 +107,12 @@ function Calendar({
   endMonth,
   ...props
 }: CalendarProps) {
-  // Support uncontrolled mode with internal state (normalized to first of month)
+  // Support uncontrolled mode with internal state (normalized to first of month).
+  // When a selected date exists, open to its month instead of today.
   const [internalMonth, setInternalMonth] = React.useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
+    const base =
+      props.mode === 'single' && props.selected instanceof Date ? props.selected : new Date();
+    return new Date(base.getFullYear(), base.getMonth(), 1);
   });
 
   const isControlled = controlledMonth !== undefined;
@@ -160,6 +162,7 @@ function Calendar({
         canGoToNextMonth={canGoToNextMonth}
       />
       <DayPicker
+        fixedWeeks
         showOutsideDays={showOutsideDays}
         hideNavigation
         month={displayMonth}
