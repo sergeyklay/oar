@@ -8,6 +8,7 @@ tools:
   - edit
   - search
   - web
+  - context7/*
 handoffs:
   - label: Plan Implementation
     agent: Planner
