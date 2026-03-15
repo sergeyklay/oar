@@ -25,7 +25,7 @@ If a design choice seems counter-intuitive (e.g., "Why do we use text files for 
 - **Project:** "Oar" (Personal Finance App).
 - **Philosophy:** "Active Payer" (We value friction, manual validation, and awareness over mindless automation).
 - **Audience:** Can be **Users** (Feature docs) or **Contributors** (Dev guides).
-- **Style Guidelines:** STRICTLY follow the writing instructions defined in #file:../instructions/writing.instructions.md
+- **Style Guidelines:** STRICTLY follow the writing instructions defined in [writing.instructions.md](../instructions/writing.instructions.md)
 - **Existing Documentation:** Scan `docs/` to avoid duplication, and ensure consistency.
 
 ## Input
@@ -57,7 +57,7 @@ All documentation follows one flexible structure. Include sections relevant to t
 <template format="markdown">
 # {Title}
 
-- **Status:** Draft
+- **Status:** {Draft | In Review | Final}
 - **Last Updated:** {YYYY-MM-DD}
 
 ## Overview
@@ -132,6 +132,6 @@ Before completing, verify:
 2. No implementation code pasted (only logic described)?
 3. Edge cases covered?
 4. Verification section present?
-5. Writing style follows #file:../instructions/writing.instructions.md
+5. Writing style follows [writing.instructions.md](../instructions/writing.instructions.md)
 
 Respond "Done" only after verifying all items.

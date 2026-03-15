@@ -1,427 +1,68 @@
-# Oar - Architectural Context & Global Governance
+# Oar
 
-This file establishes the architectural philosophy and coding standards for **Oar**.
-It is the "Constitution" for all AI agents working on this project.
+Sovereign, local-first bill manager. Core design principle: the "Active Payer" philosophy — every payment requires conscious acknowledgment. This is intentional friction, not a missing feature. Never add automation that bypasses user awareness.
 
-**Applies to:** Every agent session, every code change.
+## Commands
 
----
+- Dev schema sync: `npm run db:push` (NOT `drizzle-kit generate` + `migrate` — those are for production)
+- Production migrations: `scripts/migrate.mjs` runs at container startup via `docker-entrypoint.sh`
+- Test single file: `npm test -- --testPathPatterns="FileName"` (plural — Jest 30+ renamed the flag)
+- Audit: `npm audit --omit=dev --audit-level=high`
 
-## 1. System Identity
+## Gotchas
 
-**Role:** You are a Principal Engineer maintaining a sovereign financial system. Treat user data as sacred—this system exists to serve the user, not to harvest their information.
+- **SQLite transactions are synchronous.** `better-sqlite3` does NOT support `async/await` inside `db.transaction()`. The callback is NOT awaited — async code silently breaks.
+- **Money is always integers.** Store and transmit as minor units (4999 = $49.99). Convert only at UI boundary via `lib/money.ts`. Floating-point money is banned.
+- **Never use `format()` from date-fns in JSX.** Server renders UTC, client renders local timezone → hydration mismatch. Always use `<ClientDate />` component.
+- **Never use `startOfDay()`/`endOfDay()`/`startOfMonth()` for date filtering.** These use server timezone. Use `calculateFilterBoundaries()`, `calculateDayFilterBoundaries()`, or `calculateYearFilterBoundaries()` from `lib/utils.ts` with the user's timezone offset.
+- **Timezone comes from a cookie.** `TimezoneProvider` sets it client-side. Server reads it via `getUserTimezoneOffset()` from `lib/timezone.ts`. Actions must pass `userTimezoneOffset` to services.
+- **Actions are thin orchestration.** Validate (Zod) → delegate to `lib/services/` → `revalidatePath()` → return `ActionResult<T>`. No business logic, no math, no conditionals on domain data.
+- **No global state.** No Zustand, Redux, or Context for app state. URL state via nuqs, form state via react-hook-form, server state via RSC.
+- **Docker build uses `DATABASE_URL=":memory:"`** to avoid file access errors during Next.js static generation. This is intentional.
+- **`use client` goes on leaf nodes only.** Default to Server Components. Never make a page/route component a client component.
+- **UI types import from `lib/types.ts`**, not directly from `db/schema`. Presentation layer must not depend on the database schema.
+- **Optional chaining avalanche.** Fix the type instead of chaining `?.` five levels deep.
 
-**Core Stack:**
+## Boundaries
 
-- Node.js 24 with npm as package manager
-- Next.js 16 (App Router, React Server Components)
-- React 19.2 with TypeScript
-- SQLite + Drizzle ORM (local-first persistence)
-- Tailwind CSS 4 + Shadcn/UI primitives
-- Zod (validation), nuqs (URL state), react-hook-form (forms)
-- Node.js Cron for background jobs (`cron`, a fork of `node-cron`) initialized via `instrumentation.ts`
-- Pino (with `pino-pretty`) for logging
-- Docker for containerization
+### Always
 
-**Philosophy — "The Active Payer":**
+- Business logic lives in `lib/services/`. This is non-negotiable.
+- Use `useAsyncAction` hook for async operations with loading states in client components.
+- Use Drizzle query builder exclusively. Raw SQL only in migration files.
+- Follow existing patterns in the codebase before creating new abstractions.
 
-> Unlike passive expense trackers that merely _record_ what happened, Oar is a **commitment calendar** that enforces _awareness_ of upcoming financial obligations. The user is not a passive observer—they are an **Active Payer** who must consciously acknowledge every bill. This is a feature, not friction.
+### Ask first
 
-**Sovereignty Principle:**
+- `components.json`, `app/globals.css`, `tailwind.config.ts` — design system config
+- `components/layout/*`, `app/layout.tsx` — app shell structure
+- `jest.config.ts`, `jest.setup.ts`, `tsconfig.json` — toolchain config
+- `scripts/migrate.mjs`, `scripts/seed-production.mjs` — production startup scripts
 
-> All data lives on the user's machine. There is no cloud sync, no telemetry, no external API calls for core functionality. The user owns their financial truth absolutely.
+### Never
 
----
+- Edit `drizzle/` migration SQL files. Generate new migrations instead.
+- Import from `@/db` in components or pages. Only services and actions touch the database.
+- Add external SaaS dependencies for core features (no Plaid, Yodlee, cloud APIs).
+- Use `console.log` — use `getLogger('ModuleName')` from `lib/logger.ts` (pino). ESLint enforces this.
 
-## 2. Strategic Vision
+## Refactoring strategy: Strict
 
-**Goal:** Build a sovereign, local-first financial commitment calendar that enforces "Active Payer" awareness and provides deep liquidity forecasting—without external banking dependencies.
+New code enforces all standards. Touched code gets brought up to standard. Adjacent untouched code stays as-is — document as tech debt but do not spread old patterns.
 
-**Technical Implications:**
+## Reference docs
 
-1. **Forecasting Engine:** The system must predict future cash flow using only user-entered bill data and recurrence rules. No bank balance imports.
-2. **Commitment, Not Automation:** Bills are not auto-paid by the system. The user must explicitly mark payments—this is intentional friction that builds financial awareness.
-3. **Offline-First:** The app must function completely offline. SQLite with WAL mode ensures this.
-4. **Single-User Focus:** No multi-tenancy, no auth system required for MVP. The database IS the user's identity.
+Read whichever of these are relevant before starting work:
 
----
-
-## 3. Architectural Boundaries
-
-```plaintext
-┌─────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                       │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │  React Server   │  │  Client Leaf    │  │   URL State     │  │
-│  │  Components     │  │  Components     │  │   (nuqs)        │  │
-│  │  (app/, pages)  │  │  ('use client') │  │                 │  │
-│  └────────┬────────┘  └────────┬────────┘  └─────────────────┘  │
-│           │                    │                                │
-└───────────┼────────────────────┼────────────────────────────────┘
-            │                    │
-            ▼                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      ORCHESTRATION LAYER                        │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   Server Actions                         │   │
-│  │                   (actions/*.ts)                         │   │
-│  │   • Zod validation                                       │   │
-│  │   • Calls Domain Services                                │   │
-│  │   • revalidatePath() for cache                           │   │
-│  │   • Returns ActionResult<T>                              │   │
-│  └─────────────────────────┬────────────────────────────────┘   │
-│                            │                                    │
-└────────────────────────────┼────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        DOMAIN LAYER                             │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                 Services (lib/services/)                 │   │
-│  │   • RecurrenceService: Next due date calculations        │   │
-│  │   • DueDateService: Due date filtering and queries       │   │
-│  │   • PaymentService: Payment logging & partial payments   │   │
-│  │   • BillService: Bill CRUD operations                    │   │
-│  │   • TransactionService: Transaction queries              │   │
-│  │   • AutoPayService: Auto-pay bill processing             │   │
-│  │   • SchedulerService: Background cron jobs               │   │
-│  │   • SettingsService: User preferences                    │   │
-│  │   • ForecastService: Cash flow projections               │   │
-│  │   • HistoryService: Historical spending analysis         │   │
-│  │   • DateAdjustmentService: Date normalization            │   │
-│  │   • EstimationService: Bill amount estimation            │   │
-│  │   • StartupCatchUpService: Missed payment recovery       │   │
-│  └─────────────────────────┬────────────────────────────────┘   │
-│                            │                                    │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │                 Utilities (lib/*.ts)                     │   │
-│  │   • money.ts: Integer currency conversion                │   │
-│  │   • utils.ts: Pure helper functions                      │   │
-│  └─────────────────────────┬────────────────────────────────┘   │
-│                            │                                    │
-└────────────────────────────┼────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      PERSISTENCE LAYER                          │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │              Drizzle ORM (db/schema.ts)                  │   │
-│  │   • SQLite with WAL mode                                 │   │
-│  │   • Type-safe queries                                    │   │
-│  │   • Migrations via drizzle-kit                           │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Layer Rules (Access Matrix)
-
-| Layer                       | CAN Access                                                       | CANNOT Access                                          |
-| --------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
-| **React Server Components** | Server Actions, Domain Services (read-only queries), URL state   | Client state, browser APIs                             |
-| **Client Components**       | Server Actions (via form/mutation), props from parent, URL state | Domain Services directly, database                     |
-| **Server Actions**          | Domain Services, Drizzle queries, Zod schemas                    | UI components, React hooks                             |
-| **Domain Services**         | Other services, Drizzle ORM, pure utilities                      | Server Actions, UI, Next.js APIs (revalidate, cookies) |
-| **Utilities (lib/\*.ts)**   | Other utilities, external libs                                   | Services, Actions, Database, UI                        |
-
-### The Golden Rule of Logic Isolation
-
-> **Business logic MUST live in `lib/services/`.**
-> Server Actions are thin orchestration—validate, delegate, revalidate. No math, no business rules.
-> UI components render and capture input. No calculations beyond display formatting.
+- `.github/instructions/typescript-react.instructions.md` — coding standards and React patterns
+- `.github/instructions/testing.instructions.md` — Jest mocking patterns (mock `@/db` but never mock `@/db/schema`)
+- `.github/instructions/logging.instructions.md` — pino logger conventions (data first, message second)
+- `.github/instructions/commit-messages.instructions.md` — Conventional Commits format
+- `.github/agents/` — specialized agent configurations (coder, tester, planner, architect, writer)
+- `docs/architecture/client-side-date-rendering.md` — why ClientDate exists and how timezone handling works
 
 ---
 
-## 4. Data Flow & Patterns
-
-### Standard Mutation Flow (User Creates a Bill)
-
-```plaintext
-User Input (Form)
-      │
-      ▼
-┌─────────────────┐
-│ Client Component│  ← 'use client' (BillFormDialog)
-│ react-hook-form │
-└────────┬────────┘
-         │ onSubmit()
-         ▼
-┌─────────────────┐
-│  Server Action  │  ← actions/bills.ts::createBill()
-│  1. Zod parse   │
-│  2. toMinorUnits│  ← lib/money.ts (pure conversion)
-│  3. db.insert() │  ← Drizzle ORM
-│  4. revalidate  │
-└────────┬────────┘
-         │ ActionResult<T>
-         ▼
-┌─────────────────┐
-│ Client Component│  ← Handles success/error, closes dialog
-└─────────────────┘
-```
-
-### Standard Read Flow (Server Component)
-
-```plaintext
-Route Request (/bills)
-      │
-      ▼
-┌──────────────────┐
-│  Server Component│  ← app/page.tsx (RSC)
-│  await getBills()│  ← Server Action or direct query
-└────────┬─────────┘
-         │ BillWithTags[]
-         ▼
-┌─────────────────┐
-│  Render JSX     │  ← Pass data as props to child components
-└─────────────────┘
-```
-
-### URL State Pattern (Filtering)
-
-```plaintext
-User clicks filter
-      │
-      ▼
-┌─────────────────┐
-│  nuqs hook      │  ← useQueryState('tag')
-│  updates URL    │  ← /bills?tag=utilities
-└────────┬────────┘
-         │ URL change triggers RSC refetch
-         ▼
-┌─────────────────┐
-│  Server Component│  ← Reads searchParams, filters query
-└─────────────────┘
-```
-
----
-
-## 5. Development Constraints
-
-### Money Handling — THE IRON RULE
-
-> **All monetary values are stored and transmitted as INTEGERS (minor units).**
->
-> - Database: `amount INTEGER` (4999 = $49.99)
-> - API/Actions: Always integers
-> - Conversion: Only at UI boundary via `lib/money.ts`
-> - NEVER use `float`, `double`, or `Decimal` for money
-
-### React Server Components First
-
-- **Default:** Every component is a Server Component unless proven otherwise.
-- **`use client` Criteria:** Only add when the component requires:
-  - `useState`, `useEffect`, or other hooks
-  - Event handlers (`onClick`, `onSubmit`)
-  - Browser-only APIs
-- **Leaf Node Rule:** Client components should be as small as possible—push `use client` to the leaves.
-
-### State Management Hierarchy
-
-1. **URL State (nuqs):** Filters, pagination, selected dates—anything shareable/bookmarkable
-2. **Form State (react-hook-form):** In-progress form data
-3. **Server State:** Fetched via Server Components or Server Actions
-4. **Local Component State:** Only for ephemeral UI (dialog open/closed, hover states)
-5. **Global Client Store:** NOT USED. No Zustand, no Redux, no Context for app state.
-
-### Validation Strategy
-
-- **Server Actions:** Zod schemas are the source of truth. Validate ALL input.
-- **Client Forms:** Use `@hookform/resolvers/zod` to share schemas.
-- **Trust Nothing:** Treat all input as hostile, even from internal components.
-
-### Date/Time Handling
-
-- **Storage:** Timestamps in milliseconds (`timestamp_ms` mode in Drizzle)
-- **Library:** `date-fns` for all date manipulation
-- **Timezone:** Store in UTC, normalize to user's local timezone at display
-- **Rendering Rule:** NEVER use `date-fns`'s `format()` directly in JSX/TSX return statements. This causes hydration mismatches (Server UTC vs Client Local).
-- **Solution:** Always use the `<ClientDate />` component for displaying dates.
-  - ✅ Correct: `<ClientDate date={bill.dueDate} format="dd MMM" />`
-  - ❌ Wrong: `<span>{format(bill.dueDate, 'dd MMM')}</span>`
-- **Server Components:** Pass raw date values (string or number) to ClientDate. Do not instantiate `new Date()` in Server Components.
-
-### Timezone-Aware Filtering
-
-When filtering data by date boundaries (month, day, year), use the timezone utilities:
-
-- **Cookie Detection:** User timezone is stored in `oar-tz-offset` cookie via `TimezoneProvider`
-- **Action Layer:** Read timezone via `getUserTimezoneOffset()` from `@/lib/timezone`
-- **Service Layer:** Accept `userTimezoneOffset` parameter, use boundary utilities
-- **Utilities (`lib/utils.ts`):**
-  - `calculateFilterBoundaries(year, month, boundaries, userOffsetHours)` — Month ranges
-  - `calculateDayFilterBoundaries(dateStr, userOffsetHours)` — Day ranges
-  - `calculateYearFilterBoundaries(year, userOffsetHours)` — Year ranges
-
-**✅ Correct:**
-
-```typescript
-// In Server Action
-const userTimezoneOffset = await getUserTimezoneOffset();
-return SomeService.getData(param, userTimezoneOffset);
-
-// In Service
-const { start, end } = calculateDayFilterBoundaries(date, userTimezoneOffset);
-```
-
-**❌ Wrong:** Never use `startOfDay()`, `endOfDay()`, `startOfMonth()`, `endOfMonth()` directly for filtering—they use server timezone.
-
----
-
-## 6. Anti-Patterns (Forbidden)
-
-These patterns are explicitly banned. If you see them in existing code, do NOT replicate—flag for refactoring.
-
-- ❌ **Floating-point money:** Never `amount: 49.99`. Always `amount: 4999`.
-- ❌ **Date/time formatting in Server Components:** Never use `date-fns`'s `format()` function directly inside JSX/TSX return statements. Use the `<ClientDate />` component instead.
-- ❌ **Business logic in Server Actions:** Actions validate and delegate. No `if (bill.frequency === 'monthly')` calculations.
-- ❌ **Business logic in Components:** Components render. No `const nextDue = addMonths(bill.dueDate, 1)`.
-- ❌ **External SaaS for core features:** No Plaid, Yodlee, or cloud APIs for bill/payment data.
-- ❌ **Global state stores:** No Zustand, Redux, or React Context for application state.
-- ❌ **`use client` at route level:** Never make a page component a client component.
-- ❌ **Direct DB access in components:** Components never import from `@/db`.
-- ❌ **Raw SQL:** Use Drizzle's query builder. Raw SQL only for migrations.
-- ❌ **YAGNI violations (You Aren't Gonna Need It):** Don't add functionality until it's actually needed.
-  - No "just in case" features, configurations, or abstractions
-  - No future-proofing for hypothetical requirements
-  - No generic solutions when a specific one solves the current problem
-  - Three similar lines of code is better than premature abstraction
-- ❌ **Optional chaining avalanche:** Fix the type, don't chain `?.` five levels deep.
-
----
-
-## 7. Critical File Locations
-
-```plaintext
-oar/
-├── AGENTS.md                    ← YOU ARE HERE (Constitution)
-├── .github/
-│   ├── actions/                 ← GitHub Actions shared actions
-│   ├── agents/                  ← AI agents
-│   ├── instructions/            ← Common rules and important instructions you must follow
-│   ├── skills/                  ← Reusable agent skills
-│   └── workflows/               ← GitHub Actions workflows
-├── .specs/                      ← Feature specifications
-├── .plans/                      ← Implementation plans
-│
-├── app/                         ← Next.js App Router
-│   ├── layout.tsx               ← SACRED (root providers, fonts)
-│   ├── globals.css              ← SACRED (design tokens)
-│   ├── page.tsx                 ← Home route (Overview)
-│   ├── annual-spending/         ← Yearly spending analysis
-│   ├── archive/                 ← Archived bills view
-│   ├── due-soon/                ← Bills due within range
-│   ├── due-this-month/          ← Monthly due bills
-│   ├── forecast/                ← Cash flow forecast view
-│   ├── monthly-history/         ← Monthly spending history
-│   ├── paid-recently/           ← Recent payments view
-│   └── settings/                ← User preferences
-│
-├── actions/                     ← Server Actions (Orchestration)
-│   ├── bills.ts                 ← Bill CRUD operations
-│   ├── calendar.ts              ← Calendar data queries
-│   ├── categories.ts            ← Bill category management
-│   ├── forecast.ts              ← Cash flow forecast queries
-│   ├── history.ts               ← Historical spending queries
-│   ├── settings.ts              ← User settings operations
-│   ├── tags.ts                  ← Tag management
-│   └── transactions.ts          ← Payment history
-│
-├── lib/                         ← Domain Layer
-│   ├── services/                ← Business Logic (THE LAW)
-│   │   ├── AutoPayService.ts    ← Auto-pay processing
-│   │   ├── BillService.ts       ← Bill domain operations
-│   │   ├── DateAdjustmentService.ts ← Date normalization logic
-│   │   ├── DueDateService.ts    ← Due date queries
-│   │   ├── EstimationService.ts ← Bill amount estimation
-│   │   ├── ForecastService.ts   ← Cash flow projections
-│   │   ├── HistoryService.ts    ← Historical spending analysis
-│   │   ├── PaymentService.ts    ← Payment handling
-│   │   ├── RecurrenceService.ts ← Due date calculations
-│   │   ├── SchedulerService.ts  ← Background cron jobs
-│   │   ├── SettingsService.ts   ← User preferences
-│   │   ├── StartupCatchUpService.ts ← Missed payment recovery
-│   │   └── TransactionService.ts← Transaction queries
-│   ├── billing-cycle.ts         ← Cycle advancement logic
-│   ├── constants.ts             ← App-wide constants
-│   ├── logger.ts                ← Pino logger configuration
-│   ├── money.ts                 ← Currency conversion (integers!)
-│   ├── search-params.ts         ← URL search param utilities
-│   ├── types.ts                 ← Shared types (ActionResult<T>)
-│   └── utils.ts                 ← Pure utilities
-│
-├── db/                          ← Persistence Layer
-│   ├── schema.ts                ← Drizzle schema (source of truth)
-│   └── index.ts                 ← Database connection
-│
-├── docs/                        ← All project documentation
-│
-├── components/
-│   ├── ui/                      ← Shadcn primitives (DO NOT EDIT)
-│   ├── layout/                  ← Structural layout components defining page shell
-│   │                              (AppShell, Sidebar, MainContent, RightPanel, PageHeader)
-│   ├── common/                  ← Generic reusable UI components usable anywhere
-│   │                              (ScrollableContainer, etc.)
-│   │                              NOT layout-specific; pure presentational wrappers
-│   └── features/                ← Feature-specific components
-│       ├── bills/               ← Bill list, forms, detail panel
-│       ├── calendar/            ← Calendar widget
-│       ├── forecast/            ← Forecast charts and views
-│       ├── history/             ← Historical spending views
-│       ├── payments/            ← Payment history views
-│       └── settings/            ← Settings page components
-│
-├── drizzle/                     ← Generated migrations
-├── instrumentation.ts           ← Next.js entry (initializes SchedulerService)
-├── components.json              ← SACRED (Shadcn config)
-├── tailwind.config.ts           ← SACRED (theme extensions)
-└── package.json                 ← Dependencies & scripts
-```
-
-### Component Directory Organization
-
-**`components/layout/`** contains structural layout components that define the overall page shell and structure:
-
-- AppShell, Sidebar, MainContent, RightPanel, PageHeader
-- These components orchestrate the page layout and are always rendered in specific structural positions
-- They have layout-specific responsibilities (positioning, spacing, grid structure)
-
-**`components/common/`** contains generic reusable UI components that can be used anywhere in the application:
-
-- ScrollableContainer, ReportSidebarSummary (when applicable)
-- These are pure presentational wrappers with no layout-specific concerns
-- They are not tied to page structure and can appear in any context
-
-**Decision Rule:** If a component defines or participates in page structure (header, sidebar, main content areas), it belongs in `layout/`. If it's a generic reusable UI primitive usable anywhere, it belongs in `common/`.
-
-### Sacred Files Protocol
-
-Files marked `SACRED` must NOT be modified without explicit user instruction. When modifying adjacent code:
-
-1. Do NOT reset or overwrite sacred files
-2. Do NOT remove existing CSS variables or theme tokens
-3. Do NOT restructure the layout component hierarchy
-4. APPEND to configuration files; never replace
-
----
-
-## 8. Refactoring Protocol
-
-### Strategy: STRICT
-
-When encountering legacy or inconsistent code:
-
-1. **New Code:** Enforce all standards in this document. No exceptions.
-2. **Touched Code:** If you modify a function, bring it up to standard.
-3. **Adjacent Code:** Do NOT refactor code you weren't asked to touch.
-4. **Legacy Containment:** If old patterns exist, document them as tech debt but do not spread them.
-
-### The Boy Scout Rule
-
-> Leave code _you touched_ cleaner than you found it. Leave code _you didn't touch_ alone.
-
----
-
-Last Updated: 2025-12-31
+Last updated: 2026-03-15
 
 Maintained by: AI Agents under human supervision

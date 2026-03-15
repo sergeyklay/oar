@@ -159,11 +159,9 @@ import { format } from 'date-fns';
 
 ### Rule Files to Follow
 
-- **CRITICAL:** Strictly follow #file:../../AGENTS.md
-- **TypeScript/React:** Follow #file:../instructions/typescript-react.instructions.md
-- **Logging:** Follow #file:../instructions/logging.instructions.md
-- **Testing:** Follow #file:../instructions/testing.instructions.md
-- **Preservation:** Follow #file:../instructions/preservation.instructions.md
+- **CRITICAL:** Strictly follow [AGENTS.md](../../AGENTS.md) for architectural constraints.
+- **TypeScript/React:** Follow [typescript-react.instructions.md](../instructions/typescript-react.instructions.md) for language-specific best practices.
+- **Logging:** Follow [logging.instructions.md](../instructions/logging.instructions.md) for logging conventions.
 
 ---
 
