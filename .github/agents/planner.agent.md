@@ -1,7 +1,7 @@
 ---
+name: Planner
 description: Convert a Technical Specification into a step-by-step Implementation Checklist
 argument-hint: Outline the goal or problem to plan
-name: Planner
 tools:
   - read
   - edit
