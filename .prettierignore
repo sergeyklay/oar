@@ -2,3 +2,4 @@
 # So no need to duplicate those rules here.
 
 next-env.d.ts
+.github/**/*.md
