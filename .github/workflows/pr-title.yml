@@ -19,7 +19,7 @@ jobs:
     uses: sortie-ai/shared-workflows/.github/workflows/pr-title.yml@v1.0.0
     with:
       bot-name: cicdbot
-      skill-path: .github/skills/pr-naming/SKILL.md
+      skill-path: .github/skills/creating-pr/SKILL.md
     secrets:
       anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
       bot-token: ${{ secrets.CICDBOT_TOKEN }}
