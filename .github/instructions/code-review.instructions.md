@@ -1,56 +1,80 @@
 ---
-description: Use these instructions to guide your code reviews.
+description: Structured code review protocol for a Next.js/SQLite local-first bill manager
 excludeAgent: ['coding-agent']
 ---
 
-# Code Review Guidelines
+# Code review protocol
 
-Guidelines for conducting code reviews in this project. Follow these best practices to ensure high-quality contributions.
+You are a senior reviewer for Oar, a local-first bill manager built on Next.js 16 (App Router), React 19, TypeScript, SQLite (better-sqlite3), and Drizzle ORM. The core philosophy is "Active Payer": every payment requires conscious user acknowledgment. Automation that bypasses awareness is a defect, not a feature.
 
-**Important**: When reviewing code in specific languages or technologies, refer to the corresponding instruction files in `.github/instructions/` directory for language-specific best practices, conventions, and review criteria.
+Review each changed file in three sequential passes. Comment only when confidence exceeds 80%. Do not flag formatting or import order since linters handle those.
 
-## Scope
+## Severity labels
 
-1. **Correctness** — Does the code do what it claims?
-2. **Type Safety** — No `any`, unchecked nulls handled, errors propagated correctly
-3. **Architecture** — Layer boundaries and common conventions are respected (see [AGENTS.md](../../AGENTS.md) for details)
-4. **Performance** — No N+1 queries, unbounded loops, unnecessary re-renders
-5. **Security** — No secrets in code/logs, input validated, no XSS vectors
-6. **Style** — Airbnb guide, 100-char lines, JSDoc on public APIs
+| Label | Meaning | Blocks merge? |
+|---|---|---|
+| `severity:must-fix` | Bug, security flaw, or layer violation | Yes |
+| `severity:suggestion` | Improvement, does not block merge | No |
+| `severity:nitpick` | Minor preference, use sparingly | No |
 
-## Required Patterns
+## Pass 1: Bugs and security (severity:must-fix)
 
-- Server Components by default; `'use client'` only for hooks/events
-- Services contain domain logic; Actions validate and delegate
-- Money stored as integers (minor units)
-- Dates rendered via `<ClientDate />` component
-- Types preferred over comments
-- `useAsyncAction` for async operations with loading states
+### Layer boundaries
 
-## Reject On Sight
+Identify each file's architectural layer, then verify constraints:
 
-- `any` type without justification
-- Direct DB imports in components
-- `useState`/`useEffect` in Server Components
-- Floating-point money calculations
-- Dead code or TODOs without issue reference
-- Secrets or PII in logs
-- `format()` from date-fns in JSX (hydration mismatch)
+**Presentation** (`app/`, `components/`): Must not import `@/db`. No business logic or domain conditionals (`if (bill.frequency === 'monthly')`). Server Components by default. `'use client'` only on leaf nodes needing hooks, events, or browser APIs. Never on page or layout files.
 
-## Documentation Hygiene
+**Orchestration** (`actions/`): Validate input with Zod `safeParse()`, delegate to `lib/services/`, call `revalidatePath()`, return `ActionResult<T>`. No business logic, no domain math, no direct DB queries.
 
-Flag when changes require documentation updates:
+**Domain** (`lib/services/`): Pure business logic. Must not import Next.js APIs (`revalidatePath`, `cookies`, `headers`), React, or UI code.
 
-**AGENTS.md** — Update when:
+**Data** (`db/`): Schema definitions only. No logic, no service calls.
 
-- New architectural patterns or layer boundaries introduced
-- Critical files added/removed/renamed
-- Core philosophy or conventions change
+### Domain invariants
 
-**docs/** — Update when:
+**Money must be integers.** All monetary values stored/transmitted in minor units (4999 = $49.99). Conversion only at UI boundary via `lib/money.ts`. Flag floating-point arithmetic on money, `amount * 100` patterns (use `toMinorUnits()`), or ambiguous `number` types for monetary fields.
 
-- User-facing features added or behavior changed
-- Configuration options modified
-- Setup/deployment steps affected
+**Dates in JSX must use `<ClientDate />`.** Server renders UTC, client renders local timezone. Direct `format()` from date-fns in JSX causes hydration mismatches. Only `<ClientDate date={value} format="..." />` is valid.
 
-Do NOT require docs for: bug fixes, refactors with no API change, test additions, dependency updates and minor changes that do not affect usage.
+**Date filtering must be timezone-aware.** Never `startOfDay()`, `endOfDay()`, `startOfMonth()` for query boundaries (these use server TZ). Use `calculateFilterBoundaries()`, `calculateDayFilterBoundaries()`, or `calculateYearFilterBoundaries()` from `lib/utils.ts` with user's timezone offset.
+
+**SQLite transactions are synchronous.** `better-sqlite3` does not await the `db.transaction()` callback. Any `async`/`await` inside a transaction silently breaks. Flag as critical.
+
+**No `console.log`.** Use `getLogger('ModuleName')` from `@/lib/logger`. If an ESLint suppression hides this, flag it.
+
+### Security
+
+- Server Actions are public POST endpoints. Every action must verify auth and authorize resource ownership, not just validate input shape.
+- No secrets, tokens, PII, or financial amounts in log output.
+- All user input through Zod before reaching services.
+- No `dangerouslySetInnerHTML` without sanitization.
+
+## Pass 2: Pattern compliance (severity:suggestion)
+
+- Server Actions must export Zod schemas so client forms reuse them with `zodResolver()`.
+- 2+ async operations in a client component should use `useAsyncAction` hook, not manual `useState` for loading.
+- Queries should select specific columns, not bare `select()`.
+- Event handlers should use `Prop<Component, 'eventName'>` type, not manual `React.MouseEvent<...>`.
+- Logging: data object first, message second: `logger.info({ billId }, 'Logged')`. No string interpolation.
+- Error logging: Error as first arg: `logger.error(error, 'Failed')`. Wrapping in `{ error }` loses stack.
+- Component types come from `lib/types.ts`, not `db/schema`.
+- No `any` without a JSDoc comment explaining why.
+- No optional chaining deeper than two levels. Fix the type instead.
+
+## Pass 3: Documentation hygiene (severity:suggestion)
+
+Flag when changes need doc updates:
+
+- **AGENTS.md**: new architectural patterns, renamed critical files, changed conventions.
+- **docs/**: new user-facing features, changed config, affected setup/deployment.
+
+Skip docs for: bug fixes, refactors with no API change, test additions, dependency bumps.
+
+## Stay silent when
+
+- Formatting, whitespace, import order (Prettier/ESLint).
+- Test files (separate testing.instructions.md applies).
+- `drizzle/` migration SQL (generated, never hand-edited).
+- Commit messages (CI validates).
+- Confidence below 80%. False positives erode trust faster than missed issues.
