@@ -1,111 +1,51 @@
 ---
 name: git-commit
-description: Execute Git commits with proper workflow including authentication, branch safety, atomic commits, and style analysis. Use when asked to commit, save, or persist changes to Git, after completing tasks where committing is logical, or when autonomously checkpointing work.
+description: >
+  Use when asked to commit, save, or persist changes to Git.
+  Handles atomic commits, branch safety, Conventional Commits format,
+  and project style matching. Do NOT use for pushing, creating PRs,
+  or branch management beyond safety checks.
 ---
 
-# Git commit
-
-## References
-
-- [GitHub CLI Commands](references/REFERENCE.md) - Authentication and gh CLI usage
+# Git Commit
 
 ## Workflow
 
-### Step 1: Verify GitHub CLI authentication
-
-Before any Git operation, verify authentication status:
+### Step 1: Identify changes and group atomically
 
 ```bash
-gh auth status
-```
-
-**If authentication fails** (exit code non-zero or error message contains "not logged in"):
-
-1. Inform the user: "GitHub CLI authentication is missing or expired."
-2. Provide the command to re-authenticate:
-   ```bash
-   gh auth login --web
-   ```
-3. Wait for the user to complete authentication before proceeding.
-
-**Common authentication error patterns:**
-
-- "You are not logged in"
-- "authentication required"
-- "token has expired"
-- "invalid token"
-- Exit code 1 with stderr output
-
-### Step 2: Identify files to commit
-
-**Atomic commits principle:** Each commit should represent ONE logical change. Do not bundle unrelated changes into a single commit.
-
-Analyze the current Git status to identify files to commit:
-
-```bash
-# Show current status
 git status --short
-```
-
-Not all changed files should be committed. Determine what the user intends to commit based on context and recent changes. When ambiguous, ask which files or changes to include.
-
-```bash
-# Show detailed diff for unstaged changes
 git diff
-
-# Show detailed diff for staged changes
 git diff --cached
 ```
 
-**Examples of logical grouping:**
+Each commit = one logical change. Split unrelated changes into separate commits.
 
-| Changes                                                     | Commits                                  |
-| ----------------------------------------------------------- | ---------------------------------------- |
-| New service + its unit tests                                | 1 commit: `feat: add PaymentService`     |
-| New feature + unrelated config change                       | 2 commits: feature first, then config    |
-| Bug fix in component + related test fix                     | 1 commit: `fix: handle null in BillForm` |
-| Refactor + unrelated documentation update                   | 2 commits: refactor first, then docs     |
-| Multiple files for one feature (action, service, component) | 1 commit: all related files together     |
+| Situation                          | Commits   |
+| ---------------------------------- | --------- |
+| New service + its tests            | 1 commit  |
+| New feature + unrelated config fix | 2 commits |
+| Multiple files for one feature     | 1 commit  |
 
-**Staging rules:**
+- If user says "commit all" — group into logical atomic commits
+- If ambiguous — ask which files and grouping
 
-| User says                   | Action                                                       |
-| --------------------------- | ------------------------------------------------------------ |
-| "commit all changes"        | Group into logical atomic commits, create multiple if needed |
-| "commit these files" + list | `git add <file1> <file2>...`                                 |
-| "commit staged files"       | Use already staged files                                     |
-| "commit <specific file>"    | `git add <file>`                                             |
-| Ambiguous                   | Ask user to clarify which files and grouping                 |
-
-### Step 3: Verify branch safety
-
-Never commit directly to protected branches - doing so bypasses review and pollutes shared history.
-
-#### Detect protected branch
+### Step 2: Check branch safety (BLOCKING)
 
 ```bash
-# Get the repository's default branch
-gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
-
-# Get current branch
 git branch --show-current
 ```
 
-Protected branches include:
+Protected branches: `main`, `master`, `develop`, `release/*`, `hotfix/*`.
 
-- The default branch (usually `main` or `master`)
-- `develop` or `development`
-- Any branch matching `release/*` or `hotfix/*` patterns
+**STOP if on a protected branch.** Do not commit. Do not proceed to Step 3.
+Instead:
 
-#### If on protected branch
+1. Inform the user: "Cannot commit to `<branch>` — it is a protected branch."
+2. Create a feature branch: `git checkout -b <type>/<kebab-description>`
+3. Only then continue to Step 3.
 
-1. Do not commit directly
-2. Inform the user: "You are on the protected branch `<branch>`. Creating a feature branch."
-3. Create an appropriately named feature branch based on the changes identified in Step 2:
-
-```bash
-git checkout -b <type>/<short-description>
-```
+If on a feature branch: proceed.
 
 #### Branch naming convention
 
@@ -120,88 +60,55 @@ Format: `<type>/<kebab-case-description>`
 | `docs`     | Documentation      | `docs/api-reference`               |
 | `test`     | Test additions     | `test/payment-service-coverage`    |
 
-**Rules:**
-
-- Use kebab-case (lowercase with hyphens)
-- Keep it short (2-4 words max)
-- Make it descriptive of the change intent
-- ALWAYS in English
-
-### Step 4: Analyze project writing style
-
-Analyze recent commits to match the project's vocabulary and phrasing:
+### Step 3: Match project commit style
 
 ```bash
-git log --format="%s" -30
+git log --format="%s" -20
 ```
 
-Mimic the vocabulary, detail level, and phrasing style.
+Identify vocabulary, detail level, scope patterns. Mimic the project's
+phrasing while following Conventional Commits format.
 
-**Writing style characteristics to identify:**
+See `references/commit-format.md` for type table, rules, and anti-patterns.
 
-| Characteristic     | What to Look For                                                   |
-| ------------------ | ------------------------------------------------------------------ |
-| **Vocabulary**     | Which verbs are commonly used? (add, implement, introduce, etc.)   |
-| **Detail level**   | Brief ("fix bug") vs descriptive ("fix null pointer in auth flow") |
-| **Scope patterns** | Common scopes: `(deps)`, `(api)`, `(ui)`, or no scope              |
-| **Specificity**    | Generic vs domain-specific terminology                             |
-
-The Conventional Commits format is fixed. Adapt only the vocabulary and phrasing style to match project conventions.
-
-Mimic the identified style while following Conventional Commits format.
-
-### Step 5: Generate and execute commit
-
-Stage files and create commit:
+### Step 4: Stage and commit
 
 ```bash
-# Stage specific files
 git add <files>
-
-# Create commit with message
-git commit -m "<message>"
+git commit -m "<type>[scope]: <description>"
 ```
 
 For multi-line messages:
 
 ```bash
-git commit -m "<subject>" -m "<body paragraph 1>" -m "<body paragraph 2>"
+git commit -m "<subject>" -m "<body>"
 ```
 
-Follow the commit message format rules from [commit-messages.instructions.md](../../instructions/commit-messages.instructions.md).
+Subject line: imperative mood, under 72 chars, no period, English only.
+Body (if needed): wrap at 72 chars, explain what and why.
 
-### Step 6: Confirm success
+Do not reference `docs/architecture.md`, `docs/decisions/`, section numbers,
+ADR numbers, or TODO IDs in commit messages. Those belong in specs and plans,
+not in the git history.
 
-Verify and report:
+### Step 5: Verify
 
 ```bash
-# Show the created commit
 git log --oneline -1
-
-# Show commit details
 git show --stat HEAD
 ```
 
-Report to user:
+Report: commit hash, files changed, insertions/deletions.
 
-- Commit hash (short form)
-- Files changed count
-- Insertions/deletions summary
+## Error Recovery
 
-## Error handling
+| Error                 | Fix                                                               |
+| --------------------- | ----------------------------------------------------------------- |
+| "nothing to commit"   | Check `git status`, verify files have changes                     |
+| Pre-commit hook fails | Read the error, fix the issue, create a NEW commit (do not amend) |
+| Wrong files committed | `git reset --soft HEAD~1`, re-stage correctly, commit again       |
 
-### Git errors
+## Handoff
 
-| Error                    | Cause                 | Resolution                          |
-| ------------------------ | --------------------- | ----------------------------------- |
-| "nothing to commit"      | No staged changes     | Verify files exist and have changes |
-| "pathspec did not match" | File path incorrect   | Check file path spelling            |
-| "not a git repository"   | Not in repo directory | Navigate to correct directory       |
-
-### Authentication errors
-
-If any `gh` command fails with authentication error:
-
-1. Run `gh auth status` to diagnose
-2. If token expired: `gh auth refresh`
-3. If no token: Report the issue clearly to the user and offer to run `gh auth login --web`
+If the user also asked to create a PR, invoke the `creating-pr` skill after
+committing. Do not hand-roll `gh pr create` — the skill has a required template.
