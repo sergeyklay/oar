@@ -1,4 +1,4 @@
-Refer to [AGENTS.MD](../AGENTS.md) for all repo instructions.
+Refer to [AGENTS.md](../AGENTS.md) for all repo instructions.
 
 When reviewing code refer to:
 
