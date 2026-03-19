@@ -12,6 +12,38 @@
   // Enable the use of agent skills: https://agentskills.io
   // Note: As of 13 January 2026 this feature is in Experimental stage.
   "chat.useAgentSkills": true,
+  "chat.experimental.useSkillAdherencePrompt": true,
+
+  "chat.agentSkillsLocations": {
+    ".claude/skills": false,
+    "~/.claude/skills": false,
+    ".github/skills": true,
+    ".agents/skills": false,
+    "~/.copilot/skills": true,
+    "~/.agents/skills": false
+  },
+
+  "chat.instructionsFilesLocations": {
+    "~/.claude/rules": false,
+    ".claude/rules": false,
+    ".github/instructions": true,
+    "~/.copilot/instructions": true
+  },
+
+  "chat.hookFilesLocations": {
+    "~/.claude/settings.json": false,
+    ".claude/settings.json": false,
+    ".claude/settings.local.json": false,
+    ".github/hooks": true,
+    "~/.copilot/hooks": true
+  },
+
+  "chat.agentFilesLocations": {
+    ".claude/agents": false,
+    "~/.claude/agents": false,
+    ".github/agents": true,
+    "~/.copilot/agents": true
+  },
 
   // Setting PAGER to "cat" to avoid interactive pager blocking output in terminal
   // when agent runs commands like `gh pr view`.
@@ -48,9 +80,7 @@
   // See: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
   // Note: As of 13 January 2026 this feature is in Experimental stage.
   "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
-    { "file": ".github/skills/pr-description/SKILL.md" },
-    { "file": ".github/skills/pr-naming/SKILL.md" },
-    { "file": ".github/skills/pull-request/SKILL.md" }
+    { "file": ".github/skills/creating-pr/SKILL.md" }
   ],
 
   // Enable or disable inline suggestions for specified languages.
