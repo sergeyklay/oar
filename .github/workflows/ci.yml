@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload code coverage
         if: ${{ !cancelled() && success() }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           directory: coverage
           report_type: coverage
@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() && success() }}
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           report_type: test_results
           fail_ci_if_error: true
