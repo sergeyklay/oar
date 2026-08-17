@@ -15,8 +15,12 @@ import path from 'node:path';
 interface LockPackageEntry {
   version?: string;
   dependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
 }
+
+/** DependencyField reports the lockfile fields in which a package can declare a dependency. */
+type DependencyField = 'dependencies' | 'optionalDependencies' | 'peerDependencies';
 
 function readLock(): { packages: Record<string, LockPackageEntry> } {
   const lockPath = path.join(process.cwd(), 'package-lock.json');
@@ -42,6 +46,12 @@ function lockEntriesFor(packageName: string): LockPackageEntry[] {
 // Sentinel: every package that still declares a deprecated glob 10.x range, and
 // the range it declares. Read from package-lock.json, which records the original
 // declared ranges - the "glob" override does not rewrite them.
+const GLOB_DECLARATION_FIELDS: readonly DependencyField[] = [
+  'dependencies',
+  'optionalDependencies',
+  'peerDependencies',
+];
+
 const GLOB_10_DEPENDENTS: Record<string, string> = {
   '@jest/reporters': '^10.5.0',
   'jest-config': '^10.5.0',
@@ -172,18 +182,29 @@ describe('tech-debt tripwire: npm overrides registry', () => {
     }
   });
 
-  // WHY: unlike every other key here, the glob override is unscoped - it applies
-  // to the whole tree, present and future. A package that arrives later and
-  // declares glob would be silently forced onto 13 with nobody having checked
-  // that it survives the jump. This probe bounds the blast radius by asserting
-  // the set of dependents is exactly the audited one.
+  // WHY: three of the four keys in the overrides block are top-level, and npm
+  // applies a top-level key to every copy in the tree regardless of what any
+  // package asked for - only the nested `@esbuild-kit/core-utils` key is scoped
+  // to a parent. glob gets this extra probe not because it is uniquely unscoped
+  // but because it is uniquely POPULAR: babel-plugin-istanbul and jsdom are
+  // single-purpose packages with one dependent each here, while glob is a
+  // general-purpose utility that arbitrary packages pull in. A package that
+  // arrives later and declares glob would be silently forced onto 13 with nobody
+  // having checked that it survives the jump. This probe bounds the blast radius
+  // by asserting the set of dependents is exactly the audited one.
+  // A dependent can declare glob under `dependencies`, `optionalDependencies` or
+  // `peerDependencies`, and the lockfile records each field verbatim, so all
+  // three are scanned - reading only `dependencies` would leave the very blind
+  // spot this probe exists to close.
   // EXIT: never - permanent scaffolding for as long as the glob override stands.
   // ACTION on failure: a new package declares glob. Check whether it works on
   // glob 13; if yes, add it to GLOB_10_DEPENDENTS, if no, narrow the override
-  // from an unscoped key to per-dependent nested keys.
+  // from a top-level key to per-dependent nested keys.
   it('no package outside the audited set declares glob', () => {
     const dependents = Object.entries(readLock().packages)
-      .filter(([, entry]) => entry.dependencies?.glob !== undefined)
+      .filter(([, entry]) =>
+        GLOB_DECLARATION_FIELDS.some((field) => entry[field]?.glob !== undefined),
+      )
       .map(([key]) => key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length));
 
     expect([...new Set(dependents)].sort()).toEqual(Object.keys(GLOB_10_DEPENDENTS).sort());
