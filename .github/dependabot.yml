@@ -162,6 +162,33 @@ updates:
           - patch
 
   # ---------------------------------------------------------------------------
+  # docker - base image updates
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: UTC
+    target-branch: main
+    assignees: [cicdbot]
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: 'chore(deps): '
+    ignore:
+      # The Node major is pinned in three places that must agree: the base
+      # image here, node-version in .github/workflows/ci.yml, and nodejs in
+      # .tool-versions. Dependabot only sees this one, so a major bump would
+      # ship an image built on a runtime neither CI nor local development
+      # uses. Skips major bumps only; patch and minor 24.x images, which
+      # carry the security fixes this block exists for, still come through.
+      - dependency-name: node
+        update-types: [version-update:semver-major]
+
+  # ---------------------------------------------------------------------------
   # github-actions - CI/CD workflow action pins
   # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
