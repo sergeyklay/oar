@@ -24,11 +24,11 @@ import path from 'node:path';
 // throws `TypeError: Cannot read properties of undefined (reading 'Cjs')`.
 // ESLint exits 2 before any file is parsed.
 //
-// Note that the symptom will change without the blocker changing. Since 8.65.0
+// Note that the symptom has changed without the blocker changing. Since 8.65.0
 // typescript-eslint ships an explicit guard - `if (versionMajor >= 7) throw` -
 // that replaces the raw TypeError with a clear message. The copy installed here
-// is 8.57.2 (pinned by eslint-config-next) and predates it, so this project
-// still sees the TypeError. A friendlier error is not progress.
+// is now 8.67.0 and carries that guard, so the crash is reported rather than
+// stumbled into. A friendlier error is not progress.
 //
 // There is no version to upgrade to. The latest release (typescript-eslint
 // 8.67.0) and even the canary (8.67.1-alpha.4) both declare
@@ -62,23 +62,31 @@ import path from 'node:path';
 
 // Sentinel: the peer range the installed typescript-eslint declares for
 // `typescript`. Read from package-lock.json, which records declared manifest
-// ranges for every nested copy regardless of hoisting layout.
+// ranges for every nested copy regardless of hoisting layout. The probe must
+// assert what is installed, because that is the copy that decides whether
+// `npm run lint` can run at all.
 //
-// This is deliberately NOT the `<6.1.0` quoted further up. That range belongs to
-// the latest published release (8.67.0); this one belongs to the copy actually
-// installed here (8.57.2, pinned transitively by eslint-config-next).
-// typescript-eslint widens this range every few releases - 8.57.2 declares
-// `<6.0.0`, 8.65.0 onwards declare `<6.1.0` - so the two figures differing is
-// expected, not a typo. The probe must assert what is installed, because that is
-// the copy that decides whether `npm run lint` can run at all.
-const EXCLUDES_MAJOR_7 = '>=4.8.4 <6.0.0';
+// This sentinel used to read `>=4.8.4 <6.0.0`, the range declared by 8.57.2.
+// That copy was BELOW the typescript 6.0.3 this project runs, so npm resolved it
+// against a peer it does not admit and printed eight ERESOLVE blocks - 154 of
+// the 160 warning lines `npm ci` used to emit. eslint-config-next declares
+// `typescript-eslint: ^8.46.0`, so the fix needed no manifest change and no
+// override: `npm update typescript-eslint` re-resolved the lockfile to 8.67.0,
+// whose `<6.1.0` admits typescript 6.0.3, and the ERESOLVE noise disappeared.
+//
+// The widening is routine - typescript-eslint moves this ceiling every few
+// releases - and it does not weaken the hold. `<6.1.0` still excludes major 7,
+// which is the version this file exists to keep out.
+const EXCLUDES_MAJOR_7 = '>=4.8.4 <6.1.0';
 
 // Backstop deadline. The condition probe below can only fire once a relaxed
-// typescript-eslint is actually installed here, which requires an
-// eslint-config-next bump to land first. Upstream may well support TypeScript 7
-// long before that reaches this lockfile, so a dated re-check is not redundant
-// scaffolding - it is the only signal that does not depend on the transitive
-// bump arriving.
+// typescript-eslint is actually installed here. Because typescript-eslint
+// arrives transitively, nothing pulls a newer copy into the lockfile on its own:
+// Dependabot does not raise transitive dependencies, and `npm ci` reinstalls
+// whatever the lock already pins. Upstream may therefore support TypeScript 7
+// for months while this repository still resolves an older copy. A dated
+// re-check is not redundant scaffolding - it is the only signal that does not
+// depend on somebody running `npm update typescript-eslint` first.
 //
 // Set three weeks past the 2026-11-10 target for TypeScript 7.1 stable
 // (microsoft/TypeScript#63703), which is the release that is supposed to ship
