@@ -1,13 +1,20 @@
 version: 2
 
 updates:
+  # ---------------------------------------------------------------------------
+  # npm - application dependencies
+  # ---------------------------------------------------------------------------
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: UTC
+    versioning-strategy: increase
     target-branch: main
     assignees: [cicdbot]
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 10
     labels:
       - dependencies
       - npm
@@ -19,12 +26,156 @@ updates:
     commit-message:
       prefix: 'chore(deps): '
       prefix-development: 'chore(deps-dev): '
+    groups:
+      # React core and its type stubs move together. Major updates are excluded
+      # from this group so they surface as individual PRs — React majors change
+      # rendering semantics and each one warrants isolated review.
+      react-ecosystem:
+        applies-to: version-updates
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+        update-types:
+          - minor
+          - patch
 
+      # Next.js and its bundled ESLint config are tightly versioned; bumping one
+      # without the other against a mismatched pair risks lint breakage.
+      next-framework:
+        applies-to: version-updates
+        patterns:
+          - next
+          - eslint-config-next
+        update-types:
+          - minor
+          - patch
+
+      # Presentational primitives. The project depends on a dozen individually
+      # versioned @radix-ui/react-* packages that release in lock-step; ungrouped
+      # they were the single largest source of PR backlog. These have no runtime
+      # entanglement with framework versions.
+      ui-components:
+        applies-to: version-updates
+        patterns:
+          - '@radix-ui/*'
+          - lucide-react
+          - class-variance-authority
+          - clsx
+          - tailwind-merge
+          - cmdk
+          - sonner
+        update-types:
+          - minor
+          - patch
+
+      # Tailwind v4 moved configuration into globals.css; any co-breaking change
+      # between tailwindcss and its PostCSS plugin lands as one PR.
+      tailwind-ecosystem:
+        applies-to: version-updates
+        patterns:
+          - tailwindcss
+          - '@tailwindcss/*'
+          - tw-animate-css
+        update-types:
+          - minor
+          - patch
+
+      # Test runner, coverage, browser simulation, and Testing Library adapters
+      # have closely coupled release cycles and are safe to merge together.
+      testing-toolchain:
+        applies-to: version-updates
+        patterns:
+          - jest
+          - 'jest-*'
+          - '@types/jest'
+          - '@testing-library/*'
+          - '@faker-js/faker'
+        update-types:
+          - minor
+          - patch
+
+      # Compiler and declaration stubs. tsc --noEmit is the gatekeeper; a bad
+      # @types/node bump fails typecheck before merging.
+      typescript-toolchain:
+        applies-to: version-updates
+        patterns:
+          - typescript
+          - '@types/node'
+          - tsx
+          - ts-node
+        update-types:
+          - minor
+          - patch
+
+      # Code style surface. ESLint major is ignored above; minor and patch
+      # formatting or rule-set changes land together here. eslint-config-next is
+      # excluded explicitly: it belongs with next-framework, which must move in
+      # lock-step with next itself. Dependabot resolves a double match to the
+      # first group anyway, but relying on declaration order makes the intent
+      # invisible to the next reader.
+      linting-formatting:
+        applies-to: version-updates
+        patterns:
+          - eslint
+          - 'eslint-config-*'
+          - prettier
+        exclude-patterns:
+          - eslint-config-next
+        update-types:
+          - minor
+          - patch
+
+      # Pino and its companion packages are released in lock-step and share the
+      # same major version contract.
+      pino-logging:
+        applies-to: version-updates
+        patterns:
+          - pino
+          - 'pino-*'
+        update-types:
+          - minor
+          - patch
+
+      # Persistence layer: Drizzle ORM, its migration CLI, and the SQLite driver
+      # with its type stubs. drizzle-orm and drizzle-kit share a schema-dialect
+      # contract, so an isolated bump of either can break `db:push`.
+      database:
+        applies-to: version-updates
+        patterns:
+          - drizzle-orm
+          - drizzle-kit
+          - better-sqlite3
+          - '@types/better-sqlite3'
+        update-types:
+          - minor
+          - patch
+
+  # ---------------------------------------------------------------------------
+  # github-actions - CI/CD workflow action pins
+  # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: UTC
     target-branch: main
     assignees: [cicdbot]
+    labels:
+      - dependencies
+      - github-actions
     commit-message:
       prefix: 'ci: '
+    # All minor and patch action bumps land as one PR; major bumps that could
+    # break workflow syntax or change runner behaviour remain individual.
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
