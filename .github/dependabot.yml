@@ -23,6 +23,15 @@ updates:
       # Skips major bumps only; minor/patch 9.x updates still come through
       - dependency-name: eslint
         update-types: [version-update:semver-major]
+      # TypeScript 7.x is the native Go port and ships no JavaScript compiler
+      # API, which typescript-eslint (reached via eslint-config-next) loads at
+      # import time; `npm run lint` exits 2 before parsing a single file.
+      # Typecheck, tests and build all pass under 7.x — lint is the sole
+      # blocker, and no typescript-eslint release admits 7.x yet.
+      # Skips major bumps only; minor/patch 6.x updates still come through.
+      # The tripwire in __tests__/tech-debt/ carries the exit check.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
     commit-message:
       prefix: 'chore(deps): '
       prefix-development: 'chore(deps-dev): '
