@@ -63,6 +63,14 @@ import path from 'node:path';
 // Sentinel: the peer range the installed typescript-eslint declares for
 // `typescript`. Read from package-lock.json, which records declared manifest
 // ranges for every nested copy regardless of hoisting layout.
+//
+// This is deliberately NOT the `<6.1.0` quoted further up. That range belongs to
+// the latest published release (8.67.0); this one belongs to the copy actually
+// installed here (8.57.2, pinned transitively by eslint-config-next).
+// typescript-eslint widens this range every few releases - 8.57.2 declares
+// `<6.0.0`, 8.65.0 onwards declare `<6.1.0` - so the two figures differing is
+// expected, not a typo. The probe must assert what is installed, because that is
+// the copy that decides whether `npm run lint` can run at all.
 const EXCLUDES_MAJOR_7 = '>=4.8.4 <6.0.0';
 
 // Backstop deadline. The condition probe below can only fire once a relaxed
