@@ -22,6 +22,8 @@ Sovereign, local-first bill manager. Core design principle: the "Active Payer" p
 - **`use client` goes on leaf nodes only.** Default to Server Components. Never make a page/route component a client component.
 - **UI types import from `lib/types.ts`**, not directly from `db/schema`. Presentation layer must not depend on the database schema.
 - **Optional chaining avalanche.** Fix the type instead of chaining `?.` five levels deep.
+- **Never add a `package.json` override without a tripwire.** Every key in `overrides` must have a matching probe in `__tests__/tech-debt/npm-overrides.test.ts` carrying WHY / EXIT / ACTION. A registry probe fails when the block and the probes disagree, so an undocumented override turns the suite red. Before adding one, check the cheaper fixes first: an in-range `npm update`, or bumping the parent in `package.json`. Overrides are the last resort, and the goal is always to shrink the block.
+- **A red `tech-debt` test means "reconcile the debt", not "the build is broken."** Read the failing probe's ACTION comment and follow it — the exit condition has changed, which usually means a workaround is now removable.
 
 ## Boundaries
 
@@ -63,6 +65,6 @@ Read whichever of these are relevant before starting work:
 
 ---
 
-Last updated: 2026-03-15
+Last updated: 2026-08-17
 
 Maintained by: AI Agents under human supervision
