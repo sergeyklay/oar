@@ -194,24 +194,44 @@ describe('tech-debt tripwire: npm overrides registry', () => {
   // @exodus/bytes. jsdom 28 completed that swap, so any jsdom at or above 28
   // clears the warning. jest-environment-jsdom 30.4.1 is the latest release and
   // still declares ^26.1.0, so there is no in-range bump to take instead.
-  // The override is capped at ^29 rather than the current ^30 on purpose: jsdom
-  // 30.0.1 requires Node "^22.22.2 || ^24.15.0 || >=26.0.0" and this project
-  // pins nodejs 24.13.0 in .tool-versions, so jsdom 30 trades this deprecation
-  // warning for an EBADENGINE warning - verified by installing it. jsdom 29
-  // requires ">=24.0.0" and installs clean. Verified with the override in place:
-  // `npm test` exits 0 with 1521 tests passing, every DOM-rendering suite
-  // included.
+  // The override tracks the current major, ^30. It is coupled to the Node pin:
+  // jsdom 30 requires Node "^22.22.2 || ^24.15.0 || >=26.0.0", so it installs
+  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.19.0.
+  // Dropping the Node pin below that floor would trade this deprecation warning
+  // for an EBADENGINE warning, which is a lateral move, not a fix; the probe
+  // below guards that. Verified with the override in place: `npm test` exits 0
+  // with 1527 tests passing, every DOM-rendering suite included.
   // EXIT: jest-environment-jsdom stops declaring the ^26 range, in particular
   // once it starts admitting jsdom 28 or newer.
   // ACTION on failure: if the new range admits >=28, delete the "jsdom" key from
   // package.json overrides, run `npm install`, confirm `npm ls whatwg-encoding`
   // reports nothing, then delete this probe and drop it from the registry list
-  // above. Otherwise keep the override and update the sentinel. Separately, if
-  // the Node floor in .tool-versions ever moves to 24.15.0 or newer, raise the
-  // override to ^30 to stop trailing a major behind.
+  // above. Otherwise keep the override and update the sentinel.
   it('jest-environment-jsdom still pins jsdom to a whatwg-encoding major', () => {
     for (const entry of lockEntriesFor('jest-environment-jsdom')) {
       expect(entry.dependencies?.jsdom).toBe('^26.1.0');
     }
+  });
+
+  // WHY: the jsdom override and the nodejs pin are coupled, and nothing else in
+  // the repository records that. jsdom 30 declares engines
+  // "^22.22.2 || ^24.15.0 || >=26.0.0"; drop .tool-versions below 24.15.0 and
+  // `npm ci` starts printing EBADENGINE for jsdom instead of the deprecation
+  // warning the override removed. That is a lateral move, and it would surface
+  // as a Node change rather than a dependency one, so nobody would connect the
+  // two. This probe forces the connection.
+  // EXIT: never - permanent scaffolding for as long as the jsdom override stands.
+  // ACTION on failure: if the pin dropped inside major 24, either restore it to
+  // 24.15.0 or newer or lower the "jsdom" override to ^29.0.0, the newest jsdom
+  // that installs clean on Node 24.0-24.14. If the pin moved to a different Node
+  // major, re-read jsdom's `engines` field - majors 23 and 25 satisfy no part of
+  // it - and update both this probe and the override to match.
+  it('the nodejs pin still satisfies the jsdom engine floor', () => {
+    const toolVersions = readFileSync(path.join(process.cwd(), '.tool-versions'), 'utf8');
+    const pinned = /^nodejs[ \t]+(\d+)\.(\d+)\.\d+/m.exec(toolVersions);
+
+    expect(pinned).not.toBeNull();
+    expect(Number(pinned?.[1])).toBe(24);
+    expect(Number(pinned?.[2])).toBeGreaterThanOrEqual(15);
   });
 });
