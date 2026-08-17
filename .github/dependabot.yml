@@ -162,6 +162,24 @@ updates:
           - patch
 
   # ---------------------------------------------------------------------------
+  # docker - base image updates
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: UTC
+    target-branch: main
+    assignees: [cicdbot]
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: 'chore(deps): '
+
+  # ---------------------------------------------------------------------------
   # github-actions - CI/CD workflow action pins
   # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
