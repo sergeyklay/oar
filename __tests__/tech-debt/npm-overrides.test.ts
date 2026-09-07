@@ -53,11 +53,19 @@ const GLOB_DECLARATION_FIELDS: readonly DependencyField[] = [
 ];
 
 const GLOB_10_DEPENDENTS: Record<string, string> = {
-  '@jest/reporters': '^10.5.0',
-  'jest-config': '^10.5.0',
-  'jest-runtime': '^10.5.0',
   'test-exclude': '^10.4.1',
 };
+
+// Sentinel: every package that declares glob at all, including the ones that
+// moved to ^13 natively and no longer need the override. Read from
+// package-lock.json like GLOB_10_DEPENDENTS above. A package that arrives
+// later and declares glob shows up here and trips the blast-radius probe.
+const GLOB_DECLARERS: readonly string[] = [
+  '@jest/reporters',
+  'jest-config',
+  'jest-runtime',
+  'test-exclude',
+];
 
 describe('tech-debt tripwire: npm overrides registry', () => {
   // WHY: this asserts the overrides block has not grown behind the tripwires'
@@ -75,7 +83,6 @@ describe('tech-debt tripwire: npm overrides registry', () => {
 
     expect(Object.keys(manifest.overrides ?? {}).sort()).toEqual([
       '@esbuild-kit/core-utils',
-      'babel-plugin-istanbul',
       'glob',
       'jsdom',
     ]);
@@ -132,41 +139,29 @@ describe('tech-debt tripwire: npm overrides registry', () => {
     }
   });
 
-  // WHY: @jest/transform pins `babel-plugin-istanbul: ^7.0.1`, and 7.0.1 pulls
-  // test-exclude 6, which pulls the deprecated glob 7 and through it the
-  // abandoned, memory-leaking inflight 1.0.6. That is two of the six deprecation
-  // warnings `npm ci` printed before this override. babel-plugin-istanbul 8
-  // moved to test-exclude 7 and drops both. Jest 30.4.2 is the latest release
-  // and still declares ^7.0.1, so there is no in-range bump to take instead -
-  // `npm update babel-plugin-istanbul` cannot cross the major on its own.
-  // Verified with the override in place: `npm run test:coverage` exits 0 with
-  // 1521 tests passing AND writes coverage/lcov.info, which proves the
-  // instrumentation path actually ran rather than being skipped - a plain
-  // `npm test` never loads this plugin and would have been a green result that
-  // could not fail.
-  // EXIT: @jest/transform stops declaring the ^7 range, in particular once it
-  // starts admitting babel-plugin-istanbul 8 or newer.
-  // ACTION on failure: if the new range admits 8.x, delete the
-  // "babel-plugin-istanbul" key from package.json overrides, run
-  // `npm install`, confirm `npm ls inflight glob --all` reports neither
-  // inflight nor a glob below 11, then delete this probe and drop it from the
-  // registry list above. Otherwise keep the override and update the sentinel.
-  it('jest still pins babel-plugin-istanbul to the deprecated-glob major', () => {
-    for (const entry of lockEntriesFor('@jest/transform')) {
-      expect(entry.dependencies?.['babel-plugin-istanbul']).toBe('^7.0.1');
-    }
-  });
+  // WHY: @jest/transform pinned `babel-plugin-istanbul: ^7.0.1` through jest
+  // 30.4.x, and 7.0.1 pulled test-exclude 6, which pulled the deprecated glob 7
+  // and through it the abandoned, memory-leaking inflight 1.0.6. The override
+  // forced babel-plugin-istanbul 8, which moved to test-exclude 7 and dropped
+  // both. Retired in favour of jest 30.5.1: @jest/transform itself now declares
+  // `babel-plugin-istanbul: ^8.0.0`, so the override has nothing left to bridge
+  // and the range it forced equals the one upstream chose. Confirmed via
+  // `npm ls inflight glob --all` after removal: inflight is gone and the only
+  // glob copy is 13.0.6. See the GLOB_10_DEPENDENTS probe for the one edge
+  // (test-exclude) that still needs a floor bump.
+  // EXIT: retired - jest 30.5.1 declares the ^8 range natively.
 
   // WHY: glob 10 is deprecated wholesale upstream - the registry moved it to the
-  // "legacy-v10" dist-tag and every install of it warns. Three Jest packages and
-  // test-exclude still declare a 10.x range, so without this override `npm ci`
-  // warns on glob@10.5.0. glob has kept a stable named-export surface since v9
-  // (`glob`, `globSync`, `globStream`, `Glob`), which is all Jest consumes via
-  // `require("glob")` in @jest/reporters, jest-config and jest-runtime, so
-  // forcing 13 is a floor bump rather than an API change. glob 13 also restores
-  // Node 18 support that 11 and 12 dropped, so it does not narrow this project's
-  // runtime range. Verified with the override in place: test, test:coverage,
-  // lint, typecheck and build all exit 0.
+  // "legacy-v10" dist-tag and every install of it warns. Until jest 30.5 the
+  // three Jest packages below also declared a 10.x range; 30.5.1 moved them to
+  // ^13 natively, leaving test-exclude 7 (pulled by babel-plugin-istanbul 8 via
+  // @jest/transform) as the only remaining dependent of the deprecated major.
+  // glob has kept a stable named-export surface since v9
+  // (`glob`, `globSync`, `globStream`, `Glob`), which is all test-exclude
+  // consumes, so forcing 13 is a floor bump rather than an API change. glob 13
+  // also restores Node 18 support that 11 and 12 dropped, so it does not narrow
+  // this project's runtime range. Verified with the override in place: test,
+  // test:coverage, lint, typecheck and build all exit 0.
   // EXIT: every dependent stops declaring a 10.x range.
   // ACTION on failure: this fires when a dependent moves OR when a new package
   // enters the tree declaring glob. If GLOB_10_DEPENDENTS is now empty, delete
@@ -186,20 +181,24 @@ describe('tech-debt tripwire: npm overrides registry', () => {
   // applies a top-level key to every copy in the tree regardless of what any
   // package asked for - only the nested `@esbuild-kit/core-utils` key is scoped
   // to a parent. glob gets this extra probe not because it is uniquely unscoped
-  // but because it is uniquely POPULAR: babel-plugin-istanbul and jsdom are
-  // single-purpose packages with one dependent each here, while glob is a
-  // general-purpose utility that arbitrary packages pull in. A package that
-  // arrives later and declares glob would be silently forced onto 13 with nobody
-  // having checked that it survives the jump. This probe bounds the blast radius
-  // by asserting the set of dependents is exactly the audited one.
-  // A dependent can declare glob under `dependencies`, `optionalDependencies` or
-  // `peerDependencies`, and the lockfile records each field verbatim, so all
+  // but because it is uniquely POPULAR: jsdom and test-exclude are
+  // single-purpose dependents, while glob is a general-purpose utility that
+  // arbitrary packages pull in. A package that arrives later and declares glob
+  // would be silently forced onto 13 with nobody having checked that it
+  // survives the jump. This probe bounds the blast radius by asserting the set
+  // of glob declarers is exactly the audited one: test-exclude, which still
+  // declares the deprecated 10.x range the override re-points, plus the three
+  // Jest packages that moved to ^13 natively in 30.5.1 and are unaffected by
+  // the override (its ^13.0.6 equals their own range).
+  // A dependent can declare glob under `dependencies`, `optionalDependencies`
+  // or `peerDependencies`, and the lockfile records each field verbatim, so all
   // three are scanned - reading only `dependencies` would leave the very blind
   // spot this probe exists to close.
   // EXIT: never - permanent scaffolding for as long as the glob override stands.
   // ACTION on failure: a new package declares glob. Check whether it works on
-  // glob 13; if yes, add it to GLOB_10_DEPENDENTS, if no, narrow the override
-  // from a top-level key to per-dependent nested keys.
+  // glob 13; if yes, add it to GLOB_DECLARERS (and to GLOB_10_DEPENDENTS if it
+  // declares a 10.x range), if no, narrow the override from a top-level key to
+  // per-dependent nested keys.
   it('no package outside the audited set declares glob', () => {
     const dependents = Object.entries(readLock().packages)
       .filter(([, entry]) =>
@@ -207,17 +206,17 @@ describe('tech-debt tripwire: npm overrides registry', () => {
       )
       .map(([key]) => key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length));
 
-    expect([...new Set(dependents)].sort()).toEqual(Object.keys(GLOB_10_DEPENDENTS).sort());
+    expect([...new Set(dependents)].sort()).toEqual([...GLOB_DECLARERS].sort());
   });
 
-  // WHY: jest-environment-jsdom 30.4.1 declares `jsdom: ^26.1.0`, and jsdom 26
+  // WHY: jest-environment-jsdom 30.5.1 declares `jsdom: ^26.1.0`, and jsdom 26
   // and 27 depend on whatwg-encoding, which upstream deprecated in favour of
   // @exodus/bytes. jsdom 28 completed that swap, so any jsdom at or above 28
-  // clears the warning. jest-environment-jsdom 30.4.1 is the latest release and
+  // clears the warning. jest-environment-jsdom 30.5.1 is the latest release and
   // still declares ^26.1.0, so there is no in-range bump to take instead.
   // The override tracks the current major, ^30. It is coupled to the Node pin:
   // jsdom 30 requires Node "^22.22.2 || ^24.15.0 || >=26.0.0", so it installs
-  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.19.0.
+  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.20.0.
   // Dropping the Node pin below that floor would trade this deprecation warning
   // for an EBADENGINE warning, which is a lateral move, not a fix; the probe
   // below guards that. Verified with the override in place: `npm test` exits 0
