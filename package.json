@@ -21,7 +21,6 @@
     "@esbuild-kit/core-utils": {
       "esbuild": "^0.25.0"
     },
-    "babel-plugin-istanbul": "^8.0.2",
     "glob": "^13.0.6",
     "jsdom": "^30.0.1"
   },
@@ -109,6 +108,7 @@
   "allowScripts": {
     "better-sqlite3": true,
     "esbuild": true,
-    "unrs-resolver": true
+    "unrs-resolver": true,
+    "@parcel/watcher": true
   }
 }
