@@ -209,14 +209,14 @@ describe('tech-debt tripwire: npm overrides registry', () => {
     expect([...new Set(dependents)].sort()).toEqual([...GLOB_DECLARERS].sort());
   });
 
-  // WHY: jest-environment-jsdom 30.4.1 declares `jsdom: ^26.1.0`, and jsdom 26
+  // WHY: jest-environment-jsdom 30.5.1 declares `jsdom: ^26.1.0`, and jsdom 26
   // and 27 depend on whatwg-encoding, which upstream deprecated in favour of
   // @exodus/bytes. jsdom 28 completed that swap, so any jsdom at or above 28
-  // clears the warning. jest-environment-jsdom 30.4.1 is the latest release and
+  // clears the warning. jest-environment-jsdom 30.5.1 is the latest release and
   // still declares ^26.1.0, so there is no in-range bump to take instead.
   // The override tracks the current major, ^30. It is coupled to the Node pin:
   // jsdom 30 requires Node "^22.22.2 || ^24.15.0 || >=26.0.0", so it installs
-  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.19.0.
+  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.20.0.
   // Dropping the Node pin below that floor would trade this deprecation warning
   // for an EBADENGINE warning, which is a lateral move, not a fix; the probe
   // below guards that. Verified with the override in place: `npm test` exits 0
