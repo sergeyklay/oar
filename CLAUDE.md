@@ -6,7 +6,7 @@ Sovereign, local-first bill manager. Core design principle: the "Active Payer" p
 
 - Dev schema sync: `npm run db:push` (NOT `drizzle-kit generate` + `migrate` — those are for production)
 - Production migrations: `scripts/migrate.mjs` runs at container startup via `docker-entrypoint.sh`
-- Test single file: `npm test -- --testPathPatterns="FileName"` (plural — Jest 30+ renamed the flag)
+- Test single file: `npm test -- lib/money.test.ts` (repository-relative path filter after `--`)
 - Audit: `npm audit --omit=dev --audit-level=high`
 
 ## Gotchas
@@ -26,7 +26,7 @@ Sovereign, local-first bill manager. Core design principle: the "Active Payer" p
 - **`npm run format` refuses to run on a stale `node_modules`.** A `preformat` hook runs `scripts/check-prettier-sync.mjs`, which fails when the installed Prettier differs from the one `package-lock.json` pins. Formatting rules change between Prettier releases, so a stale install silently rewrites files with the wrong version, reports success locally, and lands a commit CI rejects. That loop cost five rounds of "correct formatting" commits on 2026-08-17. When it fires, run `npm ci` — never bypass the hook.
 - **A red `tech-debt` test means "reconcile the debt", not "the build is broken."** Read the failing probe's ACTION comment and follow it — the exit condition has changed, which usually means a workaround is now removable.
 - **A new dependency with an install script will make `npm ci` warn — decide, do not delete `allowScripts`.** npm 12 blocks dependency install scripts by default, and `allowScripts` in `package.json` is the allowlist. Entries here are name-only (`"esbuild": true`), so they cover every version and version bumps stay quiet; only a package that is not on the list at all raises a warning. Approve with `npm approve-scripts --no-allow-scripts-pin <pkg>` to match that style — plain `npm approve-scripts` writes version-pinned entries instead, and `--allow-scripts-pending` only _lists_ the pending set without approving anything. Use `npm deny-scripts <pkg>` for a package whose script should never run. The three listed (`better-sqlite3`, `esbuild`, `unrs-resolver`) were each verified to work even with their scripts blocked, via bundled prebuilds and platform `optionalDependencies`, so the allowlist is a convenience here rather than a load-bearing requirement.
-- **`npm ci --include=dev` has a baseline of exactly two warnings — anything beyond it is a regression.** The baseline is the `@esbuild-kit/esm-loader` and `@esbuild-kit/core-utils` deprecation notices: drizzle-kit declares that chain without ever importing it, and `overrides` can only re-point a dependency, never delete one, so no override can clear them. Every other class is at zero — 0 `ERESOLVE`, 0 `allow-scripts`, 0 `EBADENGINE` — and must stay there. Three overrides exist purely to hold that line, all against test-only transitive chains Jest has not moved yet: `babel-plugin-istanbul: ^8.0.2` (drops the deprecated glob 7 and inflight), `glob: ^13.0.6` (glob 10 is deprecated wholesale upstream), `jsdom: ^30.0.1` (jsdom 28 replaced the deprecated whatwg-encoding). Each carries a probe in `__tests__/tech-debt/npm-overrides.test.ts`. The jsdom override is coupled to the nodejs pin — jsdom 30 needs Node ≥ 24.15, so lowering `.tool-versions` swaps the deprecation warning for an `EBADENGINE` one; a probe guards that pairing. If the ERESOLVE peer-dependency blocks come back, the fix is `npm update typescript-eslint`, not an override — `eslint-config-next` declares a range wide enough already.
+- **`npm ci --include=dev` has a baseline of exactly three warnings — anything beyond it is a regression.** The baseline is the `@esbuild-kit/esm-loader` and `@esbuild-kit/core-utils` deprecation notices — drizzle-kit declares that chain without ever importing it, and `overrides` can only re-point a dependency, never delete one, so no override can clear them — plus the upstream EOL deprecation on the resolved `eslint@9.39.5`: the repository intentionally stays on the ESLint 9 line, so every 9.x version the lockfile resolves carries it. Every other class is at zero — 0 additional deprecations, 0 `ERESOLVE`, 0 `allow-scripts`, 0 `EBADENGINE` — and must stay there. Two overrides remain, each with its probe in `__tests__/tech-debt/npm-overrides.test.ts`: `@esbuild-kit/core-utils` (esbuild `^0.25.0`) and the exact `eslint-plugin-react-hooks` 7.0.1 pin, which holds the transitive plugin at the last release whose `set-state-in-effect` detection passes `npm run lint` on the production components. jsdom 30 is a direct dev dependency and declares engines `^22.22.2 || ^24.15.0 || >=26.0.0`, so lowering `.tool-versions` below 24.15.0 trades the baseline for an `EBADENGINE` warning. If the ERESOLVE peer-dependency blocks come back, the fix is `npm update typescript-eslint`, not an override — `eslint-config-next` declares a range wide enough already.
 - **Never verify a clean install with `npm ci --dry-run`.** It emits `ERESOLVE` peer-dependency warnings but not `npm warn deprecated` lines, so a repository with deprecated transitive packages measures zero on the dry run and prints them on the real one. Measuring the two families with one command is how the deprecation half of this problem was missed on 2026-08-17. Count with the real `npm ci --include=dev` (what CI runs), and report the two families separately rather than as one total — a family the instrument cannot emit can never raise the count, so its absence from a total is not evidence.
 - **TypeScript is held on 6.x — do not bump it to 7.** TypeScript 7 is the native Go port and ships no JavaScript compiler API, which `typescript-eslint` (pulled in transitively by `eslint-config-next`) loads at import time. `npm run lint` exits 2 before parsing a file. Typecheck, tests and `next build` all pass under 7.x, so the temptation to "just try it" is real — but lint has no fix available: no typescript-eslint release admits 7.x, and upstream (typescript-eslint#10940) is waiting on the stable API that TypeScript 7.1 is due to ship. The build only passes because Next 16.3.1 defaults `experimental.useTypeScriptCli` to true and shells out to `tsc`; that flag is documented as experimental and not recommended for production. Dependabot skips the major; `__tests__/tech-debt/typescript-major-hold.test.ts` carries the exit check.
 
@@ -43,7 +43,7 @@ Sovereign, local-first bill manager. Core design principle: the "Active Payer" p
 
 - `components.json`, `app/globals.css`, `tailwind.config.ts` — design system config
 - `components/layout/*`, `app/layout.tsx` — app shell structure
-- `jest.config.ts`, `jest.setup.ts`, `tsconfig.json` — toolchain config
+- `vitest.config.ts`, `vitest.setup.ts`, `tsconfig.json` — toolchain config
 - `scripts/migrate.mjs`, `scripts/seed-production.mjs` — production startup scripts
 
 ### Never
@@ -62,7 +62,7 @@ New code enforces all standards. Touched code gets brought up to standard. Adjac
 Read whichever of these are relevant before starting work:
 
 - `.github/instructions/typescript-react.instructions.md` — coding standards and React patterns
-- `.github/instructions/testing.instructions.md` — Jest mocking patterns (mock `@/db` but never mock `@/db/schema`)
+- `.github/instructions/testing.instructions.md` — Vitest testing standards (explicit `vitest` imports; mock `@/db` but never mock `@/db/schema`)
 - `.github/instructions/logging.instructions.md` — pino logger conventions (data first, message second)
 - `.github/instructions/commit-messages.instructions.md` — Conventional Commits format
 - `.github/agents/` — specialized agent configurations (coder, tester, planner, architect, writer)
@@ -70,6 +70,6 @@ Read whichever of these are relevant before starting work:
 
 ---
 
-Last updated: 2026-08-17
+Last updated: 2026-09-07
 
 Maintained by: AI Agents under human supervision

@@ -59,7 +59,7 @@ Skip docs for: bug fixes, refactors with no API change, test additions, dependen
 ## Stay silent when
 
 - Formatting, whitespace, import order (Prettier/ESLint).
-- Test files (separate testing.instructions.md applies).
+- Test files.
 - `drizzle/` migration SQL (generated, never hand-edited).
 - Commit messages (CI validates).
 - Confidence below 80%. False positives erode trust faster than missed issues.

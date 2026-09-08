@@ -1,25 +1,27 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { StartupCatchUpService } from './StartupCatchUpService';
 import { RecurrenceService } from './RecurrenceService';
 import { AutoPayService } from './AutoPayService';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/lib/logger');
+vi.mock('@/lib/logger');
 
-jest.mock('./RecurrenceService', () => ({
+vi.mock('./RecurrenceService', () => ({
   RecurrenceService: {
-    checkDailyBills: jest.fn(),
+    checkDailyBills: vi.fn(),
   },
 }));
 
-jest.mock('./AutoPayService', () => ({
+vi.mock('./AutoPayService', () => ({
   AutoPayService: {
-    processAutoPay: jest.fn(),
+    processAutoPay: vi.fn(),
   },
 }));
 
 describe('StartupCatchUpService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     delete (globalThis as { __oar_catchup_executed?: boolean }).__oar_catchup_executed;
   });
 
@@ -36,8 +38,8 @@ describe('StartupCatchUpService', () => {
         failedIds: [] as string[],
       };
 
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(overdueResult);
-      (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue(autoPayResult);
+      (RecurrenceService.checkDailyBills as Mock).mockResolvedValue(overdueResult);
+      (AutoPayService.processAutoPay as Mock).mockResolvedValue(autoPayResult);
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -56,10 +58,8 @@ describe('StartupCatchUpService', () => {
         failedIds: [] as string[],
       };
 
-      (RecurrenceService.checkDailyBills as jest.Mock).mockRejectedValue(
-        new Error('Database error'),
-      );
-      (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue(autoPayResult);
+      (RecurrenceService.checkDailyBills as Mock).mockRejectedValue(new Error('Database error'));
+      (AutoPayService.processAutoPay as Mock).mockResolvedValue(autoPayResult);
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -75,8 +75,8 @@ describe('StartupCatchUpService', () => {
     it('handles error from processAutoPay and still returns result', async () => {
       const overdueResult = { checked: 5, updated: 2 };
 
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue(overdueResult);
-      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(new Error('AutoPay error'));
+      (RecurrenceService.checkDailyBills as Mock).mockResolvedValue(overdueResult);
+      (AutoPayService.processAutoPay as Mock).mockRejectedValue(new Error('AutoPay error'));
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -97,10 +97,8 @@ describe('StartupCatchUpService', () => {
     });
 
     it('handles errors from both services and still returns valid result', async () => {
-      (RecurrenceService.checkDailyBills as jest.Mock).mockRejectedValue(
-        new Error('Recurrence error'),
-      );
-      (AutoPayService.processAutoPay as jest.Mock).mockRejectedValue(new Error('AutoPay error'));
+      (RecurrenceService.checkDailyBills as Mock).mockRejectedValue(new Error('Recurrence error'));
+      (AutoPayService.processAutoPay as Mock).mockRejectedValue(new Error('AutoPay error'));
 
       const result = await StartupCatchUpService.runCatchUp();
 
@@ -137,11 +135,11 @@ describe('StartupCatchUpService', () => {
     });
 
     it('marks as executed after successful completion', async () => {
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue({
+      (RecurrenceService.checkDailyBills as Mock).mockResolvedValue({
         checked: 0,
         updated: 0,
       });
-      (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue({
+      (AutoPayService.processAutoPay as Mock).mockResolvedValue({
         processed: 0,
         failed: 0,
         failedIds: [],
@@ -155,11 +153,11 @@ describe('StartupCatchUpService', () => {
     });
 
     it('returns result with all required fields', async () => {
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue({
+      (RecurrenceService.checkDailyBills as Mock).mockResolvedValue({
         checked: 15,
         updated: 5,
       });
-      (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue({
+      (AutoPayService.processAutoPay as Mock).mockResolvedValue({
         processed: 3,
         failed: 1,
         failedIds: ['bill-1'],
@@ -179,11 +177,11 @@ describe('StartupCatchUpService', () => {
     });
 
     it('logs completion message after successful execution', async () => {
-      (RecurrenceService.checkDailyBills as jest.Mock).mockResolvedValue({
+      (RecurrenceService.checkDailyBills as Mock).mockResolvedValue({
         checked: 5,
         updated: 2,
       });
-      (AutoPayService.processAutoPay as jest.Mock).mockResolvedValue({
+      (AutoPayService.processAutoPay as Mock).mockResolvedValue({
         processed: 1,
         failed: 0,
         failedIds: [],

@@ -1,5 +1,8 @@
+// @vitest-environment node
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+
+import { describe, expect, it, vi } from 'vitest';
 
 // `typescript` is held on the 6.x line and Dependabot is configured to skip its
 // major updates (.github/dependabot.yml). TypeScript 7.x is the native Go port:
@@ -161,9 +164,9 @@ describe('tech-debt tripwire: typescript major hold', () => {
   // REVISIT_AFTER forward and record what was checked.
   it('forces re-evaluation of the TypeScript 6.x hold on schedule', () => {
     // A fake clock leaked from another suite would freeze Date.now() and let
-    // this tripwire pass forever; jest.config sets clearMocks, but timers are
+    // this tripwire pass forever; vitest.config sets clearMocks, but timers are
     // restored explicitly so the deadline check reads the real system clock.
-    jest.useRealTimers();
+    vi.useRealTimers();
 
     expect(Date.now()).toBeLessThan(REVISIT_AFTER.getTime());
   });

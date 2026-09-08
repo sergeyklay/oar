@@ -1,3 +1,14 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type Mock,
+  type MockInstance,
+} from 'vitest';
+
 import { ForecastService } from './ForecastService';
 import { BillService } from './BillService';
 import { EstimationService } from './EstimationService';
@@ -6,19 +17,19 @@ import { db } from '@/db';
 import type { BillWithTags } from '@/db/schema';
 import type { ForecastBill } from './ForecastService';
 
-jest.mock('@/db');
-jest.mock('./BillService');
-jest.mock('./EstimationService');
-jest.mock('./SettingsService', () => ({
+vi.mock('@/db');
+vi.mock('./BillService');
+vi.mock('./EstimationService');
+vi.mock('./SettingsService', () => ({
   SettingsService: {
-    getWeekendAdjustment: jest.fn(),
+    getWeekendAdjustment: vi.fn(),
   },
 }));
 
 describe('ForecastService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
+    vi.clearAllMocks();
+    (SettingsService.getWeekendAdjustment as Mock).mockResolvedValue('unchanged');
   });
 
   const createMockBill = (overrides: Partial<BillWithTags> = {}): BillWithTags => ({
@@ -68,11 +79,11 @@ describe('ForecastService', () => {
       categoryIcon: bill.categoryIcon,
     }));
 
-    const orderByMock = jest.fn().mockResolvedValue(joinedBills);
-    const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-    const innerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
-    const fromMock = jest.fn().mockReturnValue({ innerJoin: innerJoinMock });
-    (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+    const orderByMock = vi.fn().mockResolvedValue(joinedBills);
+    const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+    const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
+    const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
+    (db.select as Mock).mockReturnValue({ from: fromMock });
 
     return { orderByMock, whereMock, innerJoinMock, fromMock };
   };
@@ -108,22 +119,22 @@ describe('ForecastService', () => {
 
     const billIds = filteredBills.map((bill) => bill.id);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ id: tagId }]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ id: tagId }]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue(billIds.map((id) => ({ billId: id }))),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue(billIds.map((id) => ({ billId: id }))),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockReturnValue({
-              orderBy: jest.fn().mockResolvedValue(joinedBills),
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockResolvedValue(joinedBills),
             }),
           }),
         }),
@@ -136,7 +147,7 @@ describe('ForecastService', () => {
     it('returns forecast bills for a specific month', async () => {
       const mockBills: BillWithTags[] = [createMockBill()];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -148,7 +159,7 @@ describe('ForecastService', () => {
     it('filters bills by tag when tag is provided', async () => {
       const mockBills: BillWithTags[] = [createMockBill({ id: 'bill-tagged' })];
       createDbMockWithTagFilter(mockBills, 'utilities', 'tag-utilities');
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-tagged', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-tagged', []]]));
 
       await ForecastService.getBillsForMonth('2025-03', 'utilities');
 
@@ -161,7 +172,7 @@ describe('ForecastService', () => {
         createMockBill({ id: 'bill-2', isArchived: true }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+      (BillService.getTagsForBills as Mock).mockResolvedValue(
         new Map([
           ['bill-1', []],
           ['bill-2', []],
@@ -180,7 +191,7 @@ describe('ForecastService', () => {
         createMockBill({ id: 'bill-2', status: 'paid' as const }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+      (BillService.getTagsForBills as Mock).mockResolvedValue(
         new Map([
           ['bill-1', []],
           ['bill-2', []],
@@ -201,7 +212,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -216,7 +227,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -233,7 +244,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-06');
 
@@ -251,7 +262,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -269,7 +280,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -284,7 +295,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -299,7 +310,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -315,7 +326,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -330,8 +341,8 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
-      (EstimationService.estimateAmount as jest.Mock).mockResolvedValue(15000);
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (EstimationService.estimateAmount as Mock).mockResolvedValue(15000);
 
       const result = await ForecastService.getBillsForMonth('2025-03');
 
@@ -357,7 +368,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(
+      (BillService.getTagsForBills as Mock).mockResolvedValue(
         new Map([
           ['bill-1', []],
           ['bill-2', []],
@@ -375,7 +386,7 @@ describe('ForecastService', () => {
 
     it('handles empty result set', async () => {
       createDbMock([]);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map());
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map());
 
       const result = await ForecastService.getBillsForMonth('2025-06');
 
@@ -397,7 +408,7 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+          (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth(targetMonth);
 
@@ -420,7 +431,7 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+          (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth('2025-02');
 
@@ -442,7 +453,7 @@ describe('ForecastService', () => {
             }),
           ];
           createDbMock(mockBills);
-          (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+          (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
           const result = await ForecastService.getBillsForMonth(targetMonth);
 
@@ -528,7 +539,7 @@ describe('ForecastService', () => {
           }),
         ];
         createDbMock(mockBills);
-        (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+        (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
         const result = await ForecastService.getBillsForMonth(targetMonth);
 
@@ -546,7 +557,7 @@ describe('ForecastService', () => {
         }),
       ];
       createDbMock(mockBills);
-      (BillService.getTagsForBills as jest.Mock).mockResolvedValue(new Map([['bill-1', []]]));
+      (BillService.getTagsForBills as Mock).mockResolvedValue(new Map([['bill-1', []]]));
 
       // April (3 months later, 30 days) - should clamp to Apr 30
       const aprResult = await ForecastService.getBillsForMonth('2025-04');
@@ -693,14 +704,14 @@ describe('ForecastService', () => {
       weekendAdjustment: null,
     });
 
-    let getBillsForMonthSpy: jest.SpyInstance;
+    let getBillsForMonthSpy: MockInstance;
 
     afterEach(() => {
       getBillsForMonthSpy?.mockRestore();
     });
 
     const setupSpy = (mockReturn: ForecastBill[]) => {
-      getBillsForMonthSpy = jest
+      getBillsForMonthSpy = vi
         .spyOn(ForecastService, 'getBillsForMonth')
         .mockResolvedValue(mockReturn);
       return getBillsForMonthSpy;
@@ -810,7 +821,7 @@ describe('ForecastService', () => {
     });
 
     it('calculates totals correctly for each month', async () => {
-      getBillsForMonthSpy = jest.spyOn(ForecastService, 'getBillsForMonth');
+      getBillsForMonthSpy = vi.spyOn(ForecastService, 'getBillsForMonth');
       getBillsForMonthSpy
         .mockResolvedValueOnce([createMockForecastBill('bill-1', 10000, 2000)])
         .mockResolvedValueOnce([createMockForecastBill('bill-2', 20000, null)]);

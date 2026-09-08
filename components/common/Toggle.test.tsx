@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Toggle } from './Toggle';
@@ -7,11 +9,11 @@ describe('Toggle', () => {
     id: 'test-toggle',
     label: 'Test Toggle',
     checked: false,
-    onCheckedChange: jest.fn(),
+    onCheckedChange: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders label and switch', () => {
@@ -57,7 +59,7 @@ describe('Toggle', () => {
 
   it('calls onCheckedChange when switch is toggled', async () => {
     const user = userEvent.setup();
-    const mockOnChange = jest.fn();
+    const mockOnChange = vi.fn();
     render(<Toggle {...defaultProps} onCheckedChange={mockOnChange} />);
 
     const switchElement = document.getElementById('test-toggle') as HTMLButtonElement;

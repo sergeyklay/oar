@@ -1,23 +1,25 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AutoLogAutoPayCheckbox } from './AutoLogAutoPayCheckbox';
 import { updateAutoLogAutoPay } from '@/actions/settings';
 import { toast } from 'sonner';
 
-jest.mock('@/actions/settings', () => ({
-  updateAutoLogAutoPay: jest.fn(),
+vi.mock('@/actions/settings', () => ({
+  updateAutoLogAutoPay: vi.fn(),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
 describe('AutoLogAutoPayCheckbox', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders with label and description', () => {
@@ -47,7 +49,7 @@ describe('AutoLogAutoPayCheckbox', () => {
 
   it('calls updateAutoLogAutoPay when toggled to enabled', async () => {
     const user = userEvent.setup();
-    (updateAutoLogAutoPay as jest.Mock).mockResolvedValue({ success: true });
+    (updateAutoLogAutoPay as Mock).mockResolvedValue({ success: true });
 
     render(<AutoLogAutoPayCheckbox checked={false} />);
 
@@ -62,7 +64,7 @@ describe('AutoLogAutoPayCheckbox', () => {
 
   it('calls updateAutoLogAutoPay when toggled to disabled', async () => {
     const user = userEvent.setup();
-    (updateAutoLogAutoPay as jest.Mock).mockResolvedValue({ success: true });
+    (updateAutoLogAutoPay as Mock).mockResolvedValue({ success: true });
 
     render(<AutoLogAutoPayCheckbox checked={true} />);
 
@@ -77,7 +79,7 @@ describe('AutoLogAutoPayCheckbox', () => {
 
   it('shows error toast and reverts state when update fails', async () => {
     const user = userEvent.setup();
-    (updateAutoLogAutoPay as jest.Mock).mockResolvedValue({
+    (updateAutoLogAutoPay as Mock).mockResolvedValue({
       success: false,
       error: 'Update failed',
     });
@@ -101,7 +103,7 @@ describe('AutoLogAutoPayCheckbox', () => {
     const updatePromise = new Promise<{ success: boolean }>((resolve) => {
       resolveUpdate = resolve;
     });
-    (updateAutoLogAutoPay as jest.Mock).mockReturnValue(updatePromise);
+    (updateAutoLogAutoPay as Mock).mockReturnValue(updatePromise);
 
     render(<AutoLogAutoPayCheckbox checked={false} />);
 
@@ -125,7 +127,7 @@ describe('AutoLogAutoPayCheckbox', () => {
     const updatePromise = new Promise<{ success: boolean }>((resolve) => {
       resolveUpdate = resolve;
     });
-    (updateAutoLogAutoPay as jest.Mock).mockReturnValue(updatePromise);
+    (updateAutoLogAutoPay as Mock).mockReturnValue(updatePromise);
 
     render(<AutoLogAutoPayCheckbox checked={false} />);
 

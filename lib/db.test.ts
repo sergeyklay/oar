@@ -1,3 +1,6 @@
+// @vitest-environment node
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { resolve } from 'path';
 import { resolveDatabasePath, DEFAULT_DATABASE_PATH } from './db.mjs';
 
@@ -7,7 +10,7 @@ describe('resolveDatabasePath', () => {
 
   beforeEach(() => {
     delete process.env.DATABASE_URL;
-    process.cwd = jest.fn(() => '/home/user/project');
+    process.cwd = vi.fn(() => '/home/user/project');
   });
 
   afterEach(() => {

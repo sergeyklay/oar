@@ -1,16 +1,18 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { ForecastContent } from './ForecastContent';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 
-jest.mock('@/actions/forecast', () => ({
-  getForecastData: jest.fn(),
+vi.mock('@/actions/forecast', () => ({
+  getForecastData: vi.fn(),
 }));
 
-jest.mock('./ForecastGraph', () => ({
+vi.mock('./ForecastGraph', () => ({
   ForecastGraph: () => <div data-testid="forecast-graph">Forecast Graph</div>,
 }));
 
-jest.mock('./ForecastList', () => ({
+vi.mock('./ForecastList', () => ({
   ForecastList: ({ bills }: { bills: ForecastBill[] }) => (
     <div data-testid="forecast-list">
       {bills.length > 0 ? `Bills: ${bills.length}` : 'No bills'}
@@ -18,7 +20,7 @@ jest.mock('./ForecastList', () => ({
   ),
 }));
 
-jest.mock('./ForecastSummary', () => ({
+vi.mock('./ForecastSummary', () => ({
   ForecastSummary: ({ billsDueCount }: { billsDueCount: number }) => (
     <div data-testid="forecast-summary">Summary: {billsDueCount} bills</div>
   ),
@@ -52,11 +54,11 @@ const createMockBill = (id: string): ForecastBill => ({
 
 describe('ForecastContent', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders forecast graph at the top', async () => {
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: [createMockBill('1')],
     });
@@ -74,7 +76,7 @@ describe('ForecastContent', () => {
 
   it('renders forecast list and summary in bottom section', async () => {
     const bills = [createMockBill('1'), createMockBill('2')];
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: bills,
     });
@@ -93,7 +95,7 @@ describe('ForecastContent', () => {
 
   it('passes bills data to both list and summary components', async () => {
     const bills = [createMockBill('1'), createMockBill('2'), createMockBill('3')];
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: bills,
     });
@@ -111,7 +113,7 @@ describe('ForecastContent', () => {
   });
 
   it('calls getForecastData with correct month parameter', async () => {
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: [],
     });
@@ -129,7 +131,7 @@ describe('ForecastContent', () => {
   });
 
   it('calls getForecastData with tag parameter when provided', async () => {
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: [],
     });
@@ -148,7 +150,7 @@ describe('ForecastContent', () => {
   });
 
   it('displays error message when getForecastData fails', async () => {
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: false,
       error: 'Failed to load forecast data',
     });
@@ -166,7 +168,7 @@ describe('ForecastContent', () => {
   });
 
   it('handles empty bills array', async () => {
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: [],
     });
@@ -185,7 +187,7 @@ describe('ForecastContent', () => {
 
   it('passes summary data and month prop to ForecastSummary', async () => {
     const bills = [createMockBill('1')];
-    (getForecastData as jest.Mock).mockResolvedValue({
+    (getForecastData as Mock).mockResolvedValue({
       success: true,
       data: bills,
     });

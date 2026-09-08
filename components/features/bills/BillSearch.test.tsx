@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BillSearch } from './BillSearch';
@@ -5,25 +7,25 @@ import { searchBills } from '@/actions/bills';
 import type { BillSearchResult } from '@/actions/bills';
 import { toast } from 'sonner';
 
-jest.mock('@/actions/bills', () => ({
-  searchBills: jest.fn(),
+vi.mock('@/actions/bills', () => ({
+  searchBills: vi.fn(),
 }));
 
-const mockPush = jest.fn();
+const mockPush = vi.fn();
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockPush,
   }),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    error: jest.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock('./CategoryIcon', () => ({
+vi.mock('./CategoryIcon', () => ({
   CategoryIcon: ({ icon }: { icon: string }) => <div data-testid="category-icon">{icon}</div>,
 }));
 
@@ -44,12 +46,12 @@ const mockBills: BillSearchResult[] = [
 
 describe('BillSearch', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('rendering', () => {
@@ -83,7 +85,7 @@ describe('BillSearch', () => {
       await user.type(input, 'el');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       expect(searchBills).not.toHaveBeenCalled();
@@ -92,7 +94,7 @@ describe('BillSearch', () => {
 
     it('executes search after typing 3 characters and debounce delay', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -103,7 +105,7 @@ describe('BillSearch', () => {
       await user.type(input, 'ele');
 
       await act(async () => {
-        jest.advanceTimersByTime(300);
+        vi.advanceTimersByTime(300);
       });
 
       expect(searchBills).toHaveBeenCalledWith({ query: 'ele' });
@@ -111,7 +113,7 @@ describe('BillSearch', () => {
 
     it('debounces search input to prevent excessive API calls', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -121,23 +123,23 @@ describe('BillSearch', () => {
       const input = screen.getByPlaceholderText('Search');
       await user.type(input, 'e');
       await act(async () => {
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
       });
 
       await user.type(input, 'l');
       await act(async () => {
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
       });
 
       await user.type(input, 'e');
       await act(async () => {
-        jest.advanceTimersByTime(200);
+        vi.advanceTimersByTime(200);
       });
 
       expect(searchBills).not.toHaveBeenCalled();
 
       await act(async () => {
-        jest.advanceTimersByTime(100);
+        vi.advanceTimersByTime(100);
       });
 
       expect(searchBills).toHaveBeenCalledTimes(1);
@@ -146,7 +148,7 @@ describe('BillSearch', () => {
 
     it('clears results when input becomes less than 3 characters', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -157,7 +159,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByText('Electric Bill');
@@ -173,7 +175,7 @@ describe('BillSearch', () => {
   describe('search results display', () => {
     it('displays dropdown with matching results', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -184,7 +186,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       expect(await screen.findByText('Electric Bill')).toBeInTheDocument();
@@ -193,7 +195,7 @@ describe('BillSearch', () => {
 
     it('displays category icon for each result', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -204,7 +206,7 @@ describe('BillSearch', () => {
       await user.type(input, 'bill');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const icons = await screen.findAllByTestId('category-icon');
@@ -215,7 +217,7 @@ describe('BillSearch', () => {
 
     it('does not display dropdown when no results found', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [],
       });
@@ -226,7 +228,7 @@ describe('BillSearch', () => {
       await user.type(input, 'nonexistent');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByPlaceholderText('Search');
@@ -236,7 +238,7 @@ describe('BillSearch', () => {
 
     it('displays results as clickable buttons', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [mockBills[0]],
       });
@@ -247,7 +249,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });
@@ -259,7 +261,7 @@ describe('BillSearch', () => {
   describe('navigation', () => {
     it('navigates to overview page when non-archived bill is selected', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [mockBills[0]],
       });
@@ -270,7 +272,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });
@@ -281,7 +283,7 @@ describe('BillSearch', () => {
 
     it('navigates to archive page when archived bill is selected', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [mockBills[1]],
       });
@@ -292,7 +294,7 @@ describe('BillSearch', () => {
       await user.type(input, 'water');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /water bill/i });
@@ -303,7 +305,7 @@ describe('BillSearch', () => {
 
     it('clears input and closes dropdown after selecting result', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [mockBills[0]],
       });
@@ -314,7 +316,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });
@@ -328,7 +330,7 @@ describe('BillSearch', () => {
   describe('dropdown interaction', () => {
     it('closes dropdown when Escape key is pressed', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -339,7 +341,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByText('Electric Bill');
@@ -351,7 +353,7 @@ describe('BillSearch', () => {
 
     it('closes dropdown when clicking outside component', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -367,7 +369,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByText('Electric Bill');
@@ -380,7 +382,7 @@ describe('BillSearch', () => {
 
     it('keeps dropdown open when clicking inside component', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: mockBills,
       });
@@ -391,7 +393,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });
@@ -404,7 +406,7 @@ describe('BillSearch', () => {
   describe('error handling', () => {
     it('displays error toast when search fails with error message', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: false,
         error: 'Search failed',
       });
@@ -415,7 +417,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByPlaceholderText('Search');
@@ -426,7 +428,7 @@ describe('BillSearch', () => {
 
     it('displays error toast when search throws exception', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockRejectedValue(new Error('Network error'));
+      (searchBills as Mock).mockRejectedValue(new Error('Network error'));
 
       render(<BillSearch />);
 
@@ -434,7 +436,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByPlaceholderText('Search');
@@ -445,7 +447,7 @@ describe('BillSearch', () => {
 
     it('closes dropdown when search fails', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: false,
         error: 'Search failed',
       });
@@ -456,7 +458,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       await screen.findByPlaceholderText('Search');
@@ -475,7 +477,7 @@ describe('BillSearch', () => {
 
     it('renders results as accessible buttons', async () => {
       const user = userEvent.setup({ delay: null });
-      (searchBills as jest.Mock).mockResolvedValue({
+      (searchBills as Mock).mockResolvedValue({
         success: true,
         data: [mockBills[0]],
       });
@@ -486,7 +488,7 @@ describe('BillSearch', () => {
       await user.type(input, 'electric');
 
       await act(async () => {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
       });
 
       const resultButton = await screen.findByRole('button', { name: /electric bill/i });

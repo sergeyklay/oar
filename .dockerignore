@@ -32,14 +32,13 @@ build
 
 # Testing
 coverage
-.jest
 __mocks__
 *.test.ts
 *.test.tsx
 *.spec.ts
 *.spec.tsx
-jest.config.*
-jest.setup.*
+vitest.config.*
+vitest.setup.*
 junit.xml
 
 # Documentation

@@ -1,9 +1,11 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AnnualSpendingInteractive } from './AnnualSpendingInteractive';
 import type { AggregatedBillSpending, AnnualSpendingSummary } from '@/lib/types';
 
-jest.mock('./AnnualSpendingGraph', () => ({
+vi.mock('./AnnualSpendingGraph', () => ({
   AnnualSpendingGraph: ({
     highlightedBillId,
     onBillClick,
@@ -22,7 +24,7 @@ jest.mock('./AnnualSpendingGraph', () => ({
   ),
 }));
 
-jest.mock('./AnnualSpendingList', () => ({
+vi.mock('./AnnualSpendingList', () => ({
   AnnualSpendingList: ({
     highlightedBillId,
     onBillClick,
@@ -41,7 +43,7 @@ jest.mock('./AnnualSpendingList', () => ({
   ),
 }));
 
-jest.mock('./AnnualSpendingSummary', () => ({
+vi.mock('./AnnualSpendingSummary', () => ({
   AnnualSpendingSummary: ({ summary, year }: { summary: AnnualSpendingSummary; year: string }) => (
     <div data-testid="annual-spending-summary" data-year={year}>
       <div>Total Bills: {summary.totalBills}</div>

@@ -19,7 +19,7 @@ const eslintConfig = defineConfig([
 
   // Allow console in test setup files for mocking purposes
   {
-    files: ['jest.setup.ts', 'jest.setup.js'],
+    files: ['vitest.setup.ts'],
     rules: {
       'no-console': 'off',
     },

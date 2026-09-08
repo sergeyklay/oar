@@ -1,11 +1,13 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { AppShell } from './AppShell';
 
-jest.mock('./Sidebar', () => ({
+vi.mock('./Sidebar', () => ({
   Sidebar: () => <aside data-testid="sidebar">Sidebar</aside>,
 }));
 
-jest.mock('./CalendarPanel', () => ({
+vi.mock('./CalendarPanel', () => ({
   CalendarPanel: () => <aside data-testid="calendar-panel">Calendar</aside>,
 }));
 

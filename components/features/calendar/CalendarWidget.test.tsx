@@ -1,10 +1,12 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { CalendarWidget } from './CalendarWidget';
 import { useCalendarState } from './useCalendarState';
 import { getBillDatesForMonth } from '@/actions/calendar';
 
 // Mock lucide-react icons
-jest.mock('lucide-react', () => ({
+vi.mock('lucide-react', () => ({
   Triangle: ({ className }: { className: string }) => (
     <span data-testid="triangle-icon" className={className} />
   ),
@@ -14,17 +16,17 @@ jest.mock('lucide-react', () => ({
 }));
 
 // Mock actions and state
-jest.mock('./useCalendarState');
-jest.mock('@/actions/calendar');
+vi.mock('./useCalendarState');
+vi.mock('@/actions/calendar');
 
 describe('CalendarWidget', () => {
-  const mockSetMonth = jest.fn();
-  const mockSetDate = jest.fn();
-  const mockClearDate = jest.fn();
+  const mockSetMonth = vi.fn();
+  const mockSetDate = vi.fn();
+  const mockClearDate = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useCalendarState as jest.Mock).mockReturnValue({
+    vi.clearAllMocks();
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: null,
       selectedBill: null,
@@ -32,7 +34,7 @@ describe('CalendarWidget', () => {
       setDate: mockSetDate,
       clearDate: mockClearDate,
     });
-    (getBillDatesForMonth as jest.Mock).mockResolvedValue({});
+    (getBillDatesForMonth as Mock).mockResolvedValue({});
   });
 
   it('renders the calendar with the initial month', async () => {
@@ -90,7 +92,7 @@ describe('CalendarWidget', () => {
   });
 
   it('displays filter info when a date is selected', async () => {
-    (useCalendarState as jest.Mock).mockReturnValue({
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
       selectedBill: null,
@@ -108,7 +110,7 @@ describe('CalendarWidget', () => {
   });
 
   it('calls clearDate when "Clear filter" is clicked', async () => {
-    (useCalendarState as jest.Mock).mockReturnValue({
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
       selectedBill: null,
@@ -126,7 +128,7 @@ describe('CalendarWidget', () => {
   });
 
   it('hides date filter message when disableDateFilter is true', async () => {
-    (useCalendarState as jest.Mock).mockReturnValue({
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
       selectedBill: null,
@@ -145,7 +147,7 @@ describe('CalendarWidget', () => {
   });
 
   it('shows date filter message when disableDateFilter is false', async () => {
-    (useCalendarState as jest.Mock).mockReturnValue({
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
       selectedBill: null,
@@ -163,7 +165,7 @@ describe('CalendarWidget', () => {
   });
 
   it('shows date filter message when disableDateFilter is undefined', async () => {
-    (useCalendarState as jest.Mock).mockReturnValue({
+    (useCalendarState as Mock).mockReturnValue({
       month: '2025-12',
       date: '2025-12-15',
       selectedBill: null,

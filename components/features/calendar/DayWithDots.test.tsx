@@ -1,10 +1,12 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { DayWithDots } from './DayWithDots';
 import type { DateStatusMap, PaymentDateMap } from '@/actions/calendar';
 import type { CalendarDay } from 'react-day-picker';
 
-jest.mock('date-fns', () => ({
-  format: jest.fn((date: Date) => {
+vi.mock('date-fns', () => ({
+  format: vi.fn((date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -20,7 +22,7 @@ const createMockDay = (date: Date): CalendarDay =>
     isoDate: date.toISOString().split('T')[0],
     displayMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
     dateMonthId: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-    isEqualTo: jest.fn(),
+    isEqualTo: vi.fn(),
     modifiers: {},
     disabled: false,
     selected: false,

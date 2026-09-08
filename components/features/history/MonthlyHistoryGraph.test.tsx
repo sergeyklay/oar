@@ -1,10 +1,12 @@
+import { beforeEach, describe, expect, it, vi, type MockedFunction } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { MonthlyHistoryGraph } from './MonthlyHistoryGraph';
 import { getMonthlyHistoryChartData } from '@/actions/history';
 import type { MonthlyPaymentTotal } from '@/lib/types';
 
-jest.mock('@/actions/history');
-jest.mock('./MonthlyHistoryChart', () => ({
+vi.mock('@/actions/history');
+vi.mock('./MonthlyHistoryChart', () => ({
   MonthlyHistoryChart: ({
     data,
   }: {
@@ -21,13 +23,13 @@ jest.mock('./MonthlyHistoryChart', () => ({
   ),
 }));
 
-const mockGetMonthlyHistoryChartData = getMonthlyHistoryChartData as jest.MockedFunction<
+const mockGetMonthlyHistoryChartData = getMonthlyHistoryChartData as MockedFunction<
   typeof getMonthlyHistoryChartData
 >;
 
 describe('MonthlyHistoryGraph', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('always shows 12 months ending at selected month', async () => {

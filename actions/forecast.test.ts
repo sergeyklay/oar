@@ -1,14 +1,16 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { getForecastData, getForecastDataForRange } from './forecast';
 import { ForecastService } from '@/lib/services/ForecastService';
 import type { ForecastBill } from '@/lib/services/ForecastService';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/lib/services/ForecastService');
-jest.mock('@/lib/logger');
+vi.mock('@/lib/services/ForecastService');
+vi.mock('@/lib/logger');
 
 describe('getForecastData', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockForecastBills: ForecastBill[] = [
@@ -38,7 +40,7 @@ describe('getForecastData', () => {
   ];
 
   it('returns forecast data for valid month', async () => {
-    (ForecastService.getBillsForMonth as jest.Mock).mockResolvedValue(mockForecastBills);
+    (ForecastService.getBillsForMonth as Mock).mockResolvedValue(mockForecastBills);
 
     const result = await getForecastData({ month: '2025-03' });
 
@@ -50,7 +52,7 @@ describe('getForecastData', () => {
   });
 
   it('passes tag filter when provided', async () => {
-    (ForecastService.getBillsForMonth as jest.Mock).mockResolvedValue(mockForecastBills);
+    (ForecastService.getBillsForMonth as Mock).mockResolvedValue(mockForecastBills);
 
     const result = await getForecastData({ month: '2025-03', tag: 'utilities' });
 
@@ -100,7 +102,7 @@ describe('getForecastData', () => {
 
   it('returns error when ForecastService throws', async () => {
     const dbError = new Error('Database error');
-    (ForecastService.getBillsForMonth as jest.Mock).mockRejectedValue(dbError);
+    (ForecastService.getBillsForMonth as Mock).mockRejectedValue(dbError);
 
     const result = await getForecastData({ month: '2025-03' });
 
@@ -114,7 +116,7 @@ describe('getForecastData', () => {
   });
 
   it('handles empty array from ForecastService', async () => {
-    (ForecastService.getBillsForMonth as jest.Mock).mockResolvedValue([]);
+    (ForecastService.getBillsForMonth as Mock).mockResolvedValue([]);
 
     const result = await getForecastData({ month: '2025-03' });
 
@@ -128,7 +130,7 @@ describe('getForecastData', () => {
     const validMonths = ['2025-01', '2025-12', '2024-03', '2026-06'];
 
     for (const month of validMonths) {
-      (ForecastService.getBillsForMonth as jest.Mock).mockResolvedValue(mockForecastBills);
+      (ForecastService.getBillsForMonth as Mock).mockResolvedValue(mockForecastBills);
       const result = await getForecastData({ month });
       expect(result.success).toBe(true);
     }
@@ -149,7 +151,7 @@ describe('getForecastData', () => {
 
 describe('getForecastDataForRange', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockMonthlyTotals = [
@@ -170,7 +172,7 @@ describe('getForecastDataForRange', () => {
   ];
 
   it('returns monthly totals for valid range', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
+    (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -185,7 +187,7 @@ describe('getForecastDataForRange', () => {
   });
 
   it('passes tag filter when provided', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
+    (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue(mockMonthlyTotals);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -203,7 +205,7 @@ describe('getForecastDataForRange', () => {
   });
 
   it('passes months value to ForecastService', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
+    (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue(mockMonthlyTotals);
 
     await getForecastDataForRange({
       startMonth: '2025-03',
@@ -254,7 +256,7 @@ describe('getForecastDataForRange', () => {
 
   it('returns error when ForecastService throws', async () => {
     const dbError = new Error('Database error');
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockRejectedValue(dbError);
+    (ForecastService.getBillsForMonthRange as Mock).mockRejectedValue(dbError);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -271,7 +273,7 @@ describe('getForecastDataForRange', () => {
   });
 
   it('handles empty array from ForecastService', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue([]);
+    (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue([]);
 
     const result = await getForecastDataForRange({
       startMonth: '2025-03',
@@ -288,7 +290,7 @@ describe('getForecastDataForRange', () => {
     const validMonths = ['2025-01', '2025-12', '2024-03', '2026-06'];
 
     for (const startMonth of validMonths) {
-      (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
+      (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue(mockMonthlyTotals);
       const result = await getForecastDataForRange({
         startMonth,
         months: 12,
@@ -298,7 +300,7 @@ describe('getForecastDataForRange', () => {
   });
 
   it('accepts months values from 1 to 24', async () => {
-    (ForecastService.getBillsForMonthRange as jest.Mock).mockResolvedValue(mockMonthlyTotals);
+    (ForecastService.getBillsForMonthRange as Mock).mockResolvedValue(mockMonthlyTotals);
 
     const validCounts = [1, 12, 24];
 

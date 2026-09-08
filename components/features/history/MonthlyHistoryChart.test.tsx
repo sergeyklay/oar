@@ -1,7 +1,9 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { MonthlyHistoryChart } from './MonthlyHistoryChart';
 
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   BarChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
     <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)}>
       {children}
@@ -12,7 +14,7 @@ jest.mock('recharts', () => ({
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
 }));
 
-jest.mock('@/components/ui/chart', () => ({
+vi.mock('@/components/ui/chart', () => ({
   ChartContainer: ({
     children,
     config,
@@ -64,8 +66,8 @@ jest.mock('@/components/ui/chart', () => ({
   ),
 }));
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
 import { formatMoney } from '@/lib/money';
@@ -87,7 +89,7 @@ const mockData = [
 
 describe('MonthlyHistoryChart', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders chart with provided data', () => {

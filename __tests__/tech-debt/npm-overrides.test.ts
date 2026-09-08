@@ -1,26 +1,25 @@
+// @vitest-environment node
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
+import { describe, expect, it } from 'vitest';
+
 // Registry of the `overrides` block in package.json. Every override is
 // deliberate tech debt: it bridges or floors a dependency edge that upstream
-// has not fixed yet. Each probe below reads the ORIGINAL manifest ranges that
-// package-lock.json records for the package forcing the override (the lock
-// keeps declared ranges, not the overridden ones, and covers every nested copy
-// regardless of hoisting layout), and fails the moment that override becomes
-// removable. A red run here means "reconcile the overrides block", never "the
-// build is broken". Condition probes are used instead of dated re-checks
-// because every exit condition is cheaply and deterministically checkable
-// offline, so the suite only goes red when action is actually possible.
+// has not fixed yet. Each probe below reads what package-lock.json records
+// for the package forcing the override - the ORIGINAL manifest ranges (the
+// lock keeps declared ranges, not the overridden ones, and covers every
+// nested copy regardless of hoisting layout), or the resolved version where
+// a pin must hold - and fails the moment that override becomes removable. A
+// red run here means "reconcile the overrides block", never "the build is
+// broken". Condition probes are used instead of dated re-checks because
+// every exit condition is cheaply and deterministically checkable offline,
+// so the suite only goes red when action is actually possible.
 
 interface LockPackageEntry {
   version?: string;
   dependencies?: Record<string, string>;
-  optionalDependencies?: Record<string, string>;
-  peerDependencies?: Record<string, string>;
 }
-
-/** DependencyField reports the lockfile fields in which a package can declare a dependency. */
-type DependencyField = 'dependencies' | 'optionalDependencies' | 'peerDependencies';
 
 function readLock(): { packages: Record<string, LockPackageEntry> } {
   const lockPath = path.join(process.cwd(), 'package-lock.json');
@@ -43,30 +42,6 @@ function lockEntriesFor(packageName: string): LockPackageEntry[] {
   return entries;
 }
 
-// Sentinel: every package that still declares a deprecated glob 10.x range, and
-// the range it declares. Read from package-lock.json, which records the original
-// declared ranges - the "glob" override does not rewrite them.
-const GLOB_DECLARATION_FIELDS: readonly DependencyField[] = [
-  'dependencies',
-  'optionalDependencies',
-  'peerDependencies',
-];
-
-const GLOB_10_DEPENDENTS: Record<string, string> = {
-  'test-exclude': '^10.4.1',
-};
-
-// Sentinel: every package that declares glob at all, including the ones that
-// moved to ^13 natively and no longer need the override. Read from
-// package-lock.json like GLOB_10_DEPENDENTS above. A package that arrives
-// later and declares glob shows up here and trips the blast-radius probe.
-const GLOB_DECLARERS: readonly string[] = [
-  '@jest/reporters',
-  'jest-config',
-  'jest-runtime',
-  'test-exclude',
-];
-
 describe('tech-debt tripwire: npm overrides registry', () => {
   // WHY: this asserts the overrides block has not grown behind the tripwires'
   // back. Every key here must have a probe below explaining why it exists and
@@ -83,8 +58,7 @@ describe('tech-debt tripwire: npm overrides registry', () => {
 
     expect(Object.keys(manifest.overrides ?? {}).sort()).toEqual([
       '@esbuild-kit/core-utils',
-      'glob',
-      'jsdom',
+      'eslint-plugin-react-hooks',
     ]);
   });
 
@@ -139,119 +113,27 @@ describe('tech-debt tripwire: npm overrides registry', () => {
     }
   });
 
-  // WHY: @jest/transform pinned `babel-plugin-istanbul: ^7.0.1` through jest
-  // 30.4.x, and 7.0.1 pulled test-exclude 6, which pulled the deprecated glob 7
-  // and through it the abandoned, memory-leaking inflight 1.0.6. The override
-  // forced babel-plugin-istanbul 8, which moved to test-exclude 7 and dropped
-  // both. Retired in favour of jest 30.5.1: @jest/transform itself now declares
-  // `babel-plugin-istanbul: ^8.0.0`, so the override has nothing left to bridge
-  // and the range it forced equals the one upstream chose. Confirmed via
-  // `npm ls inflight glob --all` after removal: inflight is gone and the only
-  // glob copy is 13.0.6. See the GLOB_10_DEPENDENTS probe for the one edge
-  // (test-exclude) that still needs a floor bump.
-  // EXIT: retired - jest 30.5.1 declares the ^8 range natively.
-
-  // WHY: glob 10 is deprecated wholesale upstream - the registry moved it to the
-  // "legacy-v10" dist-tag and every install of it warns. Until jest 30.5 the
-  // three Jest packages below also declared a 10.x range; 30.5.1 moved them to
-  // ^13 natively, leaving test-exclude 7 (pulled by babel-plugin-istanbul 8 via
-  // @jest/transform) as the only remaining dependent of the deprecated major.
-  // glob has kept a stable named-export surface since v9
-  // (`glob`, `globSync`, `globStream`, `Glob`), which is all test-exclude
-  // consumes, so forcing 13 is a floor bump rather than an API change. glob 13
-  // also restores Node 18 support that 11 and 12 dropped, so it does not narrow
-  // this project's runtime range. Verified with the override in place: test,
-  // test:coverage, lint, typecheck and build all exit 0.
-  // EXIT: every dependent stops declaring a 10.x range.
-  // ACTION on failure: this fires when a dependent moves OR when a new package
-  // enters the tree declaring glob. If GLOB_10_DEPENDENTS is now empty, delete
-  // the "glob" key from package.json overrides, run `npm install`, confirm
-  // `npm ls glob --all` shows nothing below 11, then delete both glob probes
-  // and drop the key from the registry list above. If only some dependents
-  // moved, update GLOB_10_DEPENDENTS to the new ranges and keep the override.
-  it('every glob dependent still declares a deprecated 10.x range', () => {
-    for (const [dependent, range] of Object.entries(GLOB_10_DEPENDENTS)) {
-      for (const entry of lockEntriesFor(dependent)) {
-        expect(entry.dependencies?.glob).toBe(range);
-      }
+  // WHY: eslint-config-next ^16.3.4 declares eslint-plugin-react-hooks ^7.0.0,
+  // and lockfile regeneration resolves that range to 7.1.1. The 7.1.1 release
+  // changed the set-state-in-effect detection, so `npm run lint` fails on
+  // pre-existing production components the migration must not modify. The pin
+  // is exact ("7.0.1", not a range) because any range floats back to 7.1.1 on
+  // regeneration; it holds the transitive plugin at the last release whose
+  // detection passes the repository's lint, the same proven-requirement class
+  // as the @esbuild-kit/core-utils override above.
+  // EXIT: an eslint-plugin-react-hooks release above 7.0.1 whose
+  // set-state-in-effect detection passes `npm run lint` on the production
+  // components. Verify by deleting the pin, running `npm install`, and
+  // linting before retiring the override.
+  // ACTION on failure: the resolved version has left the pin. Restore the
+  // "eslint-plugin-react-hooks": "7.0.1" key in package.json overrides and
+  // run `npm install`; if `npm run lint` passes on the newer version, retire
+  // the debt instead - delete the override key, this probe, and the key's
+  // entry in the registry list above. A pin deliberately moved to a different
+  // lint-clean release updates the sentinel here.
+  it('eslint-plugin-react-hooks pin still holds the lockfile at 7.0.1', () => {
+    for (const entry of lockEntriesFor('eslint-plugin-react-hooks')) {
+      expect(entry.version).toBe('7.0.1');
     }
-  });
-
-  // WHY: three of the four keys in the overrides block are top-level, and npm
-  // applies a top-level key to every copy in the tree regardless of what any
-  // package asked for - only the nested `@esbuild-kit/core-utils` key is scoped
-  // to a parent. glob gets this extra probe not because it is uniquely unscoped
-  // but because it is uniquely POPULAR: jsdom and test-exclude are
-  // single-purpose dependents, while glob is a general-purpose utility that
-  // arbitrary packages pull in. A package that arrives later and declares glob
-  // would be silently forced onto 13 with nobody having checked that it
-  // survives the jump. This probe bounds the blast radius by asserting the set
-  // of glob declarers is exactly the audited one: test-exclude, which still
-  // declares the deprecated 10.x range the override re-points, plus the three
-  // Jest packages that moved to ^13 natively in 30.5.1 and are unaffected by
-  // the override (its ^13.0.6 equals their own range).
-  // A dependent can declare glob under `dependencies`, `optionalDependencies`
-  // or `peerDependencies`, and the lockfile records each field verbatim, so all
-  // three are scanned - reading only `dependencies` would leave the very blind
-  // spot this probe exists to close.
-  // EXIT: never - permanent scaffolding for as long as the glob override stands.
-  // ACTION on failure: a new package declares glob. Check whether it works on
-  // glob 13; if yes, add it to GLOB_DECLARERS (and to GLOB_10_DEPENDENTS if it
-  // declares a 10.x range), if no, narrow the override from a top-level key to
-  // per-dependent nested keys.
-  it('no package outside the audited set declares glob', () => {
-    const dependents = Object.entries(readLock().packages)
-      .filter(([, entry]) =>
-        GLOB_DECLARATION_FIELDS.some((field) => entry[field]?.glob !== undefined),
-      )
-      .map(([key]) => key.slice(key.lastIndexOf('node_modules/') + 'node_modules/'.length));
-
-    expect([...new Set(dependents)].sort()).toEqual([...GLOB_DECLARERS].sort());
-  });
-
-  // WHY: jest-environment-jsdom 30.5.1 declares `jsdom: ^26.1.0`, and jsdom 26
-  // and 27 depend on whatwg-encoding, which upstream deprecated in favour of
-  // @exodus/bytes. jsdom 28 completed that swap, so any jsdom at or above 28
-  // clears the warning. jest-environment-jsdom 30.5.1 is the latest release and
-  // still declares ^26.1.0, so there is no in-range bump to take instead.
-  // The override tracks the current major, ^30. It is coupled to the Node pin:
-  // jsdom 30 requires Node "^22.22.2 || ^24.15.0 || >=26.0.0", so it installs
-  // clean only while .tool-versions stays at or above 24.15.0 - it pins 24.20.0.
-  // Dropping the Node pin below that floor would trade this deprecation warning
-  // for an EBADENGINE warning, which is a lateral move, not a fix; the probe
-  // below guards that. Verified with the override in place: `npm test` exits 0
-  // with 1527 tests passing, every DOM-rendering suite included.
-  // EXIT: jest-environment-jsdom stops declaring the ^26 range, in particular
-  // once it starts admitting jsdom 28 or newer.
-  // ACTION on failure: if the new range admits >=28, delete the "jsdom" key from
-  // package.json overrides, run `npm install`, confirm `npm ls whatwg-encoding`
-  // reports nothing, then delete this probe and drop it from the registry list
-  // above. Otherwise keep the override and update the sentinel.
-  it('jest-environment-jsdom still pins jsdom to a whatwg-encoding major', () => {
-    for (const entry of lockEntriesFor('jest-environment-jsdom')) {
-      expect(entry.dependencies?.jsdom).toBe('^26.1.0');
-    }
-  });
-
-  // WHY: the jsdom override and the nodejs pin are coupled, and nothing else in
-  // the repository records that. jsdom 30 declares engines
-  // "^22.22.2 || ^24.15.0 || >=26.0.0"; drop .tool-versions below 24.15.0 and
-  // `npm ci` starts printing EBADENGINE for jsdom instead of the deprecation
-  // warning the override removed. That is a lateral move, and it would surface
-  // as a Node change rather than a dependency one, so nobody would connect the
-  // two. This probe forces the connection.
-  // EXIT: never - permanent scaffolding for as long as the jsdom override stands.
-  // ACTION on failure: if the pin dropped inside major 24, either restore it to
-  // 24.15.0 or newer or lower the "jsdom" override to ^29.0.0, the newest jsdom
-  // that installs clean on Node 24.0-24.14. If the pin moved to a different Node
-  // major, re-read jsdom's `engines` field - majors 23 and 25 satisfy no part of
-  // it - and update both this probe and the override to match.
-  it('the nodejs pin still satisfies the jsdom engine floor', () => {
-    const toolVersions = readFileSync(path.join(process.cwd(), '.tool-versions'), 'utf8');
-    const pinned = /^nodejs[ \t]+(\d+)\.(\d+)\.\d+/m.exec(toolVersions);
-
-    expect(pinned).not.toBeNull();
-    expect(Number(pinned?.[1])).toBe(24);
-    expect(Number(pinned?.[2])).toBeGreaterThanOrEqual(15);
   });
 });

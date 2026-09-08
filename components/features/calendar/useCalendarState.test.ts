@@ -1,12 +1,14 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { renderHook, act } from '@testing-library/react';
 import { useCalendarState } from './useCalendarState';
 import { useQueryStates } from 'nuqs';
 
 // Mock nuqs
-jest.mock('nuqs', () => ({
-  useQueryStates: jest.fn(),
+vi.mock('nuqs', () => ({
+  useQueryStates: vi.fn(),
   parseAsString: {
-    withDefault: jest.fn(() => ({
+    withDefault: vi.fn(() => ({
       parse: (v: string) => v,
       serialize: (v: string) => v,
     })),
@@ -14,11 +16,11 @@ jest.mock('nuqs', () => ({
 }));
 
 describe('useCalendarState', () => {
-  const mockSetParams = jest.fn();
+  const mockSetParams = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    (useQueryStates as jest.Mock).mockReturnValue([
+    vi.clearAllMocks();
+    (useQueryStates as Mock).mockReturnValue([
       { month: '2025-12', date: '2025-12-15', selectedBill: 'bill-123' },
       mockSetParams,
     ]);

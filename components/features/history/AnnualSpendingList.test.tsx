@@ -1,9 +1,11 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AnnualSpendingList } from './AnnualSpendingList';
 import type { AggregatedBillSpending } from '@/lib/types';
 
-jest.mock('./AnnualSpendingRow', () => ({
+vi.mock('./AnnualSpendingRow', () => ({
   AnnualSpendingRow: ({
     bill,
     isHighlighted,
@@ -21,8 +23,8 @@ jest.mock('./AnnualSpendingRow', () => ({
   ),
 }));
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
 const mockBills: AggregatedBillSpending[] = [
@@ -61,7 +63,7 @@ function renderList(
 
 describe('AnnualSpendingList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('rendering with data', () => {
@@ -154,7 +156,7 @@ describe('AnnualSpendingList', () => {
   describe('interactions', () => {
     it('calls onBillClick when row is clicked', async () => {
       const user = userEvent.setup();
-      const mockOnBillClick = jest.fn();
+      const mockOnBillClick = vi.fn();
 
       renderList({ onBillClick: mockOnBillClick });
 
@@ -167,7 +169,7 @@ describe('AnnualSpendingList', () => {
 
     it('calls onBillClick for different bills', async () => {
       const user = userEvent.setup();
-      const mockOnBillClick = jest.fn();
+      const mockOnBillClick = vi.fn();
 
       renderList({ onBillClick: mockOnBillClick });
 

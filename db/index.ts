@@ -26,7 +26,7 @@ export const db = drizzle(sqlite, { schema });
 export * from './schema';
 
 /**
- * No-op in production. Used by Jest manual mock for test cleanup.
+ * No-op in production. Used by the manual test mock for test cleanup.
  * This export exists to satisfy TypeScript when importing from @/db in test files.
  */
 export const resetDbMocks = (): void => {

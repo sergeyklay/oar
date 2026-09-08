@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { HistoryService } from './HistoryService';
 import type { PaymentWithBill, AggregatedBillSpending } from '@/lib/types';
 

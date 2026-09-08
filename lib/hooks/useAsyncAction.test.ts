@@ -1,23 +1,25 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { toast } from 'sonner';
 import { useAsyncAction } from './useAsyncAction';
 import type { ActionResult } from '@/lib/types';
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
 describe('useAsyncAction', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('loading state management', () => {
     it('sets isPending to false initially', () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -33,7 +35,7 @@ describe('useAsyncAction', () => {
       const actionPromise = new Promise<ActionResult<void>>((resolve) => {
         resolveAction = resolve;
       });
-      const mockAction = jest.fn().mockReturnValue(actionPromise);
+      const mockAction = vi.fn().mockReturnValue(actionPromise);
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -57,7 +59,7 @@ describe('useAsyncAction', () => {
     });
 
     it('sets isPending to false after action completes successfully', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -73,7 +75,7 @@ describe('useAsyncAction', () => {
     });
 
     it('sets isPending to false after action fails', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Action failed',
       });
@@ -92,7 +94,7 @@ describe('useAsyncAction', () => {
     });
 
     it('sets isPending to false after action throws exception', async () => {
-      const mockAction = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockAction = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -110,7 +112,7 @@ describe('useAsyncAction', () => {
 
   describe('success handling', () => {
     it('shows success toast when successMessage is provided', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -129,7 +131,7 @@ describe('useAsyncAction', () => {
     });
 
     it('shows success toast with description when provided', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -149,7 +151,7 @@ describe('useAsyncAction', () => {
     });
 
     it('does not show success toast when successMessage is not provided', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -165,7 +167,7 @@ describe('useAsyncAction', () => {
     });
 
     it('does not show success toast when showSuccessToast is false', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -183,11 +185,11 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onSuccess callback with data when action succeeds', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: true,
         data: { id: '123' },
       });
-      const onSuccess = jest.fn();
+      const onSuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -204,10 +206,10 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onSuccess with undefined when result.data is undefined', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: true,
       });
-      const onSuccess = jest.fn();
+      const onSuccess = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -226,7 +228,7 @@ describe('useAsyncAction', () => {
 
   describe('error handling', () => {
     it('shows error toast when action fails', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Action failed',
       });
@@ -247,7 +249,7 @@ describe('useAsyncAction', () => {
     });
 
     it('shows custom error toast message when errorMessage is provided', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Internal error',
       });
@@ -269,7 +271,7 @@ describe('useAsyncAction', () => {
     });
 
     it('uses result.error as fallback when errorMessage is not provided', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Database error',
       });
@@ -290,7 +292,7 @@ describe('useAsyncAction', () => {
     });
 
     it('uses default error message when result.error is undefined', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
       });
 
@@ -310,7 +312,7 @@ describe('useAsyncAction', () => {
     });
 
     it('does not show error toast when showErrorToast is false', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Action failed',
       });
@@ -330,7 +332,7 @@ describe('useAsyncAction', () => {
     });
 
     it('does not show error toast when errorMessage is null', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Action failed',
       });
@@ -350,12 +352,12 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onError callback with error message and result', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Validation failed',
         fieldErrors: { title: ['Title is required'] },
       });
-      const onError = jest.fn();
+      const onError = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -376,7 +378,7 @@ describe('useAsyncAction', () => {
     });
 
     it('shows error toast when action throws exception', async () => {
-      const mockAction = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockAction = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -392,8 +394,8 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onError callback when action throws exception', async () => {
-      const mockAction = jest.fn().mockRejectedValue(new Error('Network error'));
-      const onError = jest.fn();
+      const mockAction = vi.fn().mockRejectedValue(new Error('Network error'));
+      const onError = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -413,7 +415,7 @@ describe('useAsyncAction', () => {
     });
 
     it('re-throws exception after handling', async () => {
-      const mockAction = jest.fn().mockRejectedValue(new Error('Network error'));
+      const mockAction = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -429,8 +431,8 @@ describe('useAsyncAction', () => {
 
   describe('onSettled callback', () => {
     it('calls onSettled after successful action', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
-      const onSettled = jest.fn();
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
+      const onSettled = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -447,11 +449,11 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onSettled after failed action', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Action failed',
       });
-      const onSettled = jest.fn();
+      const onSettled = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -468,8 +470,8 @@ describe('useAsyncAction', () => {
     });
 
     it('calls onSettled after action throws exception', async () => {
-      const mockAction = jest.fn().mockRejectedValue(new Error('Network error'));
-      const onSettled = jest.fn();
+      const mockAction = vi.fn().mockRejectedValue(new Error('Network error'));
+      const onSettled = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -488,7 +490,7 @@ describe('useAsyncAction', () => {
 
   describe('action parameters', () => {
     it('passes no parameters to action when execute is called without arguments', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -504,7 +506,7 @@ describe('useAsyncAction', () => {
     });
 
     it('passes single parameter to action', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -520,7 +522,7 @@ describe('useAsyncAction', () => {
     });
 
     it('passes multiple parameters to action', async () => {
-      const mockAction = jest.fn().mockResolvedValue({ success: true });
+      const mockAction = vi.fn().mockResolvedValue({ success: true });
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -538,12 +540,12 @@ describe('useAsyncAction', () => {
 
   describe('combined scenarios', () => {
     it('handles success with all callbacks and toast', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: true,
         data: { id: '123' },
       });
-      const onSuccess = jest.fn();
-      const onSettled = jest.fn();
+      const onSuccess = vi.fn();
+      const onSettled = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({
@@ -568,13 +570,13 @@ describe('useAsyncAction', () => {
     });
 
     it('handles error with all callbacks and toast', async () => {
-      const mockAction = jest.fn().mockResolvedValue({
+      const mockAction = vi.fn().mockResolvedValue({
         success: false,
         error: 'Validation failed',
         fieldErrors: { field: ['Error message'] },
       });
-      const onError = jest.fn();
-      const onSettled = jest.fn();
+      const onError = vi.fn();
+      const onSettled = vi.fn();
 
       const { result } = renderHook(() =>
         useAsyncAction({

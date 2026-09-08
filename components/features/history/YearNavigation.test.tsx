@@ -1,22 +1,24 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { YearNavigation } from './YearNavigation';
 
-const mockSetYear = jest.fn();
+const mockSetYear = vi.fn();
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn(() => [null, mockSetYear]),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(() => [null, mockSetYear]),
 }));
 
-jest.mock('@/lib/utils', () => ({
-  ...jest.requireActual('@/lib/utils'),
-  getCurrentYear: jest.fn(() => '2025'),
-  cn: jest.fn((...args) => args.filter(Boolean).join(' ')),
+vi.mock('@/lib/utils', async () => ({
+  ...(await vi.importActual<typeof import('@/lib/utils')>('@/lib/utils')),
+  getCurrentYear: vi.fn(() => '2025'),
+  cn: vi.fn((...args) => args.filter(Boolean).join(' ')),
 }));
 
 describe('YearNavigation', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders navigation buttons', () => {

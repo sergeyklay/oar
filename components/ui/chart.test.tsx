@@ -1,4 +1,5 @@
-/// <reference types="@testing-library/jest-dom" />
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import * as React from 'react';
 import {
@@ -200,7 +201,12 @@ describe('sanitizeColorValue', () => {
   });
 });
 
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
+  // chart.tsx reads Tooltip and Legend from the recharts namespace at module
+  // scope, and a mock namespace throws on exports the factory omits, so the
+  // factory needs inert stubs for both to keep the import working.
+  Tooltip: () => null,
+  Legend: () => null,
   ResponsiveContainer: ({
     children,
     initialDimension,
@@ -494,7 +500,7 @@ describe('ChartTooltipContent', () => {
   });
 
   it('uses labelFormatter when provided', () => {
-    const labelFormatter = jest.fn(() => 'Formatted Label');
+    const labelFormatter = vi.fn(() => 'Formatted Label');
     render(
       <ChartTooltipContent
         active={true}
@@ -509,7 +515,7 @@ describe('ChartTooltipContent', () => {
   });
 
   it('uses formatter when provided', () => {
-    const formatter = jest.fn(() => <span>Formatted Value</span>);
+    const formatter = vi.fn(() => <span>Formatted Value</span>);
     render(<ChartTooltipContent active={true} payload={mockPayload} formatter={formatter} />);
 
     expect(formatter).toHaveBeenCalledWith(1000, 'Series 1', mockPayload[0], 0, {});
@@ -894,7 +900,7 @@ describe('ChartTooltipContent', () => {
   });
 
   it('applies labelClassName when labelFormatter is provided', () => {
-    const labelFormatter = jest.fn(() => 'Formatted Label');
+    const labelFormatter = vi.fn(() => 'Formatted Label');
     render(
       <ChartTooltipContent
         active={true}

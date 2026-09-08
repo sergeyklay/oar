@@ -1,8 +1,10 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { PageHeader } from './PageHeader';
 import type { Tag, BillCategoryGroupWithCategories } from '@/lib/types';
 
-jest.mock('./SidebarToggle', () => ({
+vi.mock('./SidebarToggle', () => ({
   SidebarToggle: () => (
     <button aria-label="Hide sidebar" type="button">
       SidebarToggle
@@ -10,7 +12,7 @@ jest.mock('./SidebarToggle', () => ({
   ),
 }));
 
-jest.mock('@/components/features/bills/AddBillButton', () => ({
+vi.mock('@/components/features/bills/AddBillButton', () => ({
   AddBillButton: ({
     currencySymbol,
     availableTags,
@@ -35,7 +37,7 @@ jest.mock('@/components/features/bills/AddBillButton', () => ({
   ),
 }));
 
-jest.mock('@/components/features/bills/TagFilter', () => ({
+vi.mock('@/components/features/bills/TagFilter', () => ({
   TagFilter: ({ tags }: { tags: Tag[] }) => (
     <button type="button" aria-label="Filter bills" data-tags={JSON.stringify(tags)}>
       TagFilter
@@ -43,7 +45,7 @@ jest.mock('@/components/features/bills/TagFilter', () => ({
   ),
 }));
 
-jest.mock('@/components/features/bills/BillSearch', () => ({
+vi.mock('@/components/features/bills/BillSearch', () => ({
   BillSearch: () => <input type="text" placeholder="Search" aria-label="Search bills" />,
 }));
 

@@ -1,12 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { TransactionService } from './TransactionService';
 import { db, transactions, bills, tags } from '@/db';
 import type { PaymentWithBill, Transaction } from '@/lib/types';
 import { parseISO, format } from 'date-fns';
 import { calculateDayFilterBoundaries } from '@/lib/utils';
 
-jest.mock('@/db', () => ({
+vi.mock('@/db', () => ({
   db: {
-    select: jest.fn(),
+    select: vi.fn(),
   },
   transactions: {
     id: 'transactions.id',
@@ -34,13 +36,13 @@ jest.mock('@/db', () => ({
   },
 }));
 
-const mockGte = jest.fn();
-const mockLte = jest.fn();
-const mockAnd = jest.fn();
-const mockEq = jest.fn();
-const mockInArray = jest.fn();
+const mockGte = vi.fn();
+const mockLte = vi.fn();
+const mockAnd = vi.fn();
+const mockEq = vi.fn();
+const mockInArray = vi.fn();
 
-jest.mock('drizzle-orm', () => ({
+vi.mock('drizzle-orm', () => ({
   gte: (...args: unknown[]) => {
     mockGte(...args);
     return { type: 'gte', args };
@@ -53,7 +55,7 @@ jest.mock('drizzle-orm', () => ({
     mockAnd(...args);
     return { type: 'and', args };
   },
-  desc: jest.fn((col) => ({ type: 'desc', col })),
+  desc: vi.fn((col) => ({ type: 'desc', col })),
   eq: (...args: unknown[]) => {
     mockEq(...args);
     return { type: 'eq', a: args[0], b: args[1] };
@@ -65,46 +67,46 @@ jest.mock('drizzle-orm', () => ({
 }));
 
 type QueryBuilder = {
-  from: jest.Mock;
-  innerJoin: jest.Mock;
-  where: jest.Mock;
-  orderBy: jest.Mock;
-  limit: jest.Mock;
+  from: Mock;
+  innerJoin: Mock;
+  where: Mock;
+  orderBy: Mock;
+  limit: Mock;
 };
 
 const createPaymentQueryBuilder = (returnValue: PaymentWithBill[]): QueryBuilder => {
-  const orderByMock = jest.fn().mockResolvedValue(returnValue);
-  const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-  const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
-  const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
-  const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
+  const orderByMock = vi.fn().mockResolvedValue(returnValue);
+  const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+  const secondInnerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
+  const firstInnerJoinMock = vi.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+  const fromMock = vi.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
 
-  (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+  (db.select as Mock).mockReturnValue({ from: fromMock });
 
   return {
     from: fromMock,
     innerJoin: firstInnerJoinMock,
     where: whereMock,
     orderBy: orderByMock,
-    limit: jest.fn(),
+    limit: vi.fn(),
   };
 };
 
 const createTransactionQueryBuilder = (returnValue: Transaction[]): QueryBuilder => {
-  const limitMock = jest.fn((limit: number) => Promise.resolve(returnValue.slice(0, limit)));
-  const orderByMock = jest.fn().mockReturnValue({
+  const limitMock = vi.fn((limit: number) => Promise.resolve(returnValue.slice(0, limit)));
+  const orderByMock = vi.fn().mockReturnValue({
     limit: limitMock,
     then: (onResolve: (value: Transaction[]) => unknown) =>
       Promise.resolve(returnValue).then(onResolve),
   });
-  const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-  const fromMock = jest.fn().mockReturnValue({ where: whereMock });
+  const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+  const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 
-  (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+  (db.select as Mock).mockReturnValue({ from: fromMock });
 
   return {
     from: fromMock,
-    innerJoin: jest.fn(),
+    innerJoin: vi.fn(),
     where: whereMock,
     orderBy: orderByMock,
     limit: limitMock,
@@ -112,40 +114,40 @@ const createTransactionQueryBuilder = (returnValue: Transaction[]): QueryBuilder
 };
 
 const createTagQueryBuilder = (returnValue: { id: string }[]) => {
-  const whereMock = jest.fn().mockReturnValue({
+  const whereMock = vi.fn().mockReturnValue({
     then: (onResolve: (value: { id: string }[]) => unknown) =>
       Promise.resolve(returnValue).then(onResolve),
   });
-  const fromMock = jest.fn().mockReturnValue({ where: whereMock });
+  const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 
   return { from: fromMock, where: whereMock };
 };
 
 const createBillsToTagsQueryBuilder = (returnValue: { billId: string }[]) => {
-  const whereMock = jest.fn().mockReturnValue({
+  const whereMock = vi.fn().mockReturnValue({
     then: (onResolve: (value: { billId: string }[]) => unknown) =>
       Promise.resolve(returnValue).then(onResolve),
   });
-  const fromMock = jest.fn().mockReturnValue({ where: whereMock });
+  const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 
   return { from: fromMock, where: whereMock };
 };
 
 describe('TransactionService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getRecentPayments', () => {
     const FIXED_DATE = new Date('2025-12-19T14:30:00.000Z');
 
     beforeEach(() => {
-      jest.useFakeTimers();
-      jest.setSystemTime(FIXED_DATE);
+      vi.useFakeTimers();
+      vi.setSystemTime(FIXED_DATE);
     });
 
     afterEach(() => {
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     const mockPayments: PaymentWithBill[] = [
@@ -276,7 +278,7 @@ describe('TransactionService', () => {
       it('returns payments for bills with the specified tag', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([{ billId: 'bill-1' }]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
         const paymentBuilder = createPaymentQueryBuilder(mockPayments);
@@ -291,7 +293,7 @@ describe('TransactionService', () => {
 
       it('returns empty array when tag does not exist', async () => {
         const tagBuilder = createTagQueryBuilder([]);
-        (db.select as jest.Mock).mockReturnValue({ from: tagBuilder.from });
+        (db.select as Mock).mockReturnValue({ from: tagBuilder.from });
 
         const result = await TransactionService.getRecentPayments(7, 'nonexistent');
 
@@ -302,7 +304,7 @@ describe('TransactionService', () => {
       it('returns empty array when tag exists but no bills have it', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
 
@@ -393,7 +395,7 @@ describe('TransactionService', () => {
       it('returns payments for bills with the specified tag', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([{ billId: 'bill-1' }]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
         createPaymentQueryBuilder(mockPayments);
@@ -407,7 +409,7 @@ describe('TransactionService', () => {
 
       it('returns empty array when tag does not exist', async () => {
         const tagBuilder = createTagQueryBuilder([]);
-        (db.select as jest.Mock).mockReturnValue({ from: tagBuilder.from });
+        (db.select as Mock).mockReturnValue({ from: tagBuilder.from });
 
         const result = await TransactionService.getPaymentsByDate('2025-12-15', 'nonexistent');
 
@@ -563,17 +565,17 @@ describe('TransactionService', () => {
     ];
 
     const createMonthQueryBuilder = (returnValue: Transaction[]): QueryBuilder => {
-      const orderByMock = jest.fn().mockResolvedValue(returnValue);
-      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-      const fromMock = jest.fn().mockReturnValue({ where: whereMock });
-      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+      const orderByMock = vi.fn().mockResolvedValue(returnValue);
+      const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+      const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+      (db.select as Mock).mockReturnValue({ from: fromMock });
 
       return {
         from: fromMock,
-        innerJoin: jest.fn(),
+        innerJoin: vi.fn(),
         where: whereMock,
         orderBy: orderByMock,
-        limit: jest.fn(),
+        limit: vi.fn(),
       };
     };
 
@@ -797,7 +799,7 @@ describe('TransactionService', () => {
       it('returns payments for bills with the specified tag', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([{ billId: 'bill-1' }]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
         const paymentBuilder = createPaymentQueryBuilder(mockPayments);
@@ -811,7 +813,7 @@ describe('TransactionService', () => {
 
       it('returns empty array when tag does not exist', async () => {
         const tagBuilder = createTagQueryBuilder([]);
-        (db.select as jest.Mock).mockReturnValue({ from: tagBuilder.from });
+        (db.select as Mock).mockReturnValue({ from: tagBuilder.from });
 
         const result = await TransactionService.getPaymentsByMonth('2025-12', 'nonexistent');
 
@@ -821,7 +823,7 @@ describe('TransactionService', () => {
       it('returns empty array when tag exists but no bills have it', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
 
@@ -991,10 +993,10 @@ describe('TransactionService', () => {
 
   describe('getMonthlyPaymentTotals', () => {
     const createTotalsQueryBuilder = (returnValue: { amount: number; paidAt: number }[]) => {
-      const whereMock = jest.fn().mockResolvedValue(returnValue);
-      const innerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
-      const fromMock = jest.fn().mockReturnValue({ innerJoin: innerJoinMock });
-      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+      const whereMock = vi.fn().mockResolvedValue(returnValue);
+      const innerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
+      const fromMock = vi.fn().mockReturnValue({ innerJoin: innerJoinMock });
+      (db.select as Mock).mockReturnValue({ from: fromMock });
 
       return { whereMock, innerJoinMock, fromMock };
     };
@@ -1080,7 +1082,7 @@ describe('TransactionService', () => {
       it('returns totals for bills with the specified tag', async () => {
         const tagBuilder = createTagQueryBuilder([{ id: 'tag-1' }]);
         const billsToTagsBuilder = createBillsToTagsQueryBuilder([{ billId: 'bill-1' }]);
-        (db.select as jest.Mock)
+        (db.select as Mock)
           .mockReturnValueOnce({ from: tagBuilder.from })
           .mockReturnValueOnce({ from: billsToTagsBuilder.from });
         createTotalsQueryBuilder([{ amount: 10000, paidAt: new Date('2025-12-15').getTime() }]);
@@ -1093,7 +1095,7 @@ describe('TransactionService', () => {
 
       it('returns empty array when tag does not exist', async () => {
         const tagBuilder = createTagQueryBuilder([]);
-        (db.select as jest.Mock).mockReturnValue({ from: tagBuilder.from });
+        (db.select as Mock).mockReturnValue({ from: tagBuilder.from });
 
         const result = await TransactionService.getMonthlyPaymentTotals(
           '2025-12',
@@ -1131,13 +1133,13 @@ describe('TransactionService', () => {
     });
 
     const createYearQueryBuilder = (returnValue: YearAggregationResult[]) => {
-      const orderByMock = jest.fn().mockResolvedValue(returnValue);
-      const whereMock = jest.fn().mockReturnValue({ orderBy: orderByMock });
-      const secondInnerJoinMock = jest.fn().mockReturnValue({ where: whereMock });
-      const firstInnerJoinMock = jest.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
-      const fromMock = jest.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
+      const orderByMock = vi.fn().mockResolvedValue(returnValue);
+      const whereMock = vi.fn().mockReturnValue({ orderBy: orderByMock });
+      const secondInnerJoinMock = vi.fn().mockReturnValue({ where: whereMock });
+      const firstInnerJoinMock = vi.fn().mockReturnValue({ innerJoin: secondInnerJoinMock });
+      const fromMock = vi.fn().mockReturnValue({ innerJoin: firstInnerJoinMock });
 
-      (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+      (db.select as Mock).mockReturnValue({ from: fromMock });
 
       return {
         from: fromMock,

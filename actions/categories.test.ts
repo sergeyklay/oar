@@ -1,8 +1,10 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { getCategoriesGrouped, getAllCategoriesGrouped, getDefaultCategoryId } from './categories';
 import { db, resetDbMocks, billCategoryGroups, billCategories } from '@/db';
 import type { BillCategoryGroup, BillCategory } from '@/db/schema';
 
-jest.mock('@/db');
+vi.mock('@/db');
 
 const mockGroups: BillCategoryGroup[] = [
   { id: 'group-1', name: 'Housing', slug: 'housing', displayOrder: 1, createdAt: new Date() },
@@ -61,17 +63,17 @@ const createSelectMock = (groupsResult: BillCategoryGroup[], categoriesResult: B
   const createBuilder = (result: unknown[]) => {
     const resultPromise = Promise.resolve(result);
     return {
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnValue({
-        limit: jest.fn().mockResolvedValue(result),
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue(result),
         then: resultPromise.then.bind(resultPromise),
         catch: resultPromise.catch.bind(resultPromise),
       }),
     };
   };
 
-  (db.select as jest.Mock).mockImplementation(() => ({
-    from: jest.fn((table: unknown) => {
+  (db.select as Mock).mockImplementation(() => ({
+    from: vi.fn((table: unknown) => {
       if (table === billCategoryGroups) {
         return createBuilder(groupsResult);
       }
@@ -86,7 +88,7 @@ const createSelectMock = (groupsResult: BillCategoryGroup[], categoriesResult: B
 describe('getCategoriesGrouped', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('excludes System group from results', async () => {
@@ -125,7 +127,7 @@ describe('getCategoriesGrouped', () => {
 describe('getAllCategoriesGrouped', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('includes System group in results', async () => {
@@ -155,7 +157,7 @@ describe('getAllCategoriesGrouped', () => {
 describe('getDefaultCategoryId', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns first category ID from first group', async () => {
@@ -222,9 +224,9 @@ describe('getDefaultCategoryId', () => {
         const result = [groups[0]];
         const resultPromise = Promise.resolve(result);
         return {
-          where: jest.fn().mockReturnThis(),
-          orderBy: jest.fn().mockReturnValue({
-            limit: jest.fn().mockResolvedValue(result),
+          where: vi.fn().mockReturnThis(),
+          orderBy: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue(result),
             then: resultPromise.then.bind(resultPromise),
             catch: resultPromise.catch.bind(resultPromise),
           }),
@@ -233,12 +235,12 @@ describe('getDefaultCategoryId', () => {
 
       const createCategoryBuilder = () => {
         return {
-          where: jest.fn().mockImplementation(() => {
+          where: vi.fn().mockImplementation(() => {
             const filteredCats = categories.filter((c) => c.groupId === capturedGroupId);
             const resultPromise = Promise.resolve(filteredCats);
             return {
-              orderBy: jest.fn().mockReturnValue({
-                limit: jest.fn().mockResolvedValue(filteredCats.slice(0, 1)),
+              orderBy: vi.fn().mockReturnValue({
+                limit: vi.fn().mockResolvedValue(filteredCats.slice(0, 1)),
                 then: resultPromise.then.bind(resultPromise),
                 catch: resultPromise.catch.bind(resultPromise),
               }),
@@ -247,8 +249,8 @@ describe('getDefaultCategoryId', () => {
         };
       };
 
-      (db.select as jest.Mock).mockImplementation(() => ({
-        from: jest.fn((table: unknown) => {
+      (db.select as Mock).mockImplementation(() => ({
+        from: vi.fn((table: unknown) => {
           if (table === billCategoryGroups) {
             capturedGroupId = groups[0]?.id ?? null;
             return createGroupBuilder();
@@ -256,7 +258,7 @@ describe('getDefaultCategoryId', () => {
           if (table === billCategories) {
             return createCategoryBuilder();
           }
-          return { where: jest.fn().mockReturnThis(), orderBy: jest.fn().mockReturnThis() };
+          return { where: vi.fn().mockReturnThis(), orderBy: vi.fn().mockReturnThis() };
         }),
       }));
     };

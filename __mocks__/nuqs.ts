@@ -1,6 +1,8 @@
-export const useQueryStates = jest.fn(() => [{}, jest.fn()]);
+import { vi } from 'vitest';
+
+export const useQueryStates = vi.fn(() => [{}, vi.fn()]);
 export const parseAsString = {
-  withDefault: jest.fn(() => ({
+  withDefault: vi.fn(() => ({
     parse: (v: string) => v,
     serialize: (v: string) => v,
   })),

@@ -1,19 +1,21 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { AnnualSpendingContent } from './AnnualSpendingContent';
 import { getAnnualSpendingData } from '@/actions/history';
 import { HistoryService } from '@/lib/services/HistoryService';
 
-jest.mock('@/actions/history', () => ({
-  getAnnualSpendingData: jest.fn(),
+vi.mock('@/actions/history', () => ({
+  getAnnualSpendingData: vi.fn(),
 }));
 
-jest.mock('@/lib/services/HistoryService', () => ({
+vi.mock('@/lib/services/HistoryService', () => ({
   HistoryService: {
-    calculateAnnualSummary: jest.fn(),
+    calculateAnnualSummary: vi.fn(),
   },
 }));
 
-jest.mock('./AnnualSpendingInteractive', () => ({
+vi.mock('./AnnualSpendingInteractive', () => ({
   AnnualSpendingInteractive: ({
     data,
     currency,
@@ -59,16 +61,16 @@ const mockSummary: AnnualSpendingSummary = {
 
 describe('AnnualSpendingContent', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('successful data loading', () => {
     it('renders interactive component with fetched data', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: mockData,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue(mockSummary);
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue(mockSummary);
 
       const component = await AnnualSpendingContent({
         year: '2025',
@@ -82,11 +84,11 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('calls getAnnualSpendingData with correct year', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: mockData,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue(mockSummary);
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue(mockSummary);
 
       await AnnualSpendingContent({
         year: '2024',
@@ -98,11 +100,11 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('calculates summary using HistoryService', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: mockData,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue(mockSummary);
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue(mockSummary);
 
       await AnnualSpendingContent({
         year: '2025',
@@ -114,11 +116,11 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('passes data and summary to interactive component', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: mockData,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue(mockSummary);
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue(mockSummary);
 
       const component = await AnnualSpendingContent({
         year: '2025',
@@ -133,11 +135,11 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('passes currency and locale to interactive component', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: mockData,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue(mockSummary);
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue(mockSummary);
 
       const component = await AnnualSpendingContent({
         year: '2025',
@@ -153,11 +155,11 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('handles empty data array', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: [],
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue({
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue({
         totalBills: 0,
         totalPayments: 0,
         amountPaid: 0,
@@ -178,7 +180,7 @@ describe('AnnualSpendingContent', () => {
 
   describe('error handling', () => {
     it('displays error message when action fails', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: false,
         error: 'Failed to fetch data',
       });
@@ -196,7 +198,7 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('displays default error message when error is not provided', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: false,
         error: null,
       });
@@ -213,7 +215,7 @@ describe('AnnualSpendingContent', () => {
     });
 
     it('does not calculate summary when action fails', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: false,
         error: 'Database error',
       });
@@ -230,11 +232,11 @@ describe('AnnualSpendingContent', () => {
 
   describe('edge cases', () => {
     it('handles null data from action', async () => {
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: null,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue({
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue({
         totalBills: 0,
         totalPayments: 0,
         amountPaid: 0,
@@ -265,11 +267,11 @@ describe('AnnualSpendingContent', () => {
         },
       ];
 
-      (getAnnualSpendingData as jest.Mock).mockResolvedValue({
+      (getAnnualSpendingData as Mock).mockResolvedValue({
         success: true,
         data: multipleBills,
       });
-      (HistoryService.calculateAnnualSummary as jest.Mock).mockReturnValue({
+      (HistoryService.calculateAnnualSummary as Mock).mockReturnValue({
         totalBills: 2,
         totalPayments: 24,
         amountPaid: 1260000,

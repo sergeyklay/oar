@@ -1,17 +1,19 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { createTag, getTags, getTagBySlug } from './tags';
 import { db, tags, resetDbMocks } from '@/db';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/db');
-jest.mock('next/cache', () => ({
-  revalidatePath: jest.fn(),
+vi.mock('@/db');
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }));
-jest.mock('@/lib/logger');
+vi.mock('@/lib/logger');
 
 describe('createTag', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns existing tag if slug already exists (idempotent)', async () => {
@@ -22,9 +24,9 @@ describe('createTag', () => {
       createdAt: new Date(),
     };
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([existingTag]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([existingTag]),
       }),
     });
 
@@ -40,15 +42,15 @@ describe('createTag', () => {
   });
 
   it('creates new tag if slug does not exist', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
           {
             id: 'new-id',
             name: 'Personal',
@@ -63,7 +65,7 @@ describe('createTag', () => {
     expect(result.success).toBe(true);
     expect(db.insert).toHaveBeenCalledWith(tags);
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.name).toBe('Personal');
@@ -71,15 +73,15 @@ describe('createTag', () => {
   });
 
   it('generates correct slug from name with spaces', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
           {
             id: 'new-id',
             name: 'Business Expenses',
@@ -91,22 +93,22 @@ describe('createTag', () => {
 
     await createTag({ name: 'Business Expenses' });
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.slug).toBe('business-expenses');
   });
 
   it('generates correct slug from name with special chars', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([
           {
             id: 'new-id',
             name: 'My Credit Card!',
@@ -118,7 +120,7 @@ describe('createTag', () => {
 
     await createTag({ name: 'My Credit Card!' });
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.slug).toBe('my-credit-card');
@@ -144,9 +146,9 @@ describe('createTag', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockRejectedValue(new Error('DB error')),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('DB error')),
       }),
     });
 
@@ -163,7 +165,7 @@ describe('createTag', () => {
 describe('getTags', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('fetches all tags ordered by name', async () => {
@@ -172,9 +174,9 @@ describe('getTags', () => {
       { id: '2', name: 'Beta', slug: 'beta', createdAt: new Date() },
     ];
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        orderBy: jest.fn().mockResolvedValue(mockTags),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockResolvedValue(mockTags),
       }),
     });
 
@@ -188,15 +190,15 @@ describe('getTags', () => {
 describe('getTagBySlug', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns tag when found', async () => {
     const mockTag = { id: '1', name: 'Business', slug: 'business', createdAt: new Date() };
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockTag]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockTag]),
       }),
     });
 
@@ -206,9 +208,9 @@ describe('getTagBySlug', () => {
   });
 
   it('returns null when tag not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 

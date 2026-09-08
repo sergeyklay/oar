@@ -1,3 +1,5 @@
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
 import { DueDateService } from './DueDateService';
 import { addDays, subDays, addMonths } from 'date-fns';
 
@@ -5,12 +7,12 @@ const MOCK_DATE = new Date('2025-06-15T12:00:00.000Z');
 
 describe('DueDateService', () => {
   beforeAll(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(MOCK_DATE);
+    vi.useFakeTimers();
+    vi.setSystemTime(MOCK_DATE);
   });
 
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('formatRelativeDueDate', () => {
