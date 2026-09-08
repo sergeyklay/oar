@@ -1,3 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import {
   createBill,
   updateBill,
@@ -20,31 +22,31 @@ import type { BillWithTags } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/db');
-jest.mock('next/cache', () => ({
-  revalidatePath: jest.fn(),
+vi.mock('@/db');
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }));
-jest.mock('@/lib/logger');
-jest.mock('@/lib/services/BillService', () => ({
+vi.mock('@/lib/logger');
+vi.mock('@/lib/services/BillService', () => ({
   BillService: {
-    getFiltered: jest.fn(),
-    getTags: jest.fn(),
-    searchByTitle: jest.fn(),
+    getFiltered: vi.fn(),
+    getTags: vi.fn(),
+    searchByTitle: vi.fn(),
   },
 }));
-jest.mock('@/lib/services/SettingsService', () => ({
+vi.mock('@/lib/services/SettingsService', () => ({
   SettingsService: {
-    getDueSoonRange: jest.fn(),
-    getIncludeAutoPayInDueSoon: jest.fn().mockResolvedValue(true),
+    getDueSoonRange: vi.fn(),
+    getIncludeAutoPayInDueSoon: vi.fn().mockResolvedValue(true),
   },
 }));
-jest.mock('@/lib/services/RecurrenceService', () => ({
+vi.mock('@/lib/services/RecurrenceService', () => ({
   RecurrenceService: {
-    deriveStatus: jest.fn((dueDate: Date) => {
+    deriveStatus: vi.fn((dueDate: Date) => {
       const now = new Date();
       return dueDate < now ? 'overdue' : 'pending';
     }),
-    calculateNextDueDate: jest.fn(),
+    calculateNextDueDate: vi.fn(),
   },
 }));
 
@@ -86,13 +88,13 @@ const createMockBillWithTags = (overrides: Partial<BillWithTags> = {}): BillWith
 describe('createBill', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('converts float amount string to integer minor units', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -103,21 +105,21 @@ describe('createBill', () => {
     await createBill(input);
 
     expect(db.insert).toHaveBeenCalledWith(bills);
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.amount).toBe(1050);
   });
 
   it('processes tagIds and inserts associations', async () => {
-    (db.insert as jest.Mock)
+    (db.insert as Mock)
       .mockReturnValueOnce({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
         }),
       })
       .mockReturnValueOnce({
-        values: jest.fn().mockResolvedValue(undefined),
+        values: vi.fn().mockResolvedValue(undefined),
       });
 
     const input = createMockBillInput({
@@ -134,7 +136,7 @@ describe('createBill', () => {
     expect(db.insert).toHaveBeenNthCalledWith(1, bills);
     expect(db.insert).toHaveBeenNthCalledWith(2, billsToTags);
 
-    const tagInsertCall = (db.insert as jest.Mock).mock.results[1].value;
+    const tagInsertCall = (db.insert as Mock).mock.results[1].value;
     const tagValues = tagInsertCall.values.mock.calls[0][0];
 
     expect(tagValues).toEqual([
@@ -172,9 +174,9 @@ describe('createBill', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockRejectedValue(new Error('DB error')),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockRejectedValue(new Error('DB error')),
       }),
     });
 
@@ -194,9 +196,9 @@ describe('createBill', () => {
   });
 
   it('persists isVariable flag when set to true', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -212,16 +214,16 @@ describe('createBill', () => {
     expect(result.success).toBe(true);
     expect(db.insert).toHaveBeenCalledWith(bills);
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.isVariable).toBe(true);
   });
 
   it('persists weekendAdjustment when provided', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -235,15 +237,15 @@ describe('createBill', () => {
     const result = await createBill(input);
 
     expect(result.success).toBe(true);
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
     expect(valuesCall.weekendAdjustment).toBe('next_business_day');
   });
 
   it('persists null weekendAdjustment when not provided', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -256,15 +258,15 @@ describe('createBill', () => {
     const result = await createBill(input);
 
     expect(result.success).toBe(true);
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
     expect(valuesCall.weekendAdjustment).toBeNull();
   });
 
   it('validates all new frequency types', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -284,9 +286,9 @@ describe('createBill', () => {
   });
 
   it('stores notes when provided', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -301,16 +303,16 @@ describe('createBill', () => {
 
     expect(result.success).toBe(true);
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.notes).toBe('Account number: 12345\nPayment instructions: Pay online');
   });
 
   it('converts empty string notes to null', async () => {
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockResolvedValue([{ id: 'bill-1' }]),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([{ id: 'bill-1' }]),
       }),
     });
 
@@ -325,7 +327,7 @@ describe('createBill', () => {
 
     expect(result.success).toBe(true);
 
-    const insertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const insertCall = (db.insert as Mock).mock.results[0].value;
     const valuesCall = insertCall.values.mock.calls[0][0];
 
     expect(valuesCall.notes).toBeNull();
@@ -353,17 +355,17 @@ describe('createBill', () => {
 describe('updateBill', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('converts float amount string to integer minor units', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -380,23 +382,23 @@ describe('updateBill', () => {
     await updateBill(input);
 
     expect(db.update).toHaveBeenCalledWith(bills);
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.amount).toBe(9999);
   });
 
   it('replaces tag associations on update', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
-    (db.insert as jest.Mock).mockReturnValue({
-      values: jest.fn().mockResolvedValue(undefined),
+    (db.insert as Mock).mockReturnValue({
+      values: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -415,7 +417,7 @@ describe('updateBill', () => {
     expect(db.delete).toHaveBeenCalledWith(billsToTags);
     expect(db.insert).toHaveBeenCalledWith(billsToTags);
 
-    const tagInsertCall = (db.insert as jest.Mock).mock.results[0].value;
+    const tagInsertCall = (db.insert as Mock).mock.results[0].value;
     const tagValues = tagInsertCall.values.mock.calls[0][0];
 
     expect(tagValues).toEqual([
@@ -442,13 +444,13 @@ describe('updateBill', () => {
   });
 
   it('updates isVariable from false to true', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -466,20 +468,20 @@ describe('updateBill', () => {
     expect(result.success).toBe(true);
     expect(db.update).toHaveBeenCalledWith(bills);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.isVariable).toBe(true);
   });
 
   it('updates isVariable from true to false', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -495,20 +497,20 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.isVariable).toBe(false);
   });
 
   it('updates weekendAdjustment when provided', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -524,19 +526,19 @@ describe('updateBill', () => {
     const result = await updateBill(input);
 
     expect(result.success).toBe(true);
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
     expect(setCall.weekendAdjustment).toBe('previous_business_day');
   });
 
   it('updates weekendAdjustment to null when not provided', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -551,19 +553,19 @@ describe('updateBill', () => {
     const result = await updateBill(input);
 
     expect(result.success).toBe(true);
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
     expect(setCall.weekendAdjustment).toBeNull();
   });
 
   it('does NOT modify amountDue when updating bill (preserves partial payment progress)', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -579,7 +581,7 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.amount).toBe(25000);
@@ -587,13 +589,13 @@ describe('updateBill', () => {
   });
 
   it('updates notes when provided', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -610,20 +612,20 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.notes).toBe('Updated account number: 99999');
   });
 
   it('converts empty string notes to null when updating', async () => {
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -640,7 +642,7 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.notes).toBeNull();
@@ -668,20 +670,20 @@ describe('updateBill', () => {
   });
 
   it('preserves paid status when editing a fully-paid one-time bill', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
         }),
       }),
     });
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -699,27 +701,27 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.status).toBe('paid');
   });
 
   it('derives status from due date for one-time bill that is not fully paid', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue([{ amountDue: 5000, status: 'pending' }]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([{ amountDue: 5000, status: 'pending' }]),
         }),
       }),
     });
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -736,27 +738,27 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.status).toBe('overdue');
   });
 
   it('derives status from due date for recurring bills even when fully paid', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([{ amountDue: 0, status: 'paid' }]),
         }),
       }),
     });
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
-    (db.delete as jest.Mock).mockReturnValue({
-      where: jest.fn().mockResolvedValue(undefined),
+    (db.delete as Mock).mockReturnValue({
+      where: vi.fn().mockResolvedValue(undefined),
     });
 
     const input: UpdateBillInput = {
@@ -773,7 +775,7 @@ describe('updateBill', () => {
 
     expect(result.success).toBe(true);
 
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.status).toBe('pending');
@@ -782,13 +784,13 @@ describe('updateBill', () => {
 
 describe('getBillTags', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns success with tags when bill found', async () => {
     const mockTags = [{ id: 'tag-1', name: 'Utilities', slug: 'utilities', createdAt: new Date() }];
 
-    (BillService.getTags as jest.Mock).mockResolvedValue(mockTags);
+    (BillService.getTags as Mock).mockResolvedValue(mockTags);
 
     const result = await getBillTags('bill-1');
 
@@ -798,7 +800,7 @@ describe('getBillTags', () => {
   });
 
   it('returns success with empty array when no tags assigned', async () => {
-    (BillService.getTags as jest.Mock).mockResolvedValue([]);
+    (BillService.getTags as Mock).mockResolvedValue([]);
 
     const result = await getBillTags('bill-1');
 
@@ -820,7 +822,7 @@ describe('getBillTags', () => {
 
 describe('getBillsFiltered', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockBills: BillWithTags[] = [
@@ -855,7 +857,7 @@ describe('getBillsFiltered', () => {
   ];
 
   it('returns all non-archived bills sorted by dueDate when no filters provided', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsFiltered({});
 
@@ -867,10 +869,10 @@ describe('getBillsFiltered', () => {
   });
 
   it('ignores month parameter and returns all bills', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
     const resultWithMonth = await getBillsFiltered({ month: '2025-01' });
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
     const resultWithoutMonth = await getBillsFiltered({});
 
     expect(resultWithMonth).toHaveLength(3);
@@ -885,7 +887,7 @@ describe('getBillsFiltered', () => {
 
   it('filters bills by specific date when date parameter provided', async () => {
     const billsOnDate = [mockBills[0]];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(billsOnDate);
+    (BillService.getFiltered as Mock).mockResolvedValue(billsOnDate);
 
     const result = await getBillsFiltered({ date: '2025-01-15' });
 
@@ -898,7 +900,7 @@ describe('getBillsFiltered', () => {
   });
 
   it('excludes archived bills by default', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsFiltered({});
 
@@ -916,7 +918,7 @@ describe('getBillsFiltered', () => {
         isArchived: true,
       }),
     ];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(billsWithArchived);
+    (BillService.getFiltered as Mock).mockResolvedValue(billsWithArchived);
 
     const result = await getBillsFiltered({ includeArchived: true });
 
@@ -929,7 +931,7 @@ describe('getBillsFiltered', () => {
   });
 
   it('filters bills by tag slug', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([mockBills[0]]);
+    (BillService.getFiltered as Mock).mockResolvedValue([mockBills[0]]);
 
     const result = await getBillsFiltered({ tag: 'utilities' });
 
@@ -942,7 +944,7 @@ describe('getBillsFiltered', () => {
   });
 
   it('returns empty array when tag does not exist', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getBillsFiltered({ tag: 'nonexistent' });
 
@@ -954,7 +956,7 @@ describe('getBillsFiltered', () => {
   });
 
   it('combines date and tag filters', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([mockBills[0]]);
+    (BillService.getFiltered as Mock).mockResolvedValue([mockBills[0]]);
 
     const result = await getBillsFiltered({ date: '2025-01-15', tag: 'utilities' });
 
@@ -979,7 +981,7 @@ describe('getBillsFiltered', () => {
         },
       ],
     });
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([billWithTags]);
+    (BillService.getFiltered as Mock).mockResolvedValue([billWithTags]);
 
     const result = await getBillsFiltered({});
 
@@ -989,7 +991,7 @@ describe('getBillsFiltered', () => {
   });
 
   it('returns empty array when no bills match filters', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getBillsFiltered({ date: '2025-12-31' });
 
@@ -1002,7 +1004,7 @@ describe('getBillsFiltered', () => {
 
   it('sorts bills by dueDate ascending', async () => {
     const sortedBills = [...mockBills].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(sortedBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(sortedBills);
 
     const result = await getBillsFiltered({});
 
@@ -1017,16 +1019,16 @@ describe('getBillsFiltered', () => {
 
 describe('getBillsForCurrentMonthStats', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.useFakeTimers();
+    vi.clearAllMocks();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('calculates count, total, and hasVariable correctly for current month bills', async () => {
-    jest.setSystemTime(new Date('2025-12-15'));
+    vi.setSystemTime(new Date('2025-12-15'));
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1059,7 +1061,7 @@ describe('getBillsForCurrentMonthStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForCurrentMonthStats();
 
@@ -1075,9 +1077,9 @@ describe('getBillsForCurrentMonthStats', () => {
   });
 
   it('returns zero stats when no bills exist for current month', async () => {
-    jest.setSystemTime(new Date('2025-12-15'));
+    vi.setSystemTime(new Date('2025-12-15'));
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getBillsForCurrentMonthStats();
 
@@ -1093,7 +1095,7 @@ describe('getBillsForCurrentMonthStats', () => {
   });
 
   it('calculates hasVariable as false when no variable bills exist', async () => {
-    jest.setSystemTime(new Date('2025-12-15'));
+    vi.setSystemTime(new Date('2025-12-15'));
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1107,7 +1109,7 @@ describe('getBillsForCurrentMonthStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForCurrentMonthStats();
 
@@ -1116,7 +1118,7 @@ describe('getBillsForCurrentMonthStats', () => {
   });
 
   it('sums amountDue values correctly for total calculation', async () => {
-    jest.setSystemTime(new Date('2025-12-15'));
+    vi.setSystemTime(new Date('2025-12-15'));
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1139,7 +1141,7 @@ describe('getBillsForCurrentMonthStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForCurrentMonthStats();
 
@@ -1148,9 +1150,9 @@ describe('getBillsForCurrentMonthStats', () => {
   });
 
   it('passes includeAutoPayInDueSoon setting to BillService.getFiltered', async () => {
-    jest.setSystemTime(new Date('2025-12-15'));
-    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(false);
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    vi.setSystemTime(new Date('2025-12-15'));
+    (SettingsService.getIncludeAutoPayInDueSoon as Mock).mockResolvedValue(false);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     await getBillsForCurrentMonthStats();
 
@@ -1165,7 +1167,7 @@ describe('getBillsForCurrentMonthStats', () => {
 
 describe('getAllBillsStats', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns count of all non-archived bills', async () => {
@@ -1200,7 +1202,7 @@ describe('getAllBillsStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getAllBillsStats();
 
@@ -1209,7 +1211,7 @@ describe('getAllBillsStats', () => {
   });
 
   it('returns zero count when no bills exist', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getAllBillsStats();
 
@@ -1242,7 +1244,7 @@ describe('getAllBillsStats', () => {
 
     const nonArchivedBills = allBills.filter((bill) => !bill.isArchived);
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(nonArchivedBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(nonArchivedBills);
 
     const result = await getAllBillsStats();
 
@@ -1253,12 +1255,12 @@ describe('getAllBillsStats', () => {
 
 describe('getBillsForDueSoonStats', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(true);
+    vi.clearAllMocks();
+    (SettingsService.getIncludeAutoPayInDueSoon as Mock).mockResolvedValue(true);
   });
 
   it('calculates count, total, and hasVariable correctly for due soon bills', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(7);
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1282,7 +1284,7 @@ describe('getBillsForDueSoonStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForDueSoonStats();
 
@@ -1299,8 +1301,8 @@ describe('getBillsForDueSoonStats', () => {
   });
 
   it('returns zero stats when no bills exist for due soon range', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(7);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getBillsForDueSoonStats();
 
@@ -1316,7 +1318,7 @@ describe('getBillsForDueSoonStats', () => {
   });
 
   it('calculates hasVariable as false when no variable bills exist', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(7);
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1330,7 +1332,7 @@ describe('getBillsForDueSoonStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForDueSoonStats();
 
@@ -1339,8 +1341,8 @@ describe('getBillsForDueSoonStats', () => {
   });
 
   it('uses configured range from settings', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(14);
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(14);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     await getBillsForDueSoonStats();
 
@@ -1353,7 +1355,7 @@ describe('getBillsForDueSoonStats', () => {
   });
 
   it('sums amountDue values correctly for total calculation', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(7);
 
     const mockBills: BillWithTags[] = [
       createMockBillWithTags({
@@ -1376,7 +1378,7 @@ describe('getBillsForDueSoonStats', () => {
       }),
     ];
 
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(mockBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(mockBills);
 
     const result = await getBillsForDueSoonStats();
 
@@ -1385,9 +1387,9 @@ describe('getBillsForDueSoonStats', () => {
   });
 
   it('passes includeAutoPayInDueSoon setting to BillService.getFiltered', async () => {
-    (SettingsService.getDueSoonRange as jest.Mock).mockResolvedValue(7);
-    (SettingsService.getIncludeAutoPayInDueSoon as jest.Mock).mockResolvedValue(false);
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (SettingsService.getDueSoonRange as Mock).mockResolvedValue(7);
+    (SettingsService.getIncludeAutoPayInDueSoon as Mock).mockResolvedValue(false);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     await getBillsForDueSoonStats();
 
@@ -1404,14 +1406,14 @@ describe('getBillsForDueSoonStats', () => {
 describe('skipPayment', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('fails for one-time bills', async () => {
     const mockBill = createMockBillWithTags({ frequency: 'once' });
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
 
@@ -1431,16 +1433,16 @@ describe('skipPayment', () => {
     });
     const nextDate = new Date('2026-01-15');
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDate);
-    (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
-    (db.update as jest.Mock).mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(undefined),
+    (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextDate);
+    (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
+    (db.update as Mock).mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(undefined),
       }),
     });
 
@@ -1448,7 +1450,7 @@ describe('skipPayment', () => {
 
     expect(result.success).toBe(true);
     expect(db.update).toHaveBeenCalledWith(bills);
-    const updateCall = (db.update as jest.Mock).mock.results[0].value;
+    const updateCall = (db.update as Mock).mock.results[0].value;
     const setCall = updateCall.set.mock.calls[0][0];
 
     expect(setCall.dueDate).toEqual(nextDate);
@@ -1459,12 +1461,12 @@ describe('skipPayment', () => {
 
   it('returns error if next due date cannot be calculated', async () => {
     const mockBill = createMockBillWithTags({ frequency: 'monthly' });
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
-    (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+    (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
     const result = await skipPayment({ billId: 'bill-1' });
 
@@ -1473,9 +1475,9 @@ describe('skipPayment', () => {
   });
 
   it('handles bill not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
@@ -1488,7 +1490,7 @@ describe('skipPayment', () => {
 
 describe('getArchivedBillsStats', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns count of archived bills', async () => {
@@ -1502,7 +1504,7 @@ describe('getArchivedBillsStats', () => {
         isArchived: true,
       }),
     ];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(archivedBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(archivedBills);
 
     const result = await getArchivedBillsStats();
 
@@ -1514,7 +1516,7 @@ describe('getArchivedBillsStats', () => {
   });
 
   it('returns zero count when no bills exist', async () => {
-    (BillService.getFiltered as jest.Mock).mockResolvedValue([]);
+    (BillService.getFiltered as Mock).mockResolvedValue([]);
 
     const result = await getArchivedBillsStats();
 
@@ -1544,7 +1546,7 @@ describe('getArchivedBillsStats', () => {
         isArchived: true,
       }),
     ];
-    (BillService.getFiltered as jest.Mock).mockResolvedValue(allArchivedBills);
+    (BillService.getFiltered as Mock).mockResolvedValue(allArchivedBills);
 
     const result = await getArchivedBillsStats();
 
@@ -1559,7 +1561,7 @@ describe('getArchivedBillsStats', () => {
 
 describe('searchBills', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('successful search', () => {
@@ -1578,7 +1580,7 @@ describe('searchBills', () => {
           categoryIcon: 'bolt',
         }),
       ];
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue(mockBills);
+      (BillService.searchByTitle as Mock).mockResolvedValue(mockBills);
 
       const result = await searchBills({ query: 'electric' });
 
@@ -1600,7 +1602,7 @@ describe('searchBills', () => {
     });
 
     it('returns empty array when no bills match', async () => {
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+      (BillService.searchByTitle as Mock).mockResolvedValue([]);
 
       const result = await searchBills({ query: 'nonexistent' });
 
@@ -1616,7 +1618,7 @@ describe('searchBills', () => {
         isArchived: false,
         categoryIcon: 'house',
       });
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue([mockBill]);
+      (BillService.searchByTitle as Mock).mockResolvedValue([mockBill]);
 
       const result = await searchBills({ query: 'test' });
 
@@ -1648,7 +1650,7 @@ describe('searchBills', () => {
           categoryIcon: 'archive',
         }),
       ];
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue(mockBills);
+      (BillService.searchByTitle as Mock).mockResolvedValue(mockBills);
 
       const result = await searchBills({ query: 'bill' });
 
@@ -1677,7 +1679,7 @@ describe('searchBills', () => {
     });
 
     it('accepts query with exactly 3 characters', async () => {
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+      (BillService.searchByTitle as Mock).mockResolvedValue([]);
 
       const result = await searchBills({ query: 'abc' });
 
@@ -1695,7 +1697,7 @@ describe('searchBills', () => {
     });
 
     it('accepts query with exactly 100 characters', async () => {
-      (BillService.searchByTitle as jest.Mock).mockResolvedValue([]);
+      (BillService.searchByTitle as Mock).mockResolvedValue([]);
 
       const longQuery = 'a'.repeat(100);
       const result = await searchBills({ query: longQuery });
@@ -1715,7 +1717,7 @@ describe('searchBills', () => {
 
   describe('error handling', () => {
     it('returns error when search service throws', async () => {
-      (BillService.searchByTitle as jest.Mock).mockRejectedValue(new Error('Database error'));
+      (BillService.searchByTitle as Mock).mockRejectedValue(new Error('Database error'));
 
       const result = await searchBills({ query: 'electric' });
 
@@ -1724,7 +1726,7 @@ describe('searchBills', () => {
     });
 
     it('handles service errors gracefully', async () => {
-      (BillService.searchByTitle as jest.Mock).mockRejectedValue(new Error('Connection timeout'));
+      (BillService.searchByTitle as Mock).mockRejectedValue(new Error('Connection timeout'));
 
       const result = await searchBills({ query: 'test' });
 

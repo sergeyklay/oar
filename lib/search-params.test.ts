@@ -1,24 +1,26 @@
-jest.mock('nuqs/server', () => ({
-  createParser: jest.fn((parser) => ({
+vi.mock('nuqs/server', () => ({
+  createParser: vi.fn((parser) => ({
     ...parser,
-    withDefault: jest.fn((defaultValue) => ({
+    withDefault: vi.fn((defaultValue) => ({
       ...parser,
       defaultValue,
     })),
-    withOptions: jest.fn((options) => ({
+    withOptions: vi.fn((options) => ({
       ...parser,
       ...options,
     })),
   })),
-  createSearchParamsCache: jest.fn(() => ({
-    parse: jest.fn(),
-    get: jest.fn(),
-    all: jest.fn(),
+  createSearchParamsCache: vi.fn(() => ({
+    parse: vi.fn(),
+    get: vi.fn(),
+    all: vi.fn(),
   })),
   parseAsString: {
-    withDefault: jest.fn(),
+    withDefault: vi.fn(),
   },
 }));
+
+import { describe, expect, it, vi } from 'vitest';
 
 import { parseAsMonth } from './search-params';
 

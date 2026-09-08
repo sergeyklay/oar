@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import {
   logPayment,
   deleteTransaction,
@@ -9,27 +11,27 @@ import {
 import { db, bills, transactions, resetDbMocks } from '@/db';
 import { revalidatePath } from 'next/cache';
 
-jest.mock('@/db');
-jest.mock('next/cache', () => ({
-  revalidatePath: jest.fn(),
+vi.mock('@/db');
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }));
-jest.mock('@/lib/services/PaymentService', () => ({
+vi.mock('@/lib/services/PaymentService', () => ({
   PaymentService: {
-    processPayment: jest.fn(),
-    doesPaymentAffectCurrentCycle: jest.fn(),
-    recalculateBillFromPayments: jest.fn(),
+    processPayment: vi.fn(),
+    doesPaymentAffectCurrentCycle: vi.fn(),
+    recalculateBillFromPayments: vi.fn(),
   },
 }));
-jest.mock('@/lib/services/SettingsService', () => ({
+vi.mock('@/lib/services/SettingsService', () => ({
   SettingsService: {
-    getPaidRecentlyRange: jest.fn(),
-    getBillEndAction: jest.fn(),
+    getPaidRecentlyRange: vi.fn(),
+    getBillEndAction: vi.fn(),
   },
 }));
-jest.mock('@/lib/services/TransactionService', () => ({
+vi.mock('@/lib/services/TransactionService', () => ({
   TransactionService: {
-    getRecentPayments: jest.fn(),
-    getPaymentsByDate: jest.fn(),
+    getRecentPayments: vi.fn(),
+    getPaymentsByDate: vi.fn(),
   },
 }));
 
@@ -40,7 +42,7 @@ import { TransactionService } from '@/lib/services/TransactionService';
 describe('logPayment', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockBill = {
@@ -65,31 +67,31 @@ describe('logPayment', () => {
       isHistorical: false,
     },
   ) => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([bill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([bill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
+    (PaymentService.processPayment as Mock).mockReturnValue(paymentResult);
 
-    const insertMock = jest.fn().mockReturnValue({
-      values: jest.fn().mockReturnValue({
-        returning: jest.fn().mockReturnValue({
-          get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+    const insertMock = vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn().mockReturnValue({
+          get: vi.fn().mockReturnValue({ id: 'tx-1' }),
         }),
       }),
     });
 
-    const updateMock = jest.fn().mockReturnValue({
-      set: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          run: jest.fn(),
+    const updateMock = vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          run: vi.fn(),
         }),
       }),
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       return callback({ insert: insertMock, update: updateMock });
     });
 
@@ -127,33 +129,33 @@ describe('logPayment', () => {
   it('uses provided integer amount directly in transaction insert', async () => {
     let capturedAmount: number | undefined;
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+    (PaymentService.processPayment as Mock).mockReturnValue({
       nextDueDate: new Date('2026-01-15'),
       newAmountDue: 20000,
       newStatus: 'pending',
       isHistorical: false,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const insertMock = jest.fn().mockReturnValue({
-        values: jest.fn((data) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
+      const insertMock = vi.fn().mockReturnValue({
+        values: vi.fn((data) => {
           capturedAmount = data.amount;
           return {
-            returning: jest.fn().mockReturnValue({
-              get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+            returning: vi.fn().mockReturnValue({
+              get: vi.fn().mockReturnValue({ id: 'tx-1' }),
             }),
           };
         }),
       });
-      const updateMock = jest.fn().mockReturnValue({
-        set: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+      const updateMock = vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ run: vi.fn() }),
         }),
       });
       return callback({ insert: insertMock, update: updateMock });
@@ -223,32 +225,32 @@ describe('logPayment', () => {
   it('updates bill with amountDue from PaymentService result', async () => {
     let capturedAmountDue: number | undefined;
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+    (PaymentService.processPayment as Mock).mockReturnValue({
       nextDueDate: null,
       newAmountDue: 5000,
       newStatus: 'pending',
       isHistorical: false,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const insertMock = jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+    (db.transaction as Mock).mockImplementation((callback) => {
+      const insertMock = vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       });
-      const updateMock = jest.fn().mockReturnValue({
-        set: jest.fn((data) => {
+      const updateMock = vi.fn().mockReturnValue({
+        set: vi.fn((data) => {
           capturedAmountDue = data.amountDue;
           return {
-            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            where: vi.fn().mockReturnValue({ run: vi.fn() }),
           };
         }),
       });
@@ -268,32 +270,32 @@ describe('logPayment', () => {
   it('keeps original dueDate when PaymentService returns null nextDueDate', async () => {
     let capturedDueDate: Date | undefined;
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+    (PaymentService.processPayment as Mock).mockReturnValue({
       nextDueDate: null,
       newAmountDue: 5000,
       newStatus: 'pending',
       isHistorical: false,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const insertMock = jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+    (db.transaction as Mock).mockImplementation((callback) => {
+      const insertMock = vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       });
-      const updateMock = jest.fn().mockReturnValue({
-        set: jest.fn((data) => {
+      const updateMock = vi.fn().mockReturnValue({
+        set: vi.fn((data) => {
           capturedDueDate = data.dueDate;
           return {
-            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            where: vi.fn().mockReturnValue({ run: vi.fn() }),
           };
         }),
       });
@@ -314,32 +316,32 @@ describe('logPayment', () => {
     let capturedDueDate: Date | undefined;
     const newDueDate = new Date('2026-01-15');
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([mockBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([mockBill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+    (PaymentService.processPayment as Mock).mockReturnValue({
       nextDueDate: newDueDate,
       newAmountDue: 20000,
       newStatus: 'pending',
       isHistorical: false,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const insertMock = jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+    (db.transaction as Mock).mockImplementation((callback) => {
+      const insertMock = vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       });
-      const updateMock = jest.fn().mockReturnValue({
-        set: jest.fn((data) => {
+      const updateMock = vi.fn().mockReturnValue({
+        set: vi.fn((data) => {
           capturedDueDate = data.dueDate;
           return {
-            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            where: vi.fn().mockReturnValue({ run: vi.fn() }),
           };
         }),
       });
@@ -362,33 +364,33 @@ describe('logPayment', () => {
 
     const oneTimeBill = { ...mockBill, frequency: 'once' as const };
 
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([oneTimeBill]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([oneTimeBill]),
       }),
     });
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue({
+    (PaymentService.processPayment as Mock).mockReturnValue({
       nextDueDate: null,
       newAmountDue: 0,
       newStatus: 'paid',
       isHistorical: false,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
-      const insertMock = jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+    (db.transaction as Mock).mockImplementation((callback) => {
+      const insertMock = vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       });
-      const updateMock = jest.fn().mockReturnValue({
-        set: jest.fn((data) => {
+      const updateMock = vi.fn().mockReturnValue({
+        set: vi.fn((data) => {
           capturedStatus = data.status;
           capturedAmountDue = data.amountDue;
           return {
-            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+            where: vi.fn().mockReturnValue({ run: vi.fn() }),
           };
         }),
       });
@@ -407,9 +409,9 @@ describe('logPayment', () => {
   });
 
   it('returns error when bill not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
@@ -477,8 +479,8 @@ describe('logPayment', () => {
       billEnded: true,
     };
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
-    (SettingsService.getBillEndAction as jest.Mock).mockResolvedValue('archive');
+    (PaymentService.processPayment as Mock).mockReturnValue(paymentResult);
+    (SettingsService.getBillEndAction as Mock).mockResolvedValue('archive');
 
     setupMocks(bill, paymentResult);
 
@@ -494,25 +496,25 @@ describe('logPayment', () => {
     expect(result.message).toBe('Payment logged and bill archived.');
     expect(SettingsService.getBillEndAction).toHaveBeenCalled();
 
-    const transactionCall = (db.transaction as jest.Mock).mock.calls[0][0];
+    const transactionCall = (db.transaction as Mock).mock.calls[0][0];
     const mockTx = {
-      insert: jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       }),
-      update: jest.fn().mockReturnValue({
-        set: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ run: vi.fn() }),
         }),
       }),
     };
     transactionCall(mockTx);
 
     expect(mockTx.update).toHaveBeenCalled();
-    const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
+    const setCall = (mockTx.update as Mock).mock.results[0].value.set;
     expect(setCall).toHaveBeenCalledWith(expect.objectContaining({ isArchived: true }));
   });
 
@@ -530,8 +532,8 @@ describe('logPayment', () => {
       billEnded: true,
     };
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
-    (SettingsService.getBillEndAction as jest.Mock).mockResolvedValue('mark_as_paid');
+    (PaymentService.processPayment as Mock).mockReturnValue(paymentResult);
+    (SettingsService.getBillEndAction as Mock).mockResolvedValue('mark_as_paid');
 
     setupMocks(bill, paymentResult);
 
@@ -547,25 +549,25 @@ describe('logPayment', () => {
     expect(result.message).toBe('Payment logged successfully.');
     expect(SettingsService.getBillEndAction).toHaveBeenCalled();
 
-    const transactionCall = (db.transaction as jest.Mock).mock.calls[0][0];
+    const transactionCall = (db.transaction as Mock).mock.calls[0][0];
     const mockTx = {
-      insert: jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          returning: jest.fn().mockReturnValue({
-            get: jest.fn().mockReturnValue({ id: 'tx-1' }),
+      insert: vi.fn().mockReturnValue({
+        values: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            get: vi.fn().mockReturnValue({ id: 'tx-1' }),
           }),
         }),
       }),
-      update: jest.fn().mockReturnValue({
-        set: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({ run: jest.fn() }),
+      update: vi.fn().mockReturnValue({
+        set: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ run: vi.fn() }),
         }),
       }),
     };
     transactionCall(mockTx);
 
     expect(mockTx.update).toHaveBeenCalled();
-    const setCall = (mockTx.update as jest.Mock).mock.results[0].value.set;
+    const setCall = (mockTx.update as Mock).mock.results[0].value.set;
     expect(setCall).toHaveBeenCalledWith(
       expect.not.objectContaining({ isArchived: expect.anything() }),
     );
@@ -580,7 +582,7 @@ describe('logPayment', () => {
       billEnded: false,
     };
 
-    (PaymentService.processPayment as jest.Mock).mockReturnValue(paymentResult);
+    (PaymentService.processPayment as Mock).mockReturnValue(paymentResult);
 
     setupMocks(mockBill, paymentResult);
 
@@ -595,9 +597,9 @@ describe('logPayment', () => {
   });
 
   it('returns error when database throws', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockRejectedValue(new Error('Database connection lost')),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('Database connection lost')),
       }),
     });
 
@@ -638,7 +640,7 @@ describe('updateTransaction', () => {
 
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns validation error when id is empty', async () => {
@@ -677,31 +679,31 @@ describe('updateTransaction', () => {
   });
 
   it('updates transaction successfully when it does not affect cycle', async () => {
-    const runMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock)
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         update: db.update,
       };
@@ -725,44 +727,44 @@ describe('updateTransaction', () => {
   });
 
   it('recalculates bill when payment affects current cycle', async () => {
-    const runMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock)
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(false);
 
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 5000,
       status: 'pending' as const,
       nextDueDate: new Date('2025-11-25'),
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([mockTransaction]),
           }),
         }),
       });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         update: db.update,
       };
@@ -784,44 +786,44 @@ describe('updateTransaction', () => {
   });
 
   it('recalculates bill when updated payment affects current cycle', async () => {
-    const runMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock)
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true);
 
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 8000,
       status: 'pending' as const,
       nextDueDate: null,
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([mockTransaction]),
           }),
         }),
       });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         update: db.update,
       };
@@ -842,9 +844,9 @@ describe('updateTransaction', () => {
   });
 
   it('returns error when transaction not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
@@ -860,15 +862,15 @@ describe('updateTransaction', () => {
   });
 
   it('returns error when bill not found', async () => {
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
         }),
       });
 
@@ -899,31 +901,31 @@ describe('updateTransaction', () => {
     let capturedDueDate: Date | undefined;
     let capturedStatus: string | undefined;
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([transactionWithOriginalDate]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([transactionWithOriginalDate]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([billWithAdvancedCycle]),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn((data) => {
+        update: vi.fn().mockReturnValue({
+          set: vi.fn((data) => {
             if (data.amountDue !== undefined) {
               capturedAmountDue = data.amountDue;
               capturedDueDate = data.dueDate;
               capturedStatus = data.status;
             }
             return {
-              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+              where: vi.fn().mockReturnValue({ run: vi.fn() }),
             };
           }),
         }),
@@ -958,30 +960,30 @@ describe('updateTransaction', () => {
     let capturedAmountDue: number | undefined;
     let capturedDueDate: Date | undefined;
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([billWithAdvancedCycle]),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn((data) => {
+        update: vi.fn().mockReturnValue({
+          set: vi.fn((data) => {
             if (data.amountDue !== undefined) {
               capturedAmountDue = data.amountDue;
               capturedDueDate = data.dueDate;
             }
             return {
-              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+              where: vi.fn().mockReturnValue({ run: vi.fn() }),
             };
           }),
         }),
@@ -1014,23 +1016,23 @@ describe('updateTransaction', () => {
       paidAt: new Date('2025-12-20T08:00:00'),
     };
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([transactionMorning]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([transactionMorning]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([billWithAdvancedCycle]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([billWithAdvancedCycle]),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn().mockReturnValue({
-            where: jest.fn().mockReturnValue({ run: jest.fn() }),
+        update: vi.fn().mockReturnValue({
+          set: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({ run: vi.fn() }),
           }),
         }),
       };
@@ -1062,29 +1064,29 @@ describe('updateTransaction', () => {
 
     let capturedAmountDue: number | undefined;
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([transactionWithOriginalDate]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([transactionWithOriginalDate]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([variableBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([variableBill]),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn((data) => {
+        update: vi.fn().mockReturnValue({
+          set: vi.fn((data) => {
             if (data.amountDue !== undefined) {
               capturedAmountDue = data.amountDue;
             }
             return {
-              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+              where: vi.fn().mockReturnValue({ run: vi.fn() }),
             };
           }),
         }),
@@ -1104,44 +1106,44 @@ describe('updateTransaction', () => {
   });
 
   it('triggers full recalculation when date changes', async () => {
-    const runMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock)
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock)
       .mockReturnValueOnce(true)
       .mockReturnValueOnce(true);
 
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 5000,
       status: 'pending' as const,
       nextDueDate: new Date('2025-11-25'),
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([mockTransaction]),
           }),
         }),
       });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         update: db.update,
       };
@@ -1172,29 +1174,29 @@ describe('updateTransaction', () => {
       dueDate: new Date('2025-12-25'),
     };
 
-    const runMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(false);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(false);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([historicalTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([historicalTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([currentBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([currentBill]),
         }),
       });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         update: db.update,
       };
@@ -1239,43 +1241,43 @@ describe('updateTransaction', () => {
     let capturedAmountDue: number | undefined;
     let capturedStatus: string | undefined;
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
 
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 0,
       status: 'paid' as const,
       nextDueDate: null,
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([transaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([transaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([oneTimeBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([oneTimeBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([transaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([transaction]),
           }),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn((data) => {
+        update: vi.fn().mockReturnValue({
+          set: vi.fn((data) => {
             if (data.amountDue !== undefined) {
               capturedAmountDue = data.amountDue;
               capturedStatus = data.status;
             }
             return {
-              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+              where: vi.fn().mockReturnValue({ run: vi.fn() }),
             };
           }),
         }),
@@ -1291,7 +1293,7 @@ describe('updateTransaction', () => {
 
     expect(result.success).toBe(true);
     expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
-    const recalculateCall = (PaymentService.recalculateBillFromPayments as jest.Mock).mock.calls[0];
+    const recalculateCall = (PaymentService.recalculateBillFromPayments as Mock).mock.calls[0];
     expect(recalculateCall[0]).toMatchObject({
       frequency: 'once',
       amountDue: 5000,
@@ -1324,43 +1326,43 @@ describe('updateTransaction', () => {
     let capturedAmountDue: number | undefined;
     let capturedStatus: string | undefined;
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
 
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 2000,
       status: 'pending' as const,
       nextDueDate: null,
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([transaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([transaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([oneTimeBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([oneTimeBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([transaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([transaction]),
           }),
         }),
       });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
-        update: jest.fn().mockReturnValue({
-          set: jest.fn((data) => {
+        update: vi.fn().mockReturnValue({
+          set: vi.fn((data) => {
             if (data.amountDue !== undefined) {
               capturedAmountDue = data.amountDue;
               capturedStatus = data.status;
             }
             return {
-              where: jest.fn().mockReturnValue({ run: jest.fn() }),
+              where: vi.fn().mockReturnValue({ run: vi.fn() }),
             };
           }),
         }),
@@ -1376,7 +1378,7 @@ describe('updateTransaction', () => {
 
     expect(result.success).toBe(true);
     expect(PaymentService.recalculateBillFromPayments).toHaveBeenCalled();
-    const recalculateCall = (PaymentService.recalculateBillFromPayments as jest.Mock).mock.calls[0];
+    const recalculateCall = (PaymentService.recalculateBillFromPayments as Mock).mock.calls[0];
     expect(recalculateCall[0]).toMatchObject({
       frequency: 'once',
       amountDue: 0,
@@ -1392,9 +1394,9 @@ describe('updateTransaction', () => {
   });
 
   it('returns error when database throws', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockRejectedValue(new Error('Connection error')),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('Connection error')),
       }),
     });
 
@@ -1434,32 +1436,32 @@ describe('deleteTransaction', () => {
 
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('deletes transaction when it exists', async () => {
-    const runMock = jest.fn();
-    const deleteMock = jest.fn().mockReturnValue({ run: runMock });
+    const runMock = vi.fn();
+    const deleteMock = vi.fn().mockReturnValue({ run: runMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(false);
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(false);
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       });
 
-    (db.delete as jest.Mock).mockReturnValue({
+    (db.delete as Mock).mockReturnValue({
       where: deleteMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         delete: db.delete,
         update: db.update,
@@ -1477,9 +1479,9 @@ describe('deleteTransaction', () => {
   });
 
   it('returns error when transaction not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
@@ -1499,47 +1501,47 @@ describe('deleteTransaction', () => {
   });
 
   it('recalculates bill when payment affected current cycle', async () => {
-    const runMock = jest.fn();
-    const deleteMock = jest.fn().mockReturnValue({ run: runMock });
-    const updateRunMock = jest.fn();
-    const updateWhereMock = jest.fn().mockReturnValue({ run: updateRunMock });
-    const updateSetMock = jest.fn().mockReturnValue({ where: updateWhereMock });
+    const runMock = vi.fn();
+    const deleteMock = vi.fn().mockReturnValue({ run: runMock });
+    const updateRunMock = vi.fn();
+    const updateWhereMock = vi.fn().mockReturnValue({ run: updateRunMock });
+    const updateSetMock = vi.fn().mockReturnValue({ where: updateWhereMock });
 
-    (PaymentService.doesPaymentAffectCurrentCycle as jest.Mock).mockReturnValue(true);
-    (PaymentService.recalculateBillFromPayments as jest.Mock).mockReturnValue({
+    (PaymentService.doesPaymentAffectCurrentCycle as Mock).mockReturnValue(true);
+    (PaymentService.recalculateBillFromPayments as Mock).mockReturnValue({
       amountDue: 10000,
       status: 'pending',
       nextDueDate: new Date('2025-11-25'),
     });
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockBill]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockBill]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({
-            orderBy: jest.fn().mockResolvedValue([]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            orderBy: vi.fn().mockResolvedValue([]),
           }),
         }),
       });
 
-    (db.delete as jest.Mock).mockReturnValue({
+    (db.delete as Mock).mockReturnValue({
       where: deleteMock,
     });
 
-    (db.update as jest.Mock).mockReturnValue({
+    (db.update as Mock).mockReturnValue({
       set: updateSetMock,
     });
 
-    (db.transaction as jest.Mock).mockImplementation((callback) => {
+    (db.transaction as Mock).mockImplementation((callback) => {
       const tx = {
         delete: db.delete,
         update: db.update,
@@ -1555,15 +1557,15 @@ describe('deleteTransaction', () => {
   });
 
   it('returns error when bill not found', async () => {
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([mockTransaction]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([mockTransaction]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
         }),
       });
 
@@ -1574,9 +1576,9 @@ describe('deleteTransaction', () => {
   });
 
   it('returns error when database throws', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockRejectedValue(new Error('Connection error')),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockRejectedValue(new Error('Connection error')),
       }),
     });
 
@@ -1589,12 +1591,12 @@ describe('deleteTransaction', () => {
 
 describe('getRecentPaymentsStats', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns count and total from recent payments', async () => {
-    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([
+    (SettingsService.getPaidRecentlyRange as Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue([
       { id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date(), notes: null },
       { id: 'tx-2', amount: 3000, billTitle: 'Electric', paidAt: new Date(), notes: null },
     ]);
@@ -1606,8 +1608,8 @@ describe('getRecentPaymentsStats', () => {
   });
 
   it('calls SettingsService to get range', async () => {
-    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(14);
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+    (SettingsService.getPaidRecentlyRange as Mock).mockResolvedValue(14);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue([]);
 
     await getRecentPaymentsStats();
 
@@ -1616,8 +1618,8 @@ describe('getRecentPaymentsStats', () => {
   });
 
   it('returns zero count and total when no payments', async () => {
-    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+    (SettingsService.getPaidRecentlyRange as Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue([]);
 
     const result = await getRecentPaymentsStats();
 
@@ -1626,8 +1628,8 @@ describe('getRecentPaymentsStats', () => {
   });
 
   it('calculates total correctly with multiple payments', async () => {
-    (SettingsService.getPaidRecentlyRange as jest.Mock).mockResolvedValue(7);
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([
+    (SettingsService.getPaidRecentlyRange as Mock).mockResolvedValue(7);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue([
       { id: 'tx-1', amount: 10000, billTitle: 'Rent', paidAt: new Date(), notes: null },
       { id: 'tx-2', amount: 5000, billTitle: 'Electric', paidAt: new Date(), notes: null },
       { id: 'tx-3', amount: 2500, billTitle: 'Internet', paidAt: new Date(), notes: null },
@@ -1642,12 +1644,12 @@ describe('getRecentPaymentsStats', () => {
 
 describe('getRecentPayments', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns payments for valid input', async () => {
     const mockPayments = [{ id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() }];
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue(mockPayments);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue(mockPayments);
 
     const result = await getRecentPayments({ days: 7 });
 
@@ -1656,7 +1658,7 @@ describe('getRecentPayments', () => {
   });
 
   it('passes tag to service when provided', async () => {
-    (TransactionService.getRecentPayments as jest.Mock).mockResolvedValue([]);
+    (TransactionService.getRecentPayments as Mock).mockResolvedValue([]);
 
     await getRecentPayments({ days: 14, tag: 'utilities' });
 
@@ -1678,7 +1680,7 @@ describe('getRecentPayments', () => {
   });
 
   it('returns error when service throws', async () => {
-    (TransactionService.getRecentPayments as jest.Mock).mockRejectedValue(new Error('DB error'));
+    (TransactionService.getRecentPayments as Mock).mockRejectedValue(new Error('DB error'));
 
     const result = await getRecentPayments({ days: 7 });
 
@@ -1689,12 +1691,12 @@ describe('getRecentPayments', () => {
 
 describe('getPaymentsByDate', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns payments for valid date', async () => {
     const mockPayments = [{ id: 'tx-1', amount: 5000, billTitle: 'Rent', paidAt: new Date() }];
-    (TransactionService.getPaymentsByDate as jest.Mock).mockResolvedValue(mockPayments);
+    (TransactionService.getPaymentsByDate as Mock).mockResolvedValue(mockPayments);
 
     const result = await getPaymentsByDate({ date: '2026-01-05' });
 
@@ -1703,7 +1705,7 @@ describe('getPaymentsByDate', () => {
   });
 
   it('passes tag to service when provided', async () => {
-    (TransactionService.getPaymentsByDate as jest.Mock).mockResolvedValue([]);
+    (TransactionService.getPaymentsByDate as Mock).mockResolvedValue([]);
 
     await getPaymentsByDate({ date: '2026-01-05', tag: 'utilities' });
 
@@ -1725,7 +1727,7 @@ describe('getPaymentsByDate', () => {
   });
 
   it('returns error when service throws', async () => {
-    (TransactionService.getPaymentsByDate as jest.Mock).mockRejectedValue(new Error('DB error'));
+    (TransactionService.getPaymentsByDate as Mock).mockRejectedValue(new Error('DB error'));
 
     const result = await getPaymentsByDate({ date: '2026-01-05' });
 

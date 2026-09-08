@@ -1,13 +1,15 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AnnualSpendingRow } from './AnnualSpendingRow';
 import type { AggregatedBillSpending } from '@/lib/types';
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
-jest.mock('@/components/features/bills/CategoryIcon', () => ({
+vi.mock('@/components/features/bills/CategoryIcon', () => ({
   CategoryIcon: ({ icon }: { icon: string }) => (
     <span data-testid={`category-icon-${icon}`}>{icon}</span>
   ),
@@ -50,7 +52,7 @@ function renderRow(props?: {
 
 describe('AnnualSpendingRow', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('rendering', () => {
@@ -125,7 +127,7 @@ describe('AnnualSpendingRow', () => {
   describe('interactions', () => {
     it('calls onClick when row is clicked', async () => {
       const user = userEvent.setup();
-      const mockOnClick = jest.fn();
+      const mockOnClick = vi.fn();
 
       renderRow({ onClick: mockOnClick });
 
@@ -136,7 +138,7 @@ describe('AnnualSpendingRow', () => {
     });
 
     it('applies cursor pointer style when onClick is provided', () => {
-      const mockOnClick = jest.fn();
+      const mockOnClick = vi.fn();
 
       renderRow({ onClick: mockOnClick });
 

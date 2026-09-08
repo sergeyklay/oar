@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { PaymentService } from './PaymentService';
 import { RecurrenceService } from './RecurrenceService';
 import type { Transaction } from '@/db/schema';
@@ -12,23 +14,23 @@ const createTransaction = (overrides: Partial<Transaction> = {}): Transaction =>
   ...overrides,
 });
 
-jest.mock('./RecurrenceService', () => ({
+vi.mock('./RecurrenceService', () => ({
   RecurrenceService: {
-    calculateNextDueDate: jest.fn(),
-    deriveStatus: jest.fn(),
+    calculateNextDueDate: vi.fn(),
+    deriveStatus: vi.fn(),
   },
 }));
 
 describe('PaymentService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('processPayment with updateDueDate=true (Full Payment)', () => {
     it('advances due date and resets amountDue for monthly bill', () => {
       const nextMonth = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -57,8 +59,8 @@ describe('PaymentService', () => {
 
     it('advances due date and resets amountDue for yearly bill', () => {
       const nextYear = new Date('2026-01-15');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextYear);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextYear);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 120000,
@@ -82,8 +84,8 @@ describe('PaymentService', () => {
 
     it('resets amountDue to zero for variable bill when cycle advances', () => {
       const nextMonth = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -106,8 +108,8 @@ describe('PaymentService', () => {
 
     it('resets amountDue to zero for variable bill even when payment is less than base amount', () => {
       const nextMonth = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -128,7 +130,7 @@ describe('PaymentService', () => {
     });
 
     it('marks one-time bill as paid with zero amountDue', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 5000,
@@ -153,8 +155,8 @@ describe('PaymentService', () => {
 
     it('resets amountDue to base amount even after partial payment', () => {
       const nextMonth = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextMonth);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextMonth);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -175,8 +177,8 @@ describe('PaymentService', () => {
 
     it('derives status as overdue when next due date is past', () => {
       const pastDate = new Date('2025-01-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(pastDate);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('overdue');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(pastDate);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('overdue');
 
       const bill = {
         amount: 10000,
@@ -200,7 +202,7 @@ describe('PaymentService', () => {
 
   describe('processPayment with updateDueDate=false (Partial Payment)', () => {
     it('reduces amountDue without changing due date', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -222,7 +224,7 @@ describe('PaymentService', () => {
     });
 
     it('clamps amountDue to zero when payment exceeds amount due', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -242,7 +244,7 @@ describe('PaymentService', () => {
     });
 
     it('preserves current status based on original due date', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('overdue');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('overdue');
 
       const bill = {
         amount: 20000,
@@ -264,7 +266,7 @@ describe('PaymentService', () => {
     });
 
     it('handles exact payment amount correctly', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -284,7 +286,7 @@ describe('PaymentService', () => {
     });
 
     it('allows multiple partial payments in sequence', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill1 = {
         amount: 20000,
@@ -310,7 +312,7 @@ describe('PaymentService', () => {
     });
 
     it('works with one-time bills for partial payments', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -358,12 +360,12 @@ describe('PaymentService', () => {
 
   describe('bill end detection', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('detects bill end when next due date exceeds endDate', () => {
       const endDate = new Date('2025-03-20');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 20000,
@@ -390,7 +392,7 @@ describe('PaymentService', () => {
     });
 
     it('detects bill end for one-time bills', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 5000,
@@ -412,7 +414,7 @@ describe('PaymentService', () => {
     });
 
     it('detects bill end when interval changed to once and fully paid via partial payment', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -436,8 +438,8 @@ describe('PaymentService', () => {
     it('does not detect bill end when next due date does not exceed endDate', () => {
       const nextDueDate = new Date('2025-04-15');
       const endDate = new Date('2025-05-20');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -460,8 +462,8 @@ describe('PaymentService', () => {
 
     it('does not detect bill end for recurring bills without endDate', () => {
       const nextDueDate = new Date('2025-04-15');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -481,7 +483,7 @@ describe('PaymentService', () => {
     });
 
     it('does not detect bill end for partial payments on recurring bills', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -504,7 +506,7 @@ describe('PaymentService', () => {
 
   describe('edge cases', () => {
     it('handles zero payment amount with updateDueDate=false', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -524,7 +526,7 @@ describe('PaymentService', () => {
     });
 
     it('handles zero amountDue with new payment', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -544,7 +546,7 @@ describe('PaymentService', () => {
     });
 
     it('handles large payment amounts (integer overflow protection)', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 1000000000, // 10 million in minor units
@@ -587,8 +589,8 @@ describe('PaymentService', () => {
     });
 
     it('treats payment within cycle as current for monthly bill', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(new Date('2025-04-01'));
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(new Date('2025-04-01'));
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -609,7 +611,7 @@ describe('PaymentService', () => {
     });
 
     it('treats early payment on one-time bill as current and marks as paid', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 5000,
@@ -631,7 +633,7 @@ describe('PaymentService', () => {
     });
 
     it('treats payment on dueDate as current for one-time bill', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 5000,
@@ -672,7 +674,7 @@ describe('PaymentService', () => {
 
   describe('recalculateBillFromPayments', () => {
     it('returns base state for one-time bill with no payments', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -696,7 +698,7 @@ describe('PaymentService', () => {
 
     it('reverts to previous cycle when no current payments but cycle was advanced', () => {
       const previousDueDate = new Date('2026-12-23');
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -719,7 +721,7 @@ describe('PaymentService', () => {
     });
 
     it('keeps current cycle when previous cycle was fully paid', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -744,7 +746,7 @@ describe('PaymentService', () => {
 
     it('reverts to previous cycle with partial payment when previous cycle had partial payment', () => {
       const previousDueDate = new Date('2026-12-23');
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 10000,
@@ -769,8 +771,8 @@ describe('PaymentService', () => {
 
     it('advances cycle when total paid in current cycle >= amountDue', () => {
       const nextDueDate = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -799,7 +801,7 @@ describe('PaymentService', () => {
     });
 
     it('marks one-time bill as paid when total paid >= amountDue', () => {
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(null);
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(null);
 
       const bill = {
         amount: 5000,
@@ -827,7 +829,7 @@ describe('PaymentService', () => {
     });
 
     it('reduces amountDue for partial payment in current cycle', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -856,7 +858,7 @@ describe('PaymentService', () => {
     });
 
     it('sums multiple payments in current cycle', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -887,7 +889,7 @@ describe('PaymentService', () => {
     });
 
     it('excludes historical payments from calculation', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -918,7 +920,7 @@ describe('PaymentService', () => {
     });
 
     it('clamps amountDue to zero when overpayment occurs', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -945,8 +947,8 @@ describe('PaymentService', () => {
 
     it('forces amountDue to zero for variable bill when cycle advances', () => {
       const nextDueDate = new Date('2025-04-01');
-      (RecurrenceService.calculateNextDueDate as jest.Mock).mockReturnValue(nextDueDate);
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.calculateNextDueDate as Mock).mockReturnValue(nextDueDate);
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -974,7 +976,7 @@ describe('PaymentService', () => {
     });
 
     it('preserves cycle for variable bill when previous cycle had payments', () => {
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,
@@ -1004,7 +1006,7 @@ describe('PaymentService', () => {
 
     it('reverts variable bill cycle only when previous cycle had no payments', () => {
       const previousDueDate = new Date('2025-02-01');
-      (RecurrenceService.deriveStatus as jest.Mock).mockReturnValue('pending');
+      (RecurrenceService.deriveStatus as Mock).mockReturnValue('pending');
 
       const bill = {
         amount: 20000,

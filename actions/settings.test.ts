@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import {
   getSettingsStructure,
   updateDueSoonRange,
@@ -12,33 +14,33 @@ import { SettingsService } from '@/lib/services/SettingsService';
 import { revalidatePath } from 'next/cache';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('next/cache', () => ({
-  revalidatePath: jest.fn(),
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }));
-jest.mock('@/lib/services/SettingsService', () => ({
+vi.mock('@/lib/services/SettingsService', () => ({
   SettingsService: {
-    getStructure: jest.fn(),
-    setDueSoonRange: jest.fn(),
-    setPaidRecentlyRange: jest.fn(),
-    setViewOptions: jest.fn(),
-    setBillEndAction: jest.fn(),
-    setWeekendAdjustment: jest.fn(),
-    getWeekendAdjustment: jest.fn(),
-    set: jest.fn(),
+    getStructure: vi.fn(),
+    setDueSoonRange: vi.fn(),
+    setPaidRecentlyRange: vi.fn(),
+    setViewOptions: vi.fn(),
+    setBillEndAction: vi.fn(),
+    setWeekendAdjustment: vi.fn(),
+    getWeekendAdjustment: vi.fn(),
+    set: vi.fn(),
   },
 }));
-jest.mock('@/db', () => ({
+vi.mock('@/db', () => ({
   db: {},
   settings: {},
   settingsCategories: {},
   settingsSections: {},
 }));
 
-jest.mock('@/lib/logger');
+vi.mock('@/lib/logger');
 
 describe('getSettingsStructure', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns success with structure data', async () => {
@@ -54,7 +56,7 @@ describe('getSettingsStructure', () => {
       ],
     };
 
-    (SettingsService.getStructure as jest.Mock).mockResolvedValue(mockStructure);
+    (SettingsService.getStructure as Mock).mockResolvedValue(mockStructure);
 
     const result = await getSettingsStructure();
 
@@ -66,7 +68,7 @@ describe('getSettingsStructure', () => {
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
 
-    (SettingsService.getStructure as jest.Mock).mockRejectedValue(error);
+    (SettingsService.getStructure as Mock).mockRejectedValue(error);
 
     const result = await getSettingsStructure();
 
@@ -80,11 +82,11 @@ describe('getSettingsStructure', () => {
 
 describe('updateDueSoonRange', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('updates range setting successfully', async () => {
-    (SettingsService.setDueSoonRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setDueSoonRange as Mock).mockResolvedValue(undefined);
 
     const result = await updateDueSoonRange({ range: '7' });
 
@@ -95,7 +97,7 @@ describe('updateDueSoonRange', () => {
   });
 
   it('converts string range to number', async () => {
-    (SettingsService.setDueSoonRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setDueSoonRange as Mock).mockResolvedValue(undefined);
 
     await updateDueSoonRange({ range: '14' });
 
@@ -126,7 +128,7 @@ describe('updateDueSoonRange', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.setDueSoonRange as jest.Mock).mockRejectedValue(error);
+    (SettingsService.setDueSoonRange as Mock).mockRejectedValue(error);
 
     const result = await updateDueSoonRange({ range: '7' });
 
@@ -138,7 +140,7 @@ describe('updateDueSoonRange', () => {
   });
 
   it('accepts all valid range values', async () => {
-    (SettingsService.setDueSoonRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setDueSoonRange as Mock).mockResolvedValue(undefined);
 
     const validRanges = ['0', '1', '3', '5', '7', '10', '14', '20', '30'];
 
@@ -153,11 +155,11 @@ describe('updateDueSoonRange', () => {
 
 describe('updatePaidRecentlyRange', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('updates range setting successfully', async () => {
-    (SettingsService.setPaidRecentlyRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setPaidRecentlyRange as Mock).mockResolvedValue(undefined);
 
     const result = await updatePaidRecentlyRange({ range: '7' });
 
@@ -168,7 +170,7 @@ describe('updatePaidRecentlyRange', () => {
   });
 
   it('converts string range to number', async () => {
-    (SettingsService.setPaidRecentlyRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setPaidRecentlyRange as Mock).mockResolvedValue(undefined);
 
     await updatePaidRecentlyRange({ range: '14' });
 
@@ -197,7 +199,7 @@ describe('updatePaidRecentlyRange', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.setPaidRecentlyRange as jest.Mock).mockRejectedValue(error);
+    (SettingsService.setPaidRecentlyRange as Mock).mockRejectedValue(error);
 
     const result = await updatePaidRecentlyRange({ range: '7' });
 
@@ -209,7 +211,7 @@ describe('updatePaidRecentlyRange', () => {
   });
 
   it('accepts all valid range values', async () => {
-    (SettingsService.setPaidRecentlyRange as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setPaidRecentlyRange as Mock).mockResolvedValue(undefined);
 
     const validRanges = ['0', '1', '3', '5', '7', '10', '14', '20', '30'];
 
@@ -223,11 +225,11 @@ describe('updatePaidRecentlyRange', () => {
 
 describe('updateViewOptions', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('updates view options successfully', async () => {
-    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setViewOptions as Mock).mockResolvedValue(undefined);
 
     const result = await updateViewOptions({
       currency: 'EUR',
@@ -250,7 +252,7 @@ describe('updateViewOptions', () => {
   });
 
   it('coerces weekStart string to number', async () => {
-    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setViewOptions as Mock).mockResolvedValue(undefined);
 
     const result = await updateViewOptions({
       currency: 'USD',
@@ -323,7 +325,7 @@ describe('updateViewOptions', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.setViewOptions as jest.Mock).mockRejectedValue(error);
+    (SettingsService.setViewOptions as Mock).mockRejectedValue(error);
 
     const result = await updateViewOptions({
       currency: 'USD',
@@ -340,10 +342,10 @@ describe('updateViewOptions', () => {
   });
 
   it('accepts all valid weekStart values (0-6)', async () => {
-    (SettingsService.setViewOptions as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setViewOptions as Mock).mockResolvedValue(undefined);
 
     for (let day = 0; day <= 6; day++) {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
 
       const result = await updateViewOptions({
         currency: 'USD',
@@ -362,11 +364,11 @@ describe('updateViewOptions', () => {
 
 describe('updateBillEndAction', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('updates bill end action setting successfully', async () => {
-    (SettingsService.setBillEndAction as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setBillEndAction as Mock).mockResolvedValue(undefined);
 
     const result = await updateBillEndAction('archive');
 
@@ -376,7 +378,7 @@ describe('updateBillEndAction', () => {
   });
 
   it('accepts mark_as_paid value', async () => {
-    (SettingsService.setBillEndAction as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.setBillEndAction as Mock).mockResolvedValue(undefined);
 
     const result = await updateBillEndAction('mark_as_paid');
 
@@ -396,7 +398,7 @@ describe('updateBillEndAction', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.setBillEndAction as jest.Mock).mockRejectedValue(error);
+    (SettingsService.setBillEndAction as Mock).mockRejectedValue(error);
 
     const result = await updateBillEndAction('archive');
 
@@ -410,13 +412,13 @@ describe('updateBillEndAction', () => {
 
 describe('updateWeekendAdjustment', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it.each([['unchanged'], ['next_business_day'], ['previous_business_day']])(
     'updates weekend adjustment setting successfully for %s',
     async (strategy) => {
-      (SettingsService.setWeekendAdjustment as jest.Mock).mockResolvedValue(undefined);
+      (SettingsService.setWeekendAdjustment as Mock).mockResolvedValue(undefined);
 
       const result = await updateWeekendAdjustment({
         strategy: strategy as 'unchanged' | 'next_business_day' | 'previous_business_day',
@@ -441,7 +443,7 @@ describe('updateWeekendAdjustment', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.setWeekendAdjustment as jest.Mock).mockRejectedValue(error);
+    (SettingsService.setWeekendAdjustment as Mock).mockRejectedValue(error);
 
     const result = await updateWeekendAdjustment({ strategy: 'next_business_day' });
 
@@ -455,11 +457,11 @@ describe('updateWeekendAdjustment', () => {
 
 describe('getWeekendAdjustment', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns success with weekend adjustment strategy', async () => {
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
+    (SettingsService.getWeekendAdjustment as Mock).mockResolvedValue('next_business_day');
 
     const result = await getWeekendAdjustment();
 
@@ -470,7 +472,7 @@ describe('getWeekendAdjustment', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockRejectedValue(error);
+    (SettingsService.getWeekendAdjustment as Mock).mockRejectedValue(error);
 
     const result = await getWeekendAdjustment();
 
@@ -484,11 +486,11 @@ describe('getWeekendAdjustment', () => {
 
 describe('updateAutoLogAutoPay', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('updates setting successfully when enabled is true', async () => {
-    (SettingsService.set as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.set as Mock).mockResolvedValue(undefined);
 
     const result = await updateAutoLogAutoPay({ enabled: true });
 
@@ -498,7 +500,7 @@ describe('updateAutoLogAutoPay', () => {
   });
 
   it('updates setting successfully when enabled is false', async () => {
-    (SettingsService.set as jest.Mock).mockResolvedValue(undefined);
+    (SettingsService.set as Mock).mockResolvedValue(undefined);
 
     const result = await updateAutoLogAutoPay({ enabled: false });
 
@@ -518,7 +520,7 @@ describe('updateAutoLogAutoPay', () => {
 
   it('returns error when service throws', async () => {
     const error = new Error('Database error');
-    (SettingsService.set as jest.Mock).mockRejectedValue(error);
+    (SettingsService.set as Mock).mockRejectedValue(error);
 
     const result = await updateAutoLogAutoPay({ enabled: true });
 

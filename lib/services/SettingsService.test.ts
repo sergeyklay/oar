@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { SettingsService } from './SettingsService';
 import { db, settingsCategories, settingsSections, settings, resetDbMocks } from '@/db';
 import {
@@ -10,55 +12,55 @@ import {
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/lib/money';
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/db');
-jest.mock('@/lib/logger');
+vi.mock('@/db');
+vi.mock('@/lib/logger');
 
 type QueryBuilder = {
-  from: jest.Mock;
-  where: jest.Mock;
-  limit: jest.Mock;
-  orderBy: jest.Mock;
-  all: jest.Mock;
-  values: jest.Mock;
-  returning: jest.Mock;
-  get: jest.Mock;
-  onConflictDoUpdate: jest.Mock;
-  onConflictDoNothing: jest.Mock;
-  run: jest.Mock;
+  from: Mock;
+  where: Mock;
+  limit: Mock;
+  orderBy: Mock;
+  all: Mock;
+  values: Mock;
+  returning: Mock;
+  get: Mock;
+  onConflictDoUpdate: Mock;
+  onConflictDoNothing: Mock;
+  run: Mock;
   then?: (onResolve: (value: unknown[]) => unknown) => Promise<unknown>;
 };
 
 const createSelectBuilderSync = (result: unknown[]): QueryBuilder => {
   const resultPromise = Promise.resolve(result);
   const fromResult = {
-    where: jest.fn().mockReturnValue({
-      limit: jest.fn().mockResolvedValue(result),
-      orderBy: jest.fn().mockResolvedValue(result),
+    where: vi.fn().mockReturnValue({
+      limit: vi.fn().mockResolvedValue(result),
+      orderBy: vi.fn().mockResolvedValue(result),
       then: resultPromise.then.bind(resultPromise),
       catch: resultPromise.catch.bind(resultPromise),
     }),
-    orderBy: jest.fn().mockResolvedValue(result),
-    limit: jest.fn().mockResolvedValue(result),
+    orderBy: vi.fn().mockResolvedValue(result),
+    limit: vi.fn().mockResolvedValue(result),
     then: resultPromise.then.bind(resultPromise),
     catch: resultPromise.catch.bind(resultPromise),
   };
   const builder: QueryBuilder = {
-    from: jest.fn().mockReturnValue(fromResult),
-    where: jest.fn().mockReturnValue({
-      limit: jest.fn().mockResolvedValue(result),
-      orderBy: jest.fn().mockResolvedValue(result),
+    from: vi.fn().mockReturnValue(fromResult),
+    where: vi.fn().mockReturnValue({
+      limit: vi.fn().mockResolvedValue(result),
+      orderBy: vi.fn().mockResolvedValue(result),
       then: resultPromise.then.bind(resultPromise),
       catch: resultPromise.catch.bind(resultPromise),
     }),
-    limit: jest.fn().mockResolvedValue(result),
-    orderBy: jest.fn().mockResolvedValue(result),
-    all: jest.fn().mockReturnValue(result),
-    values: jest.fn().mockReturnThis(),
-    returning: jest.fn().mockReturnThis(),
-    get: jest.fn().mockReturnValue(result[0] ?? null),
-    onConflictDoUpdate: jest.fn().mockReturnThis(),
-    onConflictDoNothing: jest.fn().mockReturnThis(),
-    run: jest.fn(),
+    limit: vi.fn().mockResolvedValue(result),
+    orderBy: vi.fn().mockResolvedValue(result),
+    all: vi.fn().mockReturnValue(result),
+    values: vi.fn().mockReturnThis(),
+    returning: vi.fn().mockReturnThis(),
+    get: vi.fn().mockReturnValue(result[0] ?? null),
+    onConflictDoUpdate: vi.fn().mockReturnThis(),
+    onConflictDoNothing: vi.fn().mockReturnThis(),
+    run: vi.fn(),
     then: resultPromise.then.bind(resultPromise),
   };
   return builder;
@@ -66,20 +68,20 @@ const createSelectBuilderSync = (result: unknown[]): QueryBuilder => {
 
 describe('SettingsService', () => {
   let mockLogger: {
-    error: jest.Mock;
-    warn: jest.Mock;
-    info: jest.Mock;
-    debug: jest.Mock;
+    error: Mock;
+    warn: Mock;
+    info: Mock;
+    debug: Mock;
   };
 
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockLogger = getLogger('SettingsService') as unknown as {
-      error: jest.Mock;
-      warn: jest.Mock;
-      info: jest.Mock;
-      debug: jest.Mock;
+      error: Mock;
+      warn: Mock;
+      info: Mock;
+      debug: Mock;
     };
     mockLogger.error.mockClear();
     mockLogger.warn.mockClear();
@@ -89,7 +91,7 @@ describe('SettingsService', () => {
 
   describe('getAll', () => {
     it('returns all settings merged with defaults', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([
           { key: 'currency', value: 'EUR' },
           { key: 'locale', value: 'de-DE' },
@@ -109,7 +111,7 @@ describe('SettingsService', () => {
     });
 
     it('uses defaults when settings are missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getAll();
 
@@ -121,7 +123,7 @@ describe('SettingsService', () => {
     });
 
     it('parses weekStart as number', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'weekStart', value: '6' }]),
       );
 
@@ -137,9 +139,7 @@ describe('SettingsService', () => {
       ['-1', 0],
       ['10', 0],
     ])('uses default weekStart for invalid value %s', async (value, expected) => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ key: 'weekStart', value }]),
-      );
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ key: 'weekStart', value }]));
 
       const result = await SettingsService.getAll();
 
@@ -152,7 +152,7 @@ describe('SettingsService', () => {
       ['invalid', true],
       ['', true],
     ])('parses includeAutoPayInDueSoon value %s correctly', async (value, expected) => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value }]),
       );
 
@@ -162,7 +162,7 @@ describe('SettingsService', () => {
     });
 
     it('uses default includeAutoPayInDueSoon when missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getAll();
 
@@ -172,7 +172,7 @@ describe('SettingsService', () => {
 
   describe('get', () => {
     it('returns stored value for currency', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'currency', value: 'EUR' }]),
       );
 
@@ -182,7 +182,7 @@ describe('SettingsService', () => {
     });
 
     it('returns stored value for locale', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'locale', value: 'de-DE' }]),
       );
 
@@ -192,7 +192,7 @@ describe('SettingsService', () => {
     });
 
     it('returns stored value for weekStart', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'weekStart', value: '1' }]),
       );
 
@@ -202,7 +202,7 @@ describe('SettingsService', () => {
     });
 
     it('returns stored value for includeAutoPayInDueSoon', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ key: 'includeAutoPayInDueSoon', value: 'false' }]),
       );
 
@@ -212,7 +212,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default value when setting is missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.get('currency');
 
@@ -222,9 +222,9 @@ describe('SettingsService', () => {
 
   describe('set', () => {
     it('upserts currency setting', async () => {
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -236,9 +236,9 @@ describe('SettingsService', () => {
     });
 
     it('upserts locale setting', async () => {
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -249,10 +249,10 @@ describe('SettingsService', () => {
     });
 
     it('converts weekStart number to string for storage', async () => {
-      const valuesMock = jest.fn().mockReturnValue({
-        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      const valuesMock = vi.fn().mockReturnValue({
+        onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
       });
-      (db.insert as jest.Mock).mockReturnValue({ values: valuesMock });
+      (db.insert as Mock).mockReturnValue({ values: valuesMock });
 
       await SettingsService.set('weekStart', 1);
 
@@ -263,10 +263,10 @@ describe('SettingsService', () => {
     });
 
     it('converts includeAutoPayInDueSoon boolean to string for storage', async () => {
-      const valuesMock = jest.fn().mockReturnValue({
-        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      const valuesMock = vi.fn().mockReturnValue({
+        onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
       });
-      (db.insert as jest.Mock).mockReturnValue({ values: valuesMock });
+      (db.insert as Mock).mockReturnValue({ values: valuesMock });
 
       await SettingsService.set('includeAutoPayInDueSoon', false);
 
@@ -279,18 +279,18 @@ describe('SettingsService', () => {
 
   describe('setViewOptions', () => {
     it('upserts all view options settings within a transaction', async () => {
-      (db.select as jest.Mock).mockReturnValue(
+      (db.select as Mock).mockReturnValue(
         createSelectBuilderSync([{ id: 'view-options-section-id' }]),
       );
 
-      const runMock = jest.fn();
-      const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
-      const valuesMock = jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoUpdateMock = vi.fn().mockReturnValue({ run: runMock });
+      const valuesMock = vi.fn().mockReturnValue({
         onConflictDoUpdate: onConflictDoUpdateMock,
       });
-      const txInsertMock = jest.fn().mockReturnValue({ values: valuesMock });
+      const txInsertMock = vi.fn().mockReturnValue({ values: valuesMock });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback({ insert: txInsertMock });
       });
 
@@ -308,7 +308,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when view-options section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(
         SettingsService.setViewOptions({
@@ -321,16 +321,16 @@ describe('SettingsService', () => {
     });
 
     it('converts weekStart number to string for storage', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const runMock = jest.fn();
-      const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
-      const valuesMock = jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoUpdateMock = vi.fn().mockReturnValue({ run: runMock });
+      const valuesMock = vi.fn().mockReturnValue({
         onConflictDoUpdate: onConflictDoUpdateMock,
       });
-      const txInsertMock = jest.fn().mockReturnValue({ values: valuesMock });
+      const txInsertMock = vi.fn().mockReturnValue({ values: valuesMock });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback({ insert: txInsertMock });
       });
 
@@ -347,16 +347,16 @@ describe('SettingsService', () => {
     });
 
     it('converts includeAutoPayInDueSoon boolean to string for storage', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const runMock = jest.fn();
-      const onConflictDoUpdateMock = jest.fn().mockReturnValue({ run: runMock });
-      const valuesMock = jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoUpdateMock = vi.fn().mockReturnValue({ run: runMock });
+      const valuesMock = vi.fn().mockReturnValue({
         onConflictDoUpdate: onConflictDoUpdateMock,
       });
-      const txInsertMock = jest.fn().mockReturnValue({ values: valuesMock });
+      const txInsertMock = vi.fn().mockReturnValue({ values: valuesMock });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback({ insert: txInsertMock });
       });
 
@@ -375,11 +375,11 @@ describe('SettingsService', () => {
 
   describe('initialize', () => {
     it('creates missing settings with default values', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -391,16 +391,16 @@ describe('SettingsService', () => {
     });
 
     it('skips existing settings', async () => {
-      (db.select as jest.Mock)
+      (db.select as Mock)
         .mockReturnValueOnce(createSelectBuilderSync([{ key: 'currency', value: 'EUR' }]))
         .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]))
         .mockReturnValueOnce(createSelectBuilderSync([]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -413,7 +413,7 @@ describe('SettingsService', () => {
 
   describe('getCategoryBySlug', () => {
     it('returns null when category not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getCategoryBySlug('nonexistent');
 
@@ -445,7 +445,7 @@ describe('SettingsService', () => {
       ];
 
       let selectCallCount = 0;
-      (db.select as jest.Mock).mockImplementation((columns?: unknown) => {
+      (db.select as Mock).mockImplementation((columns?: unknown) => {
         selectCallCount++;
 
         if (selectCallCount === 1) {
@@ -510,7 +510,7 @@ describe('SettingsService', () => {
       ];
 
       let selectCallCount = 0;
-      (db.select as jest.Mock).mockImplementation((columns?: unknown) => {
+      (db.select as Mock).mockImplementation((columns?: unknown) => {
         selectCallCount++;
 
         if (selectCallCount === 1) {
@@ -548,7 +548,7 @@ describe('SettingsService', () => {
     });
 
     it('returns empty structure when no categories exist', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getStructure();
 
@@ -558,7 +558,7 @@ describe('SettingsService', () => {
 
   describe('getDueSoonRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('returns stored value %d when valid', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
 
       const result = await SettingsService.getDueSoonRange();
 
@@ -566,7 +566,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getDueSoonRange();
 
@@ -575,7 +575,7 @@ describe('SettingsService', () => {
 
     it('returns default (7) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getDueSoonRange();
 
@@ -588,7 +588,7 @@ describe('SettingsService', () => {
 
     it('returns default (7) when stored value is out of allowed range', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: '99' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: '99' }]));
 
       const result = await SettingsService.getDueSoonRange();
 
@@ -602,11 +602,11 @@ describe('SettingsService', () => {
 
   describe('setDueSoonRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('updates setting when valid value %d', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -625,7 +625,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setDueSoonRange(7)).rejects.toThrow(
         'Behavior Options section not found',
@@ -635,7 +635,7 @@ describe('SettingsService', () => {
 
   describe('getPaidRecentlyRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('returns stored value %d when valid', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: String(value) }]));
 
       const result = await SettingsService.getPaidRecentlyRange();
 
@@ -643,7 +643,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (7) when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getPaidRecentlyRange();
 
@@ -652,7 +652,7 @@ describe('SettingsService', () => {
 
     it('returns default (7) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getPaidRecentlyRange();
 
@@ -666,11 +666,11 @@ describe('SettingsService', () => {
 
   describe('setPaidRecentlyRange', () => {
     it.each(ALLOWED_RANGE_VALUES)('updates setting when valid value %d', async (value) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -689,7 +689,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setPaidRecentlyRange(7)).rejects.toThrow(
         'Behavior Options section not found',
@@ -699,7 +699,7 @@ describe('SettingsService', () => {
 
   describe('getBillEndAction', () => {
     it('returns stored value when set to archive', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'archive' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'archive' }]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -707,9 +707,7 @@ describe('SettingsService', () => {
     });
 
     it('returns mark_as_paid when stored value is mark_as_paid', async () => {
-      (db.select as jest.Mock).mockReturnValue(
-        createSelectBuilderSync([{ value: 'mark_as_paid' }]),
-      );
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'mark_as_paid' }]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -717,7 +715,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default mark_as_paid when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -725,7 +723,7 @@ describe('SettingsService', () => {
     });
 
     it('returns mark_as_paid for any value other than archive', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getBillEndAction();
 
@@ -737,11 +735,11 @@ describe('SettingsService', () => {
     it.each([['mark_as_paid' as const], ['archive' as const]])(
       'updates setting when valid action %s provided',
       async (action) => {
-        (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+        (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-        const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-        (db.insert as jest.Mock).mockReturnValue({
-          values: jest.fn().mockReturnValue({
+        const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+        (db.insert as Mock).mockReturnValue({
+          values: vi.fn().mockReturnValue({
             onConflictDoUpdate: onConflictDoUpdateMock,
           }),
         });
@@ -761,7 +759,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setBillEndAction('archive')).rejects.toThrow(
         'Behavior Options section not found',
@@ -775,7 +773,7 @@ describe('SettingsService', () => {
       ['next_business_day' as const],
       ['previous_business_day' as const],
     ])('returns stored value when set to %s', async (strategy) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: strategy }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: strategy }]));
 
       const result = await SettingsService.getWeekendAdjustment();
 
@@ -783,7 +781,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getWeekendAdjustment();
 
@@ -791,7 +789,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default for invalid value', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getWeekendAdjustment();
 
@@ -805,11 +803,11 @@ describe('SettingsService', () => {
       ['next_business_day' as const],
       ['previous_business_day' as const],
     ])('updates setting when valid strategy %s provided', async (strategy) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const onConflictDoUpdateMock = jest.fn().mockResolvedValue(undefined);
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const onConflictDoUpdateMock = vi.fn().mockResolvedValue(undefined);
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoUpdate: onConflictDoUpdateMock,
         }),
       });
@@ -828,7 +826,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setWeekendAdjustment('unchanged')).rejects.toThrow(
         'Behavior Options section not found',
@@ -838,7 +836,7 @@ describe('SettingsService', () => {
 
   describe('getIncludeAutoPayInDueSoon', () => {
     it('returns true when stored value is "true"', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -846,7 +844,7 @@ describe('SettingsService', () => {
     });
 
     it('returns false when stored value is "false"', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -854,7 +852,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (true) when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -863,7 +861,7 @@ describe('SettingsService', () => {
 
     it('returns default (true) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getIncludeAutoPayInDueSoon();
 
@@ -877,7 +875,7 @@ describe('SettingsService', () => {
 
   describe('getAutoLogAutoPay', () => {
     it('returns true when stored value is "true"', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'true' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -885,7 +883,7 @@ describe('SettingsService', () => {
     });
 
     it('returns false when stored value is "false"', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'false' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -893,7 +891,7 @@ describe('SettingsService', () => {
     });
 
     it('returns default (true) when setting missing', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -902,7 +900,7 @@ describe('SettingsService', () => {
 
     it('returns default (true) when stored value is invalid', async () => {
       mockLogger.error.mockClear();
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ value: 'invalid' }]));
 
       const result = await SettingsService.getAutoLogAutoPay();
 
@@ -919,12 +917,12 @@ describe('SettingsService', () => {
       [true, 'true'],
       [false, 'false'],
     ])('updates setting when value is %s', async (value, expectedString) => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([{ id: 'section-id' }]));
 
-      const valuesMock = jest.fn().mockReturnValue({
-        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      const valuesMock = vi.fn().mockReturnValue({
+        onConflictDoUpdate: vi.fn().mockResolvedValue(undefined),
       });
-      (db.insert as jest.Mock).mockReturnValue({ values: valuesMock });
+      (db.insert as Mock).mockReturnValue({ values: valuesMock });
 
       await SettingsService.setIncludeAutoPayInDueSoon(value);
 
@@ -937,7 +935,7 @@ describe('SettingsService', () => {
     });
 
     it('throws error when section not found', async () => {
-      (db.select as jest.Mock).mockReturnValue(createSelectBuilderSync([]));
+      (db.select as Mock).mockReturnValue(createSelectBuilderSync([]));
 
       await expect(SettingsService.setIncludeAutoPayInDueSoon(true)).rejects.toThrow(
         'View Options section not found',
@@ -947,28 +945,28 @@ describe('SettingsService', () => {
 
   describe('initializeDefaults', () => {
     it('seeds default settings when database is empty', async () => {
-      const limitMock = jest.fn().mockResolvedValue([]);
-      (db.select as jest.Mock).mockReturnValue({
-        from: jest.fn().mockReturnValue({
+      const limitMock = vi.fn().mockResolvedValue([]);
+      (db.select as Mock).mockReturnValue({
+        from: vi.fn().mockReturnValue({
           limit: limitMock,
         }),
       });
 
-      const returningMock = jest.fn().mockReturnValue({
-        get: jest.fn().mockReturnValue({ id: 'mock-id' }),
+      const returningMock = vi.fn().mockReturnValue({
+        get: vi.fn().mockReturnValue({ id: 'mock-id' }),
       });
-      const onConflictDoNothingMock = jest.fn().mockReturnValue({
-        run: jest.fn(),
+      const onConflictDoNothingMock = vi.fn().mockReturnValue({
+        run: vi.fn(),
       });
-      const valuesMock = jest.fn().mockReturnValue({
+      const valuesMock = vi.fn().mockReturnValue({
         returning: returningMock,
         onConflictDoNothing: onConflictDoNothingMock,
       });
-      const txInsertMock = jest.fn().mockReturnValue({
+      const txInsertMock = vi.fn().mockReturnValue({
         values: valuesMock,
       });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         return callback({ ...db, insert: txInsertMock });
       });
 
@@ -1031,18 +1029,18 @@ describe('SettingsService', () => {
 
     it('does not recreate structure when database is already populated', async () => {
       let selectCallCount = 0;
-      (db.select as jest.Mock).mockImplementation(() => {
+      (db.select as Mock).mockImplementation(() => {
         selectCallCount++;
         if (selectCallCount === 1) {
           return {
-            from: jest.fn().mockReturnValue({
-              limit: jest.fn().mockResolvedValue([{ id: 'existing-category-id' }]),
+            from: vi.fn().mockReturnValue({
+              limit: vi.fn().mockResolvedValue([{ id: 'existing-category-id' }]),
             }),
           };
         }
         return {
-          from: jest.fn().mockReturnValue({
-            all: jest.fn().mockReturnValue([
+          from: vi.fn().mockReturnValue({
+            all: vi.fn().mockReturnValue([
               { id: 'section-1', slug: 'behavior-options' },
               { id: 'section-2', slug: 'view-options' },
               { id: 'section-3', slug: 'notification-settings' },
@@ -1051,15 +1049,15 @@ describe('SettingsService', () => {
         };
       });
 
-      const runMock = jest.fn();
-      const onConflictDoNothingMock = jest.fn().mockReturnValue({ run: runMock });
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoNothingMock = vi.fn().mockReturnValue({ run: runMock });
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoNothing: onConflictDoNothingMock,
         }),
       });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback(db);
       });
 
@@ -1072,24 +1070,24 @@ describe('SettingsService', () => {
 
   describe('ensureDefaultSettings', () => {
     it('inserts missing settings without overwriting existing ones', () => {
-      (db.select as jest.Mock).mockReturnValue({
-        from: jest.fn().mockReturnValue({
-          all: jest.fn().mockReturnValue([
+      (db.select as Mock).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          all: vi.fn().mockReturnValue([
             { id: 'section-1', slug: 'behavior-options' },
             { id: 'section-2', slug: 'view-options' },
           ]),
         }),
       });
 
-      const runMock = jest.fn();
-      const onConflictDoNothingMock = jest.fn().mockReturnValue({ run: runMock });
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoNothingMock = vi.fn().mockReturnValue({ run: runMock });
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoNothing: onConflictDoNothingMock,
         }),
       });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback(db);
       });
 
@@ -1102,21 +1100,21 @@ describe('SettingsService', () => {
 
     it('skips settings when section is not found', () => {
       mockLogger.warn.mockClear();
-      (db.select as jest.Mock).mockReturnValue({
-        from: jest.fn().mockReturnValue({
-          all: jest.fn().mockReturnValue([]),
+      (db.select as Mock).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          all: vi.fn().mockReturnValue([]),
         }),
       });
 
-      const runMock = jest.fn();
-      const onConflictDoNothingMock = jest.fn().mockReturnValue({ run: runMock });
-      (db.insert as jest.Mock).mockReturnValue({
-        values: jest.fn().mockReturnValue({
+      const runMock = vi.fn();
+      const onConflictDoNothingMock = vi.fn().mockReturnValue({ run: runMock });
+      (db.insert as Mock).mockReturnValue({
+        values: vi.fn().mockReturnValue({
           onConflictDoNothing: onConflictDoNothingMock,
         }),
       });
 
-      (db.transaction as jest.Mock).mockImplementation((callback) => {
+      (db.transaction as Mock).mockImplementation((callback) => {
         callback(db);
       });
 
@@ -1126,9 +1124,9 @@ describe('SettingsService', () => {
     });
 
     it('does not insert when values array is empty', () => {
-      (db.select as jest.Mock).mockReturnValue({
-        from: jest.fn().mockReturnValue({
-          all: jest.fn().mockReturnValue([]),
+      (db.select as Mock).mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          all: vi.fn().mockReturnValue([]),
         }),
       });
 

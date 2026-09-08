@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import {
   EstimationService,
   AverageLastThreePaymentsStrategy,
@@ -8,12 +10,12 @@ import { BillService } from './BillService';
 import type { Transaction } from '@/lib/types';
 import type { BillWithTags } from '@/db/schema';
 
-jest.mock('./TransactionService');
-jest.mock('./BillService');
+vi.mock('./TransactionService');
+vi.mock('./BillService');
 
 describe('EstimationService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('AverageLastThreePaymentsStrategy', () => {
@@ -46,7 +48,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -86,7 +88,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -122,7 +124,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -158,7 +160,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -168,7 +170,7 @@ describe('EstimationService', () => {
     it('returns null when no transactions found', async () => {
       const strategy = new AverageLastThreePaymentsStrategy();
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue([]);
+      (TransactionService.getByBillId as Mock).mockResolvedValue([]);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -188,7 +190,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -216,7 +218,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', new Date());
 
@@ -244,7 +246,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', targetDate);
 
@@ -274,7 +276,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', targetDate);
 
@@ -285,7 +287,7 @@ describe('EstimationService', () => {
       const strategy = new HistoricalMonthStrategy();
       const targetDate = new Date('2025-03-15');
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue([]);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue([]);
 
       const result = await strategy.calculate('bill-1', targetDate);
 
@@ -306,7 +308,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', targetDate);
 
@@ -328,7 +330,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue(mockTransactions);
 
       const result = await strategy.calculate('bill-1', targetDate);
 
@@ -377,7 +379,7 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue(mockTransactions);
 
       const result = await EstimationService.estimateAmount('bill-1', targetDate);
 
@@ -416,8 +418,8 @@ describe('EstimationService', () => {
         },
       ];
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue([]);
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue(mockTransactions);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue([]);
+      (TransactionService.getByBillId as Mock).mockResolvedValue(mockTransactions);
 
       const result = await EstimationService.estimateAmount('bill-1', targetDate);
 
@@ -430,9 +432,9 @@ describe('EstimationService', () => {
     it('falls back to bill base amount when no payment history', async () => {
       const targetDate = new Date('2025-03-15');
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue([]);
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue([]);
-      (BillService.getWithTags as jest.Mock).mockResolvedValue(mockBill);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue([]);
+      (TransactionService.getByBillId as Mock).mockResolvedValue([]);
+      (BillService.getWithTags as Mock).mockResolvedValue(mockBill);
 
       const result = await EstimationService.estimateAmount('bill-1', targetDate);
 
@@ -445,9 +447,9 @@ describe('EstimationService', () => {
     it('throws error when bill not found', async () => {
       const targetDate = new Date('2025-03-15');
 
-      (TransactionService.getByBillIdAndMonth as jest.Mock).mockResolvedValue([]);
-      (TransactionService.getByBillId as jest.Mock).mockResolvedValue([]);
-      (BillService.getWithTags as jest.Mock).mockResolvedValue(null);
+      (TransactionService.getByBillIdAndMonth as Mock).mockResolvedValue([]);
+      (TransactionService.getByBillId as Mock).mockResolvedValue([]);
+      (BillService.getWithTags as Mock).mockResolvedValue(null);
 
       await expect(EstimationService.estimateAmount('bill-1', targetDate)).rejects.toThrow(
         'Bill not found: bill-1',

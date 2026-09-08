@@ -1,12 +1,14 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TagCombobox } from './TagCombobox';
 
-Element.prototype.scrollIntoView = jest.fn();
+Element.prototype.scrollIntoView = vi.fn();
 
 // Mock the createTag action
-jest.mock('@/actions/tags', () => ({
-  createTag: jest.fn().mockResolvedValue({
+vi.mock('@/actions/tags', () => ({
+  createTag: vi.fn().mockResolvedValue({
     success: true,
     data: { id: 'new-tag-id', name: 'New Tag', slug: 'new-tag' },
   }),
@@ -19,7 +21,7 @@ const mockTags = [
 ];
 
 describe('TagCombobox', () => {
-  const mockOnChange = jest.fn();
+  const mockOnChange = vi.fn();
 
   beforeEach(() => {
     mockOnChange.mockClear();
@@ -72,7 +74,7 @@ describe('TagCombobox', () => {
 
   describe('event propagation (regression: sidebar switching bug)', () => {
     it('stops click propagation on trigger button', async () => {
-      const parentClickHandler = jest.fn();
+      const parentClickHandler = vi.fn();
       const user = userEvent.setup();
 
       render(
@@ -93,7 +95,7 @@ describe('TagCombobox', () => {
     });
 
     it('stops click propagation when removing a tag badge', async () => {
-      const parentClickHandler = jest.fn();
+      const parentClickHandler = vi.fn();
       const user = userEvent.setup();
 
       render(
@@ -115,7 +117,7 @@ describe('TagCombobox', () => {
     });
 
     it('calls onChange when removing tag without propagating to parent', async () => {
-      const parentClickHandler = jest.fn();
+      const parentClickHandler = vi.fn();
       const user = userEvent.setup();
 
       render(

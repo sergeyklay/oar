@@ -1,23 +1,25 @@
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useQueryState } from 'nuqs';
 import { TagFilter } from './TagFilter';
 import type { Tag } from '@/lib/types';
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn(),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(),
 }));
 
-jest.mock('@/lib/search-params', () => ({
+vi.mock('@/lib/search-params', () => ({
   calendarSearchParams: {
     tag: {
-      withOptions: jest.fn().mockReturnValue({ shallow: false }),
+      withOptions: vi.fn().mockReturnValue({ shallow: false }),
     },
   },
 }));
 
 // Mock scrollIntoView for cmdk
-window.HTMLElement.prototype.scrollIntoView = jest.fn();
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 const mockTags: Tag[] = [
   {
@@ -35,14 +37,14 @@ const mockTags: Tag[] = [
 ];
 
 describe('TagFilter', () => {
-  const mockSetSelectedTag = jest.fn();
+  const mockSetSelectedTag = vi.fn();
 
   beforeEach(() => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedTag]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSelectedTag]);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('calls useQueryState with shallow: false configuration', () => {
@@ -67,7 +69,7 @@ describe('TagFilter', () => {
   });
 
   it('clears selection when the clear button is clicked', async () => {
-    (useQueryState as jest.Mock).mockReturnValue(['utilities', mockSetSelectedTag]);
+    (useQueryState as Mock).mockReturnValue(['utilities', mockSetSelectedTag]);
     const user = userEvent.setup();
     render(<TagFilter tags={mockTags} />);
 

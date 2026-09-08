@@ -1,10 +1,12 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { toast } from 'sonner';
 import { RangeSettingDropdown } from './RangeSettingDropdown';
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    error: jest.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -20,17 +22,17 @@ const mockLabels = {
   '30': 'In next 30 days',
 };
 
-Element.prototype.scrollIntoView = jest.fn();
-Element.prototype.hasPointerCapture = jest.fn();
-Element.prototype.setPointerCapture = jest.fn();
-Element.prototype.releasePointerCapture = jest.fn();
+Element.prototype.scrollIntoView = vi.fn();
+Element.prototype.hasPointerCapture = vi.fn();
+Element.prototype.setPointerCapture = vi.fn();
+Element.prototype.releasePointerCapture = vi.fn();
 
 describe('RangeSettingDropdown', () => {
-  let mockOnUpdate: jest.Mock;
+  let mockOnUpdate: Mock;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockOnUpdate = jest.fn();
+    vi.clearAllMocks();
+    mockOnUpdate = vi.fn();
   });
 
   it('renders with current value', () => {

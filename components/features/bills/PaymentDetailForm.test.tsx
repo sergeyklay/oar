@@ -1,22 +1,24 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PaymentDetailForm } from './PaymentDetailForm';
 import type { Transaction } from '@/lib/types';
 
-jest.mock('@/actions/transactions', () => ({
-  updateTransaction: jest.fn(),
+vi.mock('@/actions/transactions', () => ({
+  updateTransaction: vi.fn(),
 }));
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    refresh: jest.fn(),
+    refresh: vi.fn(),
   }),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -35,12 +37,12 @@ describe('PaymentDetailForm', () => {
     transaction: createMockTransaction(),
     currency: 'USD',
     locale: 'en-US',
-    onUpdate: jest.fn(),
-    onDelete: jest.fn(),
+    onUpdate: vi.fn(),
+    onDelete: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('read-only mode', () => {
@@ -138,7 +140,7 @@ describe('PaymentDetailForm', () => {
 
     it('calls onDelete when deletion is confirmed', async () => {
       const user = userEvent.setup();
-      const onDelete = jest.fn();
+      const onDelete = vi.fn();
       render(<PaymentDetailForm {...defaultProps} onDelete={onDelete} />);
 
       await user.click(screen.getByTitle('Delete this payment'));

@@ -1,11 +1,13 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { AnnualSpendingSummary } from './AnnualSpendingSummary';
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
-jest.mock('./YearNavigation', () => ({
+vi.mock('./YearNavigation', () => ({
   YearNavigation: ({ currentYear }: { currentYear: string }) => (
     <div data-testid="year-navigation" data-year={currentYear}>
       YearNavigation
@@ -23,7 +25,7 @@ const defaultSummary = {
 
 describe('AnnualSpendingSummary', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('year display', () => {

@@ -1,7 +1,9 @@
 /**
  * Manual mock for @/db module.
- * Jest auto-discovers this when jest.mock('@/db') is called.
+ * vi.mock('@/db') without a factory resolves to this file.
  */
+
+import { vi, type Mock } from 'vitest';
 
 // Mock table references (used by eq(), inArray(), etc.)
 export const bills = { id: 'bills.id', categoryId: 'bills.categoryId', title: 'bills.title' };
@@ -34,37 +36,37 @@ export const billCategories = {
 
 // Type for the chainable query builder
 interface QueryBuilder {
-  values: jest.Mock;
-  returning: jest.Mock;
-  get: jest.Mock;
-  all: jest.Mock;
-  set: jest.Mock;
-  where: jest.Mock;
-  run: jest.Mock;
-  from: jest.Mock;
-  orderBy: jest.Mock;
-  innerJoin: jest.Mock;
-  limit: jest.Mock;
-  onConflictDoUpdate: jest.Mock;
-  onConflictDoNothing: jest.Mock;
+  values: Mock;
+  returning: Mock;
+  get: Mock;
+  all: Mock;
+  set: Mock;
+  where: Mock;
+  run: Mock;
+  from: Mock;
+  orderBy: Mock;
+  innerJoin: Mock;
+  limit: Mock;
+  onConflictDoUpdate: Mock;
+  onConflictDoNothing: Mock;
 }
 
 // Chainable query builder mock factory
 const createQueryBuilder = (): QueryBuilder => {
   const builder: QueryBuilder = {
-    values: jest.fn(),
-    returning: jest.fn(),
-    get: jest.fn().mockReturnValue({ id: 'mock-id' }),
-    all: jest.fn().mockReturnValue([]),
-    set: jest.fn(),
-    where: jest.fn(),
-    run: jest.fn(),
-    from: jest.fn(),
-    orderBy: jest.fn(),
-    innerJoin: jest.fn(),
-    limit: jest.fn(),
-    onConflictDoUpdate: jest.fn(),
-    onConflictDoNothing: jest.fn(),
+    values: vi.fn(),
+    returning: vi.fn(),
+    get: vi.fn().mockReturnValue({ id: 'mock-id' }),
+    all: vi.fn().mockReturnValue([]),
+    set: vi.fn(),
+    where: vi.fn(),
+    run: vi.fn(),
+    from: vi.fn(),
+    orderBy: vi.fn(),
+    innerJoin: vi.fn(),
+    limit: vi.fn(),
+    onConflictDoUpdate: vi.fn(),
+    onConflictDoNothing: vi.fn(),
   };
 
   // Set up chainable returns
@@ -85,20 +87,20 @@ const createQueryBuilder = (): QueryBuilder => {
 
 // Type for the mock db
 interface MockDb {
-  insert: jest.Mock;
-  update: jest.Mock;
-  delete: jest.Mock;
-  select: jest.Mock;
-  transaction: jest.Mock;
+  insert: Mock;
+  update: Mock;
+  delete: Mock;
+  select: Mock;
+  transaction: Mock;
 }
 
 // Main db mock (defined before transaction to avoid circular reference)
 export const db: MockDb = {
-  insert: jest.fn(() => createQueryBuilder()),
-  update: jest.fn(() => createQueryBuilder()),
-  delete: jest.fn(() => createQueryBuilder()),
-  select: jest.fn(() => createQueryBuilder()),
-  transaction: jest.fn((callback: (tx: MockDb) => unknown) => callback(db)),
+  insert: vi.fn(() => createQueryBuilder()),
+  update: vi.fn(() => createQueryBuilder()),
+  delete: vi.fn(() => createQueryBuilder()),
+  select: vi.fn(() => createQueryBuilder()),
+  transaction: vi.fn((callback: (tx: MockDb) => unknown) => callback(db)),
 };
 
 // Reset helper for tests

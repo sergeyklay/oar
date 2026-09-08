@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
@@ -19,12 +21,12 @@ describe('DeleteConfirmationDialog', () => {
     currency: 'USD',
     locale: 'en-US',
     open: true,
-    onOpenChange: jest.fn(),
-    onConfirm: jest.fn(),
+    onOpenChange: vi.fn(),
+    onConfirm: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('displays dialog title when open', () => {
@@ -48,7 +50,7 @@ describe('DeleteConfirmationDialog', () => {
 
   it('calls onOpenChange when Cancel is clicked', async () => {
     const user = userEvent.setup();
-    const onOpenChange = jest.fn();
+    const onOpenChange = vi.fn();
     render(<DeleteConfirmationDialog {...defaultProps} onOpenChange={onOpenChange} />);
 
     await user.click(screen.getByRole('button', { name: /cancel/i }));
@@ -58,7 +60,7 @@ describe('DeleteConfirmationDialog', () => {
 
   it('calls onConfirm when Delete is clicked', async () => {
     const user = userEvent.setup();
-    const onConfirm = jest.fn();
+    const onConfirm = vi.fn();
     render(<DeleteConfirmationDialog {...defaultProps} onConfirm={onConfirm} />);
 
     await user.click(screen.getByRole('button', { name: /^delete$/i }));

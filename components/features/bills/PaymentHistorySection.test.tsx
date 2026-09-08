@@ -1,25 +1,27 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PaymentHistorySection } from './PaymentHistorySection';
 import { getTransactionsByBillId, deleteTransaction } from '@/actions/transactions';
 import type { Transaction } from '@/lib/types';
 
-const mockRefresh = jest.fn();
-const mockToastSuccess = jest.fn();
-const mockToastError = jest.fn();
+const mockRefresh = vi.fn();
+const mockToastSuccess = vi.fn();
+const mockToastError = vi.fn();
 
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
     refresh: mockRefresh,
   }),
 }));
 
-jest.mock('@/actions/transactions', () => ({
-  getTransactionsByBillId: jest.fn(),
-  deleteTransaction: jest.fn(),
+vi.mock('@/actions/transactions', () => ({
+  getTransactionsByBillId: vi.fn(),
+  deleteTransaction: vi.fn(),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
     success: (...args: unknown[]) => mockToastSuccess(...args),
     error: (...args: unknown[]) => mockToastError(...args),
@@ -42,16 +44,16 @@ describe('PaymentHistorySection', () => {
     currency: 'USD',
     locale: 'en-US',
     isExpanded: false,
-    onExpandChange: jest.fn(),
+    onExpandChange: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('collapsed state', () => {
     it('displays "View Payment History" title', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...defaultProps} />);
 
       expect(screen.getByText('View Payment History')).toBeInTheDocument();
@@ -66,7 +68,7 @@ describe('PaymentHistorySection', () => {
       const pendingPromise = new Promise<Transaction[]>((resolve) => {
         resolvePromise = resolve;
       });
-      (getTransactionsByBillId as jest.Mock).mockReturnValue(pendingPromise);
+      (getTransactionsByBillId as Mock).mockReturnValue(pendingPromise);
 
       render(<PaymentHistorySection {...defaultProps} />);
 
@@ -79,7 +81,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('displays "No Payments" when no transactions exist', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...defaultProps} />);
 
       await waitFor(() => {
@@ -91,7 +93,7 @@ describe('PaymentHistorySection', () => {
       const transactions = [
         createMockTransaction({ amount: 16420, paidAt: new Date('2025-06-20') }),
       ];
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...defaultProps} />);
 
       const button = await screen.findByRole('button', { name: /view payment history/i });
@@ -107,8 +109,8 @@ describe('PaymentHistorySection', () => {
 
     it('calls onExpandChange(true) when clicked', async () => {
       const user = userEvent.setup();
-      const onExpandChange = jest.fn();
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      const onExpandChange = vi.fn();
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...defaultProps} onExpandChange={onExpandChange} />);
 
       await waitFor(() => {
@@ -125,7 +127,7 @@ describe('PaymentHistorySection', () => {
     const expandedProps = { ...defaultProps, isExpanded: true };
 
     it('displays "Payment History" header with back arrow', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...expandedProps} />);
 
       expect(screen.getByText('Payment History')).toBeInTheDocument();
@@ -137,8 +139,8 @@ describe('PaymentHistorySection', () => {
 
     it('calls onExpandChange(false) when back button clicked', async () => {
       const user = userEvent.setup();
-      const onExpandChange = jest.fn();
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      const onExpandChange = vi.fn();
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...expandedProps} onExpandChange={onExpandChange} />);
 
       await waitFor(() => {
@@ -151,7 +153,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('displays "No payments recorded yet." when no transactions', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...expandedProps} />);
 
       await waitFor(() => {
@@ -169,7 +171,7 @@ describe('PaymentHistorySection', () => {
           notes: 'May payment',
         }),
       ];
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...expandedProps} />);
 
       await waitFor(() => {
@@ -183,7 +185,7 @@ describe('PaymentHistorySection', () => {
 
     it('displays empty string for transactions without notes', async () => {
       const transactions = [createMockTransaction({ notes: null })];
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
       render(<PaymentHistorySection {...expandedProps} />);
 
       await waitFor(() => {
@@ -197,7 +199,7 @@ describe('PaymentHistorySection', () => {
 
   describe('data fetching', () => {
     it('fetches transactions on mount with correct billId', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       render(<PaymentHistorySection {...defaultProps} billId="test-bill-123" />);
 
       expect(getTransactionsByBillId).toHaveBeenCalledWith('test-bill-123');
@@ -208,7 +210,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('refetches when billId changes', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       const { rerender } = render(<PaymentHistorySection {...defaultProps} billId="bill-1" />);
 
       expect(getTransactionsByBillId).toHaveBeenCalledWith('bill-1');
@@ -228,7 +230,7 @@ describe('PaymentHistorySection', () => {
     });
 
     it('refetches when refreshKey changes', async () => {
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([]);
       const { rerender } = render(<PaymentHistorySection {...defaultProps} refreshKey={0} />);
 
       await waitFor(() => {
@@ -240,7 +242,7 @@ describe('PaymentHistorySection', () => {
         amount: 5000,
         paidAt: new Date('2025-07-15'),
       });
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue([newTransaction]);
+      (getTransactionsByBillId as Mock).mockResolvedValue([newTransaction]);
 
       rerender(<PaymentHistorySection {...defaultProps} refreshKey={1} />);
 
@@ -293,8 +295,8 @@ describe('PaymentHistorySection', () => {
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
       ];
 
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
+      (deleteTransaction as Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
@@ -312,10 +314,10 @@ describe('PaymentHistorySection', () => {
       ];
       const remainingTransactions: Transaction[] = [];
 
-      (getTransactionsByBillId as jest.Mock)
+      (getTransactionsByBillId as Mock)
         .mockResolvedValueOnce(transactions)
         .mockResolvedValueOnce(remainingTransactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+      (deleteTransaction as Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
@@ -333,8 +335,8 @@ describe('PaymentHistorySection', () => {
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
       ];
 
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
+      (deleteTransaction as Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
@@ -356,10 +358,10 @@ describe('PaymentHistorySection', () => {
       ];
       const remainingTransactions = [transactions[1]];
 
-      (getTransactionsByBillId as jest.Mock)
+      (getTransactionsByBillId as Mock)
         .mockResolvedValueOnce(transactions)
         .mockResolvedValueOnce(remainingTransactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({ success: true });
+      (deleteTransaction as Mock).mockResolvedValue({ success: true });
 
       render(<PaymentHistorySection {...expandedProps} />);
 
@@ -378,8 +380,8 @@ describe('PaymentHistorySection', () => {
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
       ];
 
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
-      (deleteTransaction as jest.Mock).mockResolvedValue({
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
+      (deleteTransaction as Mock).mockResolvedValue({
         success: false,
         error: 'Failed to delete payment',
       });
@@ -423,7 +425,7 @@ describe('PaymentHistorySection', () => {
         createMockTransaction({ id: 'tx-1', amount: 16420, paidAt: new Date('2025-06-26') }),
       ];
 
-      (getTransactionsByBillId as jest.Mock).mockResolvedValue(transactions);
+      (getTransactionsByBillId as Mock).mockResolvedValue(transactions);
 
       render(<PaymentHistorySection {...expandedProps} />);
 

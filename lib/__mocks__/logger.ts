@@ -1,24 +1,26 @@
 import type pino from 'pino';
 
+import { vi, type Mock } from 'vitest';
+
 type MockLogger = {
-  info: jest.Mock;
-  error: jest.Mock;
-  debug: jest.Mock;
-  warn: jest.Mock;
-  fatal: jest.Mock;
-  trace: jest.Mock;
-  child: jest.Mock<MockLogger, [Record<string, unknown>]>;
+  info: Mock;
+  error: Mock;
+  debug: Mock;
+  warn: Mock;
+  fatal: Mock;
+  trace: Mock;
+  child: Mock<(_bindings: Record<string, unknown>) => MockLogger>;
 };
 
 const mockLoggerInstance: MockLogger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  fatal: jest.fn(),
-  trace: jest.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+  debug: vi.fn(),
+  warn: vi.fn(),
+  fatal: vi.fn(),
+  trace: vi.fn(),
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  child: jest.fn((_bindings: Record<string, unknown>) => mockLoggerInstance),
+  child: vi.fn((_bindings: Record<string, unknown>) => mockLoggerInstance),
 };
 
-export const getLogger = jest.fn(() => mockLoggerInstance as unknown as pino.Logger);
+export const getLogger = vi.fn(() => mockLoggerInstance as unknown as pino.Logger);

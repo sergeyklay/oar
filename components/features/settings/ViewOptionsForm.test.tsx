@@ -1,15 +1,17 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ViewOptionsForm } from './ViewOptionsForm';
 import { updateViewOptions } from '@/actions/settings';
 
-jest.mock('@/actions/settings', () => ({
-  updateViewOptions: jest.fn().mockResolvedValue({ success: true }),
+vi.mock('@/actions/settings', () => ({
+  updateViewOptions: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    error: jest.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -129,7 +131,7 @@ describe('ViewOptionsForm', () => {
 
   describe('include auto pay toggle', () => {
     beforeEach(() => {
-      jest.clearAllMocks();
+      vi.clearAllMocks();
     });
 
     it('displays initial include auto pay value as checked when true', () => {
@@ -148,7 +150,7 @@ describe('ViewOptionsForm', () => {
 
     it('toggles include auto pay setting when switch is clicked', async () => {
       const user = userEvent.setup();
-      (updateViewOptions as jest.Mock).mockResolvedValue({ success: true });
+      (updateViewOptions as Mock).mockResolvedValue({ success: true });
 
       render(<ViewOptionsForm {...defaultProps} />);
 
@@ -167,7 +169,7 @@ describe('ViewOptionsForm', () => {
 
     it('toggles from false to true when switch is clicked', async () => {
       const user = userEvent.setup();
-      (updateViewOptions as jest.Mock).mockResolvedValue({ success: true });
+      (updateViewOptions as Mock).mockResolvedValue({ success: true });
 
       render(<ViewOptionsForm {...defaultProps} initialIncludeAutoPayInDueSoon={false} />);
 
@@ -190,7 +192,7 @@ describe('ViewOptionsForm', () => {
       const updatePromise = new Promise<{ success: boolean }>((resolve) => {
         resolveUpdate = resolve;
       });
-      (updateViewOptions as jest.Mock).mockReturnValue(updatePromise);
+      (updateViewOptions as Mock).mockReturnValue(updatePromise);
 
       render(<ViewOptionsForm {...defaultProps} />);
 
@@ -214,7 +216,7 @@ describe('ViewOptionsForm', () => {
       const updatePromise = new Promise<{ success: boolean }>((resolve) => {
         resolveUpdate = resolve;
       });
-      (updateViewOptions as jest.Mock).mockReturnValue(updatePromise);
+      (updateViewOptions as Mock).mockReturnValue(updatePromise);
 
       render(<ViewOptionsForm {...defaultProps} />);
 

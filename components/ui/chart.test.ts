@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { escapeCssIdentifier, sanitizeColorValue } from './chart';
 
 describe('escapeCssIdentifier', () => {

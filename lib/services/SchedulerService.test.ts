@@ -1,21 +1,23 @@
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { SchedulerService } from './SchedulerService';
 
-jest.mock('cron', () => ({
+vi.mock('cron', () => ({
   CronJob: {
-    from: jest.fn(() => ({
-      stop: jest.fn(),
+    from: vi.fn(() => ({
+      stop: vi.fn(),
     })),
   },
 }));
 
 describe('SchedulerService', () => {
   beforeAll(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   beforeEach(() => {

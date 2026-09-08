@@ -1,17 +1,19 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LogPaymentDialog } from './LogPaymentDialog';
 import { logPayment } from '@/actions/transactions';
 import type { Bill } from '@/lib/types';
 
-jest.mock('@/actions/transactions', () => ({
-  logPayment: jest.fn(),
+vi.mock('@/actions/transactions', () => ({
+  logPayment: vi.fn(),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -42,7 +44,7 @@ interface SetupOptions {
 describe('LogPaymentDialog', () => {
   const setup = ({ props = {}, userEventOptions = {} }: SetupOptions = {}) => {
     const user = userEvent.setup(userEventOptions);
-    const onOpenChange = jest.fn();
+    const onOpenChange = vi.fn();
 
     const utils = render(
       <LogPaymentDialog
@@ -58,7 +60,7 @@ describe('LogPaymentDialog', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('initialization', () => {
@@ -73,11 +75,11 @@ describe('LogPaymentDialog', () => {
 
   describe('payment submission', () => {
     it('calls onPaymentLogged callback after successful payment', async () => {
-      (logPayment as jest.Mock).mockResolvedValue({
+      (logPayment as Mock).mockResolvedValue({
         success: true,
         data: { transactionId: 'tx-1', isHistorical: false },
       });
-      const onPaymentLogged = jest.fn();
+      const onPaymentLogged = vi.fn();
       setup({ props: { onPaymentLogged } });
 
       const form = screen.getByRole('dialog').querySelector('form')!;
@@ -92,11 +94,11 @@ describe('LogPaymentDialog', () => {
     });
 
     it('does not call onPaymentLogged callback when payment fails', async () => {
-      (logPayment as jest.Mock).mockResolvedValue({
+      (logPayment as Mock).mockResolvedValue({
         success: false,
         error: 'Payment failed',
       });
-      const onPaymentLogged = jest.fn();
+      const onPaymentLogged = vi.fn();
       setup({ props: { onPaymentLogged } });
 
       const form = screen.getByRole('dialog').querySelector('form')!;
@@ -111,9 +113,9 @@ describe('LogPaymentDialog', () => {
 
   describe('form reset logic', () => {
     it('resets form values when reopened', async () => {
-      jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+      vi.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
       const { user, rerender } = setup({
-        userEventOptions: { advanceTimers: jest.advanceTimersByTime },
+        userEventOptions: { advanceTimers: vi.advanceTimersByTime },
       });
 
       const amountInput = screen.getByLabelText(/amount/i);
@@ -124,13 +126,13 @@ describe('LogPaymentDialog', () => {
       await user.type(notesInput, 'Custom note');
 
       rerender(
-        <LogPaymentDialog bill={mockBill} open={false} onOpenChange={jest.fn()} currency="USD" />,
+        <LogPaymentDialog bill={mockBill} open={false} onOpenChange={vi.fn()} currency="USD" />,
       );
 
-      jest.advanceTimersByTime(1000 * 60 * 60);
+      vi.advanceTimersByTime(1000 * 60 * 60);
 
       rerender(
-        <LogPaymentDialog bill={mockBill} open={true} onOpenChange={jest.fn()} currency="USD" />,
+        <LogPaymentDialog bill={mockBill} open={true} onOpenChange={vi.fn()} currency="USD" />,
       );
 
       expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
@@ -138,19 +140,19 @@ describe('LogPaymentDialog', () => {
       expect(screen.getByLabelText(/update due date/i)).toBeChecked();
       expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('does not update defaults when bill prop changes while already open', async () => {
-      jest.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
+      vi.useFakeTimers().setSystemTime(new Date('2025-12-01T10:00:00Z'));
       const { user, rerender } = setup({
-        userEventOptions: { advanceTimers: jest.advanceTimersByTime },
+        userEventOptions: { advanceTimers: vi.advanceTimersByTime },
       });
 
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, 'User typing...');
 
-      jest.advanceTimersByTime(1000 * 60 * 60);
+      vi.advanceTimersByTime(1000 * 60 * 60);
 
       const differentBill: Bill = {
         ...mockBill,
@@ -159,19 +161,14 @@ describe('LogPaymentDialog', () => {
       };
 
       rerender(
-        <LogPaymentDialog
-          bill={differentBill}
-          open={true}
-          onOpenChange={jest.fn()}
-          currency="USD"
-        />,
+        <LogPaymentDialog bill={differentBill} open={true} onOpenChange={vi.fn()} currency="USD" />,
       );
 
       expect(screen.getByLabelText(/amount/i)).toHaveValue('50');
       expect(notesInput).toHaveValue('User typing...');
       expect(screen.getByText(/december 1st, 2025/i)).toBeInTheDocument();
 
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
   });
 });

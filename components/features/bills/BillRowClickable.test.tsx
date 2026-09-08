@@ -1,10 +1,12 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BillRowClickable } from './BillRowClickable';
 
-const mockSetSelectedBill = jest.fn();
+const mockSetSelectedBill = vi.fn();
 
-jest.mock('nuqs', () => ({
+vi.mock('nuqs', () => ({
   useQueryState: () => [null, mockSetSelectedBill],
   parseAsString: {
     withOptions: () => ({}),

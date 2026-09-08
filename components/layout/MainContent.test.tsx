@@ -1,7 +1,9 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { MainContent } from './MainContent';
 
-jest.mock('@/components/common/ScrollableContainer', () => ({
+vi.mock('@/components/common/ScrollableContainer', () => ({
   ScrollableContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="scrollable-container">{children}</div>
   ),

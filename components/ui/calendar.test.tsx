@@ -1,9 +1,11 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Calendar } from './calendar';
 
 // Mock lucide-react icons
-jest.mock('lucide-react', () => ({
+vi.mock('lucide-react', () => ({
   Triangle: ({ className }: { className: string }) => (
     <span data-testid="triangle-icon" className={className} />
   ),
@@ -16,12 +18,12 @@ const MOCK_DATE = new Date('2025-06-15T12:00:00.000Z');
 
 describe('Calendar UI Component', () => {
   beforeEach(() => {
-    jest.useFakeTimers({ advanceTimers: true });
-    jest.setSystemTime(MOCK_DATE);
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(MOCK_DATE);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   const currentMonth = new Date(2025, 11); // December 2025
@@ -44,7 +46,7 @@ describe('Calendar UI Component', () => {
   });
 
   it('calls onMonthChange when previous month button is clicked', async () => {
-    const onMonthChange = jest.fn();
+    const onMonthChange = vi.fn();
     render(<Calendar month={currentMonth} onMonthChange={onMonthChange} />);
 
     await userEvent.click(screen.getByRole('button', { name: /previous month/i }));
@@ -54,7 +56,7 @@ describe('Calendar UI Component', () => {
   });
 
   it('calls onMonthChange when next month button is clicked', async () => {
-    const onMonthChange = jest.fn();
+    const onMonthChange = vi.fn();
     render(<Calendar month={currentMonth} onMonthChange={onMonthChange} />);
 
     await userEvent.click(screen.getByRole('button', { name: /next month/i }));
@@ -64,7 +66,7 @@ describe('Calendar UI Component', () => {
   });
 
   it('calls onGoToToday when today button is clicked', async () => {
-    const onGoToToday = jest.fn();
+    const onGoToToday = vi.fn();
     render(<Calendar month={currentMonth} onGoToToday={onGoToToday} />);
 
     await userEvent.click(screen.getByRole('button', { name: /go to today/i }));

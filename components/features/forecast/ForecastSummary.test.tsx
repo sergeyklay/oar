@@ -1,17 +1,19 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { ForecastSummary } from './ForecastSummary';
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn().mockReturnValue([null, jest.fn()]),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn().mockReturnValue([null, vi.fn()]),
 }));
 
 describe('ForecastSummary', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('displays month heading', () => {

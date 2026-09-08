@@ -202,12 +202,14 @@ This prevents sensitive data from appearing in production browser logs while mai
 
 ## 9. Testing
 
-The logger is automatically mocked in tests via `lib/__mocks__/logger.ts`. You don't need to configure anything. Import `getLogger` and assert on the mock:
+The logger is mocked in tests through the manual mock at `lib/__mocks__/logger.ts`: `vi.mock('@/lib/logger')` resolves to it automatically. You don't need to configure anything else. Import `getLogger` and assert on the mock:
 
 ```typescript
+import { it, expect, vi } from 'vitest';
+
 import { getLogger } from '@/lib/logger';
 
-jest.mock('@/lib/logger');
+vi.mock('@/lib/logger');
 
 it('logs error when operation fails', async () => {
   await myFunction();
@@ -308,8 +310,8 @@ If TypeScript complains about logger types:
 
 If tests fail because logger isn't mocked:
 
-- Ensure `jest.mock('@/lib/logger')` is called before imports
-- The manual mock in `lib/__mocks__/logger.ts` is used automatically
+- Ensure `vi.mock('@/lib/logger')` is called — Vitest hoists it above imports automatically
+- The manual mock in `lib/__mocks__/logger.ts` resolves automatically for that call
 
 ### Performance Concerns
 

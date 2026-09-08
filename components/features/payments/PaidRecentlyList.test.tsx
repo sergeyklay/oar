@@ -1,8 +1,10 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { PaidRecentlyList } from './PaidRecentlyList';
 import { PaymentWithBill } from '@/lib/types';
 
-jest.mock('@/lib/money', () => ({
+vi.mock('@/lib/money', () => ({
   formatMoney: (amount: number, currency: string) => `${amount / 100} ${currency}`,
 }));
 

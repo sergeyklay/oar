@@ -1,9 +1,6 @@
 version: 2
 
 updates:
-  # ---------------------------------------------------------------------------
-  # npm - application dependencies
-  # ---------------------------------------------------------------------------
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -19,16 +16,12 @@ updates:
       - dependencies
       - npm
     ignore:
-      # ESLint 10.x ecosystem not ready — many plugins still require 9.x
-      # Skips major bumps only; minor/patch 9.x updates still come through
+      # Plugins in the ESLint 9.x ecosystem do not all support 10 yet.
       - dependency-name: eslint
         update-types: [version-update:semver-major]
-      # TypeScript 7.x is the native Go port and ships no JavaScript compiler
-      # API, which typescript-eslint (reached via eslint-config-next) loads at
-      # import time; `npm run lint` exits 2 before parsing a single file.
-      # Typecheck, tests and build all pass under 7.x — lint is the sole
-      # blocker, and no typescript-eslint release admits 7.x yet.
-      # Skips major bumps only; minor/patch 6.x updates still come through.
+      # TypeScript 7.x is the native Go port with no JavaScript compiler API;
+      # typescript-eslint loads it at import time and `npm run lint` exits 2
+      # before parsing a file. No typescript-eslint release admits 7.x yet.
       # The tripwire in __tests__/tech-debt/ carries the exit check.
       - dependency-name: typescript
         update-types: [version-update:semver-major]
@@ -36,9 +29,9 @@ updates:
       prefix: 'chore(deps): '
       prefix-development: 'chore(deps-dev): '
     groups:
-      # React core and its type stubs move together. Major updates are excluded
-      # from this group so they surface as individual PRs — React majors change
-      # rendering semantics and each one warrants isolated review.
+      # React majors change rendering semantics and warrant isolated review;
+      # @vitejs/plugin-react groups with React because its JSX transform must
+      # track the React version under test.
       react-ecosystem:
         applies-to: version-updates
         patterns:
@@ -46,12 +39,13 @@ updates:
           - react-dom
           - '@types/react'
           - '@types/react-dom'
+          - '@vitejs/plugin-react'
         update-types:
           - minor
           - patch
 
-      # Next.js and its bundled ESLint config are tightly versioned; bumping one
-      # without the other against a mismatched pair risks lint breakage.
+      # next and eslint-config-next are versioned as one unit; a mismatched
+      # pair fails lint.
       next-framework:
         applies-to: version-updates
         patterns:
@@ -61,10 +55,8 @@ updates:
           - minor
           - patch
 
-      # Presentational primitives. The project depends on a dozen individually
-      # versioned @radix-ui/react-* packages that release in lock-step; ungrouped
-      # they were the single largest source of PR backlog. These have no runtime
-      # entanglement with framework versions.
+      # The @radix-ui/react-* packages release in lock-step and have no
+      # framework-entangled runtime.
       ui-components:
         applies-to: version-updates
         patterns:
@@ -79,8 +71,8 @@ updates:
           - minor
           - patch
 
-      # Tailwind v4 moved configuration into globals.css; any co-breaking change
-      # between tailwindcss and its PostCSS plugin lands as one PR.
+      # Tailwind v4 keeps its configuration in globals.css, so tailwindcss and
+      # its PostCSS plugin can break together.
       tailwind-ecosystem:
         applies-to: version-updates
         patterns:
@@ -91,39 +83,45 @@ updates:
           - minor
           - patch
 
-      # Test runner, coverage, browser simulation, and Testing Library adapters
-      # have closely coupled release cycles and are safe to merge together.
+      # vitest and @vitest/coverage-v8 peer-pin each other to an exact
+      # version, so a major arriving without its coverage package fails
+      # `npm ci` at ERESOLVE before any test runs.
+      vitest-runner:
+        applies-to: version-updates
+        patterns:
+          - vitest
+          - '@vitest/*'
+        update-types:
+          - major
+          - minor
+          - patch
+
+      # Deliberately disjoint from vitest-runner: Dependabot assigns a package
+      # to the first group it matches, so an overlap here would put vitest
+      # majors on this minor/patch-only path.
       testing-toolchain:
         applies-to: version-updates
         patterns:
-          - jest
-          - 'jest-*'
-          - '@types/jest'
+          - jsdom
           - '@testing-library/*'
           - '@faker-js/faker'
         update-types:
           - minor
           - patch
 
-      # Compiler and declaration stubs. tsc --noEmit is the gatekeeper; a bad
-      # @types/node bump fails typecheck before merging.
+      # A bad @types/node bump fails typecheck before merging.
       typescript-toolchain:
         applies-to: version-updates
         patterns:
           - typescript
           - '@types/node'
           - tsx
-          - ts-node
         update-types:
           - minor
           - patch
 
-      # Code style surface. ESLint major is ignored above; minor and patch
-      # formatting or rule-set changes land together here. eslint-config-next is
-      # excluded explicitly: it belongs with next-framework, which must move in
-      # lock-step with next itself. Dependabot resolves a double match to the
-      # first group anyway, but relying on declaration order makes the intent
-      # invisible to the next reader.
+      # eslint-config-next belongs with next-framework and must move in
+      # lock-step with next.
       linting-formatting:
         applies-to: version-updates
         patterns:
@@ -136,8 +134,7 @@ updates:
           - minor
           - patch
 
-      # Pino and its companion packages are released in lock-step and share the
-      # same major version contract.
+      # Pino and its companion packages share one major version contract.
       pino-logging:
         applies-to: version-updates
         patterns:
@@ -147,9 +144,8 @@ updates:
           - minor
           - patch
 
-      # Persistence layer: Drizzle ORM, its migration CLI, and the SQLite driver
-      # with its type stubs. drizzle-orm and drizzle-kit share a schema-dialect
-      # contract, so an isolated bump of either can break `db:push`.
+      # drizzle-orm and drizzle-kit share a schema-dialect contract; an
+      # isolated bump of either can break `db:push`.
       database:
         applies-to: version-updates
         patterns:
@@ -161,9 +157,6 @@ updates:
           - minor
           - patch
 
-  # ---------------------------------------------------------------------------
-  # docker - base image updates
-  # ---------------------------------------------------------------------------
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -179,18 +172,14 @@ updates:
     commit-message:
       prefix: 'chore(deps): '
     ignore:
-      # The Node major is pinned in three places that must agree: the base
-      # image here, node-version in .github/workflows/ci.yml, and nodejs in
-      # .tool-versions. Dependabot only sees this one, so a major bump would
-      # ship an image built on a runtime neither CI nor local development
-      # uses. Skips major bumps only; patch and minor 24.x images, which
-      # carry the security fixes this block exists for, still come through.
+      # The Node major is pinned in three places that must agree: this base
+      # image, node-version in .github/workflows/ci.yml, and nodejs in
+      # .tool-versions. Dependabot only sees this one, so a major bump here
+      # would ship an image built on a runtime neither CI nor local
+      # development uses.
       - dependency-name: node
         update-types: [version-update:semver-major]
 
-  # ---------------------------------------------------------------------------
-  # github-actions - CI/CD workflow action pins
-  # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -205,8 +194,6 @@ updates:
       - github-actions
     commit-message:
       prefix: 'ci: '
-    # All minor and patch action bumps land as one PR; major bumps that could
-    # break workflow syntax or change runner behaviour remain individual.
     groups:
       github-actions:
         applies-to: version-updates

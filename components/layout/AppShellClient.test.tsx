@@ -1,19 +1,21 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render } from '@testing-library/react';
 import { useQueryState, parseAsStringLiteral } from 'nuqs';
 import { AppShellClient } from './AppShellClient';
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn(),
-  parseAsStringLiteral: jest.fn(() => jest.fn()),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(),
+  parseAsStringLiteral: vi.fn(() => vi.fn()),
 }));
 
 describe('AppShellClient', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders children without sidebar-hidden class when sidebar is visible', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, jest.fn()]);
+    (useQueryState as Mock).mockReturnValue([null, vi.fn()]);
 
     const { container } = render(
       <AppShellClient>
@@ -26,7 +28,7 @@ describe('AppShellClient', () => {
   });
 
   it('applies sidebar-hidden class when sidebar state is hidden', () => {
-    (useQueryState as jest.Mock).mockReturnValue(['hidden', jest.fn()]);
+    (useQueryState as Mock).mockReturnValue(['hidden', vi.fn()]);
 
     const { container } = render(
       <AppShellClient>
@@ -39,7 +41,7 @@ describe('AppShellClient', () => {
   });
 
   it('renders children correctly', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, jest.fn()]);
+    (useQueryState as Mock).mockReturnValue([null, vi.fn()]);
 
     const { getByTestId } = render(
       <AppShellClient>
@@ -52,7 +54,7 @@ describe('AppShellClient', () => {
   });
 
   it('applies custom className when provided', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, jest.fn()]);
+    (useQueryState as Mock).mockReturnValue([null, vi.fn()]);
 
     const { container } = render(
       <AppShellClient className="custom-class">
@@ -65,7 +67,7 @@ describe('AppShellClient', () => {
   });
 
   it('combines custom className with sidebar-hidden class when both are present', () => {
-    (useQueryState as jest.Mock).mockReturnValue(['hidden', jest.fn()]);
+    (useQueryState as Mock).mockReturnValue(['hidden', vi.fn()]);
 
     const { container } = render(
       <AppShellClient className="custom-class">
@@ -79,7 +81,7 @@ describe('AppShellClient', () => {
   });
 
   it('calls useQueryState with sidebar param and parser', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, jest.fn()]);
+    (useQueryState as Mock).mockReturnValue([null, vi.fn()]);
 
     render(
       <AppShellClient>

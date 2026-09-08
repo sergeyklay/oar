@@ -1,4 +1,6 @@
-export const createId = jest.fn(() => 'mock-cuid-id');
-export const init = jest.fn(() => createId);
-export const getConstants = jest.fn(() => ({}));
-export const isCuid = jest.fn(() => true);
+import { vi } from 'vitest';
+
+export const createId = vi.fn(() => 'mock-cuid-id');
+export const init = vi.fn(() => createId);
+export const getConstants = vi.fn(() => ({}));
+export const isCuid = vi.fn(() => true);

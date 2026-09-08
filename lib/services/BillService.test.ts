@@ -1,17 +1,19 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { BillService } from './BillService';
 import { db, bills, resetDbMocks } from '@/db';
 import { SettingsService } from './SettingsService';
 import { DateAdjustmentService } from './DateAdjustmentService';
 import type { BillWithTags } from '@/db/schema';
 
-jest.mock('@/db');
-jest.mock('./SettingsService');
-jest.mock('./DateAdjustmentService');
+vi.mock('@/db');
+vi.mock('./SettingsService');
+vi.mock('./DateAdjustmentService');
 
 describe('BillService.getFiltered', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockBills: BillWithTags[] = [
@@ -104,18 +106,18 @@ describe('BillService.getFiltered', () => {
     const paidJoined = mapToJoined(paidBills);
 
     const mockBuilder = {
-      from: jest.fn().mockReturnThis(),
-      innerJoin: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockResolvedValueOnce(activeJoined).mockResolvedValueOnce(paidJoined),
+      from: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockResolvedValueOnce(activeJoined).mockResolvedValueOnce(paidJoined),
     };
-    (db.select as jest.Mock).mockReturnValue(mockBuilder);
+    (db.select as Mock).mockReturnValue(mockBuilder);
     return mockBuilder;
   };
 
   it('returns all bills from multiple months when no filters provided', async () => {
     const mockBuilder = createSelectMock(mockBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({});
 
@@ -152,7 +154,7 @@ describe('BillService.getFiltered', () => {
     ];
 
     createSelectMock(activeBills, paidBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({});
 
@@ -166,7 +168,7 @@ describe('BillService.getFiltered', () => {
   it('returns only bills from specified month when month filter provided', async () => {
     const decemberBills = [mockBills[0]];
     const mockBuilder = createSelectMock(decemberBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2025-12' });
 
@@ -180,7 +182,7 @@ describe('BillService.getFiltered', () => {
   it('returns only bills from specified date when date filter provided', async () => {
     const dateBills = [mockBills[0]];
     const mockBuilder = createSelectMock(dateBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ date: '2025-12-10' });
 
@@ -193,7 +195,7 @@ describe('BillService.getFiltered', () => {
   it('date filter takes precedence over month filter when both provided', async () => {
     const dateBills = [mockBills[0]];
     const mockBuilder = createSelectMock(dateBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ date: '2025-12-10', month: '2026-01' });
 
@@ -205,7 +207,7 @@ describe('BillService.getFiltered', () => {
 
   it('returns empty array when no bills match month filter', async () => {
     createSelectMock([]);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2025-03' });
 
@@ -216,7 +218,7 @@ describe('BillService.getFiltered', () => {
   it('returns bills sorted by dueDate ascending', async () => {
     const unsortedBills = [mockBills[2], mockBills[0], mockBills[1]];
     const mockBuilder = createSelectMock(unsortedBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({});
 
@@ -248,7 +250,7 @@ describe('BillService.getFiltered', () => {
 
     const expectedBills = [billsWithMixedStatus[0], billsWithMixedStatus[2]];
     const mockBuilder = createSelectMock(expectedBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2025-12' });
 
@@ -269,7 +271,7 @@ describe('BillService.getFiltered', () => {
       },
     ];
     createSelectMock(pendingBill);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2025-12' });
 
@@ -287,7 +289,7 @@ describe('BillService.getFiltered', () => {
       },
     ];
     createSelectMock(archivedBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ includeArchived: true });
 
@@ -305,7 +307,7 @@ describe('BillService.getFiltered', () => {
       },
     ];
     createSelectMock(archivedBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ archivedOnly: true });
 
@@ -317,7 +319,7 @@ describe('BillService.getFiltered', () => {
   it('excludes archived bills by default', async () => {
     const activeBills = [mockBills[0]];
     createSelectMock(activeBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({});
 
@@ -328,17 +330,17 @@ describe('BillService.getFiltered', () => {
   it('filters bills by tag slug', async () => {
     const billsWithTag = [mockBills[0]];
     const mockBuilder = createSelectMock(billsWithTag);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ id: 'tag-1' }]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ id: 'tag-1' }]),
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([{ billId: 'bill-1' }]),
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([{ billId: 'bill-1' }]),
         }),
       });
 
@@ -351,9 +353,9 @@ describe('BillService.getFiltered', () => {
   });
 
   it('returns empty array when tag does not exist', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue([]),
       }),
     });
 
@@ -378,7 +380,7 @@ describe('BillService.getFiltered', () => {
         ],
       ],
     ]);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
 
     const result = await BillService.getFiltered({});
 
@@ -389,7 +391,7 @@ describe('BillService.getFiltered', () => {
   it('handles date range filter correctly', async () => {
     const billsInRange = [mockBills[0]];
     const mockBuilder = createSelectMock(billsInRange);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ dateRange: 7 });
 
@@ -400,12 +402,12 @@ describe('BillService.getFiltered', () => {
   });
 
   it('handles date range of 0 (today only)', async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2025-12-10T12:00:00Z'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-12-10T12:00:00Z'));
 
     const billsToday = [mockBills[0]];
     createSelectMock(billsToday);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ dateRange: 0 });
 
@@ -413,62 +415,62 @@ describe('BillService.getFiltered', () => {
     expect(result[0].id).toBe('bill-1');
     expect(db.select).toHaveBeenCalled();
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('handles date range of 1 (today and tomorrow)', async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2025-12-09T12:00:00Z'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-12-09T12:00:00Z'));
 
     const billsInRange = [mockBills[0]];
     createSelectMock(billsInRange);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ dateRange: 1 });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('handles month filter for current month with overdue bills', async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2025-12-15T12:00:00Z'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-12-15T12:00:00Z'));
 
     const currentMonthBills = [mockBills[0]];
     createSelectMock(currentMonthBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2025-12' });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-1');
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('handles month filter for future month', async () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2025-12-15T12:00:00Z'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-12-15T12:00:00Z'));
 
     const futureMonthBills = [mockBills[1]];
     createSelectMock(futureMonthBills);
-    jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+    vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
     const result = await BillService.getFiltered({ month: '2026-01' });
 
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('bill-2');
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });
 
 describe('BillService.getWithTags', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockBill = {
@@ -492,11 +494,11 @@ describe('BillService.getWithTags', () => {
   const mockCategoryIcon = 'house';
 
   it('returns bill with tags when found and not archived', async () => {
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([
               {
                 bill: mockBill,
                 categoryIcon: mockCategoryIcon,
@@ -506,10 +508,10 @@ describe('BillService.getWithTags', () => {
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockReturnValue({
-              orderBy: jest.fn().mockResolvedValue([
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockResolvedValue([
                 {
                   id: 'tag-1',
                   name: 'Utilities',
@@ -532,10 +534,10 @@ describe('BillService.getWithTags', () => {
   });
 
   it('returns null when bill is archived and includeArchived is false', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
         }),
       }),
     });
@@ -552,11 +554,11 @@ describe('BillService.getWithTags', () => {
       isArchived: true,
     };
 
-    (db.select as jest.Mock)
+    (db.select as Mock)
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockResolvedValue([
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockResolvedValue([
               {
                 bill: archivedBill,
                 categoryIcon: mockCategoryIcon,
@@ -566,10 +568,10 @@ describe('BillService.getWithTags', () => {
         }),
       })
       .mockReturnValueOnce({
-        from: jest.fn().mockReturnValue({
-          innerJoin: jest.fn().mockReturnValue({
-            where: jest.fn().mockReturnValue({
-              orderBy: jest.fn().mockResolvedValue([]),
+        from: vi.fn().mockReturnValue({
+          innerJoin: vi.fn().mockReturnValue({
+            where: vi.fn().mockReturnValue({
+              orderBy: vi.fn().mockResolvedValue([]),
             }),
           }),
         }),
@@ -583,10 +585,10 @@ describe('BillService.getWithTags', () => {
   });
 
   it('returns null when bill not found', async () => {
-    (db.select as jest.Mock).mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        innerJoin: jest.fn().mockReturnValue({
-          where: jest.fn().mockResolvedValue([]),
+    (db.select as Mock).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        innerJoin: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
         }),
       }),
     });
@@ -600,7 +602,7 @@ describe('BillService.getWithTags', () => {
 describe('BillService.searchByTitle', () => {
   beforeEach(() => {
     resetDbMocks();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const mockBill = {
@@ -633,11 +635,11 @@ describe('BillService.searchByTitle', () => {
     const joined = mapToJoined(matchingBills);
 
     return {
-      from: jest.fn().mockReturnThis(),
-      innerJoin: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue(joined),
+      from: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      orderBy: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue(joined),
     };
   };
 
@@ -672,8 +674,8 @@ describe('BillService.searchByTitle', () => {
 
     it('accepts query with exactly 3 characters', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('abc');
 
@@ -685,8 +687,8 @@ describe('BillService.searchByTitle', () => {
   describe('query normalization', () => {
     it('trims whitespace from query', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('  electric  ');
 
@@ -696,8 +698,8 @@ describe('BillService.searchByTitle', () => {
 
     it('converts query to lowercase', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('ELECTRIC');
 
@@ -707,8 +709,8 @@ describe('BillService.searchByTitle', () => {
 
     it('handles query with multiple spaces between words', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric    bill');
 
@@ -719,8 +721,8 @@ describe('BillService.searchByTitle', () => {
 
     it('handles query with tabs and newlines', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('electric\tbill\n');
 
@@ -732,8 +734,8 @@ describe('BillService.searchByTitle', () => {
   describe('word matching', () => {
     it('returns bills matching single word query', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -746,8 +748,8 @@ describe('BillService.searchByTitle', () => {
 
     it('returns bills matching multiple word query with AND logic', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric bill');
 
@@ -759,8 +761,8 @@ describe('BillService.searchByTitle', () => {
 
     it('matches word at start of title', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -775,8 +777,8 @@ describe('BillService.searchByTitle', () => {
         title: 'My Electric Company',
       };
       const mockBuilder = createSearchMock([billWithMiddleWord]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -788,7 +790,7 @@ describe('BillService.searchByTitle', () => {
   describe('results', () => {
     it('returns bills with tags attached', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
+      (db.select as Mock).mockReturnValue(mockBuilder);
       const tagsMap = new Map([
         [
           'bill-1',
@@ -802,7 +804,7 @@ describe('BillService.searchByTitle', () => {
           ],
         ],
       ]);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(tagsMap);
 
       const result = await BillService.searchByTitle('electric');
 
@@ -812,8 +814,8 @@ describe('BillService.searchByTitle', () => {
 
     it('returns bills with category icon attached', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -822,7 +824,7 @@ describe('BillService.searchByTitle', () => {
 
     it('returns empty array when no bills match', async () => {
       const mockBuilder = createSearchMock([]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
+      (db.select as Mock).mockReturnValue(mockBuilder);
 
       const result = await BillService.searchByTitle('nonexistent');
 
@@ -835,8 +837,8 @@ describe('BillService.searchByTitle', () => {
       const bill2 = { ...mockBill, id: 'bill-2', title: 'Alpha Bill' };
       const bill3 = { ...mockBill, id: 'bill-3', title: 'Beta Bill' };
       const mockBuilder = createSearchMock([bill1, bill2, bill3]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('bill');
 
@@ -853,8 +855,8 @@ describe('BillService.searchByTitle', () => {
         title: 'Archived Electric Bill',
       };
       const mockBuilder = createSearchMock([archivedBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -878,8 +880,8 @@ describe('BillService.searchByTitle', () => {
         title: 'Active Electric Bill',
       };
       const mockBuilder = createSearchMock([archivedBill, activeBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -897,8 +899,8 @@ describe('BillService.searchByTitle', () => {
         title: `Electric Bill ${i}`,
       }));
       const mockBuilder = createSearchMock(manyBills);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('electric');
 
@@ -912,8 +914,8 @@ describe('BillService.searchByTitle', () => {
         title: `Electric Bill ${i}`,
       }));
       const mockBuilder = createSearchMock(fewBills);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       const result = await BillService.searchByTitle('electric');
 
@@ -925,8 +927,8 @@ describe('BillService.searchByTitle', () => {
   describe('database queries', () => {
     it('joins with bill_categories table to get category icon', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle('electric');
 
@@ -935,8 +937,8 @@ describe('BillService.searchByTitle', () => {
 
     it('uses parameterized queries to prevent SQL injection', async () => {
       const mockBuilder = createSearchMock([mockBill]);
-      (db.select as jest.Mock).mockReturnValue(mockBuilder);
-      jest.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
+      (db.select as Mock).mockReturnValue(mockBuilder);
+      vi.spyOn(BillService, 'getTagsForBills').mockResolvedValue(new Map());
 
       await BillService.searchByTitle("'; DROP TABLE bills; --");
 
@@ -948,7 +950,7 @@ describe('BillService.searchByTitle', () => {
 
 describe('BillService.getAdjustedDueDate', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns adjusted date when bill has override strategy', async () => {
@@ -959,11 +961,9 @@ describe('BillService.getAdjustedDueDate', () => {
       weekendAdjustment: 'previous_business_day' as const,
     };
 
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('unchanged');
-    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue(
-      'previous_business_day',
-    );
-    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(friday);
+    (SettingsService.getWeekendAdjustment as Mock).mockResolvedValue('unchanged');
+    (DateAdjustmentService.getEffectiveStrategy as Mock).mockReturnValue('previous_business_day');
+    (DateAdjustmentService.adjustPaymentDate as Mock).mockReturnValue(friday);
 
     const result = await BillService.getAdjustedDueDate(bill);
 
@@ -987,9 +987,9 @@ describe('BillService.getAdjustedDueDate', () => {
       weekendAdjustment: null,
     };
 
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
-    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('next_business_day');
-    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(monday);
+    (SettingsService.getWeekendAdjustment as Mock).mockResolvedValue('next_business_day');
+    (DateAdjustmentService.getEffectiveStrategy as Mock).mockReturnValue('next_business_day');
+    (DateAdjustmentService.adjustPaymentDate as Mock).mockReturnValue(monday);
 
     const result = await BillService.getAdjustedDueDate(bill);
 
@@ -1012,9 +1012,9 @@ describe('BillService.getAdjustedDueDate', () => {
       weekendAdjustment: 'unchanged' as const,
     };
 
-    (SettingsService.getWeekendAdjustment as jest.Mock).mockResolvedValue('next_business_day');
-    (DateAdjustmentService.getEffectiveStrategy as jest.Mock).mockReturnValue('unchanged');
-    (DateAdjustmentService.adjustPaymentDate as jest.Mock).mockReturnValue(saturday);
+    (SettingsService.getWeekendAdjustment as Mock).mockResolvedValue('next_business_day');
+    (DateAdjustmentService.getEffectiveStrategy as Mock).mockReturnValue('unchanged');
+    (DateAdjustmentService.adjustPaymentDate as Mock).mockReturnValue(saturday);
 
     const result = await BillService.getAdjustedDueDate(bill);
 

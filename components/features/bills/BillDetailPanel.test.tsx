@@ -1,3 +1,5 @@
+import { describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useQueryState } from 'nuqs';
 import { BillDetailPanel } from './BillDetailPanel';
@@ -5,27 +7,27 @@ import type { BillWithTags } from '@/lib/types';
 import { skipPayment, archiveBill, deleteBill } from '@/actions/bills';
 import { toast } from 'sonner';
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn(() => [null, jest.fn()]),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(() => [null, vi.fn()]),
   parseAsString: {
-    withOptions: jest.fn().mockReturnThis(),
+    withOptions: vi.fn().mockReturnThis(),
   },
 }));
 
-jest.mock('@/actions/bills', () => ({
-  skipPayment: jest.fn(),
-  archiveBill: jest.fn(),
-  deleteBill: jest.fn(),
+vi.mock('@/actions/bills', () => ({
+  skipPayment: vi.fn(),
+  archiveBill: vi.fn(),
+  deleteBill: vi.fn(),
 }));
 
-jest.mock('sonner', () => ({
+vi.mock('sonner', () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock('./LogPaymentDialog', () => ({
+vi.mock('./LogPaymentDialog', () => ({
   LogPaymentDialog: ({
     open,
     onOpenChange,
@@ -41,7 +43,7 @@ jest.mock('./LogPaymentDialog', () => ({
     ) : null,
 }));
 
-jest.mock('./BillFormDialog', () => ({
+vi.mock('./BillFormDialog', () => ({
   BillFormDialog: ({
     open,
     onOpenChange,
@@ -57,11 +59,11 @@ jest.mock('./BillFormDialog', () => ({
     ) : null,
 }));
 
-jest.mock('./CloseDetailButton', () => ({
+vi.mock('./CloseDetailButton', () => ({
   CloseDetailButton: () => <button aria-label="close">Close</button>,
 }));
 
-jest.mock('./PaymentHistorySection', () => ({
+vi.mock('./PaymentHistorySection', () => ({
   PaymentHistorySection: () => (
     <div data-testid="payment-history-section">Payment History Section</div>
   ),
@@ -110,12 +112,12 @@ describe('BillDetailPanel', () => {
   describe('bill status and details block', () => {
     it('displays relative status text (Line 1)', () => {
       // Mocking today as Dec 1, 2025 for this test
-      jest.useFakeTimers().setSystemTime(new Date('2025-12-01'));
+      vi.useFakeTimers().setSystemTime(new Date('2025-12-01'));
       const bill = createMockBill({ dueDate: new Date('2025-12-15'), status: 'pending' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       expect(screen.getByText('Due in 2 weeks')).toBeInTheDocument();
-      jest.useRealTimers();
+      vi.useRealTimers();
     });
 
     it('displays formatted full date (Line 2)', () => {
@@ -218,7 +220,7 @@ describe('BillDetailPanel', () => {
 
     it('calls skipPayment action and shows toast when clicking Skip', async () => {
       const bill = createMockBill({ title: 'Skip Me' });
-      (skipPayment as jest.Mock).mockResolvedValue({ success: true });
+      (skipPayment as Mock).mockResolvedValue({ success: true });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
 
       fireEvent.click(screen.getByRole('button', { name: /^skip$/i }));
@@ -247,9 +249,9 @@ describe('BillDetailPanel', () => {
     });
 
     it('calls archiveBill action and clears selection when clicking Archive', async () => {
-      const mockSetSelectedBill = jest.fn();
-      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
-      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+      const mockSetSelectedBill = vi.fn();
+      (useQueryState as Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as Mock).mockResolvedValue({ success: true });
 
       const bill = createMockBill({ title: 'Archive Me' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
@@ -276,9 +278,9 @@ describe('BillDetailPanel', () => {
     });
 
     it('calls deleteBill action and clears selection after confirmation', async () => {
-      const mockSetSelectedBill = jest.fn();
-      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
-      (deleteBill as jest.Mock).mockResolvedValue({ success: true });
+      const mockSetSelectedBill = vi.fn();
+      (useQueryState as Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (deleteBill as Mock).mockResolvedValue({ success: true });
 
       const bill = createMockBill({ title: 'Delete Me' });
       render(<BillDetailPanel bill={bill} currency="USD" locale="en-US" />);
@@ -388,9 +390,9 @@ describe('BillDetailPanel', () => {
     });
 
     it('calls archiveBill with false to unarchive archived bill', async () => {
-      const mockSetSelectedBill = jest.fn();
-      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
-      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+      const mockSetSelectedBill = vi.fn();
+      (useQueryState as Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as Mock).mockResolvedValue({ success: true });
 
       const archivedBill = createMockBill({
         isArchived: true,
@@ -411,9 +413,9 @@ describe('BillDetailPanel', () => {
     });
 
     it('calls archiveBill with true to archive active bill', async () => {
-      const mockSetSelectedBill = jest.fn();
-      (useQueryState as jest.Mock).mockReturnValue([null, mockSetSelectedBill]);
-      (archiveBill as jest.Mock).mockResolvedValue({ success: true });
+      const mockSetSelectedBill = vi.fn();
+      (useQueryState as Mock).mockReturnValue([null, mockSetSelectedBill]);
+      (archiveBill as Mock).mockResolvedValue({ success: true });
 
       const activeBill = createMockBill({
         isArchived: false,
@@ -434,7 +436,7 @@ describe('BillDetailPanel', () => {
     });
 
     it('shows error toast when unarchive fails', async () => {
-      (archiveBill as jest.Mock).mockResolvedValue({
+      (archiveBill as Mock).mockResolvedValue({
         success: false,
         error: 'Failed to unarchive',
       });

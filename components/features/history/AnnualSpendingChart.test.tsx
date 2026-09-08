@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AnnualSpendingChart } from './AnnualSpendingChart';
@@ -5,7 +7,7 @@ import type { AggregatedBillSpending } from '@/lib/types';
 
 const mockCellOnClickHandlers: Array<() => void> = [];
 
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   PieChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="pie-chart">{children}</div>
   ),
@@ -55,7 +57,7 @@ jest.mock('recharts', () => ({
   },
 }));
 
-jest.mock('@/components/ui/chart', () => ({
+vi.mock('@/components/ui/chart', () => ({
   ChartContainer: ({
     children,
     config,
@@ -86,8 +88,8 @@ jest.mock('@/components/ui/chart', () => ({
   },
 }));
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
 import { formatMoney } from '@/lib/money';
@@ -113,7 +115,7 @@ const mockData: AggregatedBillSpending[] = [
 
 describe('AnnualSpendingChart', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCellOnClickHandlers.length = 0;
   });
 
@@ -187,7 +189,7 @@ describe('AnnualSpendingChart', () => {
   describe('interactions', () => {
     it('calls onBillClick when pie segment is clicked', async () => {
       const user = userEvent.setup();
-      const mockOnBillClick = jest.fn();
+      const mockOnBillClick = vi.fn();
 
       render(
         <AnnualSpendingChart
@@ -218,7 +220,7 @@ describe('AnnualSpendingChart', () => {
 
     it('calls onBillClick for different bills', async () => {
       const user = userEvent.setup();
-      const mockOnBillClick = jest.fn();
+      const mockOnBillClick = vi.fn();
 
       render(
         <AnnualSpendingChart

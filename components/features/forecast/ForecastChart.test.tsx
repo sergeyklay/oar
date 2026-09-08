@@ -1,9 +1,11 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ForecastChart } from './ForecastChart';
 import type { MonthlyForecastTotal } from '@/lib/services/ForecastService';
 
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   BarChart: ({ children, data }: { children: React.ReactNode; data: unknown[] }) => (
     <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)}>
       {children}
@@ -19,7 +21,7 @@ jest.mock('recharts', () => ({
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
 }));
 
-jest.mock('@/components/ui/chart', () => ({
+vi.mock('@/components/ui/chart', () => ({
   ChartContainer: ({
     children,
     config,
@@ -71,8 +73,8 @@ jest.mock('@/components/ui/chart', () => ({
   ),
 }));
 
-jest.mock('@/lib/money', () => ({
-  formatMoney: jest.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
+vi.mock('@/lib/money', () => ({
+  formatMoney: vi.fn((amount: number) => `$${(amount / 100).toFixed(2)}`),
 }));
 
 import { formatMoney } from '@/lib/money';
@@ -96,7 +98,7 @@ const mockData: MonthlyForecastTotal[] = [
 
 describe('ForecastChart', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders chart with provided data', () => {
@@ -165,7 +167,7 @@ describe('ForecastChart', () => {
 
   it('calls onBarClick when bar is clicked', async () => {
     const user = userEvent.setup();
-    const onBarClick = jest.fn();
+    const onBarClick = vi.fn();
 
     render(<ForecastChart data={mockData} currency="USD" locale="en-US" onBarClick={onBarClick} />);
 

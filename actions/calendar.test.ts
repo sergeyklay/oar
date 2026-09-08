@@ -1,10 +1,12 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { getBillDatesForMonth, getPaymentDatesForMonth } from './calendar';
 import { db, bills, transactions } from '@/db';
 import { startOfMonth, endOfMonth } from 'date-fns';
 
-jest.mock('@/db', () => ({
+vi.mock('@/db', () => ({
   db: {
-    select: jest.fn(),
+    select: vi.fn(),
   },
   bills: {
     dueDate: 'bills.due_date',
@@ -16,12 +18,12 @@ jest.mock('@/db', () => ({
   },
 }));
 
-const mockGte = jest.fn();
-const mockLte = jest.fn();
-const mockAnd = jest.fn();
-const mockEq = jest.fn();
+const mockGte = vi.fn();
+const mockLte = vi.fn();
+const mockAnd = vi.fn();
+const mockEq = vi.fn();
 
-jest.mock('drizzle-orm', () => ({
+vi.mock('drizzle-orm', () => ({
   gte: (...args: unknown[]) => {
     mockGte(...args);
     return { type: 'gte', args };
@@ -42,13 +44,13 @@ jest.mock('drizzle-orm', () => ({
 
 describe('getBillDatesForMonth', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const setupDbMock = (returnValue: Array<{ dueDate: Date; status: string }>) => {
-    const whereMock = jest.fn().mockResolvedValue(returnValue);
-    const fromMock = jest.fn().mockReturnValue({ where: whereMock });
-    (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+    const whereMock = vi.fn().mockResolvedValue(returnValue);
+    const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+    (db.select as Mock).mockReturnValue({ from: fromMock });
 
     return { whereMock, fromMock };
   };
@@ -116,13 +118,13 @@ describe('getBillDatesForMonth', () => {
 
 describe('getPaymentDatesForMonth', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const setupDbMock = (returnValue: Array<{ paidAt: Date }>) => {
-    const whereMock = jest.fn().mockResolvedValue(returnValue);
-    const fromMock = jest.fn().mockReturnValue({ where: whereMock });
-    (db.select as jest.Mock).mockReturnValue({ from: fromMock });
+    const whereMock = vi.fn().mockResolvedValue(returnValue);
+    const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+    (db.select as Mock).mockReturnValue({ from: fromMock });
 
     return { whereMock, fromMock };
   };

@@ -1,22 +1,24 @@
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useQueryState, parseAsStringLiteral } from 'nuqs';
 import { SidebarToggle } from './SidebarToggle';
 
-jest.mock('nuqs', () => ({
-  useQueryState: jest.fn(),
-  parseAsStringLiteral: jest.fn(() => jest.fn()),
+vi.mock('nuqs', () => ({
+  useQueryState: vi.fn(),
+  parseAsStringLiteral: vi.fn(() => vi.fn()),
 }));
 
 describe('SidebarToggle', () => {
-  const mockSetSidebarState = jest.fn();
+  const mockSetSidebarState = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders a button with menu icon', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSidebarState]);
 
     render(<SidebarToggle />);
 
@@ -26,7 +28,7 @@ describe('SidebarToggle', () => {
   });
 
   it('shows "Show sidebar" aria-label when sidebar is hidden', () => {
-    (useQueryState as jest.Mock).mockReturnValue(['hidden', mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue(['hidden', mockSetSidebarState]);
 
     render(<SidebarToggle />);
 
@@ -35,7 +37,7 @@ describe('SidebarToggle', () => {
   });
 
   it('shows "Hide sidebar" aria-label when sidebar is visible', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSidebarState]);
 
     render(<SidebarToggle />);
 
@@ -44,7 +46,7 @@ describe('SidebarToggle', () => {
   });
 
   it('toggles from visible to hidden when clicked', async () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSidebarState]);
     const user = userEvent.setup();
 
     render(<SidebarToggle />);
@@ -56,7 +58,7 @@ describe('SidebarToggle', () => {
   });
 
   it('toggles from hidden to visible when clicked', async () => {
-    (useQueryState as jest.Mock).mockReturnValue(['hidden', mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue(['hidden', mockSetSidebarState]);
     const user = userEvent.setup();
 
     render(<SidebarToggle />);
@@ -68,7 +70,7 @@ describe('SidebarToggle', () => {
   });
 
   it('applies custom className when provided', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSidebarState]);
 
     render(<SidebarToggle className="custom-class" />);
 
@@ -77,7 +79,7 @@ describe('SidebarToggle', () => {
   });
 
   it('calls useQueryState with sidebar param and parser', () => {
-    (useQueryState as jest.Mock).mockReturnValue([null, mockSetSidebarState]);
+    (useQueryState as Mock).mockReturnValue([null, mockSetSidebarState]);
 
     render(<SidebarToggle />);
 

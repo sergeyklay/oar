@@ -1,8 +1,10 @@
+import { describe, expect, it, vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
 import { AnnualSpendingGraph } from './AnnualSpendingGraph';
 import type { AggregatedBillSpending } from '@/lib/types';
 
-jest.mock('./AnnualSpendingChart', () => ({
+vi.mock('./AnnualSpendingChart', () => ({
   AnnualSpendingChart: ({
     data,
     currency,
@@ -79,7 +81,7 @@ describe('AnnualSpendingGraph', () => {
     });
 
     it('passes onBillClick handler to chart', () => {
-      const mockOnBillClick = jest.fn();
+      const mockOnBillClick = vi.fn();
 
       render(
         <AnnualSpendingGraph
