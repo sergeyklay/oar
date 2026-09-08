@@ -58,8 +58,6 @@ global.console = {
  * Returns UTC (offset=0) by default. Tests can override using vi.mocked().
  */
 vi.mock('@/lib/timezone', () => ({
-  TIMEZONE_COOKIE_NAME: 'oar-tz-offset',
-  DEFAULT_TIMEZONE_OFFSET_HOURS: 0,
   getUserTimezoneOffset: vi.fn().mockResolvedValue(0),
 }));
 
