@@ -43,7 +43,7 @@ Sovereign, local-first bill manager. Core design principle: the "Active Payer" p
 
 - `components.json`, `app/globals.css`, `tailwind.config.ts` — design system config
 - `components/layout/*`, `app/layout.tsx` — app shell structure
-- `vitest.config.ts`, `vitest.setup.ts`, `tsconfig.json` — toolchain config
+- `vitest.config.mts`, `vitest.setup.ts`, `tsconfig.json` — toolchain config
 - `scripts/migrate.mjs`, `scripts/seed-production.mjs` — production startup scripts
 
 ### Never
