@@ -75,7 +75,7 @@
     "rrule": "^2.8.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.5.4"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.6.0",
