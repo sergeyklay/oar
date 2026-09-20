@@ -131,7 +131,7 @@ describe('tech-debt tripwire: typescript major hold', () => {
   // candidate release and run `npm run lint && npm run typecheck && npm run
   // test && npm run build`. If all four pass, remove the `typescript` entry
   // from the `ignore` block in .github/dependabot.yml, drop the TypeScript hold
-  // gotcha from CLAUDE.md, and delete this file. Otherwise keep the hold and
+  // gotcha from AGENTS.md, and delete this file. Otherwise keep the hold and
   // update the sentinel to the new range.
   it('typescript-eslint still declares a peer range that excludes TypeScript 7', () => {
     for (const entry of lockEntriesFor('typescript-eslint')) {
@@ -146,7 +146,7 @@ describe('tech-debt tripwire: typescript major hold', () => {
   // stands.
   // ACTION on failure: either restore the `typescript` ignore entry in
   // .github/dependabot.yml, or - if the hold was deliberately lifted - delete
-  // this file along with the CLAUDE.md gotcha.
+  // this file along with the AGENTS.md gotcha.
   it('dependabot still ignores typescript major updates', () => {
     const dependabotConfig = readFileSync(
       path.join(process.cwd(), '.github/dependabot.yml'),
