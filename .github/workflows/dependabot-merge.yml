@@ -14,6 +14,6 @@ permissions:
 jobs:
   dependabot:
     if: ${{ github.event.workflow_run.actor.login == 'dependabot[bot]' || github.event.workflow_run.actor.login == 'dependabot-preview[bot]' }}
-    uses: sortie-ai/shared-workflows/.github/workflows/dependabot-merge.yml@v1.0.0
+    uses: sortie-ai/shared-workflows/.github/workflows/dependabot-merge.yml@v1.1.0
     secrets:
       bot-token: ${{ secrets.CICDBOT_TOKEN }}
