@@ -61,7 +61,7 @@
     "cmdk": "^1.1.1",
     "cron": "^4.4.0",
     "date-fns": "^4.4.0",
-    "dotenv": "^18.0.8",
+    "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
     "lucide-react": "^1.58.0",
     "next": "^16.4.2",
