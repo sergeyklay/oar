@@ -63,7 +63,7 @@
     "date-fns": "^4.4.0",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
-    "lucide-react": "^1.72.0",
+    "lucide-react": "^1.76.0",
     "next": "^16.4.6",
     "nuqs": "^2.10.3",
     "pino": "^10.4.0",
@@ -74,7 +74,7 @@
     "recharts": "^3.10.1",
     "rrule": "^2.8.1",
     "sonner": "^2.0.8",
-    "tailwind-merge": "^3.7.0",
+    "tailwind-merge": "^3.7.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
